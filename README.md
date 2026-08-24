@@ -15,7 +15,7 @@ by Catmaitachi
 
 ## Ideia principal
 
-O portfólio idealizado permitirá que o visitante acesse um terminal interativo usando um nickname personalizado. À partir desse terminal ele poderá navegar entre diferentes informações do desenvolvedor, como projetos, habilidades, experiências e contatos usando comandos específicos.
+O portfólio idealizado permitirá que o visitante acesse um terminal interativo usando um nickname personalizado. A partir desse terminal ele poderá navegar entre diferentes informações do desenvolvedor, como projetos, habilidades, experiências e contatos usando comandos específicos.
 
 ![Wireframes](./imgs/wireframes.jpg)
 
