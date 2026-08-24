@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Foto de perfil (placeholder)">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#161a1e"/>
+      <stop offset="1" stop-color="#0d0f12"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="200" height="200" fill="url(#bg)"/>
+
+  <!-- silhueta geométrica -->
+  <circle cx="100" cy="80" r="30" fill="none" stroke="#7dd3a8" stroke-width="2" opacity="0.75"/>
+  <path d="M46 168c0-30 24-52 54-52s54 22 54 52" fill="none" stroke="#7dd3a8" stroke-width="2" opacity="0.75"/>
+
+  <!-- marca da casa -->
+  <rect x="92" y="26" width="16" height="16" fill="#7dd3a8" opacity="0.9" transform="rotate(45 100 34)"/>
+
+  <!-- grade discreta -->
+  <g stroke="#ffffff" stroke-width="1" opacity="0.05">
+    <path d="M0 50h200M0 100h200M0 150h200M50 0v200M100 0v200M150 0v200"/>
+  </g>
+
+  <text x="100" y="192" text-anchor="middle" fill="#565c64" font-family="monospace" font-size="10" letter-spacing="1">
+    sua-foto.jpg
+  </text>
+</svg>

@@ -1,0 +1,28 @@
+{
+  "name": "portfolio-terminal",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Portfólio dark minimalista com interface de terminal interativo",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "smoke": "vite build --ssr scripts/smoke.ts --outDir node_modules/.smoke --logLevel error && node node_modules/.smoke/smoke.js",
+    "render-check": "vite build --ssr scripts/render.ts --outDir node_modules/.smoke --logLevel error && node node_modules/.smoke/render.js",
+    "test": "npm run smoke && npm run render-check"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5"
+  }
+}
