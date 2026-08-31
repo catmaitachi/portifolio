@@ -7,6 +7,7 @@ import { useSectionScroll } from '~/navigation/useSectionScroll';
 import { SpaceCanvas } from '~/scene/SpaceCanvas';
 import { AboutSection } from '~/sections/about/AboutSection';
 import { HeroSection } from '~/sections/hero/HeroSection';
+import { JourneySection } from '~/sections/journey/JourneySection';
 import { ProjectsSection } from '~/sections/projects/ProjectsSection';
 import styles from './App.module.css';
 
@@ -34,6 +35,7 @@ export function App() {
         <HeroSection />
         <AboutSection ativo={chaveAtiva === 'sobre'} />
         <ProjectsSection ativo={chaveAtiva === 'projetos'} />
+        <JourneySection ativo={chaveAtiva === 'experiencia'} />
       </div>
 
       <NavMenu indice={indice} irPara={irPara} />

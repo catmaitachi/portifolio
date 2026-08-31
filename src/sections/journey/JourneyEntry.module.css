@@ -1,0 +1,176 @@
+.ficha {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: var(--exp-rail, 26px) 1fr;
+  gap: var(--exp-gap, clamp(16px, 2.6vmin, 30px));
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.55s ease,
+    transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+
+.ficha[data-ativa] {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* trilho: índice em cima, risco em degradê e o tipo escrito na vertical */
+.trilho {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  align-items: center;
+  min-height: 0;
+}
+
+.indice {
+  color: rgb(255 255 255 / 60%);
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+}
+
+.risco {
+  display: block;
+  flex: 1;
+  width: 1px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 30%), rgb(255 255 255 / 3%));
+}
+
+.tipo {
+  color: rgb(255 255 255 / 42%);
+  font-size: 8.5px;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.conteudo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(11px, 1.9vmin, 19px);
+  min-width: 0;
+}
+
+/**
+ * Período em número grande e quase invisível, atrás do texto. Dá a data em
+ * escala sem gastar uma linha da ficha.
+ */
+.fantasma {
+  position: absolute;
+  top: -0.2em;
+  right: 0;
+  color: rgb(255 255 255 / 7.5%);
+  font-size: var(--exp-fantasma, clamp(40px, 8.4vmin, 90px));
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  user-select: none;
+  pointer-events: none;
+}
+
+.cabecalho {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* o texto não invade o número fantasma à direita */
+  max-width: var(--exp-txt, 78%);
+  min-width: 0;
+}
+
+.cargo {
+  margin: 0;
+  color: #fff;
+  font-size: var(--exp-cargo, clamp(15px, 2.6vmin, 26px));
+  font-weight: 400;
+  line-height: 1.18;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-wrap: pretty;
+}
+
+.org {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  color: rgb(255 255 255 / 48%);
+  font-size: clamp(10px, 1.35vmin, 12.5px);
+  font-weight: 300;
+  letter-spacing: 0.14em;
+  text-wrap: pretty;
+}
+
+.ponto {
+  flex: none;
+  width: 4px;
+  height: 4px;
+  border: 1px solid rgb(255 255 255 / 40%);
+  border-radius: 50%;
+}
+
+.atividades {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  max-width: var(--exp-txt, 78%);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.atividade {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  min-width: 0;
+  color: rgb(255 255 255 / 72%);
+  font-size: clamp(11px, 1.45vmin, 13.5px);
+  font-weight: 300;
+  line-height: 1.75;
+  letter-spacing: 0.04em;
+  text-wrap: pretty;
+}
+
+.numero {
+  flex: none;
+  /* alinha a numeração com a primeira linha do texto, não com o topo da caixa */
+  padding-top: 0.42em;
+  color: rgb(255 255 255 / 30%);
+  font-size: 8.5px;
+  letter-spacing: 0.2em;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  /* a stack cola no rodapé da ficha, qualquer que seja o número de atividades */
+  margin-top: auto;
+}
+
+.chip {
+  padding: 4px 10px;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 2px;
+  color: rgb(255 255 255 / 56%);
+  font-size: 8.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transition:
+    border-color 0.4s,
+    color 0.4s;
+}
+
+.chip:hover {
+  border-color: rgb(255 255 255 / 40%);
+  color: #fff;
+}

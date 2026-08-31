@@ -1,0 +1,89 @@
+/** Tokens da Trajetória. */
+.secao {
+  --exph: 238px; /* altura do palco das fichas */
+  --exp-cargo: clamp(15px, 2.6vmin, 26px);
+  --exp-per: 9px; /* rótulo de período nos nós */
+  --exp-curva: 132px;
+  --exp-rail: 26px; /* coluna do trilho da ficha */
+  --exp-fantasma: clamp(40px, 8.4vmin, 90px);
+  --exp-gap: clamp(16px, 2.6vmin, 30px);
+  --exp-txt: 78%; /* largura do texto — o resto é respiro do número fantasma */
+  --exp-topo: clamp(14px, 4.2vh, 54px);
+}
+
+.bloco {
+  max-width: 900px;
+}
+
+.palco {
+  position: relative;
+  width: 100%;
+  height: var(--exph);
+  margin-top: var(--exp-topo);
+}
+
+.controles {
+  display: flex;
+  flex: none;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.seta {
+  display: flex;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 2px;
+  background: none;
+  color: rgb(255 255 255 / 72%);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  appearance: none;
+  transition:
+    border-color 0.4s,
+    color 0.4s,
+    opacity 0.4s;
+}
+
+.seta:hover:not(:disabled) {
+  border-color: rgb(255 255 255 / 45%);
+  color: #fff;
+}
+
+/* nas pontas o botão apaga em vez de sumir: a posição continua legível */
+.seta:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+@media (width <= 640px) {
+  .secao {
+    --exph: 322px;
+    --exp-cargo: 16px;
+    --exp-per: 8px;
+    --exp-curva: 76px;
+    --exp-rail: 22px;
+    --exp-fantasma: 36px;
+    --exp-gap: 14px;
+    --exp-txt: 100%;
+    --exp-topo: 16px;
+  }
+}
+
+@media (height <= 720px) {
+  .secao {
+    --exph: 210px;
+    --exp-curva: 80px;
+    --exp-fantasma: 38px;
+    --exp-topo: 12px;
+  }
+}
