@@ -129,6 +129,8 @@
   line-height: 1.6;
   letter-spacing: 0.05em;
   text-wrap: pretty;
+  /* linha de resumo sob o nome: é conteúdo, e `<span>` não entra na regra global */
+  user-select: text;
 }
 
 .meta {

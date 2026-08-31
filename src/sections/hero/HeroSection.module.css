@@ -66,6 +66,8 @@
   font-weight: 400;
   letter-spacing: 0.46em;
   text-transform: uppercase;
+  /* etiqueta entre dois riscos: é ornamento do nome, não texto que se copia */
+  user-select: none;
   animation: fina 0.9s ease-out 3.5s both;
 }
 

@@ -72,7 +72,7 @@
   font-weight: 200;
   line-height: 1;
   letter-spacing: -0.03em;
-  user-select: none;
+  /* `user-select` não aparece aqui: `<span>` já herda o `none` do `body` */
   pointer-events: none;
 }
 
@@ -106,6 +106,8 @@
   font-weight: 300;
   letter-spacing: 0.14em;
   text-wrap: pretty;
+  /* subtítulo do cargo: é conteúdo, e `<span>` não entra na regra global */
+  user-select: text;
 }
 
 .ponto {
@@ -147,6 +149,8 @@
   color: rgb(255 255 255 / 30%);
   font-size: 8.5px;
   letter-spacing: 0.2em;
+  /* numeração da lista: copiar a atividade não deve trazer "01" junto */
+  user-select: none;
 }
 
 .chips {

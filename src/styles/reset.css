@@ -30,6 +30,39 @@ body {
   height: 100%;
 }
 
+/**
+ * Seleção de texto só onde há texto para copiar.
+ *
+ * O padrão é `none`: HUD, menu, índices, medidores, chips, glifos e — sobretudo
+ * — as superfícies de arraste (órbita de Projetos, curva da Trajetória,
+ * carrossel de formações) são **controles**, não texto. Arrastar um controle não
+ * pode pintar meia tela de azul.
+ *
+ * O conteúdo reabre a seleção logo abaixo, por elemento e não por classe: título,
+ * subtítulo e parágrafo já são `h1..h3`, `p` e `li` em toda a página, então a
+ * regra vale para o que existe hoje e para o que for escrito depois. As poucas
+ * exceções (um `<p>` que é índice, um `<span>` que é subtítulo) ajustam a si
+ * mesmas no próprio módulo.
+ *
+ * `input`/`textarea` não são opcionais na lista: no Safari, um `user-select:
+ * none` herdado chega a impedir a digitação no campo.
+ */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+h1,
+h2,
+h3,
+p,
+li,
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 button,
 input,
 textarea {

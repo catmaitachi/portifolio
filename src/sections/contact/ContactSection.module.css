@@ -18,6 +18,8 @@
   letter-spacing: 0.02em;
   /* endereços longos não podem estourar a largura da seção */
   word-break: break-all;
+  /* o endereço existe para ser copiado — é a exceção que a seção não pode perder */
+  user-select: text;
 }
 
 .email:hover {
