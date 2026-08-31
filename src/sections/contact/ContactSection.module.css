@@ -1,0 +1,168 @@
+.secao {
+  --form-cols: minmax(0, 1fr) minmax(0, 1.7fr) auto;
+  --enviar-just: start;
+}
+
+.bloco {
+  max-width: 840px;
+}
+
+/** O e-mail é o caminho principal: tamanho de título, com risco que acende. */
+.email {
+  position: relative;
+  align-self: flex-start;
+  padding-bottom: 9px;
+  color: #fff;
+  font-size: clamp(14px, 3.1vmin, 34px);
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  /* endereços longos não podem estourar a largura da seção */
+  word-break: break-all;
+}
+
+.email:hover {
+  color: #fff;
+}
+
+.risco {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: rgb(255 255 255 / 28%);
+  transition: background 0.4s;
+}
+
+.email:hover .risco {
+  background: #fff;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: var(--form-cols);
+  gap: clamp(14px, 2.4vmin, 26px);
+  align-items: end;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+}
+
+.rotulo {
+  color: rgb(255 255 255 / 38%);
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+
+/* sublinhado de 1px que clareia no foco — sem caixa, sem preenchimento */
+.entrada {
+  width: 100%;
+  padding: 7px 1px;
+  border: 0;
+  border-bottom: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 0;
+  background: none;
+  color: #fff;
+  font-size: clamp(11.5px, 1.5vmin, 14px);
+  font-weight: 300;
+  letter-spacing: 0.05em;
+  appearance: none;
+  transition: border-color 0.35s;
+}
+
+.entrada::placeholder {
+  color: rgb(255 255 255 / 36%);
+}
+
+.entrada:focus {
+  border-color: rgb(255 255 255 / 50%);
+  outline: none;
+}
+
+.enviar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-self: var(--enviar-just);
+  margin: 0;
+  padding: 7px 1px;
+  border: 0;
+  border-bottom: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 0;
+  background: none;
+  color: #fff;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  cursor: pointer;
+  appearance: none;
+  transition: border-color 0.35s;
+}
+
+.enviar:hover {
+  border-color: #fff;
+}
+
+.seta {
+  font-size: 12px;
+  opacity: 0.65;
+  transition:
+    transform 0.35s cubic-bezier(0.3, 0.7, 0.2, 1),
+    opacity 0.35s;
+}
+
+.enviar:hover .seta {
+  opacity: 1;
+  transform: translateX(5px);
+}
+
+/**
+ * A altura mínima é reservada mesmo sem status: sem ela, a mensagem de erro
+ * empurraria os cartões de canal para baixo ao aparecer.
+ */
+.status {
+  min-height: 12px;
+  color: rgb(255 255 255 / 50%);
+  font-size: 9.5px;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.status[data-visivel] {
+  opacity: 1;
+}
+
+.canais {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 1.8vmin, 18px);
+}
+
+.ou {
+  color: rgb(255 255 255 / 32%);
+  font-size: 9px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: clamp(10px, 1.6vmin, 16px);
+}
+
+/* coluna única antes do mobile: os três campos lado a lado ficam estreitos demais */
+@media (width <= 760px) {
+  .secao {
+    --form-cols: 1fr;
+    --enviar-just: end;
+  }
+}
