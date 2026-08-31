@@ -15,10 +15,14 @@ by Catmaitachi
 
 ## Ideia principal
 
-O portfólio idealizado permitirá que o visitante acesse um terminal interativo usando um nickname personalizado. A partir desse terminal ele poderá navegar entre diferentes informações do desenvolvedor, como projetos, habilidades, experiências e contatos usando comandos específicos.
+O portifólio é uma SPA com temática espacial, ele contem sessões de informações sobre mim, meus projetos, trajetória/experiência profissional e contato.
+
+A ideia é que o portifólio seja uma experiência visualmente rica, com animações e interações que o tornam exclusivo e estiloso mas sem perder a simplicidade e a clareza de navegação.
+
+## Wireframes
 
 ![Wireframes](./imgs/wireframes.jpg)
 
-## Funcionalidades
+## Documentação
 
-As funcionalidades do portfólio são baseadas nos requisitos funcionais descritos no arquivo [requisitos.md](./docs/requisitos.md).
+* [Requisitos](./docs/requisitos.md) — requisitos funcionais e não funcionais.

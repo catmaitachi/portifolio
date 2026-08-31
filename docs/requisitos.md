@@ -1,51 +1,83 @@
-# Usuários
+# Requisitos
 
-* Desenvolvedor
-* Visitante
+## Requisitos Funcionais (RF)
 
-# Requisitos Funcionais
+**RF01** — O sistema deve exibir 5 seções navegáveis por scroll vertical com snap: Início, Sobre, Projetos, Trajetória e Contato.
 
-## RF01 - O visitante deve inserir um nickname personalizado.
-A primeira interação do visitante com o portfólio será a inserção de um nickname personalizado. Além disso, deve haver a possibilidade de ser escolhido um nickname aleatório dentre os valores de um enum predefinido, caso o visitante não queira inserir um nickname personalizado.
+**RF02** — O sistema deve permitir navegação entre seções via menu lateral, clique e teclado (↑/↓, PageUp/Down, Home/End).
 
-## RF02 - O visitante deve alterar o tema.
-Deve ser possível alternar entre os temas claro e escuro. O tema padrão deve ser dado pelo sistema operacional do visitante; caso ele não possua um tema definido, o tema padrão será o escuro.
+**RF03** — O sistema deve destacar visualmente a seção ativa no menu de navegação.
 
-## RF03 - O visitante deve escolher o idioma.
-Deve ser possível, no mínimo, escolher entre os idiomas português e inglês. O idioma padrão deve ser o inglês, exceto quando o idioma do sistema operacional do visitante for português; nesse caso, o idioma padrão será o português.
+**RF04** — O sistema deve permitir alternar o idioma entre Português e Inglês através de um único botão.
 
-## RF04 - O visitante deve escolher a cor principal.
-Deve ser possível escolher a cor de destaque do portfólio dentre algumas predefinidas. A cor padrão será o azul.
+**RF05** — O sistema deve persistir o idioma escolhido e detectar automaticamente o idioma do navegador na primeira visita.
 
-## RF05 - O visitante deve ativar/desativar a scanline.
-Deve ser possível ativar ou desativar a scanline. Ela deve estar ativada por padrão, cabendo ao visitante desativá-la se preferir.
+**RF06** — O sistema deve trocar o idioma sem recarregar a página ou reiniciar animações em andamento.
 
-## RF06 - O visitante deve acessar a área de trabalho.
-Logo após inserir o nickname, o visitante deve acessar a área de trabalho, onde ele terá acesso a um terminal interativo, além de outras abas ao longo da interação.
+**RF07** — A seção Início deve exibir nome, cargo/legenda e botões de ação, com entrada animada em cascata.
 
-## RF07 - O visitante deve usar o comando ajuda.
-O comando deve listar todos os comandos disponíveis com uma breve descrição. Nomes alternativos: help, ?. Atalho: ctrl + h.
+**RF08** — A seção Sobre deve exibir retrato, biografia com rolagem própria e lista de formações em badges.
 
-## RF08 - O visitante deve usar o comando sobre.
-O comando deve exibir informações sobre o desenvolvedor, como nome, título, cidade, status, foto e uma biografia resumida, tudo deve ser entregue num formato que imita o fastfetch do Linux. Nome alternativo: about.
+**RF09** — O sistema deve indicar o estado de cada formação (concluído, cursando, pretensão).
 
-## RF09 - O visitante deve usar o comando limpar.
-O comando deve limpar a tela do terminal, removendo todas as informações exibidas anteriormente. Nome alternativo: clear, cls. Atalho: ctrl + l.
+**RF10** — O sistema deve converter a lista de formações em carrossel automático quando os badges não couberem na tela.
 
-## RF10 - O visitante deve usar o comando projetos.
-O comando deve exibir uma lista enumerada de projetos do desenvolvedor, cada projeto deve conter um título, uma descrição resumida, um badge com a categoria do projeto, as tecnologias utilizadas e a data de criação. Ao clicar em um projeto, uma nova aba deve ser aberta na área de trabalho exibindo informações detalhadas sobre o projeto, como título, descrição completa, badges com as categorias do projeto, tecnologias utilizadas, data de criação, imagens e links para o repositório e para a página do projeto. Nome alternativo: projects.
+**RF11** — A seção Projetos deve exibir os projetos em um carrossel em órbita 3D, navegável por clique, arraste e teclado.
 
-## RF11 - O visitante deve usar o comando experiencias.
-O comando deve listar as experiências do desenvolvedor em ordem decrescente. Cada experiência deve conter um título, uma descrição resumida, badges com a categoria da experiência, a data de início e a data de término. Ao clicar em uma experiência, uma nova aba deve ser aberta na área de trabalho exibindo informações detalhadas sobre a experiência, como título, descrição completa, badge com a categoria da experiência, data de início e data de término. Nome alternativo: experiences.
+**RF12** — Cada cartão de projeto deve exibir banner, índice, nome, ano, papel, stack tecnológica e estado.
 
-## RF12 - O visitante deve usar o comando contato.
-O comando deve exibir uma lista com ícones de opções de contato do desenvolvedor, como e-mail, telefone, LinkedIn, GitHub etc. Ao clicar em uma opção de contato, o visitante deve ser redirecionado para a página correspondente. Nome alternativo: contact.
+**RF13** — O sistema deve expandir a descrição do projeto sobre o cartão ao ser clicado, incluindo link "ver ao vivo" quando disponível.
 
-## RF13 - O visitante deve usar o comando sair.
-O comando deve encerrar a sessão do visitante, removendo o nickname personalizado e redirecionando o visitante para a tela inicial do portfólio. Nomes alternativos: exit, quit. Atalho: ctrl + q.
+**RF14** — O sistema deve indicar o estado de cada projeto (ativo, arquivado, vaga), sendo que projetos em estado "vaga" não abrem descrição.
 
-## RF14 - O visitante deve visualizar o histórico de comandos.
-O visitante deve ter acesso a um histórico de comandos digitados, podendo navegar entre eles com as setas para cima e para baixo do teclado, além de selecionar um comando do histórico e executá-lo novamente.
+**RF15** — A seção Trajetória deve exibir uma linha do tempo em curva com progresso preenchido até o evento ativo.
 
-## RF15 - O visitante deve visualizar o autocomplete de comandos.
-O visitante deve ter acesso a um autocomplete de comandos: ao digitar parte de um comando, será possível usar a seta para a direita do teclado para completá-lo.
+**RF16** — O sistema deve permitir navegar entre eventos da trajetória por arraste, setas de teclado ou botões dedicados.
+
+**RF17** — O sistema deve exibir uma janela de 6 eventos visíveis por vez na linha do tempo, deslizando conforme a navegação.
+
+**RF18** — O sistema deve exibir a ficha do evento ativo com cargo, organização, período, atividades e stack tecnológica.
+
+**RF19** — A seção Contato deve permitir envio de mensagem via mailto, sem back-end.
+
+**RF20** — O sistema deve exibir mensagem de erro caso o formulário de contato seja enviado vazio.
+
+**RF21** — A seção Contato deve exibir cartões com canais de contato (GitHub, LinkedIn, Instagram).
+
+**RF22** — O sistema deve exibir um fundo animado (canvas) com nebulosa, campo de estrelas, constelações e meteoros.
+
+**RF23** — O sistema deve exibir um buraco negro central com halo e poeira orbital, visível apenas na seção Início.
+
+**RF24** — O sistema deve exibir constelações reais diferentes para cada seção.
+
+**RF25** — O sistema deve exibir um HUD com anéis giratórios e mira central, com abertura animada em cascata na entrada.
+
+**RF26** — Todo texto exibido deve vir de um dicionário de idiomas (nenhuma string literal fixa no código).
+
+## Requisitos Não Funcionais (RNF)
+
+**RNF01** — A interface deve usar paleta estritamente monocromática (preto/branco), sem cor ou gradiente colorido.
+
+**RNF02** — A estética deve seguir o estilo sci-fi/HUD minimalista (linhas finas de 1px, tracejados, tipografia mono).
+
+**RNF03** — As animações não devem alocar memória a cada quadro (uso de estruturas pré-alocadas).
+
+**RNF04** — Cálculos trigonométricos pesados devem usar tabelas de consulta (LUT) em vez de cálculo direto por quadro.
+
+**RNF05** — Efeitos baseados em pixel devem ser renderizados em buffer reduzido e ampliados, não em resolução total.
+
+**RNF06** — Uma camada visual desativada não deve consumir processamento.
+
+**RNF07** — A animação de fundo deve pausar quando a aba do navegador não estiver visível.
+
+**RNF08** — O layout deve ser responsivo, com breakpoints para mobile (≤640px) e telas baixas (≤720px de altura).
+
+**RNF09** — No mobile, a navegação deve ser exibida como faixa horizontal e o layout em coluna única.
+
+**RNF10** — A interface deve fornecer `aria-label` no menu de navegação e no seletor de idioma.
+
+**RNF11** — A seção ativa deve ser marcada com `aria-current` para leitores de tela.
+
+**RNF12** — O sistema deve respeitar a preferência `prefers-reduced-motion`, desativando animações quando solicitado.
+
+**RNF13** — Os textos de acessibilidade também devem ser internacionalizados (PT/EN).
