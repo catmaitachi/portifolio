@@ -2,24 +2,23 @@
   "nav": {
     "inicio": "Home",
     "sobre": "About",
-    "projetos": "Work",
+    "projetos": "Projects",
     "experiencia": "Journey",
     "contato": "Contact"
   },
 
   "hero": {
-    "etiqueta": "Software developer",
+    "etiqueta": "Portfolio",
     "nome": "Lucas Spiazzi",
-    "legenda": "Interfaces, systems and what lies between"
+    "legenda": "Software Developer"
   },
 
   "sobre": {
-    "indice": "01 — About",
-    "titulo": "About me",
+    "indice": "01",
+    "titulo": "About",
     "paragrafos": [
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-      "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-      "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo."
+      "I build software. I work at the border between the interface and the system behind it: what the user touches and what answers underneath.",
+      "I like lean code, measured performance, and the details nobody notices until they are missing."
     ]
   },
 
@@ -33,66 +32,66 @@
     "lista": [
       {
         "slot": "senac",
-        "instituicao": "Senac",
+        "instituicao": "SENAC",
         "nivel": "Technical",
-        "curso": "Systems development",
+        "curso": "Information Technology",
         "estado": "concluido"
       },
       {
         "slot": "puc",
         "instituicao": "PUC Minas",
-        "nivel": "Bachelor",
-        "curso": "Computer science",
+        "nivel": "Bachelor's",
+        "curso": "Software Engineering",
         "estado": "cursando"
       },
       {
         "slot": "ufmg",
         "instituicao": "UFMG",
-        "nivel": "Graduate",
-        "curso": "Software engineering",
+        "nivel": "Master's",
+        "curso": "Field TBD",
         "estado": "pretensao"
       }
     ]
   },
 
   "projetos": {
-    "indice": "02 — Work",
-    "titulo": "Work",
-    "intro": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.",
+    "indice": "02",
+    "titulo": "Projects",
+    "intro": "My highlights, the projects I like most.",
     "banner": "Drop a banner here",
-    "aoVivo": "View live",
+    "aoVivo": "see it live",
     "estados": {
       "ativo": "Active",
       "arquivado": "Archived",
-      "definir": "To define"
+      "definir": "Open slot"
     },
     "lista": [
       {
-        "key": "lorem-uno",
-        "nome": "Lorem Uno",
-        "linha": "Consectetur adipiscing elit, sed do eiusmod tempor.",
-        "descricao": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+        "key": "clinplay",
+        "nome": "ClinPlay",
+        "linha": "Clinical routines as short rounds.",
+        "descricao": "Practitioners rehearse decisions and sequencing with no patient in front of them; every round leaves a record that doubles as follow-up. Draft copy — replace it with what ClinPlay actually does.",
         "ano": "2025",
-        "papel": "Full stack",
-        "stack": ["React", "TypeScript", "Vite"],
+        "papel": "Solo",
+        "stack": ["React", "TypeScript", "Node", "PostgreSQL"],
         "estado": "ativo",
         "url": ""
       },
       {
-        "key": "lorem-duo",
-        "nome": "Lorem Duo",
-        "linha": "Excepteur sint occaecat cupidatat non proident.",
-        "descricao": "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.",
-        "ano": "2024",
-        "papel": "Front-end",
-        "stack": ["Node", "PostgreSQL"],
-        "estado": "arquivado",
+        "key": "vaga-02",
+        "nome": "—",
+        "linha": "to be defined",
+        "descricao": "",
+        "ano": "—",
+        "papel": "—",
+        "stack": [],
+        "estado": "definir",
         "url": ""
       },
       {
-        "key": "lorem-tres",
-        "nome": "Lorem Tres",
-        "linha": "Neque porro quisquam est qui dolorem ipsum quia.",
+        "key": "vaga-03",
+        "nome": "—",
+        "linha": "to be defined",
         "descricao": "",
         "ano": "—",
         "papel": "—",
@@ -104,14 +103,14 @@
   },
 
   "experiencia": {
-    "indice": "03 — Journey",
+    "indice": "03",
     "titulo": "Journey",
-    "intro": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.",
+    "intro": "My professional story, year by year.",
     "tipos": {
+      "academico": "Academic",
+      "evento": "Event",
       "estagio": "Internship",
-      "clt": "Full-time",
-      "freelance": "Freelance",
-      "academico": "Academic"
+      "freela": "Freelance"
     },
     "janela": {
       "anterior": "Previous event",
@@ -119,84 +118,85 @@
     },
     "lista": [
       {
-        "key": "lorem-2023-03",
-        "cargo": "Lorem ipsum dolor",
-        "org": "Consectetur Adipiscing",
+        "key": "patas",
+        "cargo": "Front-end developer",
+        "org": "PUC Minas · Interdisciplinary project",
         "periodo": "2023.03",
         "tipo": "academico",
         "bullets": [
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.",
-          "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo."
+          "Digital pet ID: clinical records in one link the clinic and the owner both hold.",
+          "Interface and navigation written in plain HTML, CSS and JavaScript.",
+          "History laid out to be read fast during an appointment."
         ],
-        "stack": ["Lorem", "Ipsum"]
+        "stack": ["HTML", "CSS", "JavaScript"]
       },
       {
-        "key": "lorem-2024-03",
-        "cargo": "Sed do eiusmod tempor",
-        "org": "Incididunt Labore",
+        "key": "azzure",
+        "cargo": "Full-stack developer",
+        "org": "PUC Minas · Interdisciplinary project",
         "periodo": "2024.03",
-        "tipo": "estagio",
+        "tipo": "academico",
         "bullets": [
-          "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-          "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim.",
-          "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque."
+          "Automatic maritime route and delivery-logistics calculation.",
+          "Domain and math in Java; React front end on top of the API.",
+          "Routing stopped being a spreadsheet and became a result in seconds."
         ],
-        "stack": ["Dolor", "Sit", "Amet"]
+        "stack": ["React", "Java"]
       },
       {
-        "key": "lorem-2024-09",
-        "cargo": "Ut labore et dolore",
-        "org": "Magna Aliqua",
+        "key": "wms",
+        "cargo": "Social media assistant",
+        "org": "We Make Software",
         "periodo": "2024.09",
-        "tipo": "freelance",
+        "tipo": "evento",
         "bullets": [
-          "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur.",
-          "Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit."
+          "Live coverage of the event across social channels.",
+          "Captured and published the talks alongside the organising team."
         ],
-        "stack": ["Consectetur", "Adipiscing"]
+        "stack": []
       },
       {
-        "key": "lorem-2025-03",
-        "cargo": "Quis nostrud exercitation",
-        "org": "Ullamco Laboris",
+        "key": "clinplay",
+        "cargo": "Full-stack developer",
+        "org": "PUC Minas · Interdisciplinary project",
         "periodo": "2025.03",
-        "tipo": "clt",
+        "tipo": "academico",
         "bullets": [
-          "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum.",
-          "Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore cum soluta nobis.",
-          "Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet."
+          "Gamified physiotherapy: the exercise becomes a round, adherence becomes data.",
+          "React with TypeScript on the client, Java on the service.",
+          "Follow-up between sessions that does not rely on the patient remembering."
         ],
-        "stack": ["Eiusmod", "Tempor", "Labore", "Dolore"]
+        "stack": ["React", "TypeScript", "Java"]
       }
     ]
   },
 
   "contato": {
-    "indice": "04 — Contact",
-    "titulo": "Contact",
-    "intro": "One line is enough. I answer by email, and the channels below work too.",
-    "email": "seu-email@exemplo.com",
-    "ou": "Or through",
-    "enviar": "Send",
-    "enviando": "Opening your email client…",
-    "erro": "Write a message before sending",
-    "emBreve": "Soon",
-    "assunto": "Portfolio contact — {nome}",
-    "assuntoSemNome": "Portfolio contact",
+    "indice": "04",
+    "titulo": "Let us talk",
+    "intro": "Open to opportunities and collaborations.",
+    "email": "lukasspiazzi@outlook.com",
+    "ou": "or find me at",
+    "enviar": "send",
+    "enviando": "opening mail…",
+    "erro": "write a message before sending",
+    "emBreve": "soon",
+    "assunto": "Portfolio — message from {nome}",
+    "assuntoSemNome": "Portfolio — message",
     "assinatura": "— {nome}",
     "campos": {
-      "nome": { "rotulo": "Name", "dica": "What should I call you?" },
-      "mensagem": { "rotulo": "Message", "dica": "Tell me what you need" }
+      "nome": { "rotulo": "name", "dica": "what should I call you" },
+      "mensagem": { "rotulo": "message", "dica": "where do we start?" }
     }
   },
 
-  "credito": "Built with Claude",
+  "credito": "Made with Claude",
 
   "a11y": {
     "secoes": "Portfolio sections",
     "idioma": "Switch language between Portuguese and English",
-    "projetos": "Project carousel — use the left and right arrows",
-    "experiencia": "Timeline — use the left and right arrows",
+    "projetos": "Projects — open a card to read the description",
+    "experiencia": "Journey — use the arrow keys to move through the years",
     "canais": "Contact channels",
     "retrato": "Portrait"
   }

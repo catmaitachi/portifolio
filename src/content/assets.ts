@@ -5,6 +5,7 @@ import tiktok from '~/assets/icons/tiktok.svg';
 import puc from '~/assets/logos/puc.png';
 import senac from '~/assets/logos/senac.png';
 import ufmg from '~/assets/logos/ufmg.png';
+import retrato from '~/assets/retrato.jpg';
 
 /**
  * Registro de imagens.
@@ -26,6 +27,10 @@ export const ICONES: Record<string, string> = { github, linkedin, instagram, tik
 
 /**
  * Retrato da seção Sobre. Vazio = a moldura aparece como espaço reservado.
- * Para preencher: solte o arquivo em `src/assets/` e importe aqui.
+ * Para trocar: solte o arquivo em `src/assets/` e importe aqui.
+ *
+ * O arquivo é local de propósito: o design apontava direto para o avatar do
+ * GitHub, e uma imagem servida por terceiro deixa o retrato à mercê de uma
+ * indisponibilidade — além de escapar do versionamento do Vite.
  */
-export const RETRATO = '';
+export const RETRATO = retrato;

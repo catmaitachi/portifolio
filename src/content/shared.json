@@ -21,28 +21,35 @@
       "key": "github",
       "icone": "github",
       "rotulo": "GitHub",
-      "identificador": "@Catmaitachi",
-      "url": "https://github.com/Catmaitachi"
+      "identificador": "@catmaitachi",
+      "url": "https://github.com/catmaitachi"
     },
     {
       "key": "linkedin",
       "icone": "linkedin",
       "rotulo": "LinkedIn",
-      "identificador": "",
-      "url": ""
+      "identificador": "/in/lucasspiazzi",
+      "url": "https://www.linkedin.com/in/lucasspiazzi/"
     },
     {
       "key": "instagram",
       "icone": "instagram",
       "rotulo": "Instagram",
+      "identificador": "@luu.spz",
+      "url": "https://www.instagram.com/luu.spz/"
+    },
+    {
+      "key": "tiktok",
+      "icone": "tiktok",
+      "rotulo": "TikTok",
       "identificador": "",
       "url": ""
     }
   ],
 
   "logos": {
-    "senac": { "escala": 1 },
-    "puc": { "escala": 0.92 },
-    "ufmg": { "escala": 1.06 }
+    "senac": { "escala": 0.78 },
+    "puc": { "escala": 1 },
+    "ufmg": { "escala": 0.82 }
   }
 }
