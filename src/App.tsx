@@ -2,6 +2,7 @@ import { SECOES } from '~/content';
 import { Credit } from '~/hud/Credit';
 import { Hud } from '~/hud/Hud';
 import { LanguageToggle } from '~/hud/LanguageToggle';
+import { Version } from '~/hud/Version';
 import { NavMenu } from '~/navigation/NavMenu';
 import { useSectionScroll } from '~/navigation/useSectionScroll';
 import { SpaceCanvas } from '~/scene/SpaceCanvas';
@@ -42,6 +43,7 @@ export function App() {
 
       <NavMenu indice={indice} irPara={irPara} />
       <Credit />
+      <Version />
     </div>
   );
 }

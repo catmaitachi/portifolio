@@ -1,0 +1,56 @@
+/**
+ * Responsivo por tokens: os valores base moram na própria regra e a media query
+ * só os redefine.
+ */
+
+/** ver `HeroSection.module.css`: keyframe e uso precisam morar no mesmo módulo */
+@keyframes fina {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+.versao {
+  --ver-bottom: 28px;
+  --ver-left: auto;
+  /* o mesmo recuo do menu e do seletor de idioma: as três âncoras se alinham */
+  --ver-right: max(3.2vw, 26px);
+  --ver-tx: 0;
+
+  position: absolute;
+  z-index: 3;
+  right: var(--ver-right);
+  bottom: var(--ver-bottom);
+  left: var(--ver-left);
+  color: rgb(255 255 255 / 34%);
+  font-size: 9.5px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  /**
+   * A centragem do mobile fica na regra, não só no fim de `fina`: layout que
+   * existe apenas dentro de uma animação some junto com ela.
+   */
+  transform: translateX(var(--ver-tx));
+  /* último da cascata de abertura, depois do crédito (5.2s) e do idioma (5.4s) */
+  animation: fina 1s ease-out 5.6s both;
+}
+
+/**
+ * Mobile: a faixa da direita é do menu, então a versão vai para o centro e
+ * encosta no rodapé — espelho exato do seletor de idioma no topo, que usa o
+ * mesmo recuo de borda (`max(2.4vh, 20px)`) e a mesma centragem.
+ */
+@media (width <= 640px) {
+  .versao {
+    --ver-bottom: max(2.4vh, 20px);
+    --ver-left: 50%;
+    --ver-right: auto;
+    --ver-tx: -50%;
+  }
+}
