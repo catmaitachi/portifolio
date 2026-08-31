@@ -27,6 +27,18 @@
   --nav-align: flex-end;
   --nav-gap: 20px;
 
+  /**
+   * Comprimento do risco, **sem unidade** para que o mobile possa usar a razão
+   * entre os dois como escala sem repetir os números em outro lugar.
+   */
+  --nav-risco: 12;
+  --nav-risco-ativo: 34;
+
+  /* desktop: o ativo cresce em largura. O mobile redefine estes três. */
+  --nav-risco-w: var(--nav-risco-ativo);
+  --nav-risco-esc: 1;
+  --nav-risco-rot: 0deg;
+
   position: absolute;
   z-index: 3;
   top: var(--nav-top);
@@ -74,14 +86,18 @@
 
 .risco {
   display: block;
-  width: 12px;
+  width: calc(var(--nav-risco) * 1px);
   height: 1px;
   background: currentcolor;
-  transition: width 0.45s cubic-bezier(0.3, 0.7, 0.2, 1);
+  transform: rotate(var(--nav-risco-rot));
+  transition:
+    width 0.45s cubic-bezier(0.3, 0.7, 0.2, 1),
+    transform 0.45s cubic-bezier(0.3, 0.7, 0.2, 1);
 }
 
 .item[data-ativo] .risco {
-  width: 34px;
+  width: calc(var(--nav-risco-w) * 1px);
+  transform: rotate(var(--nav-risco-rot)) scaleX(var(--nav-risco-esc));
 }
 
 /* mobile: faixa horizontal, sem rótulos — só os riscos, que giram para a vertical */
@@ -96,13 +112,25 @@
     --nav-dir: row;
     --nav-align: center;
     --nav-gap: 16px;
+
+    /**
+     * O risco ativo cresce em **escala**, não em largura.
+     *
+     * Aqui a largura é layout: se o ativo passa de 12px para 34px, a faixa
+     * inteira reflowa durante 0.45s — e `--navdx` é medido um quadro depois da
+     * troca, ou seja, sobre uma faixa que ainda vai se mexer. O traço parava
+     * exatamente 11px ((34−12)/2) fora do centro, para o lado de onde veio.
+     *
+     * Com a largura fixa em `--nav-risco`, o layout da faixa é invariante: a
+     * medida é exata e continua vindo do DOM, sem número de layout duplicado no
+     * JS. O comprimento visual é o mesmo — a escala é a razão 34/12.
+     */
+    --nav-risco-w: var(--nav-risco);
+    --nav-risco-esc: calc(var(--nav-risco-ativo) / var(--nav-risco));
+    --nav-risco-rot: 90deg;
   }
 
   .rotulo {
     display: none;
-  }
-
-  .risco {
-    transform: rotate(90deg);
   }
 }

@@ -16,6 +16,12 @@ interface NavMenuProps {
  * coordenadas de layout (`offsetLeft`/`offsetWidth`), imunes ao `transform` já
  * aplicado ao próprio nav — `getBoundingClientRect` daria um valor que se
  * realimenta a cada medição.
+ *
+ * A medida acontece um quadro depois da troca de seção, então **o layout da
+ * faixa no mobile não pode depender de qual seção está ativa**: se ele mudar, a
+ * medida sai sobre uma faixa que ainda vai se acomodar. Por isso o risco ativo
+ * cresce em escala e não em largura (ver `NavMenu.module.css`). Animar largura
+ * ali de novo traz o desalinhamento de volta.
  */
 export function NavMenu({ indice, irPara }: NavMenuProps) {
   const t = useT();
