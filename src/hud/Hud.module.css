@@ -1,0 +1,116 @@
+.hud {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 82.35vmin; /* anel interno (inset 33%) = horizonte do buraco negro (28vmin) */
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  opacity: 0.16; /* fora do Início o HUD recua para o fundo */
+  transition: opacity 1s ease;
+  pointer-events: none;
+}
+
+.hud[data-ativo] {
+  opacity: 1;
+}
+
+.anel {
+  position: absolute;
+  /* os anéis se formam de baixo para cima, do interno ao externo */
+  animation: ringIn 0.75s cubic-bezier(0.3, 0.7, 0.2, 1) both;
+}
+
+.anel1 {
+  inset: 33%;
+  animation-delay: 1.5s;
+}
+
+.anel2 {
+  inset: 20%;
+  animation-delay: 1.72s;
+}
+
+.anel3 {
+  inset: 9%;
+  animation-delay: 1.94s;
+}
+
+.anelExterno {
+  inset: 0;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 50%;
+  animation-delay: 2.16s;
+}
+
+.giraCCW60,
+.giraCW96,
+.giraCCW150 {
+  position: absolute;
+  inset: 0;
+  /* promove a camada uma vez, em vez de a cada quadro da rotação */
+  will-change: transform;
+}
+
+.giraCCW60 {
+  animation: spinCCW 60s linear infinite;
+}
+
+.giraCW96 {
+  animation: spinCW 96s linear infinite;
+}
+
+.giraCCW150 {
+  animation: spinCCW 150s linear infinite;
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* mira: surge junto e pulsa em cascata, 0.65s entre os ticks */
+.tick {
+  position: absolute;
+  background: rgb(255 255 255 / 60%);
+  animation:
+    miraIn 0.5s ease-out 2.9s both,
+    tickPulse 2.6s ease-in-out infinite;
+}
+
+.tickTopo,
+.tickBase {
+  left: 50%;
+  width: 1px;
+  height: 26px;
+}
+
+.tickEsq,
+.tickDir {
+  top: 50%;
+  width: 26px;
+  height: 1px;
+}
+
+.tickTopo {
+  top: -4px;
+  background: rgb(255 255 255 / 80%);
+  animation-delay: 2.9s, 3.4s;
+}
+
+.tickBase {
+  bottom: -4px;
+  animation-delay: 2.9s, 4.05s;
+}
+
+.tickEsq {
+  left: -4px;
+  animation-delay: 2.9s, 4.7s;
+}
+
+.tickDir {
+  right: -4px;
+  background: rgb(255 255 255 / 80%);
+  animation-delay: 2.9s, 5.35s;
+}

@@ -1,0 +1,46 @@
+.botao {
+  --lang-left: auto;
+  --lang-right: max(3.2vw, 26px);
+  --lang-tx: 0;
+
+  position: absolute;
+  z-index: 4;
+  top: max(2.4vh, 20px);
+  right: var(--lang-right);
+  left: var(--lang-left);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 0;
+  padding: 4px 2px;
+  border: 0;
+  background: none;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  cursor: pointer;
+  appearance: none;
+  transform: translateX(var(--lang-tx));
+  animation: fina 1s ease-out 5.4s both;
+}
+
+.opcao {
+  color: rgb(255 255 255 / 34%);
+  transition: color 0.35s;
+}
+
+.opcao[data-ativo] {
+  color: #fff;
+}
+
+.separador {
+  color: rgb(255 255 255 / 20%);
+}
+
+/* mobile: centrado, para não brigar com o polegar na borda */
+@media (width <= 640px) {
+  .botao {
+    --lang-left: 50%;
+    --lang-right: auto;
+    --lang-tx: -50%;
+  }
+}

@@ -1,0 +1,128 @@
+/**
+ * Animações compartilhadas.
+ *
+ * Ficam num CSS global porque `@keyframes` dentro de um CSS Module tem o nome
+ * escopado — e estas são usadas por mais de um componente.
+ *
+ * Todas rodam em `transform`, `opacity`, `clip-path` ou `filter`: propriedades
+ * que o compositor da GPU resolve sozinho, sem custo de CPU por quadro.
+ */
+
+/* — HUD — */
+
+@keyframes spinCW {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinCCW {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes tickPulse {
+  0%,
+  100% {
+    opacity: 0.22;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+/* anéis se formam de baixo para cima */
+@keyframes ringIn {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes miraIn {
+  from {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* — entrada da página — */
+
+/** aparição suave: o borrão evita o "pop" de uma opacidade pura */
+@keyframes fina {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/** o nome se materializa: o letter-spacing fecha enquanto o borrão sai */
+@keyframes tituloIn {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    letter-spacing: 0.42em;
+    transform: scale(1.06);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    letter-spacing: 0.14em;
+    transform: scale(1);
+  }
+}
+
+@keyframes reguaIn {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes creditIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes creditLine {
+  from {
+    width: 0;
+  }
+  to {
+    width: 34px;
+  }
+}
+
+/* — linha do tempo — */
+
+/** anel que se abre a partir do nó ativo */
+@keyframes pulsoNo {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  70%,
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}

@@ -1,0 +1,28 @@
+.credito {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  font-size: 9.5px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  animation: creditIn 1.1s ease-out 5.2s both;
+}
+
+.risco {
+  display: block;
+  height: 1px;
+  background: currentcolor;
+  opacity: 0.55;
+  animation: creditLine 1s cubic-bezier(0.3, 0.7, 0.2, 1) 5.2s both;
+}
+
+/* no mobile o menu ocupa a faixa de baixo: o crédito sai de cena */
+@media (width <= 640px) {
+  .credito {
+    display: none;
+  }
+}

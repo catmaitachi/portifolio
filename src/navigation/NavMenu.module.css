@@ -1,0 +1,96 @@
+/**
+ * Responsivo por tokens: os valores base moram aqui e cada media query só
+ * **redefine tokens**. Nada de duplicar posicionamento em regra nova, nada de
+ * `!important`.
+ */
+
+.nav {
+  --nav-top: 50%;
+  --nav-bottom: auto;
+  --nav-left: auto;
+  --nav-right: max(3.2vw, 26px);
+  --nav-tx: 0px;
+  --nav-ty: -50%;
+  --nav-dir: column;
+  --nav-align: flex-end;
+  --nav-gap: 20px;
+
+  position: absolute;
+  z-index: 3;
+  top: var(--nav-top);
+  right: var(--nav-right);
+  bottom: var(--nav-bottom);
+  left: var(--nav-left);
+  display: flex;
+  flex-direction: var(--nav-dir);
+  gap: var(--nav-gap);
+  align-items: var(--nav-align);
+  transform: translate(var(--nav-tx), var(--nav-ty));
+  transition: transform 0.5s cubic-bezier(0.3, 0.7, 0.2, 1);
+  animation: fina 1s ease-out 4.9s both;
+}
+
+.item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 0;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: rgb(255 255 255 / 55%);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  opacity: 0.5;
+  cursor: pointer;
+  appearance: none;
+  transition:
+    color 0.45s,
+    opacity 0.45s;
+}
+
+.item:hover {
+  opacity: 1;
+}
+
+.item[data-ativo] {
+  color: #fff;
+  opacity: 1;
+}
+
+.risco {
+  display: block;
+  width: 12px;
+  height: 1px;
+  background: currentcolor;
+  transition: width 0.45s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+
+.item[data-ativo] .risco {
+  width: 34px;
+}
+
+/* mobile: faixa horizontal, sem rótulos — só os riscos, que giram para a vertical */
+@media (width <= 640px) {
+  .nav {
+    --nav-top: auto;
+    --nav-bottom: 72px;
+    --nav-left: 50%;
+    --nav-right: auto;
+    --nav-tx: calc(-50% + var(--navdx, 0px));
+    --nav-ty: 0px;
+    --nav-dir: row;
+    --nav-align: center;
+    --nav-gap: 16px;
+  }
+
+  .rotulo {
+    display: none;
+  }
+
+  .risco {
+    transform: rotate(90deg);
+  }
+}

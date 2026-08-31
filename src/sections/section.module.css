@@ -1,0 +1,163 @@
+/**
+ * Esqueleto compartilhado das seções.
+ *
+ * Sobre, Projetos, Trajetória e Contato têm a mesma **composição aberta**:
+ * índice + risco, título grande, conteúdo sem moldura. Ela vive aqui uma vez e
+ * é puxada por `composes` — nenhuma seção redeclara padding, snap ou entrada.
+ *
+ * Responsivo por tokens: os valores base moram nas declarações abaixo e cada
+ * media query só os redefine.
+ */
+
+.secao {
+  --pt: clamp(56px, 9vh, 96px);
+  --pb: clamp(84px, 13vh, 120px);
+  --px: max(150px, 5vw);
+  --gap: clamp(16px, 2.4vmin, 28px);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  padding: var(--pt) var(--px) var(--pb);
+  overflow-x: hidden;
+  /**
+   * Centragem por margens automáticas (ver `.rolavel`): fica centrado quando
+   * cabe e rola quando não cabe, sem cortar o topo. `justify-content: center`
+   * faria o conteúdo alto transbordar para fora do alcance da rolagem.
+   */
+  overflow-y: auto;
+  scroll-snap-align: start;
+  scrollbar-width: none;
+}
+
+.secao::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.rolavel > *:first-child {
+  margin-top: auto;
+}
+
+.rolavel > *:last-child {
+  margin-bottom: auto;
+}
+
+/**
+ * Bloco de conteúdo. `flex: none` é deliberado — com `flex-shrink` padrão o
+ * flex comprimia os filhos altos e clipava o que estivesse dentro deles.
+ */
+.bloco {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: clamp(18px, 3vmin, 34px);
+  width: 100%;
+  /* entra por opacidade + deslocamento quando a seção vira a ativa */
+  opacity: 0;
+  transform: translateY(26px);
+  transition:
+    opacity 0.9s ease,
+    transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.bloco[data-ativo] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.indice {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  color: rgb(255 255 255 / 40%);
+  font-size: clamp(9px, 1.2vmin, 12px);
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+}
+
+.indiceRisco {
+  display: block;
+  flex: 1;
+  height: 1px;
+  background: rgb(255 255 255 / 12%);
+}
+
+.cabecalho {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 1.8vmin, 18px);
+}
+
+.titulo {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(22px, 4.6vmin, 52px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.intro {
+  max-width: 52ch;
+  margin: 0;
+  color: rgb(255 255 255 / 50%);
+  font-size: clamp(11px, 1.5vmin, 14px);
+  font-weight: 300;
+  line-height: 1.85;
+  letter-spacing: 0.05em;
+  text-wrap: pretty;
+}
+
+/** Barra de progresso de 1px + rótulo de estado. Repete-se em formações e projetos. */
+.medidor {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.trilha {
+  position: relative;
+  display: block;
+  flex: 1;
+  height: 1px;
+  overflow: hidden;
+  background: rgb(255 255 255 / 14%);
+}
+
+.preenchimento {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: rgb(255 255 255 / 75%);
+  transition: width 0.8s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+
+.estado {
+  color: rgb(255 255 255 / 50%);
+  font-size: 8.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@media (width <= 640px) {
+  .secao {
+    --pt: 76px;
+    --pb: 116px;
+    --px: 20px;
+    --gap: 14px;
+  }
+}
+
+/* telas baixas (paisagem curta): sobra menos altura, então os respiros encolhem */
+@media (height <= 720px) {
+  .secao {
+    --pt: clamp(44px, 7vh, 72px);
+    --pb: clamp(70px, 11vh, 96px);
+  }
+}

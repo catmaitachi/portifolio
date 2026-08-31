@@ -1,0 +1,8 @@
+/* O canvas cobre a viewport e fica atrás de tudo: o palco e o HUD sobrepõem. */
+.canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}

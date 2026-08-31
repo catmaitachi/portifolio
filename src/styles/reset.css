@@ -1,0 +1,74 @@
+/**
+ * Base global.
+ *
+ * Só o que precisa mesmo ser global: a página, a tipografia herdada, as barras
+ * de rolagem e a preferência de menos movimento. Todo o resto é CSS Module,
+ * escopado ao componente que o usa.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #000;
+  /* a rolagem real acontece no contêiner de seções, nunca no documento */
+  overflow: hidden;
+  color: #fff;
+  font-family: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  height: 100%;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: rgb(255 255 255 / 42%);
+  text-decoration: none;
+  transition: color 0.35s;
+}
+
+a:hover {
+  color: rgb(255 255 255 / 90%);
+}
+
+/* foco visível só para quem navega por teclado */
+:focus-visible {
+  outline: 1px solid rgb(255 255 255 / 55%);
+  outline-offset: 3px;
+}
+
+img {
+  max-width: 100%;
+}
+
+/**
+ * Menos movimento: a abertura e as transições ficam praticamente instantâneas.
+ * A cena em canvas trata o pedido por conta própria (ver `useReducedMotion`),
+ * porque animação em canvas não passa por CSS.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

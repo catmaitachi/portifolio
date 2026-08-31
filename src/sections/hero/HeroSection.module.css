@@ -1,0 +1,65 @@
+.secao {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4vmin;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding-right: clamp(22px, 7vw, 120px);
+  padding-left: clamp(22px, 7vw, 120px);
+  scroll-snap-align: start;
+  text-align: center;
+}
+
+.etiqueta {
+  display: flex;
+  gap: 1.1vmin;
+  align-items: center;
+  margin: 0;
+  color: rgb(255 255 255 / 50%);
+  font-size: clamp(9px, 1.35vmin, 14px);
+  font-weight: 400;
+  letter-spacing: 0.46em;
+  text-transform: uppercase;
+  animation: fina 0.9s ease-out 3.5s both;
+}
+
+.regua {
+  display: block;
+  width: 18px;
+  height: 1px;
+  background: currentcolor;
+  opacity: 0.6;
+  animation: reguaIn 0.8s cubic-bezier(0.3, 0.7, 0.2, 1) 3.5s both;
+}
+
+.nome {
+  /**
+   * `white-space: nowrap` + tamanho limitado por `vw` mantém o nome numa linha
+   * só em qualquer largura — quebrá-lo destruiria o efeito do `letter-spacing`
+   * fechando na entrada.
+   */
+  margin: 0;
+  color: #fff;
+  font-size: clamp(13px, min(6.4vmin, 6.8vw), 74px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  /* compensa o espaço que o letter-spacing adiciona depois da última letra */
+  text-indent: 0.14em;
+  text-transform: uppercase;
+  word-spacing: -0.12em;
+  white-space: nowrap;
+  animation: tituloIn 1.6s cubic-bezier(0.22, 0.8, 0.2, 1) 3.75s both;
+}
+
+.legenda {
+  margin: 0;
+  color: rgb(255 255 255 / 42%);
+  font-size: clamp(11px, 1.95vmin, 21px);
+  font-weight: 300;
+  line-height: 1.7;
+  letter-spacing: 0.22em;
+  text-wrap: pretty;
+  animation: fina 1.2s ease-out 4.5s both;
+}
