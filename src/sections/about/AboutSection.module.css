@@ -1,0 +1,92 @@
+/**
+ * Tokens da seção Sobre. Cada faixa responsiva só os redefine — os valores base
+ * ficam todos aqui.
+ */
+.secao {
+  --cols: minmax(180px, 28%) 1fr;
+  --corpo-gap: clamp(24px, 3.4vmin, 44px);
+  --retrato: 100%;
+  --txt: min(34vh, 320px);
+  --pfs: clamp(12px, 1.6vmin, 16px);
+  --plh: 1.95;
+}
+
+.bloco {
+  max-width: 960px;
+}
+
+.corpo {
+  display: grid;
+  grid-template-columns: var(--cols);
+  gap: var(--corpo-gap);
+  align-items: start;
+}
+
+.coluna {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 2.2vmin, 22px);
+  min-width: 0;
+}
+
+/**
+ * Biografia com rolagem própria. `overscroll-behavior: contain` impede que o fim
+ * do texto encadeie a rolagem para a seção — sem isso, ler a bio até o fim
+ * empurraria o visitante para a próxima seção.
+ */
+.texto {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  max-height: var(--txt);
+  padding-right: 14px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 22%) transparent;
+}
+
+.texto::-webkit-scrollbar {
+  width: 3px;
+}
+
+.texto::-webkit-scrollbar-track {
+  background: rgb(255 255 255 / 8%);
+}
+
+.texto::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 28%);
+}
+
+.paragrafo {
+  margin: 0;
+  color: rgb(255 255 255 / 66%);
+  font-size: var(--pfs);
+  font-weight: 300;
+  line-height: var(--plh);
+  letter-spacing: 0.05em;
+  text-wrap: pretty;
+}
+
+@media (width <= 640px) {
+  .secao {
+    --cols: 1fr;
+    --corpo-gap: 16px;
+    --retrato: 116px;
+    --txt: min(30vh, 220px);
+    --pfs: 11.5px;
+    --plh: 1.75;
+  }
+}
+
+/**
+ * Telas baixas: vem depois na cascata de propósito. Em paisagem curta ela ganha
+ * dos tokens do mobile, que é o que se quer — o gargalo ali é a altura.
+ */
+@media (height <= 720px) {
+  .secao {
+    --retrato: 150px;
+    --txt: 22vh;
+  }
+}

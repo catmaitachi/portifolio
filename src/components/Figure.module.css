@@ -1,0 +1,28 @@
+.figura {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  /* espaço reservado: cinza levíssimo, só o suficiente para ler como moldura */
+  background: rgb(127 127 127 / 8%);
+}
+
+.img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* object-fit vem inline: cover no retrato e no banner, contain quando pedido */
+}
+
+.rotulo {
+  padding: 0 14px;
+  color: rgb(255 255 255 / 30%);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-align: center;
+  text-transform: uppercase;
+  text-wrap: balance;
+}

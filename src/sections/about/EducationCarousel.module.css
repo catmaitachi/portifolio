@@ -1,0 +1,122 @@
+.janela {
+  flex: none;
+  width: 100%;
+  max-width: 960px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  touch-action: pan-x;
+  /* entra logo depois do bloco principal da seção */
+  opacity: 0;
+  transform: translateY(26px);
+  transition:
+    opacity 1.1s ease 0.12s,
+    transform 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.12s;
+}
+
+.janela::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* a seção marca o ancestral quando fica ativa */
+:global([data-secao-ativa]) .janela {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* no modo carrossel as bordas desvanecem, e o trilho passa a ser arrastável */
+.janela[data-carrossel] {
+  cursor: grab;
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+
+.trilho {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  /* `max-content` só no carrossel: em grade o `100%` mantém os badges centrados */
+  width: 100%;
+}
+
+.janela[data-carrossel] .trilho {
+  width: max-content;
+}
+
+.badge {
+  --bw: 312px;
+
+  display: flex;
+  flex: none;
+  gap: 13px;
+  align-items: center;
+  width: var(--bw);
+  padding: clamp(14px, 1.9vmin, 18px);
+  border: 1px solid rgb(255 255 255 / 13%);
+  border-radius: 2px;
+  transition: opacity 0.5s;
+}
+
+/* pretensão: ainda não aconteceu — tracejado e recuado */
+.badge[data-estado='pretensao'] {
+  border-style: dashed;
+  opacity: 0.62;
+}
+
+.logo {
+  flex: none;
+  width: 58px;
+  height: 40px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.corpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.linhaTopo {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.instituicao {
+  color: #fff;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.nivel {
+  overflow: hidden;
+  color: rgb(255 255 255 / 50%);
+  font-size: 8.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.curso {
+  color: rgb(255 255 255 / 55%);
+  font-size: 10px;
+  font-weight: 300;
+  line-height: 1.45;
+  letter-spacing: 0.04em;
+  text-wrap: pretty;
+}
+
+@media (width <= 640px) {
+  .badge {
+    --bw: 246px;
+  }
+}

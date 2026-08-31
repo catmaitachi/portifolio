@@ -5,6 +5,7 @@ import { LanguageToggle } from '~/hud/LanguageToggle';
 import { NavMenu } from '~/navigation/NavMenu';
 import { useSectionScroll } from '~/navigation/useSectionScroll';
 import { SpaceCanvas } from '~/scene/SpaceCanvas';
+import { AboutSection } from '~/sections/about/AboutSection';
 import { HeroSection } from '~/sections/hero/HeroSection';
 import styles from './App.module.css';
 
@@ -30,6 +31,7 @@ export function App() {
 
       <div ref={ref} className={styles.rolagem}>
         <HeroSection />
+        <AboutSection ativo={chaveAtiva === 'sobre'} />
       </div>
 
       <NavMenu indice={indice} irPara={irPara} />
