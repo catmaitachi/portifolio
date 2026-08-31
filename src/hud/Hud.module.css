@@ -1,3 +1,52 @@
+/**
+ * `@keyframes` mora **no mesmo módulo** que o usa: CSS Modules escopa tanto o
+ * nome declarado quanto o nome escrito em `animation`, e um keyframe global
+ * nunca casaria com o nome reescrito aqui dentro.
+ */
+
+@keyframes spinCW {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinCCW {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+/* anéis se formam de baixo para cima */
+@keyframes ringIn {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes miraIn {
+  from {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tickPulse {
+  0%,
+  100% {
+    opacity: 0.22;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
 .hud {
   position: absolute;
   top: 50%;

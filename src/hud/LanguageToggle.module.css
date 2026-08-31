@@ -1,3 +1,15 @@
+/** ver `HeroSection.module.css`: keyframe e uso precisam morar no mesmo módulo */
+@keyframes fina {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
 .botao {
   --lang-left: auto;
   --lang-right: max(3.2vw, 26px);

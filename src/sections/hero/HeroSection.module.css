@@ -1,3 +1,48 @@
+/**
+ * `@keyframes` mora **no mesmo módulo** que o usa: CSS Modules escopa tanto o
+ * nome declarado quanto o nome escrito em `animation`, e um keyframe global
+ * nunca casaria com o nome reescrito aqui dentro. `fina` se repete no NavMenu e
+ * no LanguageToggle pelo mesmo motivo — quatro linhas duplicadas custam menos
+ * que uma animação que não roda.
+ */
+
+/** aparição suave: o borrão evita o "pop" de uma opacidade pura */
+@keyframes fina {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/** o nome se materializa: o letter-spacing fecha enquanto o borrão sai */
+@keyframes tituloIn {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    letter-spacing: 0.42em;
+    transform: scale(1.06);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    letter-spacing: 0.14em;
+    transform: scale(1);
+  }
+}
+
+@keyframes reguaIn {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 .secao {
   display: flex;
   flex-direction: column;

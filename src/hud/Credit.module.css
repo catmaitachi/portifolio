@@ -1,3 +1,31 @@
+/**
+ * `@keyframes` mora **no mesmo módulo** que o usa.
+ *
+ * CSS Modules escopa os dois lados: o nome no `@keyframes` *e* o nome escrito em
+ * `animation`. Um keyframe declarado num CSS global nunca casa com o nome
+ * reescrito aqui dentro — a animação simplesmente não roda, sem erro nenhum.
+ */
+
+@keyframes creditIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes creditLine {
+  from {
+    width: 0;
+  }
+  to {
+    width: 34px;
+  }
+}
+
 .credito {
   position: absolute;
   bottom: 28px;
@@ -9,11 +37,18 @@
   letter-spacing: 0.32em;
   text-transform: uppercase;
   white-space: nowrap;
+  /**
+   * A centragem também fica aqui, e não só no estado final de `creditIn`:
+   * layout que existe apenas dentro de uma animação some junto com ela.
+   */
+  transform: translateX(-50%);
   animation: creditIn 1.1s ease-out 5.2s both;
 }
 
 .risco {
   display: block;
+  /* largura final também na regra, pelo mesmo motivo — `creditLine` parte de 0 */
+  width: 34px;
   height: 1px;
   background: currentcolor;
   opacity: 0.55;

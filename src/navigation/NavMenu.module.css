@@ -4,6 +4,18 @@
  * `!important`.
  */
 
+/** ver `HeroSection.module.css`: keyframe e uso precisam morar no mesmo módulo */
+@keyframes fina {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
 .nav {
   --nav-top: 50%;
   --nav-bottom: auto;

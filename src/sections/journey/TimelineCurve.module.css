@@ -1,3 +1,21 @@
+/**
+ * `@keyframes` mora **no mesmo módulo** que o usa: CSS Modules escopa tanto o
+ * nome declarado quanto o nome escrito em `animation`.
+ */
+
+/** anel que se abre a partir do nó ativo */
+@keyframes pulsoNo {
+  0% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(2.8);
+  }
+}
+
 .curva {
   position: relative;
   flex: none;

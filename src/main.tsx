@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { LanguageProvider } from './i18n/LanguageProvider';
 import './styles/reset.css';
-import './styles/keyframes.css';
 
 const raiz = document.getElementById('root');
 if (!raiz) throw new Error('#root não encontrado');
