@@ -1,0 +1,233 @@
+/** Posição do cartão no anel. O `transform` completo vem do JS (`useOrbit`). */
+.orbe {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--pcw, 308px);
+  height: var(--pch, 436px);
+  margin-left: calc(var(--pcw, 308px) / -2);
+  transition:
+    transform 0.95s cubic-bezier(0.22, 0.86, 0.2, 1),
+    opacity 0.8s ease;
+}
+
+.cartao {
+  position: relative; /* âncora do painel de descrição */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 2px;
+  overflow: hidden;
+  background: rgb(0 0 0 / 42%);
+  cursor: pointer;
+  transition: border-color 0.5s ease;
+}
+
+.cartao[data-frente] {
+  border-color: rgb(255 255 255 / 24%);
+}
+
+.cartao:hover {
+  border-color: rgb(255 255 255 / 34%);
+}
+
+/* vaga: reservada, não clicável para abrir */
+.cartao[data-vaga] {
+  border-style: dashed;
+}
+
+.cartao[data-vaga][data-frente] {
+  cursor: default;
+}
+
+.banner {
+  position: relative;
+  flex: none;
+  height: var(--pbh, 170px);
+  border-bottom: 1px solid rgb(255 255 255 / 13%);
+  overflow: hidden;
+}
+
+/* escurece topo e base para o índice e o glifo lerem sobre qualquer imagem */
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(0 0 0 / 60%), transparent 44%, rgb(0 0 0 / 34%));
+  pointer-events: none;
+}
+
+.bannerTopo {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  left: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.numero {
+  color: rgb(255 255 255 / 60%);
+  font-size: 26px;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: 0.06em;
+}
+
+.glifo {
+  position: relative;
+  flex: none;
+  width: 28px;
+  height: 28px;
+}
+
+.glifo > span:first-child {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgb(255 255 255 / 50%);
+}
+
+.glifo > span:last-child {
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgb(255 255 255 / 30%);
+}
+
+.corpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: clamp(9px, 1.3vmin, 13px);
+  min-height: 0;
+  padding: var(--pcard, 18px);
+}
+
+.tituloBloco {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.nome {
+  margin: 0;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.linha {
+  color: rgb(255 255 255 / 56%);
+  font-size: 11px;
+  font-weight: 300;
+  line-height: 1.6;
+  letter-spacing: 0.05em;
+  text-wrap: pretty;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  color: rgb(255 255 255 / 42%);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.stack {
+  min-height: 12px;
+  color: rgb(255 255 255 / 38%);
+  font-size: 9.5px;
+  font-weight: 300;
+  line-height: 1.5;
+  letter-spacing: 0.14em;
+  text-wrap: pretty;
+}
+
+/* a barra de estado cola no rodapé do cartão, qualquer que seja o texto acima */
+.rodape {
+  margin-top: auto;
+}
+
+.descricao {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: var(--pcard, 18px);
+  background: rgb(0 0 0 / 94%);
+  opacity: 0;
+  transform: translateY(100%);
+  transition:
+    opacity 0.5s ease,
+    transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.descricao[data-aberto] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.descTopo {
+  display: flex;
+  flex: none;
+  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgb(255 255 255 / 12%);
+}
+
+.descNome {
+  color: #fff;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.descIndice {
+  color: rgb(255 255 255 / 34%);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+}
+
+.descTexto {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding-right: 10px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 22%) transparent;
+  color: rgb(255 255 255 / 72%);
+  font-size: 11.5px;
+  font-weight: 300;
+  line-height: 1.9;
+  letter-spacing: 0.05em;
+  text-wrap: pretty;
+}
+
+.aoVivo {
+  flex: none;
+  align-self: flex-start;
+  padding-bottom: 3px;
+  border-bottom: 1px solid rgb(255 255 255 / 26%);
+  color: rgb(255 255 255 / 74%);
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.aoVivo:hover {
+  border-bottom-color: #fff;
+  color: #fff;
+}

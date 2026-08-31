@@ -1,0 +1,105 @@
+/** Tokens do palco da órbita. */
+.secao {
+  --pcw: 308px; /* largura do cartão */
+  --pch: 436px; /* altura do cartão */
+  --pbh: 170px; /* altura do banner */
+  --ph: 470px; /* altura do palco */
+  --pr: 300px; /* raio da órbita */
+  --pperspectiva: 1500px;
+  --pcard: 18px; /* padding interno do cartão */
+}
+
+.bloco {
+  max-width: 1040px;
+}
+
+.palco {
+  position: relative;
+  width: 100%;
+  height: var(--ph);
+  /* origem acima do centro: o anel é visto levemente de cima */
+  perspective: var(--pperspectiva);
+  perspective-origin: 50% 46%;
+  outline: none;
+  /* o arraste horizontal é nosso; o vertical continua rolando a página */
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+.anel {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+.tracos {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.traco {
+  display: block;
+  /**
+   * `content-box` é deliberado: o reset global usa `border-box`, e com ele o
+   * `height: 1px` absorveria o padding, zerando a caixa de conteúdo — o
+   * `background-clip` não teria o que pintar. Aqui o padding é área de toque,
+   * fora do traço visível.
+   */
+  box-sizing: content-box;
+  width: 12px;
+  height: 1px;
+  margin: 0;
+  padding: 9px 0;
+  border: 0;
+  background: rgb(255 255 255 / 24%);
+  background-clip: content-box;
+  cursor: pointer;
+  appearance: none;
+  transition:
+    width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background 0.5s ease;
+}
+
+.traco[data-ativo] {
+  width: 30px;
+  background: #fff;
+  background-clip: content-box;
+}
+
+/* fecha a órbita para os cartões não passarem por baixo do menu fixo à direita */
+@media (901px <= width <= 1200px) {
+  .secao {
+    --pr: 225px;
+  }
+}
+
+@media (641px <= width <= 900px) {
+  .secao {
+    --pcw: 268px;
+    --pr: 210px;
+    --px: 40px;
+  }
+}
+
+@media (width <= 640px) {
+  .secao {
+    --pcw: 236px;
+    --pch: 388px;
+    --pbh: 140px;
+    --ph: 400px;
+    --pr: 150px;
+    --pperspectiva: 900px;
+    --pcard: 15px;
+  }
+}
+
+@media (height <= 720px) {
+  .secao {
+    --pch: 340px;
+    --pbh: 126px;
+    --ph: 352px;
+    --pcard: 14px;
+  }
+}

@@ -7,6 +7,7 @@ import { useSectionScroll } from '~/navigation/useSectionScroll';
 import { SpaceCanvas } from '~/scene/SpaceCanvas';
 import { AboutSection } from '~/sections/about/AboutSection';
 import { HeroSection } from '~/sections/hero/HeroSection';
+import { ProjectsSection } from '~/sections/projects/ProjectsSection';
 import styles from './App.module.css';
 
 /**
@@ -32,6 +33,7 @@ export function App() {
       <div ref={ref} className={styles.rolagem}>
         <HeroSection />
         <AboutSection ativo={chaveAtiva === 'sobre'} />
+        <ProjectsSection ativo={chaveAtiva === 'projetos'} />
       </div>
 
       <NavMenu indice={indice} irPara={irPara} />
