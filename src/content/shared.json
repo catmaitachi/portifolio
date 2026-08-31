@@ -1,0 +1,48 @@
+{
+  "_comentario": [
+    "Conteúdo que NÃO muda entre idiomas. Textos ficam em pt.json / en.json.",
+    "secoes  — ordem canônica das seções. A chave casa com `nav` nos dicionários.",
+    "canais  — cartões da seção Contato. `icone` casa com uma chave de ICONES",
+    "          (src/content/assets.ts). Canal sem `url` aparece tracejado e apagado.",
+    "logos   — escala óptica por logo de formação. A chave casa com `slot` em",
+    "          `formacoes.lista` e com uma chave de LOGOS (src/content/assets.ts)."
+  ],
+
+  "secoes": [
+    { "key": "inicio" },
+    { "key": "sobre" },
+    { "key": "projetos" },
+    { "key": "experiencia" },
+    { "key": "contato" }
+  ],
+
+  "canais": [
+    {
+      "key": "github",
+      "icone": "github",
+      "rotulo": "GitHub",
+      "identificador": "@Catmaitachi",
+      "url": "https://github.com/Catmaitachi"
+    },
+    {
+      "key": "linkedin",
+      "icone": "linkedin",
+      "rotulo": "LinkedIn",
+      "identificador": "",
+      "url": ""
+    },
+    {
+      "key": "instagram",
+      "icone": "instagram",
+      "rotulo": "Instagram",
+      "identificador": "",
+      "url": ""
+    }
+  ],
+
+  "logos": {
+    "senac": { "escala": 1 },
+    "puc": { "escala": 0.92 },
+    "ufmg": { "escala": 1.06 }
+  }
+}

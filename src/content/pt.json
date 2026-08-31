@@ -1,0 +1,203 @@
+{
+  "nav": {
+    "inicio": "Início",
+    "sobre": "Sobre",
+    "projetos": "Projetos",
+    "experiencia": "Trajetória",
+    "contato": "Contato"
+  },
+
+  "hero": {
+    "etiqueta": "Desenvolvedor de software",
+    "nome": "Lucas Spiazzi",
+    "legenda": "Interfaces, sistemas e o que existe entre eles"
+  },
+
+  "sobre": {
+    "indice": "01 — Sobre",
+    "titulo": "Sobre mim",
+    "paragrafos": [
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+      "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+      "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo."
+    ]
+  },
+
+  "formacoes": {
+    "titulo": "Formação",
+    "estados": {
+      "concluido": "Concluído",
+      "cursando": "Cursando",
+      "pretensao": "Pretensão"
+    },
+    "lista": [
+      {
+        "slot": "senac",
+        "instituicao": "Senac",
+        "nivel": "Técnico",
+        "curso": "Desenvolvimento de sistemas",
+        "estado": "concluido"
+      },
+      {
+        "slot": "puc",
+        "instituicao": "PUC Minas",
+        "nivel": "Graduação",
+        "curso": "Ciência da computação",
+        "estado": "cursando"
+      },
+      {
+        "slot": "ufmg",
+        "instituicao": "UFMG",
+        "nivel": "Pós-graduação",
+        "curso": "Engenharia de software",
+        "estado": "pretensao"
+      }
+    ]
+  },
+
+  "projetos": {
+    "indice": "02 — Projetos",
+    "titulo": "Projetos",
+    "intro": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "banner": "Solte um banner aqui",
+    "aoVivo": "Ver ao vivo",
+    "estados": {
+      "ativo": "Ativo",
+      "arquivado": "Arquivado",
+      "definir": "A definir"
+    },
+    "lista": [
+      {
+        "key": "lorem-uno",
+        "nome": "Lorem Uno",
+        "linha": "Consectetur adipiscing elit, sed do eiusmod tempor.",
+        "descricao": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+        "ano": "2025",
+        "papel": "Full stack",
+        "stack": ["React", "TypeScript", "Vite"],
+        "estado": "ativo",
+        "url": ""
+      },
+      {
+        "key": "lorem-duo",
+        "nome": "Lorem Duo",
+        "linha": "Excepteur sint occaecat cupidatat non proident.",
+        "descricao": "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.",
+        "ano": "2024",
+        "papel": "Front-end",
+        "stack": ["Node", "PostgreSQL"],
+        "estado": "arquivado",
+        "url": ""
+      },
+      {
+        "key": "lorem-tres",
+        "nome": "Lorem Tres",
+        "linha": "Neque porro quisquam est qui dolorem ipsum quia.",
+        "descricao": "",
+        "ano": "—",
+        "papel": "—",
+        "stack": [],
+        "estado": "definir",
+        "url": ""
+      }
+    ]
+  },
+
+  "experiencia": {
+    "indice": "03 — Trajetória",
+    "titulo": "Trajetória",
+    "intro": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.",
+    "tipos": {
+      "estagio": "Estágio",
+      "clt": "Efetivo",
+      "freelance": "Autônomo",
+      "academico": "Acadêmico"
+    },
+    "janela": {
+      "anterior": "Evento anterior",
+      "posterior": "Próximo evento"
+    },
+    "lista": [
+      {
+        "key": "lorem-2023-03",
+        "cargo": "Lorem ipsum dolor",
+        "org": "Consectetur Adipiscing",
+        "periodo": "2023.03",
+        "tipo": "academico",
+        "bullets": [
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.",
+          "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo."
+        ],
+        "stack": ["Lorem", "Ipsum"]
+      },
+      {
+        "key": "lorem-2024-03",
+        "cargo": "Sed do eiusmod tempor",
+        "org": "Incididunt Labore",
+        "periodo": "2024.03",
+        "tipo": "estagio",
+        "bullets": [
+          "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+          "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim.",
+          "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque."
+        ],
+        "stack": ["Dolor", "Sit", "Amet"]
+      },
+      {
+        "key": "lorem-2024-09",
+        "cargo": "Ut labore et dolore",
+        "org": "Magna Aliqua",
+        "periodo": "2024.09",
+        "tipo": "freelance",
+        "bullets": [
+          "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur.",
+          "Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit."
+        ],
+        "stack": ["Consectetur", "Adipiscing"]
+      },
+      {
+        "key": "lorem-2025-03",
+        "cargo": "Quis nostrud exercitation",
+        "org": "Ullamco Laboris",
+        "periodo": "2025.03",
+        "tipo": "clt",
+        "bullets": [
+          "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum.",
+          "Et harum quidem rerum facilis est et expedita distinctio, nam libero tempore cum soluta nobis.",
+          "Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet."
+        ],
+        "stack": ["Eiusmod", "Tempor", "Labore", "Dolore"]
+      }
+    ]
+  },
+
+  "contato": {
+    "indice": "04 — Contato",
+    "titulo": "Contato",
+    "intro": "Uma linha basta. Respondo por e-mail, e os canais abaixo também funcionam.",
+    "email": "seu-email@exemplo.com",
+    "ou": "Ou pelos canais",
+    "enviar": "Enviar",
+    "enviando": "Abrindo seu cliente de e-mail…",
+    "erro": "Escreva uma mensagem antes de enviar",
+    "emBreve": "Em breve",
+    "assunto": "Contato pelo portfólio — {nome}",
+    "assuntoSemNome": "Contato pelo portfólio",
+    "assinatura": "— {nome}",
+    "campos": {
+      "nome": { "rotulo": "Nome", "dica": "Como te chamo?" },
+      "mensagem": { "rotulo": "Mensagem", "dica": "Diga o que precisa" }
+    }
+  },
+
+  "credito": "Feito com Claude",
+
+  "a11y": {
+    "secoes": "Seções do portfólio",
+    "idioma": "Alternar idioma entre português e inglês",
+    "projetos": "Carrossel de projetos — use as setas esquerda e direita",
+    "experiencia": "Linha do tempo — use as setas esquerda e direita",
+    "canais": "Canais de contato",
+    "retrato": "Retrato"
+  }
+}
