@@ -24,7 +24,7 @@ npm run check:i18n   # confere se pt.json e en.json continuam paralelos
 | `src/i18n/` | Idioma corrente, detecção e persistência. | `content` |
 | `src/scene/` | Ponte React ↔ motor e a cena de cada seção. | `engine`, `content` |
 | `src/navigation/` | Rolagem por seções, teclado e menu. | `content`, `i18n` |
-| `src/hud/` | Anéis, mira, seletor de idioma, crédito. | `i18n` |
+| `src/hud/` | Anéis, mira, seletor de idioma, crédito, versão. | `i18n` |
 | `src/sections/` | Uma pasta por seção. | `content`, `i18n`, componentes |
 | `src/components/` | Peças genéricas (`Figure`). | nada |
 | `src/hooks/` | Hooks transversais (`useReducedMotion`). | nada |
@@ -205,14 +205,14 @@ Uma entrada em `experiencia.lista` nos dois dicionários. A lista está em **ord
   "cargo": "Cargo",
   "org": "Organização",
   "periodo": "2026.01",
-  "tipo": "clt",
+  "tipo": "estagio",
   "bullets": ["Até três atividades."],
   "stack": ["Até", "quatro", "itens"]
 }
 ```
 
-`tipo` precisa existir em `experiencia.tipos`. `periodo` é **ano.mês** e é rótulo, não posição — o
-espaçamento na curva é sempre uniforme.
+`tipo` precisa existir em `experiencia.tipos` (`academico`, `evento`, `estagio`, `freela`).
+`periodo` é **ano.mês** e é rótulo, não posição — o espaçamento na curva é sempre uniforme.
 
 ### Adicionar uma formação
 
@@ -226,7 +226,9 @@ espaçamento na curva é sempre uniforme.
 ### Trocar o retrato
 
 Solte o arquivo em `src/assets/`, importe-o em `assets.ts` e atribua a `RETRATO`. Vazio = moldura de
-espaço reservado.
+espaço reservado. Hoje é `src/assets/retrato.jpg`: o design apontava direto para o avatar do GitHub,
+e uma imagem servida por terceiro deixa o retrato à mercê de uma indisponibilidade — além de escapar
+do versionamento do Vite.
 
 ### Adicionar uma seção
 
@@ -255,6 +257,15 @@ Menu vertical à direita: rótulo + risco de 1px que cresce (12px → 34px) na s
 uma faixa horizontal que desliza para pôr a seção ativa no centro (`--navdx`, medido em coordenadas
 de layout `offsetLeft`/`offsetWidth` — imunes ao `transform` já aplicado ao próprio nav).
 
+**No mobile o risco ativo cresce em escala, não em largura** — e isso não é cosmético. `--navdx` é
+medido **um quadro depois** da troca de seção; se a largura do risco fizesse parte do layout, a
+faixa inteira estaria reflowando durante os 0.45s da transição e a medida sairia sobre uma geometria
+que ainda ia se acomodar. O traço ativo parava exatamente 11px — `(34−12)/2` — fora do centro, para
+o lado de onde veio. Com `--nav-risco-w` fixo e o crescimento em `scaleX`, o layout da faixa é
+invariante: a medida continua vindo do DOM, sem número duplicado no JS, e acerta o centro em
+qualquer índice. Os comprimentos vivem sem unidade (`--nav-risco: 12`, `--nav-risco-ativo: 34`)
+justamente para que a escala seja a razão entre eles.
+
 Fora da seção `inicio` o HUD cai para opacidade .16.
 
 ---
@@ -273,9 +284,39 @@ Cronograma da abertura:
 3. `2.9s` mira (4 ticks cardinais) surge com `miraIn` e passa a pulsar em cascata
 
 Depois, na página: etiqueta 3.5s → nome 3.75s (`tituloIn`: borrão + `letter-spacing` fechando) →
-legenda 4.5s → menu 4.9s → crédito 5.2s → seletor de idioma 5.4s.
+legenda 4.5s → menu 4.9s → crédito 5.2s → seletor de idioma 5.4s → versão 5.6s.
 
 Tudo em `transform` e `clip-path` = compositor da GPU, zero custo de CPU.
+
+### Versão
+
+`Version` fica no canto inferior direito, alinhada ao mesmo recuo do menu e do seletor
+(`max(3.2vw, 26px)`). No mobile vai para o centro e encosta no rodapé, com o mesmo recuo de borda do
+seletor de idioma no topo (`max(2.4vh, 20px)`) — os dois são espelho um do outro. O crédito não
+disputa espaço ali: em ≤640px ele sai de cena, porque a faixa de baixo é do menu.
+
+O número **não é uma string escrita no componente nem uma chave de dicionário**: vem do `version` do
+`package.json` por `define` do Vite (`__VERSAO__`, tipado em `vite-env.d.ts`), reduzido a
+`major.minor`. Publicar uma versão e exibir outra é uma divergência que ninguém percebe até
+constranger. E ela fica fora do i18n de propósito: `v1.0` é dado, não texto — uma chave por idioma
+só criaria dois lugares para errar.
+
+### `@keyframes` vive no módulo que o usa
+
+**Nunca declarar `@keyframes` num CSS global para usá-lo de dentro de um `.module.css`.** CSS Modules
+escopa os **dois** lados — o nome no `@keyframes` *e* o nome escrito em `animation`. Um keyframe
+global chamado `fina` nunca casa com o `_fina_a1b2c_1` que o módulo passa a pedir: a animação
+simplesmente não roda, sem erro de build e sem aviso no console.
+
+Foi assim que a abertura inteira ficou morta por um tempo (anéis parados, mira sem pulso, crédito
+descentralizado). `animation: :global(nome)` **não** é saída: o parser do PostCSS recusa o `:` no
+valor. A saída é declarar o keyframe no próprio módulo — `fina` está duplicado em três (Hero,
+NavMenu, LanguageToggle), e quatro linhas repetidas custam menos que uma animação que não roda.
+
+Corolário: **layout não pode morar só no estado final de uma animação.** O crédito é centrado por um
+`transform: translateX(-50%)` na própria regra, e os riscos já nascem com `width: 34px` — `creditIn`
+e `creditLine` só refazem o caminho até lá. Quando a animação falhou, foi esse acoplamento que virou
+um bug visível em vez de uma entrada mais seca.
 
 ---
 
@@ -292,8 +333,9 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | `ProjectsSection` | `--pcw --pch --pbh --ph --pr --pperspectiva --pcard` |
 | `JourneySection` | `--exph --exp-cargo --exp-per --exp-curva --exp-rail --exp-fantasma --exp-gap --exp-txt --exp-topo` |
 | `ContactSection` | `--form-cols --enviar-just` |
-| `NavMenu` | `--nav-top --nav-bottom --nav-left --nav-right --nav-tx --nav-ty --nav-dir --nav-align --nav-gap` |
+| `NavMenu` | `--nav-top --nav-bottom --nav-left --nav-right --nav-tx --nav-ty --nav-dir --nav-align --nav-gap --nav-risco --nav-risco-ativo --nav-risco-w --nav-risco-esc --nav-risco-rot` |
 | `LanguageToggle` | `--lang-left --lang-right --lang-tx` |
+| `Version` | `--ver-bottom --ver-left --ver-right --ver-tx` |
 
 Faixas: `≤640px` (mobile: coluna única, nav horizontal, seletor centrado) e `≤720px de altura`
 (telas baixas: retrato 150px, texto 22vh, paddings menores). **A segunda vem depois na cascata de
@@ -301,6 +343,35 @@ propósito** — em paisagem curta ela ganha nos tokens compartilhados, porque a
 
 `prefers-reduced-motion: reduce` zera animações e transições no CSS; o que vive em JavaScript
 (deriva do carrossel, inclinação do retrato, zoom da câmera) consulta `useReducedMotion`.
+
+---
+
+## Seleção de texto
+
+O padrão da página é **`user-select: none`** (`reset.css`, no `body`), e o conteúdo reabre a seleção
+por **elemento**, não por classe: `h1 h2 h3 p li input textarea`. Título, subtítulo e parágrafo já
+são esses elementos em toda a página, então a regra vale para o que existe hoje e para o que for
+escrito depois — não há uma lista de classes para manter em sincronia.
+
+O motivo é interação, não estética: metade da página é **superfície de arraste** (órbita de Projetos,
+curva da Trajetória, carrossel de formações). Arrastar um controle não pode pintar meia tela de azul,
+e uma seleção acidental engole o `pointerup` que decide se houve clique ou arrasto.
+
+`input`/`textarea` **não são opcionais** na lista de exceções: no Safari, um `user-select: none`
+herdado chega a impedir a digitação no campo. Por isso também o `-webkit-user-select` duplicado — o
+Safari só dispensa o prefixo a partir da 17, e a sintaxe de faixa (`width <= 640px`) já roda desde a
+16.4.
+
+As exceções moram no módulo de quem as pede, nunca no global:
+
+| Onde | O quê | Por quê |
+|---|---|---|
+| `section.module.css → .indice` | `none` | é `<p>` por semântica, mas lê como marcador: ninguém copia "01" |
+| `HeroSection → .etiqueta` | `none` | ornamento do nome, entre dois riscos |
+| `JourneyEntry → .numero` | `none` | copiar a atividade não deve trazer a numeração junto |
+| `JourneyEntry → .org` | `text` | subtítulo do cargo, e `<span>` não entra na regra global |
+| `ProjectCard → .linha` | `text` | idem, resumo sob o nome do projeto |
+| `ContactSection → .email` | `text` | é um `<a>`, e existe justamente para ser copiado |
 
 ---
 
@@ -433,10 +504,14 @@ Composição aberta de 840px. Sem moldura: índice + título, intro, o **e-mail 
 
 ## Pendências
 
-- **Conteúdo real.** Projetos, trajetória e a bio da seção Sobre estão com Lorem ipsum, por decisão
-  do dono do portfólio; substituir em `pt.json`/`en.json`.
-- **E-mail de contato** está como `seu-email@exemplo.com` em `contato.email` nos dois dicionários.
-- **Retrato** e **banners de projeto** ainda não existem; as molduras aparecem como espaço reservado.
-- **Períodos da trajetória** (2023.03 / 2024.03 / 2024.09 / 2025.03) vieram do rascunho de design e
-  precisam ser confirmados.
-- LinkedIn e Instagram estão sem `url` em `shared.json`, então aparecem como "em breve".
+- **Descrição do ClinPlay** é rascunho — o próprio texto avisa (`projetos.lista[0].descricao`, nos
+  dois dicionários). Substituir pelo que o projeto realmente faz.
+- **Dois projetos são vagas** (`vaga-02`, `vaga-03`, estado `definir`): giram na órbita e não abrem
+  descrição. Preencher quando houver projeto.
+- **Banners de projeto** ainda não existem; as molduras aparecem como espaço reservado.
+- TikTok está sem `url` em `shared.json`, então aparece como "em breve".
+- **Feito com Claude** não volta a aparecer no rodapé após alterar entre mobile para desktop, deve ser corrigido.
+- Entrar na sessão de **Projetos** ou **Trajetoria** não habilita automaticamente o uso das setas para interação com os elementos, deve ser corrigido.
+- É necessário realizar uma revisão de qualidade geral do projeto, para garantir organização, escalabilidade, consistência, desempenho, acessibilidade e boas práticas.
+- Planejamento da nova feature **Super-Nova**: ao clicar com o mouse no espaço, uma nova estrela deve surgir, causando uma onda de energia que empurra as estrelas próximas, deve haver um tempo de recarga da funcionalidade, simbolizado por um circulo no canfo inferior esquerdo da tela que se forma na medida que funcionalidade recarrega e depois some quando está disponivel novamente. ( O planejamento deve levar em consideração os criterios de otimização e usabilidade do site, não podendo comprometer nenhum deles )
+- Nos bagdes de formação, quando em curso, deve ser possível ver abaixo da barra a fração de conclusão do curso, por exemplo: 4/8, a barra deve ser preenchida de acordo com a fração, essa informação deve ser exibida no hover do mouse, e quando concluido, deve ser exibido a data de conclusão do curso, essa informação deve ser exibida no hover do mouse.
