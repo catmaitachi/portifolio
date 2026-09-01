@@ -40,28 +40,32 @@
   justify-content: center;
   margin: 0;
   padding: 0;
-  border: 1px solid rgb(255 255 255 / 16%);
+  border: 1px solid rgb(255 255 255 / 38%);
   border-radius: 2px;
-  background: none;
-  color: rgb(255 255 255 / 72%);
-  font-size: 14px;
+  background: rgb(255 255 255 / 6%);
+  color: rgb(255 255 255 / 94%);
+  font-size: 17px;
   line-height: 1;
   cursor: pointer;
   appearance: none;
   transition:
     border-color 0.4s,
+    background-color 0.4s,
     color 0.4s,
     opacity 0.4s;
 }
 
 .seta:hover:not(:disabled) {
-  border-color: rgb(255 255 255 / 45%);
+  border-color: rgb(255 255 255 / 78%);
+  background: rgb(255 255 255 / 12%);
   color: #fff;
 }
 
-/* nas pontas o botão apaga em vez de sumir: a posição continua legível */
+/* nas pontas o botão apaga em vez de sumir: a posição continua legível.
+   com a base mais forte, o apagado precisa descer junto para continuar lendo
+   como "aqui acabou" e não como um botão comum */
 .seta:disabled {
-  opacity: 0.3;
+  opacity: 0.22;
   cursor: default;
 }
 
