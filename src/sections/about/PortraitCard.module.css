@@ -2,7 +2,8 @@
   /* --retrato é redefinido pela seção Sobre nas faixas responsivas */
   width: var(--retrato, 100%);
   max-width: 100%;
-  aspect-ratio: 4 / 5;
+  /* a proporção é token da seção Sobre, que a usa para limitar a coluna do texto */
+  aspect-ratio: 1 / var(--retrato-ar, 1.25);
   justify-self: center;
   perspective: 900px;
 }

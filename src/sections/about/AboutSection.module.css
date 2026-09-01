@@ -3,9 +3,21 @@
  * ficam todos aqui.
  */
 .secao {
-  --cols: minmax(180px, 28%) 1fr;
+  /* largura da coluna do retrato, em % do corpo — `--coluna-max` reusa o número */
+  --retrato-col: 28;
+  /* altura ÷ largura do retrato; o `PortraitCard` monta o `aspect-ratio` com ele */
+  --retrato-ar: 1.25;
+
+  --cols: minmax(180px, calc(var(--retrato-col) * 1%)) 1fr;
   --corpo-gap: clamp(24px, 3.4vmin, 44px);
-  --retrato: 100%;
+  /**
+   * Largura do retrato em `cqw`, e não nos 100% de antes: assim ela é um
+   * comprimento, e `--coluna-max` sai dela por multiplicação. Onde as faixas
+   * responsivas trocam `--retrato` por um valor fixo, o teto da coluna
+   * acompanha sozinho — não há um segundo número para manter em dia.
+   */
+  --retrato: calc(var(--retrato-col) * 1cqw);
+  --coluna-max: calc(var(--retrato) * var(--retrato-ar));
   --txt: min(34vh, 320px);
   --pfs: clamp(12px, 1.6vmin, 16px);
   --plh: 1.95;
@@ -15,18 +27,32 @@
   max-width: 960px;
 }
 
+/**
+ * `container-type: inline-size` existe para o `--coluna-max`: `cqw` mede a
+ * largura deste grid, e é dela que sai a altura do retrato — 28% da largura,
+ * vezes a proporção 4/5. Sem o contêiner não há como chegar a esse número, já
+ * que o bloco tem `max-width` e a coluna não é fração da viewport.
+ */
 .corpo {
+  container-type: inline-size;
   display: grid;
   grid-template-columns: var(--cols);
   gap: var(--corpo-gap);
   align-items: start;
 }
 
+/**
+ * A coluna não passa da base do retrato: o texto rola dentro do que sobra
+ * depois do título, em vez de descer sozinho ao lado de uma imagem que já
+ * acabou. Quem cede altura é `.texto` (`flex: 1` com `min-height: 0`), então o
+ * título continua inteiro qualquer que seja o corpo do texto.
+ */
 .coluna {
   display: flex;
   flex-direction: column;
   gap: clamp(14px, 2.2vmin, 22px);
   min-width: 0;
+  max-height: var(--coluna-max, none);
 }
 
 /**
@@ -39,6 +65,13 @@
   flex-direction: column;
   gap: 16px;
   min-width: 0;
+  /**
+   * `min-height: 0` é o que deixa o texto encolher abaixo do próprio conteúdo
+   * quando a coluna bate no teto do retrato — sem ele, o `flex-shrink` padrão
+   * para no tamanho mínimo do conteúdo e a base transborda de novo. Não precisa
+   * de `flex-grow`: o texto cede altura, nunca reivindica.
+   */
+  min-height: 0;
   max-height: var(--txt);
   padding-right: 14px;
   overflow-y: auto;
@@ -73,6 +106,8 @@
   .secao {
     --cols: 1fr;
     --corpo-gap: 16px;
+    /* empilhado, o retrato está acima do texto e não tem base para respeitar */
+    --coluna-max: none;
     --retrato: 116px;
     --txt: min(30vh, 220px);
     --pfs: 11.5px;

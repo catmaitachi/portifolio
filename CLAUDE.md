@@ -555,7 +555,7 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | Onde | Tokens |
 |---|---|
 | `section.module.css` | `--pt --pb --px --gap` |
-| `AboutSection` | `--cols --corpo-gap --retrato --txt --pfs --plh` |
+| `AboutSection` | `--retrato-col --retrato-ar --cols --corpo-gap --retrato --coluna-max --txt --pfs --plh` |
 | `EducationCarousel` | `--bw --detalhe-w --detalhe-ml` |
 | `ProjectsSection` | `--pcw --pch --pbh --ph --pr --pperspectiva --pcard` |
 | `JourneySection` | `--exph --exp-cargo --exp-per --exp-curva --exp-rail --exp-fantasma --exp-gap --exp-txt --exp-topo` |
@@ -653,6 +653,21 @@ introduziria hífen.
 - Filhos com `flex: none` — sem `flex-shrink`, que antes comprimia e clipava os badges.
 - Bloco de parágrafos com rolagem própria (`--txt`, barra de 3px, `overscroll-behavior: contain`):
   chegar ao fim da bio não pode encadear a rolagem para a seção.
+- **A coluna de texto não passa da base do retrato.** O texto rola dentro do que sobra depois do
+  título, em vez de descer sozinho ao lado de uma imagem que já acabou — numa tela de 1080px eram
+  ~56px de sobra. O teto é `--coluna-max`, e quem cede altura é o `.texto`: `min-height: 0` deixa o
+  `flex-shrink` ir abaixo do tamanho mínimo do conteúdo, e sem isso a base transborda de novo. Não
+  há `flex-grow` — o texto cede altura, nunca reivindica.
+
+  O número sai de onde já existia: `--retrato` deixou de ser `100%` e virou um **comprimento**
+  (`28cqw`), então `--coluna-max` é ele vezes a proporção. Onde uma faixa responsiva troca
+  `--retrato` por um valor fixo (150px em telas baixas), o teto acompanha sozinho. É para isso que o
+  `.corpo` é um `container-type: inline-size`: o bloco tem `max-width`, então a coluna não é fração
+  da viewport e `vw` não serviria. No mobile o retrato fica **acima** do texto e não há base a
+  respeitar — `--coluna-max: none`.
+
+  A proporção mora em `--retrato-ar` e o `PortraitCard` monta o `aspect-ratio` com ela
+  (`1 / var(--retrato-ar)`), para a altura do retrato e o teto da coluna não saírem de sincronia.
 - Retrato (`PortraitCard`): inclina seguindo o ponteiro com brilho especular, escrito **direto no
   `style`** dentro de um rAF coalescido. Um `setState` por `pointermove` re-renderizaria a seção
   dezenas de vezes por segundo para mudar dois números de `transform`.
