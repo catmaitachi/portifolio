@@ -12,6 +12,14 @@
     transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+/* chanfro dos dois cantos opostos — ver "Cantos chanfrados" no CLAUDE.md */
+@supports (corner-shape: bevel) {
+  .canal {
+    corner-shape: bevel;
+    border-radius: 14px 2px;
+  }
+}
+
 .canal:hover {
   border-color: rgb(255 255 255 / 38%);
   background: rgb(255 255 255 / 4%);

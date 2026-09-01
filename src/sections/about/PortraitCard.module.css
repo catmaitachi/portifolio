@@ -22,6 +22,14 @@
     box-shadow 0.55s ease;
 }
 
+/* chanfro dos dois cantos opostos — ver "Cantos chanfrados" no CLAUDE.md */
+@supports (corner-shape: bevel) {
+  .carta {
+    corner-shape: bevel;
+    border-radius: 14px 2px;
+  }
+}
+
 /** Brilho especular: um halo que segue o cursor por --bx/--by. */
 .brilho {
   position: absolute;

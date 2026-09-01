@@ -55,6 +55,14 @@
     opacity 0.4s;
 }
 
+/* chanfro dos dois cantos opostos — ver "Cantos chanfrados" no CLAUDE.md */
+@supports (corner-shape: bevel) {
+  .seta {
+    corner-shape: bevel;
+    border-radius: 9px 2px;
+  }
+}
+
 .seta:hover:not(:disabled) {
   border-color: rgb(255 255 255 / 78%);
   background: rgb(255 255 255 / 12%);

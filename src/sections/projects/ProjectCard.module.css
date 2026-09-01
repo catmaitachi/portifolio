@@ -24,6 +24,14 @@
   transition: border-color 0.5s ease;
 }
 
+/* chanfro dos dois cantos opostos — ver "Cantos chanfrados" no CLAUDE.md */
+@supports (corner-shape: bevel) {
+  .cartao {
+    corner-shape: bevel;
+    border-radius: 18px 2px;
+  }
+}
+
 .cartao[data-frente] {
   border-color: rgb(255 255 255 / 24%);
 }

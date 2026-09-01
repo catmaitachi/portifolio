@@ -67,6 +67,14 @@
     opacity 0.5s;
 }
 
+/* chanfro dos dois cantos opostos — ver "Cantos chanfrados" no CLAUDE.md */
+@supports (corner-shape: bevel) {
+  .badge {
+    corner-shape: bevel;
+    border-radius: 12px 2px;
+  }
+}
+
 /* pretensão: ainda não aconteceu — tracejado e recuado */
 .badge[data-estado='pretensao'] {
   border-style: dashed;
