@@ -126,6 +126,15 @@ export interface Dictionary {
     };
   };
   credito: string;
+  /**
+   * Textos das notificações do HUD (`hud/Notice.tsx`). `fechar` é o rótulo de
+   * acessibilidade do botão e vale para qualquer aviso; cada aviso entra como um
+   * bloco com `titulo` e `texto`.
+   */
+  aviso: {
+    fechar: string;
+    nova: { titulo: string; texto: string };
+  };
   a11y: {
     secoes: string;
     idioma: string;

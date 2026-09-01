@@ -3,8 +3,11 @@ import { SECOES } from '~/content';
 import { Credit } from '~/hud/Credit';
 import { Hud } from '~/hud/Hud';
 import { LanguageToggle } from '~/hud/LanguageToggle';
+import { Notice } from '~/hud/Notice';
 import { NovaGauge } from '~/hud/NovaGauge';
+import { useNovaHint } from '~/hud/useNovaHint';
 import { Version } from '~/hud/Version';
+import { useT } from '~/i18n/useLanguage';
 import { NavMenu } from '~/navigation/NavMenu';
 import { useSectionScroll } from '~/navigation/useSectionScroll';
 import { DURACAO } from '~/scene/scenePlan';
@@ -31,12 +34,17 @@ import styles from './App.module.css';
  * `DURACAO.novaRecarga`, então o círculo fecha exatamente quando o próximo
  * disparo passa a ser aceito. Um contador é todo o estado que isso custa, e ele
  * muda no máximo uma vez a cada recarga.
+ *
+ * O mesmo contador alimenta a dica da supernova: o aviso do canto superior
+ * esquerdo só existe enquanto ele estiver em zero (ver `useNovaHint`).
  */
 export function App() {
   const { ref, indice, irPara } = useSectionScroll();
   const chaveAtiva = SECOES[indice]?.key ?? 'inicio';
   const [novas, setNovas] = useState(0);
   const aoAcender = useCallback(() => setNovas((n) => n + 1), []);
+  const dica = useNovaHint(novas);
+  const t = useT();
 
   return (
     <div className={styles.palco}>
@@ -56,6 +64,13 @@ export function App() {
       <Credit />
       <Version />
       <NovaGauge disparo={novas} segundos={DURACAO.novaRecarga} />
+      <Notice
+        aberto={dica.visivel}
+        titulo={t.aviso.nova.titulo}
+        texto={t.aviso.nova.texto}
+        rotuloFechar={t.aviso.fechar}
+        onFechar={dica.fechar}
+      />
     </div>
   );
 }

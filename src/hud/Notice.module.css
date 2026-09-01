@@ -1,0 +1,147 @@
+/**
+ * `@keyframes` mora no módulo que o usa: CSS Modules escopa tanto o nome
+ * declarado quanto o escrito em `animation`, e um keyframe global nunca casaria
+ * com o nome reescrito aqui dentro.
+ *
+ * Responsivo por tokens: os valores base ficam na regra e a media query só os
+ * redefine.
+ */
+
+@keyframes avisoIn {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+    filter: blur(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes avisoOut {
+  to {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+
+/* o risco cresce de cima para baixo, como os traços do menu */
+@keyframes avisoRisco {
+  from {
+    transform: scaleY(0);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.aviso {
+  --aviso-top: max(2.4vh, 20px);
+  --aviso-left: max(3.2vw, 26px);
+  --aviso-w: 306px;
+
+  position: absolute;
+  z-index: 4;
+  top: var(--aviso-top);
+  left: var(--aviso-left);
+  display: flex;
+  gap: 13px;
+  align-items: flex-start;
+  box-sizing: border-box;
+  width: min(var(--aviso-w), calc(100vw - 2 * var(--aviso-left)));
+  padding: 14px 14px 15px;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 2px;
+  background: rgb(0 0 0 / 62%);
+  /**
+   * `forwards` na saída, nunca `both`: com `backwards` ela aplicaria o próprio
+   * estado inicial e passaria por cima da entrada, que vem antes na lista.
+   */
+  animation: avisoOut 0.4s ease-in forwards;
+}
+
+/* chanfro dos dois cantos opostos — ver "Cantos chanfrados" no CLAUDE.md */
+@supports (corner-shape: bevel) {
+  .aviso {
+    corner-shape: bevel;
+    border-radius: 12px 2px;
+  }
+}
+
+.aviso[data-aberto] {
+  animation: avisoIn 0.62s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.risco {
+  flex: none;
+  align-self: stretch;
+  width: 1px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 62%), rgb(255 255 255 / 8%));
+  transform-origin: top;
+}
+
+.aviso[data-aberto] .risco {
+  animation: avisoRisco 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.12s both;
+}
+
+.corpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.titulo {
+  margin: 0;
+  color: rgb(255 255 255 / 88%);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  /* rótulo do painel, não texto corrido: nem justificado, nem partido ao meio */
+  text-align: left;
+  hyphens: manual;
+}
+
+.texto {
+  margin: 0;
+  color: rgb(255 255 255 / 62%);
+  font-size: 11px;
+  font-weight: 300;
+  line-height: 1.62;
+  letter-spacing: 0.05em;
+}
+
+.fechar {
+  flex: none;
+  margin: -4px -4px 0 0;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: rgb(255 255 255 / 40%);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  appearance: none;
+  transition: color 0.35s;
+}
+
+.fechar:hover {
+  color: #fff;
+}
+
+/**
+ * Mobile: o seletor de idioma deixa o canto direito e vai para o centro do topo,
+ * então o aviso desce para não passar por baixo dele.
+ */
+@media (width <= 640px) {
+  .aviso {
+    --aviso-top: max(7.4vh, 62px);
+    --aviso-left: 20px;
+  }
+}

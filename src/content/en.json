@@ -196,6 +196,14 @@
 
   "credito": "Made with Claude",
 
+  "aviso": {
+    "fechar": "Dismiss notice",
+    "nova": {
+      "titulo": "Supernova",
+      "texto": "You have the power to bring a star to life. Try clicking on empty space."
+    }
+  },
+
   "a11y": {
     "secoes": "Portfolio sections",
     "idioma": "Switch language between Portuguese and English",
