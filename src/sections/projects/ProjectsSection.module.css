@@ -23,7 +23,12 @@
   outline: none;
   /* o arraste horizontal é nosso; o vertical continua rolando a página */
   touch-action: pan-y;
-  cursor: grab;
+  /**
+   * Sem `cursor: grab` aqui: o arraste começa na faixa do cartão da frente (ver
+   * `useOrbit`), e uma mão aberta sobre a largura toda do palco prometeria um
+   * gesto que a maior parte dessa área não atende. Quem arrasta e quem clica é
+   * o cartão, e é ele que carrega o cursor.
+   */
 }
 
 .anel {

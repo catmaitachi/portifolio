@@ -79,23 +79,70 @@ export function useOrbit(total: number): Orbit {
 
   const fechar = useCallback(() => setAberto(null), []);
 
-  // Arraste horizontal no palco = um passo da órbita. Fica no `pointerup` (e não
-  // num `pointermove` capturado) justamente para que o clique nos cartões
-  // continue funcionando: um arraste curto é clique, um longo é giro.
+  /**
+   * Arraste horizontal = um passo da órbita.
+   *
+   * Fica no `pointerup` (e não num `pointermove` capturado) justamente para que
+   * o clique nos cartões continue funcionando: um arraste curto é clique, um
+   * longo é giro.
+   *
+   * **O gesto começa na faixa do cartão da frente, não no palco inteiro.** O
+   * palco é largo — ele precisa dar espaço aos cartões laterais, que ficam bem
+   * além do centro — e capturar o arraste em toda essa largura tornava a órbita
+   * dona de metade da seção. A faixa sai do DOM: o centro é o do palco, e a
+   * largura é o `offsetWidth` do cartão da frente, que é medida de layout e
+   * **não** acompanha o `transform` — então ela não balança durante o giro nem
+   * duplica o `--pcw` do CSS aqui dentro.
+   */
   useEffect(() => {
     const el = palcoRef.current;
     if (!el) return;
 
     let x0: number | null = null;
+    let limpeza: number | undefined;
+
+    /**
+     * O `click` que vem logo depois de um arraste é do mesmo gesto e precisa
+     * morrer aqui. Sem isso o arraste gira **e** o clique cai no cartão que
+     * estava na frente, abrindo o painel de um cartão que já virou lateral.
+     *
+     * A captura no palco basta para o React nunca ver o evento: ele escuta na
+     * raiz do documento e dispara `onClick` na subida, que não acontece mais.
+     */
+    const engolirClique = (ev: Event) => {
+      ev.stopPropagation();
+      ev.preventDefault();
+    };
+
+    const soltarEngolidor = () => {
+      el.removeEventListener('click', engolirClique, true);
+      clearTimeout(limpeza);
+      limpeza = undefined;
+    };
+
     const inicio = (e: PointerEvent) => {
+      const frente = el.querySelector<HTMLElement>('[data-frente]');
+      if (!frente) return;
+      const palco = el.getBoundingClientRect();
+      const meio = palco.left + palco.width / 2;
+      if (Math.abs(e.clientX - meio) > frente.offsetWidth / 2) return;
       x0 = e.clientX;
     };
+
     const fim = (e: PointerEvent) => {
       if (x0 === null) return;
       const d = e.clientX - x0;
       x0 = null;
-      if (Math.abs(d) > LIMIAR_ARRASTE) girar(d < 0 ? 1 : -1);
+      if (Math.abs(d) <= LIMIAR_ARRASTE) return;
+
+      el.addEventListener('click', engolirClique, { capture: true, once: true });
+      // nem todo gesto gera `click` (soltar fora do elemento, por exemplo): sem
+      // esta soltura o engolidor sobreviveria e comeria o próximo clique bom
+      limpeza = window.setTimeout(soltarEngolidor, 0);
+
+      girar(d < 0 ? 1 : -1);
     };
+
     const cancelar = () => {
       x0 = null;
     };
@@ -107,6 +154,7 @@ export function useOrbit(total: number): Orbit {
       el.removeEventListener('pointerdown', inicio);
       el.removeEventListener('pointerup', fim);
       el.removeEventListener('pointercancel', cancelar);
+      soltarEngolidor();
     };
   }, [girar]);
 

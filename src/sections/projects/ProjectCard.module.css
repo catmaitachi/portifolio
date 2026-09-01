@@ -32,8 +32,28 @@
   }
 }
 
+/**
+ * O cartão da frente é **opaco** e mostra a mão de arraste.
+ *
+ * Opaco porque a órbita é fechada de propósito (o `--pr` foi reduzido para os
+ * cartões não passarem sob o menu fixo), então a caixa deste cartão cobre um
+ * pedaço dos vizinhos — 31% em janela média, 43% no mobile. Com o preto a 42% de
+ * antes, o vizinho aparecia através dele: visível, e mesmo assim não clicável,
+ * porque o clique ali é deste cartão. Prometer um alvo que não existe é pior que
+ * escondê-lo — o que se vê do lateral agora é exatamente o que responde.
+ *
+ * `grab` porque este cartão **é** a faixa de arraste da órbita (ver `useOrbit`):
+ * o cursor precisa dizer onde o gesto vive, e o palco não pode dizê-lo porque a
+ * maior parte dele não arrasta mais.
+ */
 .cartao[data-frente] {
   border-color: rgb(255 255 255 / 24%);
+  background: rgb(0 0 0 / 92%);
+  cursor: grab;
+}
+
+.cartao[data-frente]:active {
+  cursor: grabbing;
 }
 
 .cartao:hover {
@@ -45,8 +65,13 @@
   border-style: dashed;
 }
 
+/* a vaga não abre descrição, mas arrasta como qualquer cartão da frente */
 .cartao[data-vaga][data-frente] {
-  cursor: default;
+  cursor: grab;
+}
+
+.cartao[data-vaga][data-frente]:active {
+  cursor: grabbing;
 }
 
 .banner {
