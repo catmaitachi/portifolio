@@ -15,10 +15,11 @@
 
   "sobre": {
     "indice": "01",
-    "titulo": "Sobre",
+    "titulo": "Sobre Mim",
     "paragrafos": [
-      "Sou desenvolvedor de software. Trabalho na fronteira entre a interface e o sistema que a sustenta: o que o usuário toca e o que responde por baixo.",
-      "Gosto de código enxuto, desempenho medido e detalhes que ninguém nota até faltarem."
+      "Sou um projetista de software na era da IA. Enquanto os modelos generativos aceleram a codificação, meu papel é o que vem antes: idealizar, estruturar e planejar sistemas sólidos, guiados pelas melhores práticas de Engenharia de Software.",
+      "Acredito que todo projeto nasce de uma necessidade humana que merece ser explorada, compreendida e tratada com responsabilidade, pois os impactos refletem, a longo prazo, no indivíduo e na sociedade.",
+      "Como dev, me comprometo a evoluir constantemente minhas soluções em prol de um futuro mais sustentável e humanitário."
     ]
   },
 
@@ -70,14 +71,15 @@
     "lista": [
       {
         "key": "clinplay",
-        "nome": "ClinPlay",
-        "linha": "Rotinas clínicas em partidas curtas.",
-        "descricao": "O profissional treina decisão e sequência sem paciente na frente; cada partida deixa um registro que serve de acompanhamento. Rascunho de texto — corrija com o que o ClinPlay realmente faz.",
-        "ano": "2025",
-        "papel": "Solo",
-        "stack": ["React", "TypeScript", "Node", "PostgreSQL"],
+        "nome": "ClinPlaY",
+        "linha": "Fisioterapia gamificada e acessível em formato SaaS.",
+        "descricao": "Plataforma de monitoramento remoto que transforma exercícios domiciliares em experiência interativa e mensurável. Utiliza gamificação para aumentar motivação, fornece feedback contínuo sobre técnica e execução, permitindo que o fisioterapeuta acompanhe a recuperação do paciente sem que ela seja interrompida quando ele deixa o consultório.",
+        "ano": "2026",
+        "papel": "Scrum Master",
+        "stack": ["React", "TypeScript", "Java", "Spring Boot"],
         "estado": "ativo",
-        "url": ""
+        "url": "https://clinplay.com",
+        "banner": "clinplay"
       },
       {
         "key": "vaga-02",

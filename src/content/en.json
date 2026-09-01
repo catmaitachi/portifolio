@@ -15,10 +15,11 @@
 
   "sobre": {
     "indice": "01",
-    "titulo": "About",
+    "titulo": "About Me",
     "paragrafos": [
-      "I build software. I work at the border between the interface and the system behind it: what the user touches and what answers underneath.",
-      "I like lean code, measured performance, and the details nobody notices until they are missing."
+      "I'm a software designer in the age of AI. While generative models speed up coding, my role lies in what comes before it: envisioning, structuring, and planning solid systems, guided by Software Engineering best practices.",
+      "I believe every project is born from a human need that deserves to be explored, understood, and handled responsibly, since its impact reflects, in the long run, on both the individual and society.",
+      "As a developer, I'm committed to constantly evolving my solutions toward a more sustainable and humane future."  
     ]
   },
 
@@ -70,14 +71,15 @@
     "lista": [
       {
         "key": "clinplay",
-        "nome": "ClinPlay",
-        "linha": "Clinical routines as short rounds.",
-        "descricao": "Practitioners rehearse decisions and sequencing with no patient in front of them; every round leaves a record that doubles as follow-up. Draft copy — replace it with what ClinPlay actually does.",
-        "ano": "2025",
-        "papel": "Solo",
-        "stack": ["React", "TypeScript", "Node", "PostgreSQL"],
+        "nome": "ClinPlaY",
+        "linha": "Gamified and accessible physical therapy in SaaS format.",
+        "descricao": "Remote monitoring platform that transforms home exercises into an interactive and measurable experience. It uses gamification to boost motivation, provides continuous feedback on technique and execution, allowing the physiotherapist to monitor the patient's recovery without it being interrupted when they leave the clinic. ",
+        "ano": "2026",
+        "papel": "Scrum Master",
+        "stack": ["React", "TypeScript", "Java", "Spring Boot"],
         "estado": "ativo",
-        "url": ""
+        "url": "https://clinplay.com",
+        "banner": "clinplay"
       },
       {
         "key": "vaga-02",
