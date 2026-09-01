@@ -27,6 +27,9 @@
 }
 
 .credito {
+  /* mobile só redefine este token — ver a media query no fim do arquivo */
+  --credito-vis: visible;
+
   position: absolute;
   bottom: 28px;
   left: 50%;
@@ -42,6 +45,7 @@
    * layout que existe apenas dentro de uma animação some junto com ela.
    */
   transform: translateX(-50%);
+  visibility: var(--credito-vis);
   animation: creditIn 1.1s ease-out 5.2s both;
 }
 
@@ -55,9 +59,22 @@
   animation: creditLine 1s cubic-bezier(0.3, 0.7, 0.2, 1) 5.2s both;
 }
 
-/* no mobile o menu ocupa a faixa de baixo: o crédito sai de cena */
+/**
+ * No mobile o menu ocupa a faixa de baixo: o crédito sai de cena.
+ *
+ * Por **visibilidade**, nunca por `display: none`. Um elemento com `display:
+ * none` sai da árvore de renderização e leva a animação junto: ao voltar para
+ * desktop (rotação, janela redimensionada, DevTools), `creditIn` recomeça do
+ * zero — e como ela tem 5.2s de atraso com `both`, o crédito ficava mais de
+ * cinco segundos invisível, o que na tela lê como "não voltou".
+ *
+ * `visibility: hidden` mantém o elemento na árvore: a animação segue seu curso
+ * escondida e o crédito reaparece no mesmo quadro em que a faixa larga volta.
+ * A visibilidade também já o tira do clique e da navegação por teclado, então
+ * nada de `pointer-events` extra.
+ */
 @media (width <= 640px) {
   .credito {
-    display: none;
+    --credito-vis: hidden;
   }
 }
