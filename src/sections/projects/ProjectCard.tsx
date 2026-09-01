@@ -22,10 +22,26 @@ interface ProjectCardProps {
   indice: number;
   geo: Geometria;
   aberto: boolean;
+  /**
+   * Se o cartão entra na tabulação.
+   *
+   * Com um painel aberto, só o cartão do painel é focável: os outros ficam
+   * **atrás** dele, e tabular para um cartão que o visitante não consegue ver é
+   * perder o foco no meio da tela. Continuam clicáveis — o mouse não tem esse
+   * problema, e clicar num lateral segue girando a órbita.
+   */
+  focavel: boolean;
   onAlternar: () => void;
 }
 
-export function ProjectCard({ projeto, indice, geo, aberto, onAlternar }: ProjectCardProps) {
+export function ProjectCard({
+  projeto,
+  indice,
+  geo,
+  aberto,
+  focavel,
+  onAlternar,
+}: ProjectCardProps) {
   const t = useT();
   // "a definir" é uma vaga reservada: gira na órbita, mas não abre descrição
   const vaga = projeto.estado === 'definir';
@@ -49,7 +65,7 @@ export function ProjectCard({ projeto, indice, geo, aberto, onAlternar }: Projec
         data-vaga={vaga || undefined}
         data-frente={geo.naFrente || undefined}
         role="button"
-        tabIndex={0}
+        tabIndex={focavel ? 0 : -1}
         aria-expanded={aberto}
         aria-label={projeto.nome}
         onClick={onAlternar}

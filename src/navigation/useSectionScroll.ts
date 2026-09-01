@@ -1,12 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SECOES } from '~/content';
-
-/** Campos onde as setas pertencem ao cursor de texto, não à navegação. */
-function editando(alvo: EventTarget | null): boolean {
-  if (!(alvo instanceof HTMLElement)) return false;
-  const tag = alvo.tagName;
-  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || alvo.isContentEditable;
-}
+import { editandoTexto } from '~/hooks/useArrowKeys';
 
 export interface SectionScroll {
   ref: React.RefObject<HTMLDivElement | null>;
@@ -66,7 +60,7 @@ export function useSectionScroll(): SectionScroll {
 
   useEffect(() => {
     const aoTeclar = (e: KeyboardEvent) => {
-      if (editando(e.target)) return;
+      if (editandoTexto(e.target)) return;
       switch (e.key) {
         case 'ArrowDown':
         case 'PageDown':

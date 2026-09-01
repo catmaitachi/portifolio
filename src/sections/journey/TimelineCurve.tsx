@@ -29,6 +29,10 @@ interface TimelineCurveProps {
  * toque de 38px, foco de teclado e um rótulo de texto que não estica junto com o
  * `preserveAspectRatio="none"`. Ficam posicionados em `left/top` como % do mesmo
  * viewBox, então acompanham a curva em qualquer largura.
+ *
+ * As setas ←/→ **não** são tratadas aqui: quem escuta é a seção, na janela
+ * (`useArrowKeys`), para que funcionem com ou sem foco na curva. Um segundo
+ * handler local só criaria a chance de um passo duplo.
  */
 export function TimelineCurve({ lista, linha }: TimelineCurveProps) {
   const t = useT();
@@ -50,13 +54,6 @@ export function TimelineCurve({ lista, linha }: TimelineCurveProps) {
       role="group"
       aria-label={t.a11y.experiencia}
       tabIndex={0}
-      onKeyDown={(e) => {
-        const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
-        if (!d) return;
-        e.preventDefault();
-        e.stopPropagation();
-        linha.mudar(d);
-      }}
     >
       <svg
         className={styles.svg}

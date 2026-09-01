@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useArrowKeys } from '~/hooks/useArrowKeys';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
 import { ProjectCard } from './ProjectCard';
@@ -8,9 +9,9 @@ import { useOrbit } from './useOrbit';
 /**
  * Projetos: carrossel em órbita 3D.
  *
- * Girar: clique num cartão lateral, ←/→ com foco no palco, arraste horizontal
- * ou os traços-índice abaixo. Clique no cartão da frente abre a descrição sobre
- * ele — exceto numa vaga, que gira mas não abre.
+ * Girar: clique num cartão lateral, ←/→ (sem precisar de foco, enquanto a seção
+ * está ativa), arraste horizontal ou os traços-índice abaixo. Clique no cartão
+ * da frente abre a descrição sobre ele — exceto numa vaga, que gira mas não abre.
  */
 export function ProjectsSection({ ativo }: { ativo: boolean }) {
   const t = useT();
@@ -18,11 +19,31 @@ export function ProjectsSection({ ativo }: { ativo: boolean }) {
   const orbita = useOrbit(lista.length);
   const { fechar } = orbita;
 
+  useArrowKeys(ativo, orbita.girar);
+
   // sair da seção fecha o painel aberto: voltar depois e encontrar um cartão
   // já aberto seria um estado que o visitante não pediu
   useEffect(() => {
     if (!ativo) fechar();
   }, [ativo, fechar]);
+
+  /**
+   * Esc fecha o painel.
+   *
+   * O painel cobre o cartão inteiro e é a única coisa focável ali dentro; sem
+   * uma saída explícita, quem navega por teclado teria de voltar até o cartão e
+   * apertar Enter de novo para sair do que abriu.
+   */
+  useEffect(() => {
+    if (!ativo || orbita.aberto === null) return;
+    const aoTeclar = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      fechar();
+    };
+    window.addEventListener('keydown', aoTeclar);
+    return () => window.removeEventListener('keydown', aoTeclar);
+  }, [ativo, orbita.aberto, fechar]);
 
   return (
     <section
@@ -46,13 +67,6 @@ export function ProjectsSection({ ativo }: { ativo: boolean }) {
           role="group"
           aria-label={t.a11y.projetos}
           tabIndex={0}
-          onKeyDown={(e) => {
-            const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
-            if (!d) return;
-            e.preventDefault();
-            e.stopPropagation();
-            orbita.girar(d);
-          }}
         >
           <div className={styles.anel}>
             {lista.map((p, i) => (
@@ -62,6 +76,7 @@ export function ProjectsSection({ ativo }: { ativo: boolean }) {
                 indice={i}
                 geo={orbita.geometria(i, p.estado === 'definir')}
                 aberto={orbita.aberto === i}
+                focavel={orbita.aberto === null || orbita.aberto === i}
                 onAlternar={() => orbita.alternar(i, p.estado !== 'definir')}
               />
             ))}

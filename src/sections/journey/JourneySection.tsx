@@ -1,17 +1,10 @@
-import { useEffect } from 'react';
+import { useArrowKeys } from '~/hooks/useArrowKeys';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
 import { JourneyEntry } from './JourneyEntry';
 import styles from './JourneySection.module.css';
 import { TimelineCurve } from './TimelineCurve';
 import { useTimeline } from './useTimeline';
-
-/** Campos onde ←/→ pertencem ao cursor de texto. */
-function editando(alvo: EventTarget | null): boolean {
-  if (!(alvo instanceof HTMLElement)) return false;
-  const tag = alvo.tagName;
-  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || alvo.isContentEditable;
-}
 
 /**
  * Trajetória: ficha do evento ativo sobre uma linha do tempo em curva.
@@ -27,20 +20,8 @@ export function JourneySection({ ativo }: { ativo: boolean }) {
   const t = useT();
   const lista = t.experiencia.lista;
   const linha = useTimeline(lista.length);
-  const { mudar } = linha;
 
-  useEffect(() => {
-    if (!ativo) return;
-    const aoTeclar = (e: KeyboardEvent) => {
-      if (editando(e.target)) return;
-      const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
-      if (!d) return;
-      e.preventDefault();
-      mudar(d);
-    };
-    window.addEventListener('keydown', aoTeclar);
-    return () => window.removeEventListener('keydown', aoTeclar);
-  }, [ativo, mudar]);
+  useArrowKeys(ativo, linha.mudar);
 
   return (
     <section
