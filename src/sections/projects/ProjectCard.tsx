@@ -1,5 +1,5 @@
 import { Figure } from '~/components/Figure';
-import type { Projeto } from '~/content';
+import { BANNERS, type Projeto } from '~/content';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
 import styles from './ProjectCard.module.css';
@@ -60,7 +60,12 @@ export function ProjectCard({ projeto, indice, geo, aberto, onAlternar }: Projec
         }}
       >
         <div className={styles.banner}>
-          <Figure src={projeto.banner} alt="" placeholder={t.projetos.banner} fit="cover" />
+          <Figure
+            src={projeto.banner ? BANNERS[projeto.banner] : undefined}
+            alt=""
+            placeholder={t.projetos.banner}
+            fit="cover"
+          />
           <span className={styles.scrim} aria-hidden="true" />
           <div className={styles.bannerTopo} aria-hidden="true">
             <span className={styles.numero}>{rotulo}</span>

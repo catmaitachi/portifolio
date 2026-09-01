@@ -1,3 +1,4 @@
+import clinplay from '~/assets/banners/clinplay.svg';
 import github from '~/assets/icons/github.svg';
 import instagram from '~/assets/icons/instagram.svg';
 import linkedin from '~/assets/icons/linkedin.svg';
@@ -17,6 +18,9 @@ import retrato from '~/assets/retrato.jpg';
  * Adicionar uma formação: o arquivo em `assets/logos/`, uma linha em `LOGOS`,
  * a escala em `shared.json → logos` e a entrada nos dois dicionários.
  *
+ * Adicionar um banner de projeto: o arquivo em `assets/banners/`, uma linha em
+ * `BANNERS` e o campo `banner` com a **mesma chave** nos dois dicionários.
+ *
  * Ícones são **glifos brancos locais, nunca CDN** — um ícone que não carrega
  * deixa o cartão de canal visualmente vazio.
  */
@@ -24,6 +28,16 @@ import retrato from '~/assets/retrato.jpg';
 export const LOGOS: Record<string, string> = { senac, puc, ufmg };
 
 export const ICONES: Record<string, string> = { github, linkedin, instagram, tiktok };
+
+/**
+ * Banners dos cartões de projeto. Chave ausente = a moldura de espaço reservado.
+ *
+ * São **marcas dos próprios projetos**, e por isso escapam da paleta
+ * monocromática pela mesma razão que o vermelho da UFMG: identidade de terceiro
+ * não se repinta. O `scrim` do cartão escurece topo e base para o índice e o
+ * glifo continuarem legíveis sobre qualquer imagem.
+ */
+export const BANNERS: Record<string, string> = { clinplay };
 
 /**
  * Retrato da seção Sobre. Vazio = a moldura aparece como espaço reservado.

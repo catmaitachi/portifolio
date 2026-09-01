@@ -57,7 +57,11 @@ export interface Projeto {
   estado: EstadoProjeto;
   /** vazio = sem link "ver ao vivo" */
   url?: string;
-  /** vazio = banner exibe a moldura de espaço reservado */
+  /**
+   * Casa com uma chave de BANNERS (assets.ts) — é chave, não caminho: JSON não
+   * importa arquivo, e o Vite precisa do `import` para versionar o asset.
+   * Ausente = a moldura de espaço reservado.
+   */
   banner?: string;
 }
 

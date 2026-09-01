@@ -39,7 +39,7 @@ export function format(template: string, vars: Record<string, string>): string {
 }
 
 export type { Canal, Dictionary, Experiencia, Formacao, Lang, Projeto, SectionKey, Shared } from './types';
-export { ICONES, LOGOS, RETRATO } from './assets';
+export { BANNERS, ICONES, LOGOS, RETRATO } from './assets';
 
 /** Índice de uma seção pela chave; -1 se ela não estiver em `SECOES`. */
 export const indiceDaSecao = (key: SectionKey): number =>
