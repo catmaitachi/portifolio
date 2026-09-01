@@ -1,5 +1,5 @@
 import { Figure } from '~/components/Figure';
-import { BANNERS, type Projeto } from '~/content';
+import { BANNERS, type Projeto, urlExterna } from '~/content';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
 import styles from './ProjectCard.module.css';
@@ -32,6 +32,8 @@ export function ProjectCard({ projeto, indice, geo, aberto, onAlternar }: Projec
   const glifo = GLIFOS[indice % GLIFOS.length];
   const rotulo = String(indice + 1).padStart(2, '0');
   const preenchido = projeto.estado === 'ativo' || projeto.estado === 'arquivado';
+  // `url` vazia esconde o link; sem esquema, o href viraria caminho relativo
+  const aoVivo = urlExterna(projeto.url);
 
   return (
     <article
@@ -108,10 +110,10 @@ export function ProjectCard({ projeto, indice, geo, aberto, onAlternar }: Projec
             <span className={styles.descIndice}>{rotulo}</span>
           </div>
           <p className={styles.descTexto}>{projeto.descricao}</p>
-          {projeto.url ? (
+          {aoVivo ? (
             <a
               className={styles.aoVivo}
-              href={projeto.url}
+              href={aoVivo}
               target="_blank"
               rel="noreferrer"
               /* só entra na tabulação quando o painel está aberto */

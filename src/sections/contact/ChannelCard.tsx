@@ -1,4 +1,4 @@
-import { type Canal, ICONES } from '~/content';
+import { type Canal, ICONES, urlExterna } from '~/content';
 import { useT } from '~/i18n/useLanguage';
 import styles from './ChannelCard.module.css';
 
@@ -14,13 +14,14 @@ import styles from './ChannelCard.module.css';
  */
 export function ChannelCard({ canal }: { canal: Canal }) {
   const t = useT();
-  const ativo = Boolean(canal.url);
+  const destino = urlExterna(canal.url);
+  const ativo = Boolean(destino);
   const icone = ICONES[canal.icone];
 
   return (
     <a
       className={styles.canal}
-      href={canal.url || undefined}
+      href={destino}
       target="_blank"
       rel="noopener noreferrer"
       data-inativo={!ativo || undefined}
