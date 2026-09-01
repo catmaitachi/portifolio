@@ -17,6 +17,12 @@ export type SectionKey = 'inicio' | 'sobre' | 'projetos' | 'experiencia' | 'cont
 export type EstadoFormacao = 'concluido' | 'cursando' | 'pretensao';
 export type EstadoProjeto = 'ativo' | 'arquivado' | 'definir';
 
+/** Etapas cumpridas de um total — a fração que preenche a barra de `cursando`. */
+export interface ProgressoFormacao {
+  feito: number;
+  total: number;
+}
+
 export interface Formacao {
   /** casa com uma chave de LOGOS (assets.ts) e de `logos` (shared.json) */
   slot: string;
@@ -24,6 +30,18 @@ export interface Formacao {
   nivel: string;
   curso: string;
   estado: EstadoFormacao;
+  /**
+   * `concluido`: quando terminou, no formato ano.mês. Fica escondida atrás da
+   * barra e aparece quando o ponteiro entra no badge. Ausente = badge sem
+   * detalhe, e a barra ocupa a linha inteira.
+   */
+  conclusao?: string;
+  /**
+   * `cursando`: a barra é sempre a fração `feito/total` — não um meio-termo
+   * decorativo — e a própria fração aparece no hover. Ausente = 50%, que é só o
+   * "em algum ponto do caminho" de antes.
+   */
+  progresso?: ProgressoFormacao;
 }
 
 export interface Projeto {

@@ -48,6 +48,27 @@ for (const [rotulo, pegar, id] of listas) {
   const b = pegar(en).map((x) => x[id]);
   if (a.join('|') !== b.join('|')) {
     problemas.push(`${rotulo}: ordem ou itens divergem\n    pt: ${a.join(', ')}\n    en: ${b.join(', ')}`);
+    // com as listas desalinhadas, comparar campo a campo só produziria ruído
+    continue;
+  }
+  /**
+   * Dentro do item, as chaves também precisam bater.
+   *
+   * `caminhos()` para numa lista (`...lista[]`) — os itens não têm caminho
+   * próprio, então um campo opcional acrescentado só num idioma (uma `url` de
+   * projeto, a `conclusao` de uma formação) passaria por ele e pelo TypeScript,
+   * e a página perderia o dado ao trocar de idioma.
+   */
+  const itensPt = pegar(pt);
+  const itensEn = pegar(en);
+  for (let i = 0; i < itensPt.length; i++) {
+    const camposPt = Object.keys(itensPt[i]).sort().join(', ');
+    const camposEn = Object.keys(itensEn[i]).sort().join(', ');
+    if (camposPt !== camposEn) {
+      problemas.push(
+        `${rotulo}[${itensPt[i][id]}]: campos diferentes\n    pt: ${camposPt}\n    en: ${camposEn}`,
+      );
+    }
   }
 }
 

@@ -35,14 +35,16 @@
         "instituicao": "SENAC",
         "nivel": "Técnico",
         "curso": "Tecnologia da Informação",
-        "estado": "concluido"
+        "estado": "concluido",
+        "conclusao": "2022.12"
       },
       {
         "slot": "puc",
         "instituicao": "PUC Minas",
         "nivel": "Bacharelado",
         "curso": "Engenharia de Software",
-        "estado": "cursando"
+        "estado": "cursando",
+        "progresso": { "feito": 4, "total": 8 }
       },
       {
         "slot": "ufmg",
