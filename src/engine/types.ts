@@ -18,9 +18,32 @@ export interface Gravity {
   k: number;
 }
 
+/**
+ * Onda de choque de uma supernova: publicada pela camada `nova`, consumida pelo
+ * campo de estrelas.
+ *
+ * `inner2`/`outer2` vêm prontos porque o consumidor os testa **por estrela**, e
+ * são milhares por quadro: elevar o raio ao quadrado uma vez na origem custa uma
+ * multiplicação, fazê-lo no laço custa mil.
+ */
+export interface Shock {
+  x: number;
+  y: number;
+  /** raio da frente de onda, em px */
+  radius: number;
+  /** meia-espessura do anel que empurra, em px */
+  width: number;
+  /** impulso máximo na crista, em px/s */
+  force: number;
+  /** `(radius − width)²` e `(radius + width)²` */
+  inner2: number;
+  outer2: number;
+}
+
 /** Barramento entre camadas. Cada publicação é opcional por definição. */
 export interface StageBus {
   gravity?: Gravity | null;
+  shock?: Shock | null;
 }
 
 /** Estado da câmera durante a introdução (zoom de dentro do horizonte para fora). */

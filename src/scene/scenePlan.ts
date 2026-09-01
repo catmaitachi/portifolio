@@ -62,4 +62,22 @@ export const DURACAO = {
   /** intro: a câmera parte de dentro do horizonte e recua */
   cameraZoom: 1.5,
   cameraFator: 26,
+  /**
+   * Supernova: a onda dura bem menos que a recarga, então nunca há duas na tela
+   * — é essa folga que permite ao motor guardar uma onda só.
+   *
+   * A recarga é o **mesmo número** que o HUD desenha no medidor do canto: o
+   * `App` lê daqui e entrega aos dois lados, porque um círculo que fecha antes
+   * (ou depois) de a funcionalidade voltar mente para quem está olhando.
+   */
+  novaOnda: 1.35,
+  novaRecarga: 3,
 } as const;
+
+/**
+ * Deslocamento máximo, em px, que um toque pode ter e ainda contar como toque.
+ *
+ * Acima disso foi arraste — e arraste é da rolagem, da órbita ou da curva do
+ * tempo, nunca da supernova.
+ */
+export const TOQUE_PARADO = 6;

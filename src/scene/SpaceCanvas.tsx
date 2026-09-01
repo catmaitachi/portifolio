@@ -1,8 +1,14 @@
 import { useEffect, useRef } from 'react';
 import type { SectionKey } from '~/content';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
-import { CEUS, DURACAO, nomeDoCeu, SECAO_DO_BURACO_NEGRO } from './scenePlan';
+import { CEUS, DURACAO, nomeDoCeu, SECAO_DO_BURACO_NEGRO, TOQUE_PARADO } from './scenePlan';
 import styles from './SpaceCanvas.module.css';
+
+interface SpaceCanvasProps {
+  secao: SectionKey;
+  /** chamado quando uma supernova é de fato acesa (e não engolida pela recarga) */
+  onNova?: () => void;
+}
 
 /**
  * Ponte entre o React e o motor de cena.
@@ -13,9 +19,17 @@ import styles from './SpaceCanvas.module.css';
  *
  * O motor entra por `import()` dinâmico — ele é o maior pedaço de JavaScript da
  * página e nada na primeira pintura depende dele.
+ *
+ * É aqui também que mora a regra de **quando um toque vira supernova**. O canvas
+ * fica atrás do contêiner de rolagem, então nenhum clique chega a ele: quem
+ * escuta é a janela, e a decisão de "isto foi o vazio, não o conteúdo" é
+ * conhecimento do DOM da página — o motor não deve tê-lo. A camada só recebe um
+ * ponto e responde se aceitou ou não.
  */
-export function SpaceCanvas({ secao }: { secao: SectionKey }) {
+export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const onNovaRef = useRef(onNova);
+  onNovaRef.current = onNova;
   const semMovimento = useReducedMotion();
 
   // a cena aplicada mais recente e a função que sabe aplicá-la; ficam em ref
@@ -40,6 +54,7 @@ export function SpaceCanvas({ secao }: { secao: SectionKey }) {
         BlackHole,
         Constellations,
         Meteors,
+        Supernova,
         tween,
       } = await import('~/engine');
       if (!vivo) return;
@@ -54,10 +69,16 @@ export function SpaceCanvas({ secao }: { secao: SectionKey }) {
         }),
       );
 
+      const nova = Supernova({
+        cooldown: DURACAO.novaRecarga,
+        wave: DURACAO.novaOnda,
+      });
+
       const stage = createStage(cv, [
         Nebula(), // z 0
         BlackHole(), // z 20 — publica a gravidade
-        Starfield(), // z 10 — consome a gravidade
+        nova, // z 14 — publica a onda de choque
+        Starfield(), // z 10 — consome a gravidade e a onda
         ...ceus, // z 12
         Meteors(), // z 30
       ]);
@@ -95,8 +116,58 @@ export function SpaceCanvas({ secao }: { secao: SectionKey }) {
       }
       aplicar(pendenteRef.current);
 
+      /**
+       * Toque no vazio = supernova.
+       *
+       * "Vazio" é literalmente o canvas ou a caixa de uma seção — nunca um
+       * descendente dela. Clicar num cartão, num botão, num campo ou no bloco de
+       * conteúdo é interação com a página, e a página vem primeiro.
+       *
+       * O par pointerdown/pointerup existe por causa das superfícies de arraste:
+       * a órbita de Projetos e a curva da Trajetória são arrastadas por cima
+       * dessa mesma área, e um arraste não pode terminar em estrela. Acima de
+       * `TOQUE_PARADO` px o gesto é de outro dono.
+       */
+      let alvoVazio = false;
+      let px = 0;
+      let py = 0;
+
+      const noVazio = (alvo: EventTarget | null): boolean =>
+        alvo instanceof Element && (alvo === cv || alvo.tagName === 'SECTION');
+
+      const aoDescer = (e: PointerEvent) => {
+        alvoVazio =
+          !semMovimentoRef.current &&
+          e.isPrimary &&
+          (e.pointerType !== 'mouse' || e.button === 0) &&
+          noVazio(e.target);
+        px = e.clientX;
+        py = e.clientY;
+      };
+
+      const aoSubir = (e: PointerEvent) => {
+        if (!alvoVazio) return;
+        alvoVazio = false;
+        if (Math.abs(e.clientX - px) > TOQUE_PARADO) return;
+        if (Math.abs(e.clientY - py) > TOQUE_PARADO) return;
+        // durante o zoom da intro a cena ainda está chegando: nada de onda
+        if (stage.env.camera.moving) return;
+        if (nova.disparar(e.clientX, e.clientY)) onNovaRef.current?.();
+      };
+
+      const aoCancelar = () => {
+        alvoVazio = false;
+      };
+
+      window.addEventListener('pointerdown', aoDescer, { passive: true });
+      window.addEventListener('pointerup', aoSubir, { passive: true });
+      window.addEventListener('pointercancel', aoCancelar, { passive: true });
+
       destruir = () => {
         aplicarRef.current = null;
+        window.removeEventListener('pointerdown', aoDescer);
+        window.removeEventListener('pointerup', aoSubir);
+        window.removeEventListener('pointercancel', aoCancelar);
         stage.destroy();
       };
     })();

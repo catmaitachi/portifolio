@@ -22,7 +22,9 @@ interface StarfieldOptions {
  * grupo vira um único `fill()`: 8 chamadas de desenho para ~1120 estrelas, em
  * vez de 1120 mudanças de `globalAlpha`.
  *
- * Lê `env.bus.gravity` (publicada pelo buraco negro) sem saber quem a publicou.
+ * Lê `env.bus.gravity` (buraco negro) e `env.bus.shock` (supernova) sem saber
+ * quem os publicou. Os dois entram como deslocamento, nunca como posição: a mola
+ * de volta ao repouso é a mesma para os dois e devolve o céu ao lugar sozinha.
  */
 export function Starfield({
   name = 'stars',
@@ -85,6 +87,9 @@ export function Starfield({
       // durante o zoom da intro, repulsão e gravidade ficam desligadas
       const useMouse = mouse.active && !moving;
       const grav = moving ? null : env.bus.gravity;
+      // a onda também some durante o zoom da intro: empurrar um céu que ainda
+      // está chegando não lê como onda, lê como tremor
+      const onda = moving ? null : env.bus.shock;
       let INF2 = 0;
       let inv2 = 0;
       if (grav) {
@@ -128,6 +133,23 @@ export function Starfield({
             oy += (ny * pull + nx * pull * 0.55) * dt * 2.2;
           }
         }
+        if (onda) {
+          const wx = sx[i] + ox - onda.x;
+          const wy = sy[i] + oy - onda.y;
+          const w2 = wx * wx + wy * wy;
+          // só o anel da frente de onda empurra; o miolo já foi varrido
+          if (w2 < onda.outer2 && w2 > onda.inner2) {
+            const wd = Math.sqrt(w2) || 1e-4;
+            // crista no raio, zero nas duas bordas do anel
+            const perfil = 1 - Math.abs(wd - onda.radius) / onda.width;
+            if (perfil > 0) {
+              const imp = onda.force * perfil * dt;
+              ox += (wx / wd) * imp;
+              oy += (wy / wd) * imp;
+            }
+          }
+        }
+
         sdx[i] = ox;
         sdy[i] = oy;
 

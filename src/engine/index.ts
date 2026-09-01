@@ -21,8 +21,18 @@ export type { BlackHoleLayer } from './layers/blackHole';
 export { Constellations } from './layers/constellations';
 export type { ConstellationsLayer, Placement } from './layers/constellations';
 export { Meteors } from './layers/meteors';
+export { Supernova } from './layers/supernova';
+export type { SupernovaLayer } from './layers/supernova';
 
 export { CONSTELLATIONS } from './catalog/constellations';
 export type { ConstellationKey, ConstellationSpec } from './catalog/constellations';
 
-export type { CameraState, FadableLayer, Gravity, Layer, StageBus, StageEnv } from './types';
+export type {
+  CameraState,
+  FadableLayer,
+  Gravity,
+  Layer,
+  Shock,
+  StageBus,
+  StageEnv,
+} from './types';
