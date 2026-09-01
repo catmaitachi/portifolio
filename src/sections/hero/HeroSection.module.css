@@ -66,7 +66,10 @@
   font-weight: 400;
   letter-spacing: 0.46em;
   text-transform: uppercase;
-  /* etiqueta entre dois riscos: é ornamento do nome, não texto que se copia */
+  /* etiqueta entre dois riscos: é ornamento do nome, não texto que se copia
+     nem se justifica — e uma só palavra não tem por que ser partida ao meio */
+  text-align: left;
+  hyphens: manual;
   user-select: none;
   animation: fina 0.9s ease-out 3.5s both;
 }

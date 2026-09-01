@@ -70,6 +70,39 @@ textarea {
   color: inherit;
 }
 
+/**
+ * Parágrafos justificados, no espírito do LaTeX.
+ *
+ * `text-align: justify` sozinho abre rios de espaço branco, e aqui o caso é o
+ * pior possível: a página inteira é IBM Plex Mono, **monoespaçada**, então o
+ * ajuste não pode sair da largura dos glifos — sobra tudo para o espaço entre
+ * palavras. As outras três declarações é que tornam a justificação aceitável:
+ *
+ * - `hyphens: auto` quebra a palavra no fim da linha, que é exatamente o que o
+ *   LaTeX faz para não esticar a linha. Depende de `<html lang>` estar correto,
+ *   e por isso o `LanguageProvider` o mantém em dia desde a primeira pintura.
+ * - `hyphenate-limit-chars: 6 3 3` recusa hifenizar palavra de menos de 6 letras
+ *   e nunca deixa menos de 3 de cada lado do hífen. O padrão do navegador (5 2 2)
+ *   pica palavras curtas e o texto vira uma escada de hífens.
+ * - `text-wrap: pretty` faz o Chrome escolher as quebras olhando o parágrafo
+ *   inteiro em vez de linha a linha — a mesma ideia do algoritmo do Knuth, e é
+ *   ele que tira o buraco de uma linha e o distribui pelas vizinhas.
+ *
+ * Onde falta suporte (Firefox não tem `hyphenate-limit-chars`), o parágrafo
+ * continua justificado e hifenizado, só com quebras menos bem escolhidas.
+ *
+ * Vale por elemento, como a regra de seleção acima: `<p>` é parágrafo em toda a
+ * página. Os dois `<p>` que não são texto corrido — o índice da seção e a
+ * etiqueta do nome — se desfazem disso no próprio módulo.
+ */
+p {
+  text-align: justify;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  hyphenate-limit-chars: 6 3 3;
+  text-wrap: pretty;
+}
+
 a {
   color: rgb(255 255 255 / 42%);
   text-decoration: none;
