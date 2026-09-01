@@ -24,10 +24,10 @@ npm run check:i18n   # confere se pt.json e en.json continuam paralelos
 | `src/i18n/` | Idioma corrente, detecção e persistência. | `content` |
 | `src/scene/` | Ponte React ↔ motor e a cena de cada seção. | `engine`, `content` |
 | `src/navigation/` | Rolagem por seções, teclado e menu. | `content`, `i18n` |
-| `src/hud/` | Anéis, mira, seletor de idioma, crédito, versão. | `i18n` |
+| `src/hud/` | Anéis, mira, seletor de idioma, crédito, versão, notificações. | `i18n` |
 | `src/sections/` | Uma pasta por seção. | `content`, `i18n`, componentes |
 | `src/components/` | Peças genéricas (`Figure`). | nada |
-| `src/hooks/` | Hooks transversais (`useReducedMotion`). | nada |
+| `src/hooks/` | Hooks transversais (`useReducedMotion`, `useArrowKeys`). | nada |
 
 A dependência só aponta para baixo nessa tabela. **Nenhuma seção importa outra**, e nenhuma sabe o
 próprio índice — recebe apenas `ativo: boolean`. Quem conhece a lista de seções é o `App`.
@@ -45,6 +45,42 @@ O alias `~` aponta para `src/`: mover um arquivo de pasta não quebra os imports
 - Tudo sutil. A intensidade foi reduzida várias vezes na fase de design (nebulosa, halo, borda do
   horizonte) — ao mexer nesses valores, mexer para baixo.
 
+### Cantos chanfrados
+
+Todo retângulo de conteúdo com borda tem o canto **superior-esquerdo e o inferior-direito**
+cortados em diagonal. Os outros dois seguem no raio de 2px de sempre — o chanfro em dois cantos
+opostos dá direção ao bloco; nos quatro, a caixa vira um losango achatado e some a leitura de painel.
+
+| Onde | Chanfro |
+|---|---|
+| `ProjectCard → .cartao` | 18px |
+| `PortraitCard → .carta` | 14px |
+| `ChannelCard → .canal` | 14px |
+| `EducationCarousel → .badge` | 12px |
+| `JourneySection → .seta` | 9px |
+| `JourneyEntry → .chip` | 6px |
+
+O tamanho acompanha o elemento: um chanfro fixo lê como recorte de canto num cartão grande e como
+caixa amassada num chip de 21px de altura. **Nunca passar de metade do lado menor.**
+
+A implementação é `corner-shape: bevel` + `border-radius: <chanfro> 2px`, dentro de um
+`@supports (corner-shape: bevel)`. Três coisas decorreram disso e não devem ser desfeitas:
+
+- **`clip-path` foi descartado.** Ele corta o elemento inteiro, e o `:focus-visible` do projeto tem
+  `outline-offset: 3px` — o contorno de foco fica *fora* do border-box e seria apagado por completo.
+  Um portfólio que perde o foco de teclado para ganhar um canto bonito trocou a coisa errada.
+- **O `@supports` não é enfeite.** Sem ele, um navegador sem `corner-shape` aplicaria o
+  `border-radius` grande e mostraria cantos bem arredondados — o oposto da estética de linha reta.
+  Dentro do `@supports`, quem não tem a propriedade fica com os 2px de hoje.
+- **A borda de 1px acompanha o corte sozinha**, e o mesmo vale para `border-style: dashed` (vaga,
+  pretensão, canal sem `url`) e para o `overflow: hidden` do cartão e do retrato. Nada disso
+  precisou de regra extra.
+
+Ficam **de fora**, e por motivo: os campos do formulário de contato (`.entrada`, `.enviar`) são um
+sublinhado de 1px, não uma caixa — não há canto para chanfrar; os marcadores geométricos do
+`ProjectCard` (`.glifo`) são ornamento com raio e rotação próprios por índice; e tudo que é círculo
+(anéis do HUD, nós da linha do tempo, medidor da supernova).
+
 ---
 
 ## Motor de cena (`src/engine/`)
@@ -57,8 +93,9 @@ Camada = `{ name, z, enabled, resize(env), update(env), draw(ctx, env) }`.
 Ordem do array = ordem de `update`; `z` = ordem de desenho.
 
 `env`: `W H dpr cx cy t dt mouse{x,y,active} camera{k,moving,progress,fade} bus{}`.
-`env.bus` é o barramento entre camadas — hoje só `bus.gravity`, publicada pelo `BlackHole` e lida
-pelo `Starfield`. **Uma camada nunca importa outra.**
+`env.bus` é o barramento entre camadas: `bus.gravity`, publicada pelo `BlackHole`, e `bus.shock`,
+publicada pela `Supernova` — as duas lidas pelo `Starfield`, que não sabe quem as publicou.
+**Uma camada nunca importa outra.**
 
 ### Camadas
 
@@ -68,6 +105,7 @@ pelo `Starfield`. **Uma camada nunca importa outra.**
 | `Starfield` | `layers/starfield.ts` | 10 | ~1120 estrelas (densidade por área), TypedArrays, repulsão do ponteiro por mola, gravidade via LUT, 8 baldes de opacidade = 8 `fill()`/quadro. Cintilar lento (±22%). |
 | `Constellations` | `layers/constellations.ts` | 12 | Figuras do céu real. Estrelas herdam as propriedades do `Starfield`; linha de 1px num único `stroke()`; posições do quadro em `vx_/vy_` pré-alocados. `opacity` em 0 tira a camada do `update` **e** do `draw`. |
 | `BlackHole` | `layers/blackHole.ts` | 20 | Raio `0.14·min(W,H)`. Plasma 96×96 por LUT de senos a 20fps (alpha .22), 260 poeiras em órbita kepleriana, halo .18/.06 até 3.4R (degradês em cache por centro/raio/força), horizonte preto + borda **preta** suavizando — nunca borda brilhante. |
+| `Supernova` | `layers/supernova.ts` | 14 | A estrela que o visitante acende. Pool de 12 estrelas (guardadas em fração da tela), uma onda de cada vez, recarga no relógio do motor. Depois de 4s a estrela passa a responder ao ponteiro. Ociosa custa duas comparações. |
 | `Meteors` | `layers/meteors.ts` | 30 | Pool de 3, intervalo 4–13s, rastro por gradiente linear. |
 
 ### Contrato de desempenho
@@ -137,6 +175,64 @@ liga/desliga sozinho.
 
 ---
 
+## Super-Nova
+
+Um toque no **vazio** acende uma estrela e solta uma onda de choque que empurra as estrelas
+vizinhas. Tem recarga, e a recarga é desenhada por um anel no canto inferior esquerdo: o anel se
+fecha enquanto a espera corre e some quando a funcionalidade volta. **Anel na tela = espere; sem
+anel = pode.**
+
+A feature atravessa três camadas do projeto, e cada uma sabe só a sua parte:
+
+| Onde | O que decide |
+|---|---|
+| `engine/layers/supernova.ts` | a física e a recarga: onda, estrelas acesas, `disparar()` aceita ou recusa |
+| `scene/SpaceCanvas.tsx` | **o que conta como toque no vazio** — conhecimento do DOM da página, não do motor |
+| `hud/NovaGauge.tsx` | o anel de recarga, animado só por CSS |
+| `hud/useNovaHint.ts` | quando sugerir a supernova a quem ainda não a descobriu (ver *A dica da supernova*) |
+
+O `App` liga as pontas: recebe o aviso da cena e passa o **mesmo** `DURACAO.novaRecarga` para os
+dois lados. Um círculo que fecha antes (ou depois) de o próximo disparo ser aceito mente para quem
+está olhando.
+
+**Por que o clique não chega ao canvas.** O contêiner de rolagem cobre a viewport inteira, e o
+canvas fica atrás dele. Quem escuta é a janela, e o filtro é estrito: o alvo precisa ser o próprio
+canvas ou a caixa de uma `<section>` — **nunca um descendente dela**. Clicar num cartão, num campo,
+num botão ou no bloco de conteúdo é interação com a página, e a página vem primeiro. O par
+`pointerdown`/`pointerup` com limite de `TOQUE_PARADO` px existe porque metade da tela é superfície
+de arraste: um arraste da órbita, da curva ou da rolagem não pode terminar em estrela.
+
+**Desempenho.** A onda vai para `env.bus.shock` e é o `Starfield` — que já percorre as ~1120
+estrelas — quem a aplica, dentro do laço que já existe: sem onda, o custo é um `if` fora do laço.
+`inner2`/`outer2` chegam prontos porque o teste é por estrela. Só o anel da frente empurra (o miolo
+já foi varrido), e o empurrão entra como **deslocamento**, então a mola que já devolvia as estrelas
+depois do ponteiro devolve estas também — nada aqui precisa lembrar de desfazer nada.
+
+**A estrela nasce presa e solta depois.** Durante os primeiros `settle` segundos (4) ela ignora o
+ponteiro: o cursor está exatamente em cima dela quando o clarão acontece, e uma estrela que fugisse
+do dedo que a acendeu pareceria um erro. Passado esse tempo ela vira uma estrela como as outras — a
+repulsão entra por uma rampa de 0,9s, nunca por um interruptor, e a mesma mola do `Starfield` a
+devolve ao repouso quando o ponteiro sai. Os números da repulsão (110px, 26, mola 2.6) **espelham os
+do `Starfield`**: uma camada não importa a outra, então mexer lá pede mexer aqui.
+
+A força da onda está **calibrada contra o que a cena já tinha**: 620 px/s de pico desloca uma estrela em
+~23px no auge da passagem da crista, a mesma ordem de grandeza da repulsão do ponteiro. Menos que
+isso não lê como empurrão; muito mais e o céu sacode.
+
+A recarga (3s) é maior que a onda (1,35s), e é essa folga que permite ao motor guardar **uma onda
+só**. Encurtar a recarga para menos que a duração da onda quebra essa premissa — a partir daí seria
+preciso um pool de ondas, e o `Starfield` teria de somar várias por estrela.
+
+A recarga vive no **relógio do motor**, não num `setTimeout`: um cronômetro do navegador continua
+andando com a aba escondida, e a cena não anda. E o medidor é uma animação de CSS de duração
+`--recarga` — o React renderiza uma vez por disparo, não uma vez por quadro.
+
+Com `prefers-reduced-motion: reduce` a supernova **não dispara**: a onda é movimento amplo e
+inesperado, e o medidor perderia o sentido com as durações zeradas. É a mesma decisão do zoom da
+câmera.
+
+---
+
 ## Idiomas (i18n)
 
 **Nenhuma string literal na interface** — inclusive os rótulos de acessibilidade. Todo texto vem de
@@ -190,9 +286,15 @@ Uma entrada em `projetos.lista` nos **dois** dicionários, com a mesma `key` e n
 
 - `estado`: `ativo` / `arquivado` (barra cheia) ou `definir` (barra vazia). **`definir` é vaga**:
   gira na órbita, mas não abre descrição.
-- `url` vazia esconde o link *ver ao vivo*.
-- `banner` vazio deixa a moldura de espaço reservado. Para preencher, importe a imagem em
-  `assets.ts` e ponha a URL aqui.
+- `url` vazia esconde o link *ver ao vivo*. Escreva o endereço **completo**
+  (`https://exemplo.com`): sem esquema, o `href` vira caminho relativo e o clique leva para
+  `<raiz-do-portfólio>/exemplo.com`. `urlExterna()` (`content/links.ts`) prefixa `https://` quando
+  falta, então o erro não chega ao visitante — mas o dado certo continua sendo o dado certo.
+- `banner` é uma **chave de `BANNERS`** (`assets.ts`), não um caminho: o arquivo vai em
+  `src/assets/banners/`, ganha uma linha em `BANNERS` e a mesma chave entra nos dois dicionários —
+  JSON não importa arquivo, e o Vite precisa do `import` para versionar o asset. Ausente = a moldura
+  de espaço reservado. Os banners são marcas dos próprios projetos e escapam da paleta
+  monocromática pela mesma razão que o vermelho da UFMG: identidade de terceiro não se repinta.
 
 ### Adicionar uma experiência
 
@@ -221,7 +323,30 @@ Uma entrada em `experiencia.lista` nos dois dicionários. A lista está em **ord
 3. a escala óptica em `shared.json → logos`;
 4. uma entrada em `formacoes.lista` nos dois dicionários, com o mesmo `slot`.
 
-`estado`: `concluido` (barra 100%), `cursando` (50%) ou `pretensao` (0%, tracejado e apagado).
+```json
+{
+  "slot": "senac",
+  "instituicao": "SENAC",
+  "nivel": "Técnico",
+  "curso": "Tecnologia da Informação",
+  "estado": "concluido",
+  "conclusao": "2022.12"
+}
+```
+
+`estado`: `concluido` (barra 100%), `cursando` (a fração de `progresso`) ou `pretensao` (0%,
+tracejado e apagado).
+
+Os dois campos opcionais são o **detalhe** que a barra esconde e o hover revela (ver *Carrossel de
+formações*):
+
+- `conclusao` — quando terminou, em **ano.mês**, só para `concluido`;
+- `progresso: { feito, total }` — etapas cumpridas, só para `cursando`. É ele que preenche a barra,
+  o tempo todo; sem ele a barra volta aos 50% genéricos de antes.
+
+Os dois são **dado, não texto**: vão idênticos nos dois dicionários, como a versão no rodapé. E
+precisam estar nos dois — `npm run check:i18n` compara agora também os **campos de cada item** das
+listas ligadas, justamente porque um campo opcional presente em só um idioma passa pelo TypeScript.
 
 ### Trocar o retrato
 
@@ -229,6 +354,12 @@ Solte o arquivo em `src/assets/`, importe-o em `assets.ts` e atribua a `RETRATO`
 espaço reservado. Hoje é `src/assets/retrato.jpg`: o design apontava direto para o avatar do GitHub,
 e uma imagem servida por terceiro deixa o retrato à mercê de uma indisponibilidade — além de escapar
 do versionamento do Vite.
+
+**Exporte em 720px de lado, JPEG qualidade 82** (~136 KB). A coluna do retrato mede ~269px no
+desktop e 116–150px no mobile, então 720 já cobre DPR 2 com folga de zoom. O arquivo que estava aqui
+tinha 2571px e 1,5 MB — mais de cinco vezes o JS e o CSS somados, para ser desenhado a um quarto do
+tamanho. WebP foi medido e **não entrou**: no mesmo lado e qualidade ele economiza só ~8%, o que não
+paga um `<picture>` e um segundo arquivo para manter em sincronia.
 
 ### Adicionar uma seção
 
@@ -252,6 +383,24 @@ raio de 2px. Entram por opacidade + 26px de deslocamento quando a seção é a a
 `useSectionScroll` lê o índice num rAF por rajada de scroll e só faz `setState` quando ele **muda**.
 O teclado (↑/↓, PageUp/Down, Home/End) é global, mas **sai do caminho quando o foco está num campo
 de texto** — senão a navegação roubaria o cursor do formulário de contato.
+
+### As setas horizontais são da seção ativa
+
+↑/↓ são da rolagem; **←/→ são de quem está na tela**. Chegar em Projetos ou em Trajetória rolando
+já habilita as setas — não há clique prévio, porque quem rolou até ali não tem foco em lugar nenhum
+e a tecla morreria no vazio.
+
+Isso vive num lugar só: `useArrowKeys(ativo, andar)` (`src/hooks/`), que registra o listener na
+janela **enquanto a seção está ativa** e o remove ao sair. Duas seções nunca disputam a mesma tecla,
+porque fora da seção o listener não existe.
+
+Corolário: os componentes de dentro (o palco da órbita, a curva do tempo) **não tratam ←/→**. Eles
+continuam focáveis e rotulados, mas um segundo handler local só criaria a chance de um passo duplo —
+foi assim que a órbita ficou dependente de foco. A exceção é o carrossel de formações, que trata a
+seta no próprio elemento porque a seção Sobre não reivindica ←/→ para si.
+
+`editandoTexto()` — a regra de "aqui a seta é do cursor" — mora junto do hook, e tanto a rolagem
+quanto as seções a usam. Duplicada, ela sairia de sincronia no dia em que um campo novo aparecesse.
 
 Menu vertical à direita: rótulo + risco de 1px que cresce (12px → 34px) na seção ativa. No mobile é
 uma faixa horizontal que desliza para pôr a seção ativa no centro (`--navdx`, medido em coordenadas
@@ -301,6 +450,84 @@ O número **não é uma string escrita no componente nem uma chave de dicionári
 constranger. E ela fica fora do i18n de propósito: `v1.0` é dado, não texto — uma chave por idioma
 só criaria dois lugares para errar.
 
+### Crédito: escondido por visibilidade, nunca por `display: none`
+
+Em ≤640px o crédito sai de cena — mas com `--credito-vis: hidden`, não com `display: none`. Um
+elemento com `display: none` sai da árvore de renderização e leva a animação junto: ao voltar para
+desktop (rotação, janela redimensionada, DevTools), `creditIn` recomeça do zero, e como ela tem
+**5.2s de atraso com `both`**, o crédito ficava mais de cinco segundos invisível — o que na tela lê
+como "não voltou mais".
+
+`visibility: hidden` mantém o elemento na árvore: a animação corre escondida e o crédito reaparece
+no mesmo quadro em que a faixa larga volta. A visibilidade já o tira do clique e da tabulação, então
+não precisa de `pointer-events` extra.
+
+A regra vale para qualquer coisa do HUD que entre por animação atrasada e suma numa media query.
+
+### Medidor da supernova
+
+`NovaGauge` fica no canto inferior esquerdo, com os mesmos recuos do menu e da versão
+(`max(3.2vw, 26px)`; no mobile sobe para `max(2.4vh, 20px)` e encosta na esquerda, onde não disputa
+espaço com a versão centrada nem com a faixa do menu).
+
+Só existe no DOM depois da primeira supernova, e `key={disparo}` é o que reinicia a animação a cada
+estrela. A recarga inteira é CSS de duração `--recarga`; o perímetro do arco vem do componente
+(`2π·r`), que é quem conhece o `r` do SVG. `aria-hidden` porque não há informação ali: é o retorno
+visual de um gesto de ponteiro, e nada existe só por esse caminho.
+
+Detalhe que já custou uma iteração: a animação de saída usa `forwards`, **nunca `both`**. Com
+`backwards`, ela aplicaria o próprio estado inicial durante os segundos de atraso e passaria por
+cima da animação de entrada, que vem antes na mesma lista. Pelo mesmo motivo o núcleo acende ao
+longo da recarga em vez de pulsar `infinite`: uma animação infinita continuaria rodando depois de o
+medidor apagar, e ele fica no DOM até um próximo disparo que pode nunca vir.
+
+### Notificações
+
+`Notice` (`hud/Notice.tsx`) é o **modelo** de notificação do HUD: painel no canto superior esquerdo,
+com título curto, uma linha de texto e um botão de dispensar. É genérico — quem monta decide quando
+o aviso aparece e o que ele diz. Props: `aberto`, `titulo`, `texto`, `rotuloFechar`, `onFechar`.
+
+O canto superior esquerdo é o único que o HUD deixou vago (idioma no topo à direita, menu à direita,
+versão embaixo à direita, medidor embaixo à esquerda). No mobile o aviso **desce** para
+`max(7.4vh, 62px)`, porque lá o seletor de idioma passa a ocupar o centro do topo.
+
+O painel **fica montado durante a animação de saída** e sai do DOM no `animationend` — checando
+`e.target === e.currentTarget`, porque o evento borbulha e o risco lateral também é animado.
+Desmontar no mesmo quadro em que `aberto` vira `false` faria o aviso sumir de uma vez, e um painel
+que pisca e desaparece lê como falha de renderização. Vale aqui a mesma regra do medidor: a
+animação de saída usa `forwards`, **nunca `both`**.
+
+`role="status"` + `aria-live="polite"`: é uma sugestão, não um alerta — não deve interromper o que o
+leitor de tela estiver dizendo. Os textos vivem em `aviso` nos dois dicionários, com `fechar` (o
+rótulo do botão, que serve a qualquer aviso) e um bloco por notificação.
+
+### A dica da supernova
+
+A supernova é a única coisa da página que **ninguém descobre lendo**: não há botão nem rótulo, e
+quem não clica no vazio nunca sabe que ela existe. `useNovaHint` (`hud/useNovaHint.ts`) decide
+quando contar, e o `App` liga as pontas — o mesmo contador que alimenta o medidor de recarga.
+
+A espera é de **6,5 s**, não dos 5 s que a ideia pedia: a abertura termina em 6,2 s (a versão entra
+em 5,6 s e leva 0,6 s), e um aviso aos 5 s disputaria a entrada com o resto do HUD. 6,5 s é o
+primeiro instante em que a tela já está parada. Depois de **13 s** o aviso se retira sozinho.
+
+Três coisas apagam a dica, cada uma por um motivo diferente:
+
+| Condição | Por quê |
+|---|---|
+| já acendeu uma estrela | descobriu; repetir para quem já sabe é ruído. Fica em `localStorage` (`portfolio.nova`), então não volta na próxima visita |
+| `prefers-reduced-motion` | a supernova nem chega a disparar (ver `SpaceCanvas`) — convidar para o que não vai acontecer é pior que o silêncio |
+| o visitante fechou o aviso | dispensar é resposta, não indiferença |
+
+**Os dois cronômetros só correm com a aba visível** (`useEsperaVisivel`, no próprio arquivo). É a
+mesma razão pela qual a recarga vive no relógio do motor, e aqui o efeito seria pior: o aviso
+apareceria e expiraria enquanto o visitante está em outra aba, e a dica que existe para ser lida
+nunca teria sido vista.
+
+O aviso **não** é alvo de supernova: o filtro do `SpaceCanvas` exige que o alvo seja o canvas ou a
+caixa de uma `<section>`, e o painel não é nem um nem outro. Clicar nele não acende estrela — o que
+é o certo, senão o botão de dispensar acenderia uma.
+
 ### `@keyframes` vive no módulo que o usa
 
 **Nunca declarar `@keyframes` num CSS global para usá-lo de dentro de um `.module.css`.** CSS Modules
@@ -329,13 +556,16 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 |---|---|
 | `section.module.css` | `--pt --pb --px --gap` |
 | `AboutSection` | `--cols --corpo-gap --retrato --txt --pfs --plh` |
-| `EducationCarousel` | `--bw` |
+| `EducationCarousel` | `--bw --detalhe-w --detalhe-ml` |
 | `ProjectsSection` | `--pcw --pch --pbh --ph --pr --pperspectiva --pcard` |
 | `JourneySection` | `--exph --exp-cargo --exp-per --exp-curva --exp-rail --exp-fantasma --exp-gap --exp-txt --exp-topo` |
 | `ContactSection` | `--form-cols --enviar-just` |
 | `NavMenu` | `--nav-top --nav-bottom --nav-left --nav-right --nav-tx --nav-ty --nav-dir --nav-align --nav-gap --nav-risco --nav-risco-ativo --nav-risco-w --nav-risco-esc --nav-risco-rot` |
 | `LanguageToggle` | `--lang-left --lang-right --lang-tx` |
 | `Version` | `--ver-bottom --ver-left --ver-right --ver-tx` |
+| `NovaGauge` | `--nova-bottom --nova-left --nova-size` |
+| `Notice` | `--aviso-top --aviso-left --aviso-w` |
+| `Credit` | `--credito-vis` |
 
 Faixas: `≤640px` (mobile: coluna única, nav horizontal, seletor centrado) e `≤720px de altura`
 (telas baixas: retrato 150px, texto 22vh, paddings menores). **A segunda vem depois na cascata de
@@ -375,6 +605,44 @@ As exceções moram no módulo de quem as pede, nunca no global:
 
 ---
 
+## Parágrafos justificados
+
+Todo `<p>` é justificado (`reset.css`), e a regra vale **por elemento**, como a da seleção de texto:
+parágrafo é `<p>` em toda a página, então ela alcança o que ainda não foi escrito.
+
+`text-align: justify` sozinho abre rios de espaço em branco, e aqui o caso é o pior possível: a
+página inteira é IBM Plex Mono, **monoespaçada**, então o ajuste não pode sair da largura dos
+glifos — sobra tudo para o espaço entre palavras. São as outras três declarações que tornam a
+justificação aceitável, e nenhuma delas é opcional:
+
+| Declaração | O que resolve |
+|---|---|
+| `hyphens: auto` | quebra a palavra no fim da linha em vez de esticá-la — é o que o LaTeX faz |
+| `hyphenate-limit-chars: 6 3 3` | recusa palavra de menos de 6 letras e nunca deixa menos de 3 de cada lado do hífen. O padrão (5 2 2) pica palavras curtas e o texto vira uma escada de hífens |
+| `text-wrap: pretty` | o Chrome escolhe as quebras olhando o parágrafo inteiro, não linha a linha — a ideia do algoritmo do Knuth: tira o buraco de uma linha e o distribui pelas vizinhas |
+
+**A hifenização depende de `<html lang>`**, e é por isso que o `LanguageProvider` reflete o idioma
+por `useEffect` e não nos dois callbacks de troca. Antes, um visitante detectado como `en` ficava
+com o `lang="pt-BR"` do `index.html` até trocar de idioma na mão — o que não tinha consequência
+visível e passou a ter: texto inglês partido por regras do português.
+
+Onde falta suporte (o Firefox ainda não tem `hyphenate-limit-chars`) o parágrafo continua
+justificado e hifenizado, só com quebras menos bem escolhidas.
+
+Duas exceções, e são os mesmos dois `<p>` que já se excluíam da seleção de texto — pela mesma razão,
+não são texto corrido:
+
+| Onde | O quê |
+|---|---|
+| `section.module.css → .indice` | `text-align: left` + `hyphens: manual` — lê como marcador |
+| `HeroSection → .etiqueta` | idem; uma palavra só, e não há por que parti-la ao meio |
+
+Ficam de fora por não serem `<p>`: os títulos, os chips, os rótulos do HUD e os `<li>` das
+atividades da Trajetória — frases de uma linha, onde justificar não muda nada e hifenizar só
+introduziria hífen.
+
+---
+
 ## Seção "Sobre"
 
 - Seção com `overflow-y: auto` e centragem por **margens automáticas**
@@ -394,13 +662,35 @@ As exceções moram no módulo de quem as pede, nunca no global:
 Grade estática **enquanto os badges cabem**; vira carrossel só quando não cabem. Um `ResizeObserver`
 compara `clientWidth` com `n·(bw+gap) − gap`, e **`bw`/`gap` são lidos do DOM**
 (`children[0].offsetWidth`, `columnGap`) — nenhum número de layout duplicado no JS, então mexer no
-CSS não exige mexer no hook.
+CSS não exige mexer no hook. A leitura acontece **no `ResizeObserver`**, não por quadro: o gap é
+`getComputedStyle`, e chamá-lo dentro do rAF obrigava o navegador a recalcular estilo 60 vezes por
+segundo para um número que só muda quando o layout muda.
 
 - Badge de 312px (`--bw`; 246px no mobile): 3 × 312 + 2 × 12 = os 960px do bloco acima.
 - Modo carrossel: trilho com **duas cópias** da lista; o laço reposiciona `(scrollWidth+gap)/2`, que
-  é exatamente uma cópia mais o seu gap (a emenda é imperceptível).
+  é exatamente uma cópia mais o seu gap (a emenda é imperceptível). A segunda cópia é `aria-hidden`:
+  um leitor de tela não deve encontrar a mesma formação duas vezes.
 - Rolagem **nativa** (swipe e inércia de graça) + deriva de ~34px/s num rAF com acumulador subpixel.
   Arraste, roda do mouse e ←/→ com foco pausam a deriva por 2,2s.
+- O rAF só corre com o carrossel **na tela** (`IntersectionObserver`). A página tem cinco seções e
+  uma está visível por vez: sem isso, o trilho continuaria escrevendo `scrollLeft` a cada quadro
+  enquanto o visitante lê Contato, disputando quadro com a cena em canvas por um movimento que
+  ninguém vê.
+
+### O que o hover revela
+
+O badge acende (borda e fundo) e a **barra encolhe para a esquerda**, abrindo espaço para o detalhe:
+a data em `concluido`, a fração `feito/total` em `cursando`. Em `cursando` a barra é a fração real o
+tempo todo — o hover só põe o número ao lado do que a barra já estava dizendo.
+
+- Quem não tem detalhe **não acende**: um realce que não revela nada promete informação que não
+  existe. É por isso que o gatilho é `[data-detalhe]`, e não o badge inteiro.
+- O espaço sai da `.trilha` (`flex: 1`), então nada mais na linha se mexe. A margem negativa do
+  detalhe cancela o `gap` do medidor enquanto ele está fechado — senão sobrariam 8px de respiro para
+  um elemento de largura zero.
+- Fecha por **largura**, não por `display`/`visibility`: o texto continua na árvore de
+  acessibilidade, então a data e a fração existem para quem nunca vai passar um ponteiro por cima.
+  E em `(hover: none)` ele já nasce aberto, senão seria inalcançável no celular.
 
 ---
 
@@ -417,6 +707,29 @@ esconderia os cartões de trás por `backface-visibility`, e com n=3 isso seria 
 **Nada de rAF**: `ativo` muda e as `transition` de `transform`/`opacity` (.95s) fazem a volta.
 Girar: clique num cartão lateral, ←/→ com foco no palco, arraste de 46px ou os traços-índice abaixo.
 O arraste é decidido no `pointerup` justamente para o clique no cartão continuar vivo.
+
+**O arraste começa na faixa do cartão da frente**, não no palco inteiro. O palco é largo porque
+precisa acomodar os cartões laterais, e capturar o gesto em toda essa largura fazia a órbita ser dona
+de metade da seção. A faixa sai do DOM — centro do palco, `offsetWidth` do cartão com `data-frente`,
+que é medida de **layout** e por isso não acompanha o `transform`: não balança durante o giro nem
+duplica o `--pcw` do CSS no JavaScript. Só o início do gesto é filtrado; terminá-lo fora da faixa
+continua valendo. O `cursor: grab` saiu do palco e foi para o **cartão da frente**, que é onde o
+gesto passou a viver — uma mão aberta sobre a largura toda prometeria o que a maior parte dela não
+atende mais. `:active` troca para `grabbing`, sem estado no React.
+
+**O `click` que segue um arraste é engolido** por um listener de captura no palco, solto num
+`setTimeout(0)` para não sobreviver a um gesto que não gerou clique. Sem isso o arraste sobre o
+cartão da frente girava *e* o clique caía no cartão que estava ali, abrindo o painel de um cartão
+que já tinha virado lateral. A captura no palco basta porque o React escuta na raiz do documento e
+dispara `onClick` na subida, que deixa de acontecer.
+
+**O cartão da frente é opaco** (`rgb(0 0 0 / 92%)`, contra os 42% dos demais). A órbita é fechada de
+propósito — `--pr` foi reduzido para os cartões não passarem sob o menu — e por isso a caixa do
+cartão da frente cobre um pedaço dos vizinhos: 2% em tela larga, 31% em janela média, 43% no mobile.
+Com o preto translúcido, o vizinho aparecia através dele e não respondia ao clique, porque ali o
+clique é do cartão da frente. Prometer um alvo que não existe é pior que escondê-lo: **o que se vê
+do lateral é exatamente o que responde.** Devolver a área inteira aos laterais exigiria `--pr ≈ 0,99
+· --pcw`, o que no mobile jogaria os cartões para fora da tela.
 
 `foco` tem **piso alto** (`.52 + .48·prof`; vaga `.34 + .3·prof`): com n=3 a profundidade dos
 laterais é só .25 e um falloff linear os apagaria por completo no céu preto.
@@ -481,7 +794,8 @@ Composição aberta de 840px. Sem moldura: índice + título, intro, o **e-mail 
 - É um `<form>` com `onSubmit` de propósito: dá o Enter de graça em qualquer campo.
 - O status vai num `aria-live` e **reserva altura mesmo vazio**, senão a mensagem de erro empurraria
   os cartões ao aparecer.
-- Canal sem `url` é espaço reservado: tracejado, apagado e fora da navegação.
+- Canal sem `url` é espaço reservado: tracejado, apagado e fora da navegação. A `url` passa pelo
+  mesmo `urlExterna()` dos projetos — é o ponto único em que endereço de dicionário vira `href`.
 - Ícones em `src/assets/icons/` — **glifos brancos locais, nunca CDN**: um ícone que não carrega
   deixa o cartão visualmente vazio e o visitante não descobre qual rede é. O LinkedIn usa a marca só
   com as letras (viewBox 448×512); a versão com placa vira um bloco branco.
@@ -497,7 +811,10 @@ Composição aberta de 840px. Sem moldura: índice + título, intro, o **e-mail 
 - Carrosséis como `role="group"` focáveis, navegáveis por setas.
 - Fichas de trajetória inativas ficam `inert`: um leitor de tela não deve encontrar quatro empregos
   empilhados no mesmo lugar.
-- O que está fora da janela ou do painel fechado sai da tabulação (`tabIndex -1`).
+- O que está fora da janela ou do painel fechado sai da tabulação (`tabIndex -1`). Com um painel de
+  projeto aberto, **só o cartão dele continua focável**: os outros ficam atrás do painel, e tabular
+  para um cartão que não se vê é perder o foco no meio da tela. Eles seguem clicáveis — o mouse não
+  tem esse problema — e `Esc` fecha o painel, que é a saída explícita que faltava para o teclado.
 - Foco visível só para navegação por teclado (`:focus-visible`).
 
 ---
@@ -508,10 +825,9 @@ Composição aberta de 840px. Sem moldura: índice + título, intro, o **e-mail 
   dois dicionários). Substituir pelo que o projeto realmente faz.
 - **Dois projetos são vagas** (`vaga-02`, `vaga-03`, estado `definir`): giram na órbita e não abrem
   descrição. Preencher quando houver projeto.
-- **Banners de projeto** ainda não existem; as molduras aparecem como espaço reservado.
 - TikTok está sem `url` em `shared.json`, então aparece como "em breve".
-- **Feito com Claude** não volta a aparecer no rodapé após alterar entre mobile para desktop, deve ser corrigido.
-- Entrar na sessão de **Projetos** ou **Trajetoria** não habilita automaticamente o uso das setas para interação com os elementos, deve ser corrigido.
-- É necessário realizar uma revisão de qualidade geral do projeto, para garantir organização, escalabilidade, consistência, desempenho, acessibilidade e boas práticas.
-- Planejamento da nova feature **Super-Nova**: ao clicar com o mouse no espaço, uma nova estrela deve surgir, causando uma onda de energia que empurra as estrelas próximas, deve haver um tempo de recarga da funcionalidade, simbolizado por um circulo no canfo inferior esquerdo da tela que se forma na medida que funcionalidade recarrega e depois some quando está disponivel novamente. ( O planejamento deve levar em consideração os criterios de otimização e usabilidade do site, não podendo comprometer nenhum deles )
-- Nos bagdes de formação, quando em curso, deve ser possível ver abaixo da barra a fração de conclusão do curso, por exemplo: 4/8, a barra deve ser preenchida de acordo com a fração, essa informação deve ser exibida no hover do mouse, e quando concluido, deve ser exibido a data de conclusão do curso, essa informação deve ser exibida no hover do mouse.
+- **Conferir os dados das formações.** A `conclusao` do SENAC (`2022.12`) e o `progresso` da PUC
+  (`4/8`) entraram como espaço reservado para a feature de hover — são dados reais sobre a vida de
+  alguém e precisam ser corrigidos por quem os conhece (`formacoes.lista`, nos dois dicionários).
+- **Banners de `vaga-02` e `vaga-03`** não existem — as molduras seguem como espaço reservado até
+  haver projeto.
