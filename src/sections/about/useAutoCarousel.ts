@@ -61,22 +61,26 @@ export function useAutoCarousel(total: number): AutoCarousel {
     let sobra = 0; // acumulador subpixel: sem ele a deriva trava em telas lentas
 
     const trilho = () => el.firstElementChild as HTMLElement | null;
-    const gap = () => {
-      const t = trilho();
-      return t ? parseFloat(getComputedStyle(t).columnGap) || 0 : 0;
-    };
-    const larguraItem = () => {
-      const t = trilho();
-      return (t?.children[0] as HTMLElement | undefined)?.offsetWidth ?? 0;
-    };
+
+    /**
+     * `gap` e largura do item vêm do DOM, mas só quando o DOM muda de tamanho.
+     *
+     * A leitura em si é cara — `getComputedStyle` a cada quadro obriga o
+     * navegador a recalcular estilo dentro do rAF, e o laço precisa do gap todo
+     * quadro. Medir no `ResizeObserver` e guardar o número mantém a propriedade
+     * de não duplicar layout no JS (o valor continua vindo do CSS) sem pagar por
+     * ela sessenta vezes por segundo.
+     */
+    let gapPx = 0;
 
     const medir = () => {
-      const bw = larguraItem();
-      const g = gap();
+      const t = trilho();
+      const bw = (t?.children[0] as HTMLElement | undefined)?.offsetWidth ?? 0;
+      gapPx = t ? parseFloat(getComputedStyle(t).columnGap) || 0 : 0;
       const n = totalRef.current;
       if (!bw || !n) return;
       // -1 absorve o arredondamento sub-pixel do layout
-      const precisa = el.clientWidth < n * (bw + g) - g - 1;
+      const precisa = el.clientWidth < n * (bw + gapPx) - gapPx - 1;
       if (precisa !== ativoRef.current) {
         if (!precisa) el.scrollLeft = 0;
         setAtivo(precisa);
@@ -96,7 +100,7 @@ export function useAutoCarousel(total: number): AutoCarousel {
       pausar();
     };
 
-    const metade = () => (el.scrollWidth + gap()) / 2;
+    const metade = () => (el.scrollWidth + gapPx) / 2;
     const laco = () => {
       const m = metade();
       if (m <= 0) return;
@@ -104,7 +108,9 @@ export function useAutoCarousel(total: number): AutoCarousel {
       else if (el.scrollLeft < 0) el.scrollLeft += m;
     };
 
-    let raf = requestAnimationFrame(function passo(agora: number) {
+    let raf: number | null = null;
+
+    const passo = (agora: number) => {
       raf = requestAnimationFrame(passo);
       const dt = ultimo ? Math.min(0.05, (agora - ultimo) / 1000) : 0;
       ultimo = agora;
@@ -118,7 +124,33 @@ export function useAutoCarousel(total: number): AutoCarousel {
         }
       }
       laco();
-    });
+    };
+
+    const ligar = () => {
+      if (raf !== null) return;
+      ultimo = 0; // o primeiro quadro depois de uma pausa não tem delta
+      raf = requestAnimationFrame(passo);
+    };
+
+    const desligar = () => {
+      if (raf === null) return;
+      cancelAnimationFrame(raf);
+      raf = null;
+    };
+
+    /**
+     * A deriva só corre com o carrossel na tela.
+     *
+     * A página tem cinco seções e uma delas está visível por vez: sem isto, o
+     * trilho continuaria escrevendo `scrollLeft` a cada quadro enquanto o
+     * visitante lê Contato — um rAF eterno concorrendo com a cena em canvas por
+     * um movimento que ninguém vê.
+     */
+    const visao = new IntersectionObserver(
+      ([e]) => (e.isIntersecting ? ligar() : desligar()),
+      { threshold: 0 },
+    );
+    visao.observe(el);
 
     const aoRodar = (e: WheelEvent) => {
       if (!ativoRef.current) return;
@@ -167,7 +199,8 @@ export function useAutoCarousel(total: number): AutoCarousel {
     el.addEventListener('touchstart', pausar, { passive: true });
 
     return () => {
-      cancelAnimationFrame(raf);
+      desligar();
+      visao.disconnect();
       obs.disconnect();
       el.removeEventListener('wheel', aoRodar);
       el.removeEventListener('pointerdown', aoPressionar);
