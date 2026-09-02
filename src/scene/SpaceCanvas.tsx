@@ -66,6 +66,8 @@ export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
           name: nomeDoCeu(key as SectionKey),
           opacity: 0,
           placements: ceu.placements,
+          // menos movimento: a figura aparece inteira, sem se desenhar
+          drawTime: semMovimentoRef.current ? 0 : DURACAO.constelacaoTraco,
         }),
       );
 

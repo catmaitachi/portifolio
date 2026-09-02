@@ -1,6 +1,6 @@
 import type { ConstellationKey } from '../catalog/constellations';
 import { CONSTELLATIONS } from '../catalog/constellations';
-import { TAU } from '../math';
+import { fastSin, TAU } from '../math';
 import type { FadableLayer, StageEnv } from '../types';
 
 /** Onde uma figura do catálogo aparece na tela. */
@@ -25,6 +25,8 @@ interface ConstellationsOptions {
   repel?: number;
   twinkleAmount?: number;
   buckets?: number;
+  /** segundos para a figura se desenhar por inteiro; 0 = já nasce pronta */
+  drawTime?: number;
 }
 
 export interface ConstellationsLayer extends FadableLayer {
@@ -32,6 +34,115 @@ export interface ConstellationsLayer extends FadableLayer {
   opacity: number;
   /** opacidade base das linhas, antes de `opacity` e do fade da câmera */
   lineAlpha: number;
+  /** segundos da formação das arestas; 0 desliga e a figura aparece inteira */
+  drawTime: number;
+}
+
+/**
+ * Expoente do ritmo da formação. Abaixo de 1 a figura começa devagar e acelera;
+ * em 1 o espaçamento é uniforme. Ver o cálculo de `edgeT0` no `resize`.
+ */
+const RITMO = 0.62;
+
+/**
+ * Ordem em que as arestas se desenham: do **miolo** da figura para as pontas.
+ *
+ * A figura se abre a partir do próprio centro, e cada linha cresce do lado de
+ * dentro para o de fora — o desenho expande em vez de convergir.
+ *
+ * Achar o miolo é um problema de grafo, não de geometria: uma primeira busca em
+ * largura a partir de **todas as pontas** (vértices de grau 1) dá, para cada
+ * vértice, a distância até a ponta mais próxima; o mais central é o que ficou
+ * mais longe de todas elas. Uma segunda busca, agora a partir dele, dá a
+ * distância ao centro — e é ela que ordena as arestas e as orienta.
+ *
+ * Duas buscas em vez de uma porque o centro precisa ser encontrado antes de
+ * poder ser usado como semente. Ambas rodam no `resize`, nunca por quadro.
+ *
+ * A figura fechada — um ciclo, sem nenhum grau 1 — não tem ponta nem miolo: ali
+ * qualquer vértice serve de começo, e o desenho se abre pelos dois lados do anel.
+ */
+function ordenarDoMiolo(eds: number[], n: number): Int32Array {
+  const m = eds.length / 2;
+  if (!m) return new Int32Array(0);
+
+  const grau = new Int32Array(n);
+  for (const v of eds) grau[v]++;
+
+  // adjacência em arrays planos: um `number[][]` alocaria n listas à toa
+  const inicio = new Int32Array(n + 1);
+  for (let v = 0; v < n; v++) inicio[v + 1] = inicio[v] + grau[v];
+  const cursor = inicio.slice(0, n);
+  const vizinho = new Int32Array(m * 2);
+  for (let e = 0; e < m; e++) {
+    const a = eds[e * 2];
+    const b = eds[e * 2 + 1];
+    vizinho[cursor[a]++] = b;
+    vizinho[cursor[b]++] = a;
+  }
+
+  const dist = new Int32Array(n);
+  const fila = new Int32Array(n);
+
+  /** Busca em largura a partir das sementes já enfileiradas. */
+  const largura = (fim: number) => {
+    for (let i = 0; i < fim; i++) {
+      const v = fila[i];
+      for (let k = inicio[v]; k < inicio[v + 1]; k++) {
+        const w = vizinho[k];
+        if (dist[w] !== -1) continue;
+        dist[w] = dist[v] + 1;
+        fila[fim++] = w;
+      }
+    }
+    for (let v = 0; v < n; v++) if (dist[v] === -1) dist[v] = 0;
+  };
+
+  // 1ª busca: distância de cada vértice até a ponta mais próxima
+  dist.fill(-1);
+  let fim = 0;
+  for (let v = 0; v < n; v++) {
+    if (grau[v] === 1) {
+      dist[v] = 0;
+      fila[fim++] = v;
+    }
+  }
+  const semPontas = fim === 0;
+  if (semPontas) {
+    // ciclo puro: não há grau 1, então qualquer vértice serve de miolo
+    dist[0] = 0;
+    fila[fim++] = 0;
+  }
+  largura(fim);
+
+  // o miolo é o vértice que ficou mais longe de todas as pontas
+  let miolo = 0;
+  if (!semPontas) {
+    for (let v = 1; v < n; v++) if (dist[v] > dist[miolo]) miolo = v;
+  }
+
+  // 2ª busca, a partir do miolo: é esta distância que ordena e orienta
+  dist.fill(-1);
+  dist[miolo] = 0;
+  fila[0] = miolo;
+  largura(1);
+
+  const chave = new Int32Array(m);
+  for (let e = 0; e < m; e++) chave[e] = Math.min(dist[eds[e * 2]], dist[eds[e * 2 + 1]]);
+  // ordenação estável: empate mantém a ordem do catálogo, que é a do traçado
+  const lista = Array.from({ length: m }, (_, e) => e).sort((a, b) => chave[a] - chave[b]);
+
+  const saida = new Int32Array(m * 2);
+  for (let k = 0; k < m; k++) {
+    const e = lista[k];
+    const a = eds[e * 2];
+    const b = eds[e * 2 + 1];
+    // o mais perto do miolo vai primeiro: a linha cresce de dentro para fora
+    const doMiolo = dist[a] <= dist[b];
+    saida[k * 2] = doMiolo ? a : b;
+    saida[k * 2 + 1] = doMiolo ? b : a;
+  }
+  return saida;
 }
 
 /**
@@ -54,6 +165,7 @@ export function Constellations({
   repel = 110,
   twinkleAmount = 0.22,
   buckets = 6,
+  drawTime = 1.5,
 }: ConstellationsOptions = {}): ConstellationsLayer {
   const R2 = repel * repel;
   let N = 0;
@@ -71,11 +183,21 @@ export function Constellations({
   let bucket!: Int32Array;
   const count = new Int32Array(buckets);
 
+  /** início de cada aresta, em fração de `drawTime` — preenchido no `resize` */
+  let edgeT0: Float32Array = new Float32Array(0);
+  /** recíproco da duração de cada aresta: uma divisão no `resize` em vez de
+   *  uma por aresta por quadro enquanto a figura se forma */
+  let edgeDurInv = 1;
+  /** relógio da formação, em segundos do motor; -1 = ainda não começou */
+  let formT0 = -1;
+  let visivel = false;
+
   return {
     name,
     z,
     lineAlpha,
     opacity,
+    drawTime,
     resize(env: StageEnv) {
       const { W, H } = env;
       const pts: [number, number, number][] = [];
@@ -129,7 +251,31 @@ export function Constellations({
       }
 
       N = pts.length;
-      edges = new Int32Array(eds);
+      edges = ordenarDoMiolo(eds, pts.length);
+
+      /**
+       * Ritmo da formação: uma aresta por slot, com sobreposição.
+       *
+       * Sem sobreposição a figura fica com cara de metrônomo; com sobreposição
+       * demais vira um fade coletivo e some o "linha a linha". O piso de 0.14
+       * segura o caso de figuras com muitas arestas, onde a fração ficaria curta
+       * demais para o olho pegar cada traço.
+       *
+       * **O ritmo acelera.** Os inícios não são igualmente espaçados: eles saem
+       * de `k^EXPO`, e com expoente menor que 1 a curva sobe rápido no começo,
+       * o que deixa os primeiros intervalos longos e os últimos curtos. A figura
+       * hesita nas primeiras linhas e se fecha em rajada — que é como um traçado
+       * ganha corpo, e o contrário de um metrônomo. A conta é no `resize`.
+       */
+      const nArestas = edges.length / 2;
+      const edgeDur = nArestas > 1 ? Math.max(0.14, 2.2 / nArestas) : 1;
+      edgeDurInv = 1 / edgeDur;
+      edgeT0 = new Float32Array(nArestas);
+      const curso = 1 - edgeDur;
+      for (let e = 0; e < nArestas; e++) {
+        edgeT0[e] = nArestas > 1 ? Math.pow(e / (nArestas - 1), RITMO) * curso : 0;
+      }
+
       bucket = new Int32Array(Math.max(1, N) * buckets);
       px_ = new Float32Array(N);
       py_ = new Float32Array(N);
@@ -153,7 +299,16 @@ export function Constellations({
       }
     },
     update(env) {
-      if (!N || this.opacity <= 0.002) return; // camada invisível custa zero
+      /**
+       * A formação recomeça toda vez que a camada volta a aparecer, e é a
+       * própria camada que percebe isso — o plano de cena só mexe em `opacity`,
+       * e não precisa saber que existe uma animação de traçado aqui dentro.
+       */
+      const aparecendo = this.opacity > 0.002;
+      if (aparecendo && !visivel) formT0 = env.t;
+      visivel = aparecendo;
+
+      if (!N || !aparecendo) return; // camada invisível custa zero
       const { dt, t, mouse } = env;
       const useMouse = mouse.active && !env.camera.moving;
       for (let b = 0; b < buckets; b++) count[b] = 0;
@@ -177,7 +332,8 @@ export function Constellations({
         dx_[i] = ox;
         dy_[i] = oy;
 
-        const a = base[i] * (1 - twinkleAmount + twinkleAmount * Math.sin(t * spd[i] + ph[i]));
+        // LUT pelo mesmo motivo do `Starfield`: uma chamada por estrela por quadro
+        const a = base[i] * (1 - twinkleAmount + twinkleAmount * fastSin(t * spd[i] + ph[i]));
         let b = (a * buckets) | 0;
         if (b >= buckets) b = buckets - 1;
         else if (b < 0) b = 0;
@@ -190,17 +346,33 @@ export function Constellations({
       const zooming = env.camera.moving;
       const { cx, cy } = env;
 
-      // posições do quadro em buffers pré-alocados: nada de [x,y] por estrela
-      for (let i = 0; i < N; i++) {
-        let x = px_[i] + dx_[i];
-        let y = py_[i] + dy_[i];
-        if (zooming) {
-          x = cx + (x - cx) * zk;
-          y = cy + (y - cy) * zk;
+      /**
+       * Posições do quadro em buffers pré-alocados: nada de `[x, y]` por estrela.
+       *
+       * Dois laços em vez de um `if` por estrela: `zooming` só é verdadeiro
+       * durante 1,5s da abertura, e é constante dentro do quadro — não tem por
+       * que ser testado uma vez por vértice.
+       */
+      if (zooming) {
+        for (let i = 0; i < N; i++) {
+          vx_[i] = cx + (px_[i] + dx_[i] - cx) * zk;
+          vy_[i] = cy + (py_[i] + dy_[i] - cy) * zk;
         }
-        vx_[i] = x;
-        vy_[i] = y;
+      } else {
+        for (let i = 0; i < N; i++) {
+          vx_[i] = px_[i] + dx_[i];
+          vy_[i] = py_[i] + dy_[i];
+        }
       }
+
+      /**
+       * Progresso da formação. Passado o traçado — que é o estado na esmagadora
+       * maioria dos quadros — o laço volta a ser o de antes: uma comparação a
+       * mais e nenhuma conta por aresta.
+       */
+      const p =
+        this.drawTime > 0 && formT0 >= 0 ? (env.t - formT0) / this.drawTime : 1;
+      const formando = p < 1;
 
       // linhas: um único stroke para toda a camada
       ctx.globalAlpha = this.lineAlpha * env.camera.fade * this.opacity;
@@ -210,8 +382,18 @@ export function Constellations({
       for (let e = 0; e < edges.length; e += 2) {
         const a = edges[e];
         const b = edges[e + 1];
+        if (!formando) {
+          ctx.moveTo(vx_[a], vy_[a]);
+          ctx.lineTo(vx_[b], vy_[b]);
+          continue;
+        }
+        // `a` é o vértice do lado do miolo: a linha cresce dele para fora
+        let q = (p - edgeT0[e >> 1]) * edgeDurInv;
+        if (q <= 0) continue;
+        if (q > 1) q = 1;
+        else q = 1 - (1 - q) * (1 - q); // sai rápido e encosta devagar
         ctx.moveTo(vx_[a], vy_[a]);
-        ctx.lineTo(vx_[b], vy_[b]);
+        ctx.lineTo(vx_[a] + (vx_[b] - vx_[a]) * q, vy_[a] + (vy_[b] - vy_[a]) * q);
       }
       ctx.stroke();
 

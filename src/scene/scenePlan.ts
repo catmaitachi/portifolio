@@ -59,6 +59,12 @@ export const DURACAO = {
   buracoNegroEntrada: 1.5,
   buracoNegroSaida: 1.8,
   ceuSaida: 0.9,
+  /**
+   * Traçado das constelações: cada figura se desenha das pontas para dentro,
+   * linha a linha. Um pouco mais longo que a entrada do céu, para o traço ainda
+   * estar correndo quando a camada termina de aparecer.
+   */
+  constelacaoTraco: 1.7,
   /** intro: a câmera parte de dentro do horizonte e recua */
   cameraZoom: 1.5,
   cameraFator: 26,
