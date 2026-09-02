@@ -361,7 +361,7 @@ Uma entrada em `experiencia.lista` nos dois dicionários. A lista está em **ord
 }
 ```
 
-`tipo` precisa existir em `experiencia.tipos` (`academico`, `evento`, `estagio`, `freela`).
+`tipo` precisa existir em `experiencia.tipos` (`academico`, `extensao`, `estagio`, `freela`).
 `periodo` é **ano.mês** e é rótulo, não posição — o espaçamento na curva é sempre uniforme.
 
 ### Adicionar uma formação
@@ -1036,9 +1036,6 @@ Composição aberta de 840px. Sem moldura: índice + título, intro, o **e-mail 
   dois dicionários). Substituir pelo que o projeto realmente faz.
 - **Dois projetos são vagas** (`vaga-02`, `vaga-03`, estado `definir`): giram na órbita e não abrem
   descrição. Preencher quando houver projeto.
-- **Quatro entradas de trajetória são espaço reservado** (`vaga-05` a `vaga-08`, org "A definir"):
-  existem para a janela de seis da linha do tempo deslizar de verdade. Substituir por experiência
-  real ou remover — o próprio texto do `bullet` avisa (`experiencia.lista`, nos dois dicionários).
 - TikTok está sem `url` em `shared.json`, então aparece como "em breve".
 - **Conferir os dados das formações.** A `conclusao` do SENAC (`2022.12`) e o `progresso` da PUC
   (`4/8`) entraram como espaço reservado para a feature de hover — são dados reais sobre a vida de

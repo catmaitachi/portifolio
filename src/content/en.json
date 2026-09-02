@@ -112,7 +112,7 @@
     "intro": "My professional story, year by year.",
     "tipos": {
       "academico": "Academic",
-      "evento": "Event",
+      "extensao": "Extension",
       "estagio": "Internship",
       "freela": "Freelance"
     },
@@ -122,91 +122,95 @@
     },
     "lista": [
       {
-        "key": "patas",
+        "key": "senac",
         "cargo": "Front-end developer",
-        "org": "PUC Minas · Interdisciplinary project",
-        "periodo": "2023.03",
+        "org": "SENAC · Final course project",
+        "periodo": "2022.12",
         "tipo": "academico",
         "bullets": [
-          "Digital pet ID: clinical records in one link the clinic and the owner both hold.",
-          "Interface and navigation written in plain HTML, CSS and JavaScript.",
-          "History laid out to be read fast during an appointment."
+          "An internal social network for my class, my first complete system.",
+          "I learned HTML, CSS, Bootstrap and JavaScript by writing the project.",
+          "First team project versioned in Git and GitHub."
         ],
-        "stack": ["HTML", "CSS", "JavaScript"]
+        "stack": ["HTML", "CSS", "Bootstrap", "JavaScript"]
+      },
+      {
+        "key": "patas",
+        "cargo": "Full-stack developer",
+        "org": "PUC Minas · Interdisciplinary project",
+        "periodo": "2025.06",
+        "tipo": "academico",
+        "bullets": [
+          "Digital pet ID: the owner opens it on their phone, the clinic reads the same link.",
+          "I learned to gather requirements with the team, before starting to write.",
+          "I designed and prototyped in Figma before building the interface."
+        ],
+        "stack": ["Figma", "HTML", "CSS", "JavaScript"]
+      },
+      {
+        "key": "extensao",
+        "cargo": "Speaker",
+        "org": "PUC Minas · Outreach project",
+        "periodo": "2025.06",
+        "tipo": "extensao",
+        "bullets": [
+          "A cybersecurity class for the students at SENAC, where I had graduated.",
+          "Good online practice explained without jargon, for people who are still learning.",
+          "I prepared the content and delivered the class in a group."
+        ],
+        "stack": ["CyberSecurity", "Presentation", "Communication"]
       },
       {
         "key": "azzure",
         "cargo": "Full-stack developer",
         "org": "PUC Minas · Interdisciplinary project",
-        "periodo": "2024.03",
+        "periodo": "2025.11",
         "tipo": "academico",
         "bullets": [
-          "Automatic maritime route and delivery-logistics calculation.",
-          "Domain and math in Java; React front end on top of the API.",
-          "Routing stopped being a spreadsheet and became a result in seconds."
+          "I modelled classes and flows in UML before starting the implementation.",
+          "I wrote the route calculation in Java and the React interface that consumes it.",
+          "I organised the team in agile cycles, with scope closed at each delivery."
         ],
-        "stack": ["React", "Java"]
+        "stack": ["Java", "React", "UML", "Scrum"]
       },
       {
         "key": "wms",
         "cargo": "Social media assistant",
-        "org": "We Make Software",
-        "periodo": "2024.09",
-        "tipo": "evento",
+        "org": "PUC Minas · We Make Software",
+        "periodo": "2026.03",
+        "tipo": "extensao",
         "bullets": [
-          "Live coverage of the event across social channels.",
-          "Captured and published the talks alongside the organising team."
+          "I covered the event in photographs, from the stage to backstage.",
+          "I interviewed the special guests.",
+          "I worked with the team to make the event's social media posts."
         ],
-        "stack": []
+        "stack": ["Photography", "Interview", "Social Media"]
+      },
+      {
+        "key": "puc-aberta",
+        "cargo": "Student ambassador",
+        "org": "PUC Minas · Open day",
+        "periodo": "2026.05",
+        "tipo": "extensao",
+        "bullets": [
+          "I presented the Software Engineering course to prospective freshmen.",
+          "I contributed with the idea and design of the stand.",
+          "I talked about day-to-day academic life with people still choosing a course."
+        ],
+        "stack": ["Presentation", "Communication", "Ideation"]
       },
       {
         "key": "clinplay",
-        "cargo": "Full-stack developer",
+        "cargo": "Scrum Master",
         "org": "PUC Minas · Interdisciplinary project",
-        "periodo": "2025.03",
+        "periodo": "2026.06",
         "tipo": "academico",
         "bullets": [
-          "Gamified physiotherapy: the exercise becomes a round, adherence becomes data.",
-          "React with TypeScript on the client, Java on the service.",
-          "Follow-up between sessions that does not rely on the patient remembering."
+          "ClinPlaY: gamified physiotherapy that follows the patient outside the clinic.",
+          "I led the team as Scrum Master: backlog, ceremonies and scope closed per sprint.",
+          "React with TypeScript on the client, Java with Spring Boot on the service."
         ],
-        "stack": ["React", "TypeScript", "Java"]
-      },
-      {
-        "key": "vaga-05",
-        "cargo": "—",
-        "org": "To be defined",
-        "periodo": "2025.08",
-        "tipo": "estagio",
-        "bullets": ["Placeholder — replace with what happened here."],
-        "stack": ["—"]
-      },
-      {
-        "key": "vaga-06",
-        "cargo": "—",
-        "org": "To be defined",
-        "periodo": "2026.01",
-        "tipo": "academico",
-        "bullets": ["Placeholder — replace with what happened here."],
-        "stack": ["—"]
-      },
-      {
-        "key": "vaga-07",
-        "cargo": "—",
-        "org": "To be defined",
-        "periodo": "2026.06",
-        "tipo": "freela",
-        "bullets": ["Placeholder — replace with what happened here."],
-        "stack": ["—"]
-      },
-      {
-        "key": "vaga-08",
-        "cargo": "—",
-        "org": "To be defined",
-        "periodo": "2026.11",
-        "tipo": "evento",
-        "bullets": ["Placeholder — replace with what happened here."],
-        "stack": ["—"]
+        "stack": ["React", "TypeScript", "Java", "Spring Boot"]
       }
     ]
   },

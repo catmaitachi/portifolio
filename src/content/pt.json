@@ -112,7 +112,7 @@
     "intro": "Minha história profissional, ano a ano.",
     "tipos": {
       "academico": "Acadêmico",
-      "evento": "Evento",
+      "extensao": "Extensão",
       "estagio": "Estágio",
       "freela": "Freelance"
     },
@@ -122,91 +122,95 @@
     },
     "lista": [
       {
-        "key": "patas",
+        "key": "senac",
         "cargo": "Desenvolvedor front-end",
-        "org": "PUC Minas · Trabalho Interdisciplinar",
-        "periodo": "2023.03",
+        "org": "SENAC · Trabalho de conclusão de curso",
+        "periodo": "2022.12",
         "tipo": "academico",
         "bullets": [
-          "Carteirinha digital de pets: dados clínicos em um link compartilhável com clínica e tutor.",
-          "Interface e navegação escritas em HTML, CSS e JavaScript puros, sem framework.",
-          "Histórico organizado para leitura rápida durante a consulta."
+          "Rede social interna da turma, meu primeiro sistema completo.",
+          "Aprendi HTML, CSS, Bootstrap e JavaScript escrevendo o projeto.",
+          "Primeiro trabalho em grupo versionado em Git e GitHub."
         ],
-        "stack": ["HTML", "CSS", "JavaScript"]
+        "stack": ["HTML", "CSS", "Bootstrap", "JavaScript"]
+      },
+      {
+        "key": "patas",
+        "cargo": "Desenvolvedor full-stack",
+        "org": "PUC Minas · Trabalho Interdisciplinar",
+        "periodo": "2025.06",
+        "tipo": "academico",
+        "bullets": [
+          "Carteirinha digital de pet: o tutor abre no celular e a clínica lê o mesmo link.",
+          "Aprendi a levantar requisitos com o grupo, antes de começar a escrever.",
+          "Desenhei e prototipei no Figma antes de montar a interface."
+        ],
+        "stack": ["Figma", "HTML", "CSS", "JavaScript"]
+      },
+      {
+        "key": "extensao",
+        "cargo": "Palestrante",
+        "org": "PUC Minas · Trabalho Extensionista",
+        "periodo": "2025.06",
+        "tipo": "extensao",
+        "bullets": [
+          "Aula de cibersegurança para os alunos do SENAC, onde eu tinha me formado.",
+          "Boas práticas online explicadas sem jargão, para quem ainda é leigo.",
+          "Preparei o conteúdo e conduzi a aula em trio."
+        ],
+        "stack": ["CyberSegurança", "Apresentação", "Comunicação"]
       },
       {
         "key": "azzure",
         "cargo": "Desenvolvedor full-stack",
         "org": "PUC Minas · Trabalho Interdisciplinar",
-        "periodo": "2024.03",
+        "periodo": "2025.11",
         "tipo": "academico",
         "bullets": [
-          "Cálculo automático de rotas marítimas e da logística de entregas.",
-          "Domínio e cálculo em Java; interface em React consumindo a API.",
-          "A rota deixou de ser planilha e virou resultado em segundos."
+          "Modelei classes e fluxos em UML antes de começar a implementação.",
+          "Escrevi o cálculo de rotas em Java e a interface em React que o consome.",
+          "Organizei o grupo em ciclos ágeis, com escopo fechado a cada entrega."
         ],
-        "stack": ["React", "Java"]
+        "stack": ["Java", "React", "UML", "Scrum"]
       },
       {
         "key": "wms",
         "cargo": "Assistente de mídias sociais",
-        "org": "We Make Software",
-        "periodo": "2024.09",
-        "tipo": "evento",
+        "org": "PUC Minas · We Make Software",
+        "periodo": "2026.03",
+        "tipo": "extensao",
         "bullets": [
-          "Cobertura do evento em tempo real nas redes.",
-          "Registro e publicação das palestras junto com a organização."
+          "Cobri o evento em fotografia, do palco aos bastidores.",
+          "Entrevistei os convidados especiais.",
+          "Trabalhei com o time para fazer as publicações do evento"
         ],
-        "stack": []
+        "stack": ["Fotografia", "Entrevista", "Redes Sociais"]
+      },
+      {
+        "key": "puc-aberta",
+        "cargo": "Monitor",
+        "org": "PUC Minas · PUC Aberta",
+        "periodo": "2026.05",
+        "tipo": "extensao",
+        "bullets": [
+          "Apresentei o curso de Engenharia de Software aos futuros calouros.",
+          "Contribuí com a ideia e o design do estande.",
+          "Falei da rotina acadêmica com quem ainda estava decidindo o que cursar."
+        ],
+        "stack": ["Apresentação", "Comunicação", "Ideação"]
       },
       {
         "key": "clinplay",
-        "cargo": "Desenvolvedor full-stack",
+        "cargo": "Scrum Master",
         "org": "PUC Minas · Trabalho Interdisciplinar",
-        "periodo": "2025.03",
+        "periodo": "2026.06",
         "tipo": "academico",
         "bullets": [
-          "Fisioterapia gamificada: o exercício vira partida e a adesão vira dado.",
-          "React com TypeScript no cliente, Java no serviço.",
-          "Acompanhamento do paciente entre sessões, sem depender da memória dele."
+          "ClinPlaY: fisioterapia gamificada que acompanha o paciente fora do consultório.",
+          "Conduzi o time como Scrum Master: backlog, ritos e escopo fechado por sprint.",
+          "React com TypeScript no cliente, Java com Spring Boot no serviço."
         ],
-        "stack": ["React", "TypeScript", "Java"]
-      },
-      {
-        "key": "vaga-05",
-        "cargo": "—",
-        "org": "A definir",
-        "periodo": "2025.08",
-        "tipo": "estagio",
-        "bullets": ["Espaço reservado — troque pelo que aconteceu aqui."],
-        "stack": ["—"]
-      },
-      {
-        "key": "vaga-06",
-        "cargo": "—",
-        "org": "A definir",
-        "periodo": "2026.01",
-        "tipo": "academico",
-        "bullets": ["Espaço reservado — troque pelo que aconteceu aqui."],
-        "stack": ["—"]
-      },
-      {
-        "key": "vaga-07",
-        "cargo": "—",
-        "org": "A definir",
-        "periodo": "2026.06",
-        "tipo": "freela",
-        "bullets": ["Espaço reservado — troque pelo que aconteceu aqui."],
-        "stack": ["—"]
-      },
-      {
-        "key": "vaga-08",
-        "cargo": "—",
-        "org": "A definir",
-        "periodo": "2026.11",
-        "tipo": "evento",
-        "bullets": ["Espaço reservado — troque pelo que aconteceu aqui."],
-        "stack": ["—"]
+        "stack": ["React", "TypeScript", "Java", "Spring Boot"]
       }
     ]
   },
