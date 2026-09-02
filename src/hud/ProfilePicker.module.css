@@ -1,0 +1,273 @@
+/**
+ * Responsivo por tokens: os valores base moram aqui e a media query só
+ * **redefine tokens**.
+ */
+
+/** ver `HeroSection.module.css`: keyframe e uso precisam morar no mesmo módulo */
+@keyframes fina {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/**
+ * Os meridianos: um círculo girando em `rotateY` se achata e volta, que é
+ * exatamente o que faz um meridiano de globo visto de fora. Sem `perspective` de
+ * propósito — a projeção fica ortográfica, e é assim que uma esfera distante se
+ * comporta. O segundo vem inclinado e ao contrário, para os dois nunca cruzarem
+ * o mesmo ponto ao mesmo tempo.
+ */
+@keyframes meridianoA {
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+@keyframes meridianoB {
+  from {
+    transform: rotate(26deg) rotateY(0deg);
+  }
+
+  to {
+    transform: rotate(26deg) rotateY(-360deg);
+  }
+}
+
+/**
+ * O grupo de fora existe **só para a entrada**.
+ *
+ * A cascata do HUD tem 5s de atraso e `both`, e o último quadro de uma animação
+ * ganha de qualquer propriedade normal no mesmo elemento. Com a opacidade de
+ * estado aqui, `both` a fixaria em 1 e o seletor apareceria em todas as seções.
+ * Separar as duas camadas é o que mantém "só na abertura" verdadeiro.
+ */
+.grupo {
+  --perfil-orbe: 46px;
+  --perfil-gap: 22px;
+  --perfil-dir: column;
+  --perfil-top: 50%;
+  --perfil-bottom: auto;
+  --perfil-left: max(3.2vw, 26px);
+  --perfil-tx: 0;
+  --perfil-ty: -50%;
+  --perfil-rotulo: 78px;
+  --perfil-fs: 9px;
+
+  /** de onde os itens saem ao abrir: para baixo no desktop, para os lados no mobile */
+  --perfil-de-x: 0;
+  --perfil-de-y: -10px;
+
+  position: absolute;
+  z-index: 3;
+  top: var(--perfil-top);
+  bottom: var(--perfil-bottom);
+  left: var(--perfil-left);
+  transform: translate(var(--perfil-tx), var(--perfil-ty));
+  animation: fina 1s ease-out 5s both;
+}
+
+/** o de dentro carrega o estado: presente na abertura, apagado e inerte fora */
+.lista {
+  position: relative;
+  display: flex;
+  flex-direction: var(--perfil-dir);
+  gap: var(--perfil-gap);
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.lista[data-ativo] {
+  opacity: 1;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  align-items: center;
+  width: var(--perfil-rotulo);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: rgb(255 255 255 / 30%);
+  cursor: pointer;
+  appearance: none;
+  transition:
+    color 0.4s,
+    opacity 0.34s ease,
+    transform 0.42s cubic-bezier(0.22, 0.86, 0.2, 1);
+}
+
+.item:hover,
+.item:focus-visible {
+  color: rgb(255 255 255 / 66%);
+}
+
+.item[data-escolhido] {
+  color: rgb(255 255 255 / 80%);
+}
+
+/**
+ * Fechado: os não escolhidos recolhem **para trás do que ficou**.
+ *
+ * `position: absolute` os tira do fluxo, então a lista passa a medir um orbe só
+ * e o grupo encolhe junto — no mobile isso é o que mantém a faixa recentrada sob
+ * o idioma. A âncora é `top/left: 0` da própria lista, que com um item no fluxo
+ * é exatamente onde ele está, seja ele o primeiro, o do meio ou o último.
+ *
+ * A troca de `position` não interpola, e é por isso que a animação de abrir vive
+ * em `opacity` e `transform`: ao abrir, o item já nasce no lugar certo do flex e
+ * **acende** ali, vindo da direção em que a lista cresce.
+ */
+.item[data-oculto] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transform: translate(var(--perfil-de-x), var(--perfil-de-y)) scale(0.6);
+  pointer-events: none;
+}
+
+.orbe {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--perfil-orbe);
+  height: var(--perfil-orbe);
+  border: 1px solid rgb(255 255 255 / 11%);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 28%, rgb(255 255 255 / 6%), rgb(255 255 255 / 1.5%) 52%, transparent 74%),
+    rgb(255 255 255 / 2%);
+  transition:
+    border-color 0.4s,
+    box-shadow 0.4s,
+    transform 0.4s cubic-bezier(0.22, 0.86, 0.2, 1);
+}
+
+.item:hover .orbe,
+.item:focus-visible .orbe {
+  border-color: rgb(255 255 255 / 24%);
+  transform: scale(1.03);
+}
+
+/**
+ * O escolhido se distingue por **contraste de linha**, não por brilho.
+ *
+ * A versão anterior tinha um halo de 18px em volta do orbe em vigor, e ele
+ * puxava o olho para o canto da abertura — competindo com o nome, que é o que a
+ * seção existe para mostrar. A borda um pouco mais clara basta: são três
+ * elementos lado a lado, e a comparação é local.
+ */
+.item[data-escolhido] .orbe {
+  border-color: rgb(255 255 255 / 30%);
+}
+
+.meridianoA,
+.meridianoB,
+.equador {
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 50%;
+}
+
+.meridianoA {
+  animation: meridianoA 7.5s linear infinite;
+}
+
+.meridianoB {
+  animation: meridianoB 11s linear infinite;
+}
+
+/** o equador é estático: é ele que dá o eixo contra o qual os outros giram */
+.equador {
+  border-color: rgb(255 255 255 / 5%);
+  transform: rotateX(74deg);
+}
+
+.item[data-escolhido] .meridianoA,
+.item[data-escolhido] .meridianoB {
+  border-color: rgb(255 255 255 / 16%);
+}
+
+/**
+ * O especular **não gira**. A fonte de luz é externa à esfera, então ela fica
+ * onde está enquanto o corpo passa por baixo — é esse contraste entre o brilho
+ * parado e os meridianos em movimento que produz a leitura de rotação.
+ */
+.brilho {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 24%, rgb(255 255 255 / 14%), transparent 44%);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.glifo {
+  position: relative;
+  width: 19px;
+  height: 19px;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/**
+ * O rótulo vai **embaixo** do orbe, não ao lado.
+ *
+ * Ao lado, "Foco em habilidades" empurrava a coluna para ~218px e encostava no
+ * nome da abertura em qualquer janela abaixo de ~1000px. Embaixo, a coluna tem a
+ * largura do próprio rótulo e a frase quebra em duas linhas — que é onde ela
+ * cabe sem disputar a faixa central com o nome.
+ */
+.rotulo {
+  font-size: var(--perfil-fs);
+  line-height: 1.5;
+  letter-spacing: 0.09em;
+  opacity: 0.8;
+  text-align: center;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+/**
+ * Mobile: a coluna da lateral vira uma faixa no topo, **logo abaixo do seletor
+ * de idioma**, e a expansão passa a ser horizontal.
+ *
+ * A lateral de uma tela estreita é onde o nome da abertura respira; a faixa
+ * superior já é território do HUD. Abrindo para os lados, o menu não empurra
+ * nada para baixo — cresce dentro de uma faixa que já existia.
+ */
+@media (width <= 640px) {
+  .grupo {
+    --perfil-orbe: 32px;
+    --perfil-gap: 12px;
+    --perfil-dir: row;
+    /* respiro sob o seletor de idioma, que termina por volta dos 38px */
+    --perfil-top: max(9vh, 68px);
+    --perfil-bottom: auto;
+    --perfil-left: 50%;
+    --perfil-tx: -50%;
+    --perfil-ty: 0;
+    --perfil-rotulo: 76px;
+    --perfil-fs: 8px;
+    --perfil-de-x: -12px;
+    --perfil-de-y: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meridianoA,
+  .meridianoB {
+    animation: none;
+  }
+}

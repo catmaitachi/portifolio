@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { SECOES } from '~/content';
+import type { SectionKey } from '~/content';
+import { useFlip } from '~/hooks/useFlip';
 import { useT } from '~/i18n/useLanguage';
 import styles from './NavMenu.module.css';
 
 interface NavMenuProps {
+  /** a ordem em vigor — vem do perfil de acesso, não de uma constante */
+  secoes: SectionKey[];
   indice: number;
   irPara: (i: number) => void;
 }
@@ -22,11 +25,19 @@ interface NavMenuProps {
  * medida sai sobre uma faixa que ainda vai se acomodar. Por isso o risco ativo
  * cresce em escala e não em largura (ver `NavMenu.module.css`). Animar largura
  * ali de novo traz o desalinhamento de volta.
+ *
+ * **É aqui que a troca de perfil de acesso vira movimento.** As seções em si
+ * reordenam fora da tela — quem escolhe um perfil está na abertura, e as outras
+ * quatro estão abaixo da dobra —, então o menu é o único lugar onde a nova ordem
+ * é visível no momento em que ela acontece. Sem isso, escolher um perfil não
+ * produziria nenhum retorno na tela.
  */
-export function NavMenu({ indice, irPara }: NavMenuProps) {
+export function NavMenu({ secoes, indice, irPara }: NavMenuProps) {
   const t = useT();
   const navRef = useRef<HTMLElement>(null);
   const [dx, setDx] = useState(0);
+  // a troca de ordem desliza: ver `useFlip`
+  useFlip(navRef, secoes);
 
   useEffect(() => {
     const medir = () => {
@@ -45,7 +56,9 @@ export function NavMenu({ indice, irPara }: NavMenuProps) {
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', medir);
     };
-  }, [indice]);
+    // `secoes` entra porque reordenar move os itens sob o ativo: a faixa do
+    // mobile precisa recentrar sobre a posição nova
+  }, [indice, secoes]);
 
   return (
     <nav
@@ -54,18 +67,19 @@ export function NavMenu({ indice, irPara }: NavMenuProps) {
       aria-label={t.a11y.secoes}
       style={{ '--navdx': `${dx}px` } as React.CSSProperties}
     >
-      {SECOES.map((s, i) => {
+      {secoes.map((key, i) => {
         const ativo = i === indice;
         return (
           <button
-            key={s.key}
+            key={key}
             type="button"
             className={styles.item}
+            data-flip={key}
             data-ativo={ativo || undefined}
             aria-current={ativo ? 'true' : undefined}
             onClick={() => irPara(i)}
           >
-            <span className={styles.rotulo}>{t.nav[s.key]}</span>
+            <span className={styles.rotulo}>{t.nav[key]}</span>
             <span className={styles.risco} aria-hidden="true" />
           </button>
         );

@@ -70,9 +70,18 @@
   opacity: 0.5;
   cursor: pointer;
   appearance: none;
+
+  /**
+   * `transform` entra na lista por causa do FLIP da reordenação (ver
+   * `NavMenu.tsx`): o efeito puxa o item para a posição antiga com a transição
+   * desligada e solta no quadro seguinte, e é **esta** transição que faz o
+   * deslize. Um pouco mais longa que as outras — a troca de ordem é um
+   * movimento de percurso, não uma mudança de estado.
+   */
   transition:
     color 0.45s,
-    opacity 0.45s;
+    opacity 0.45s,
+    transform 0.62s cubic-bezier(0.22, 0.86, 0.2, 1);
 }
 
 .item:hover {
@@ -132,5 +141,13 @@
 
   .rotulo {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item {
+    transition:
+      color 0.45s,
+      opacity 0.45s;
   }
 }

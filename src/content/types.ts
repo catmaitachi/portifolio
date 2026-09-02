@@ -14,6 +14,14 @@ export type Lang = 'pt' | 'en';
 
 export type SectionKey = 'inicio' | 'sobre' | 'projetos' | 'experiencia' | 'contato';
 
+/**
+ * Perfis de acesso: por que o visitante chegou.
+ *
+ * Cada um reordena as seções segundo o interesse mais provável. `explorar` é o
+ * padrão e carrega a ordem canônica.
+ */
+export type PerfilKey = 'explorar' | 'projeto' | 'vaga';
+
 export type EstadoFormacao = 'concluido' | 'cursando' | 'pretensao';
 export type EstadoProjeto = 'ativo' | 'arquivado' | 'definir';
 
@@ -82,14 +90,15 @@ export interface Experiencia {
 export interface Dictionary {
   nav: Record<SectionKey, string>;
   hero: { etiqueta: string; nome: string; legenda: string };
-  sobre: { indice: string; titulo: string; paragrafos: string[] };
+  /** um por `PerfilKey`: o rótulo do botão e a linha que explica o que ele faz */
+  perfis: Record<PerfilKey, { nome: string; dica: string }>;
+  sobre: { titulo: string; paragrafos: string[] };
   formacoes: {
     titulo: string;
     estados: Record<EstadoFormacao, string>;
     lista: Formacao[];
   };
   projetos: {
-    indice: string;
     titulo: string;
     intro: string;
     banner: string;
@@ -98,7 +107,6 @@ export interface Dictionary {
     lista: Projeto[];
   };
   experiencia: {
-    indice: string;
     titulo: string;
     intro: string;
     tipos: Record<string, string>;
@@ -106,7 +114,6 @@ export interface Dictionary {
     lista: Experiencia[];
   };
   contato: {
-    indice: string;
     titulo: string;
     intro: string;
     email: string;
@@ -138,6 +145,8 @@ export interface Dictionary {
   a11y: {
     secoes: string;
     idioma: string;
+    perfis: string;
+    perfisAbrir: string;
     projetos: string;
     experiencia: string;
     canais: string;
@@ -159,8 +168,20 @@ export interface Secao {
   key: SectionKey;
 }
 
+/**
+ * Um perfil de acesso e a ordem de seções que ele produz.
+ *
+ * `secoes` é uma **permutação** de `Shared.secoes` e começa sempre em `inicio`:
+ * a abertura é a mesma para todo mundo, e é lá que o perfil se escolhe.
+ */
+export interface Perfil {
+  key: PerfilKey;
+  secoes: SectionKey[];
+}
+
 export interface Shared {
   secoes: Secao[];
+  perfis: Perfil[];
   canais: Canal[];
   logos: Record<string, { escala: number }>;
 }

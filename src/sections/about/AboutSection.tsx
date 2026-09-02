@@ -21,7 +21,7 @@ import { PortraitCard } from './PortraitCard';
  * (`useDecipher`). O hook escreve direto no DOM, então trocar de idioma ou
  * rolar não paga render nenhum por isso.
  */
-export function AboutSection({ ativo }: { ativo: boolean }) {
+export function AboutSection({ ativo, indice }: { ativo: boolean; indice: string }) {
   const t = useT();
   const bio = useDecipher(ativo, t.sobre.paragrafos);
 
@@ -33,7 +33,7 @@ export function AboutSection({ ativo }: { ativo: boolean }) {
     >
       <div className={`${comum.bloco} ${styles.bloco}`} data-ativo={ativo || undefined}>
         <p className={comum.indice}>
-          <span>{t.sobre.indice}</span>
+          <span>{indice}</span>
           <span className={comum.indiceRisco} aria-hidden="true" />
         </p>
 

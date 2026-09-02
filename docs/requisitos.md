@@ -76,6 +76,18 @@
 
 **RF37** — O sistema deve exibir o crédito de autoria da ferramenta utilizada na construção.
 
+**RF38** — O sistema deve oferecer, exclusivamente na seção Início, a escolha entre três perfis de acesso: só explorar, foco em projetos e foco em habilidades.
+
+**RF39** — O perfil escolhido deve reordenar as seções conforme o interesse mais provável, mantendo a seção Início sempre em primeiro e sem ocultar nenhuma seção.
+
+**RF40** — O número de índice exibido em cada seção deve corresponder à sua posição na ordem em vigor.
+
+**RF41** — O sistema deve persistir o perfil escolhido entre visitas e recorrer ao perfil padrão quando nenhum tiver sido escolhido.
+
+**RF42** — O seletor de perfis deve exibir apenas o perfil em vigor e revelar os demais ao ser acionado, expandindo na vertical no desktop e na horizontal em telas estreitas (≤640px), onde fica abaixo do seletor de idioma.
+
+**RF43** — A mudança de ordem provocada pela troca de perfil deve ser animada no menu de seções, com os itens deslizando da posição anterior para a nova.
+
 ## Requisitos Não Funcionais (RNF)
 
 **RNF01** — A interface deve usar paleta estritamente monocromática (preto/branco), sem cor ou gradiente colorido, exceto em marcas de terceiros (logos de instituições e banners de projetos).
@@ -117,3 +129,5 @@
 **RNF19** — O motor de cena deve ser carregado sob demanda, em pacote separado do restante da aplicação.
 
 **RNF20** — Os dicionários PT e EN devem ser validados: chave ausente ou estado inválido deve quebrar a checagem de tipos, e um script dedicado deve conferir o paralelismo entre as listas dos dois idiomas.
+
+**RNF21** — O seletor de perfis deve sair da navegação por tabulação fora da seção Início, sem ser removido da árvore de renderização.
