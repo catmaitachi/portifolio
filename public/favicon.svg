@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!--
+    Buraco negro com estrelas em órbita. Mesma paleta da página: preto e branco,
+    sem cor e sem degradê. Desenhado num viewBox de 32 para que as espessuras
+    caiam em pixel inteiro quando a aba renderiza a 16px (traço 2 = 1px real).
+
+    Sem fundo: o único preto do ícone é o miolo do horizonte de eventos. O resto
+    é transparente e a aba aparece por trás.
+  -->
+  <!-- campo estelar: fora do halo (raio externo 7.8 do centro), nunca encosta nele -->
+  <g fill="#fff">
+    <circle cx="26" cy="5" r="1.1"/>
+    <circle cx="6" cy="7" r=".8" opacity=".7"/>
+    <circle cx="9" cy="27" r=".9" opacity=".85"/>
+    <circle cx="24.5" cy="27" r=".7" opacity=".55"/>
+  </g>
+
+  <!--
+    Órbita e horizonte na mesma inclinação. A órbita é desenhada antes do disco,
+    então some atrás dele no meio e sobram as duas asas laterais — que é como um
+    disco de acreção se lê visto quase de perfil.
+  -->
+  <g transform="rotate(-18 16 16)">
+    <ellipse cx="16" cy="16" rx="12.6" ry="4.8" fill="none" stroke="#fff" stroke-width="1" opacity=".5"/>
+    <circle cx="28.6" cy="16" r="1.5" fill="#fff"/>
+    <circle cx="3.4" cy="16" r="1.1" fill="#fff" opacity=".8"/>
+  </g>
+
+  <!-- horizonte de eventos: miolo preto, borda branca. É o único traço grosso do ícone. -->
+  <circle cx="16" cy="16" r="6.8" fill="#000" stroke="#fff" stroke-width="2"/>
+</svg>
