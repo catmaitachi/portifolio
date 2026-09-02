@@ -16,6 +16,127 @@
   }
 }
 
+/**
+ * Entrada da seção: as duas ondas **giram em sentidos opostos e param**.
+ *
+ * A principal corre para um lado, a inversa para o outro, ambas desacelerando
+ * até o repouso. Como as curvas são espelhadas, o que se vê é um par se abrindo
+ * e fechando — e é isso que dá a leitura de rotação numa figura que só translada.
+ *
+ * O curso vem do próprio desenho: o caminho cobre **três** janelas (u de -1 a 2),
+ * de x=-868 a x=1868 num `viewBox` de 1000. Esses 868px de sobra de cada lado
+ * são o teto do deslocamento — passar deles descobre a ponta da curva, e a onda
+ * aparece começando do nada no meio da tela. Os 820 daqui são o limite com folga.
+ *
+ * A desaceleração está toda na curva de tempo: sai rápido e encosta devagar.
+ * Anima `transform`, então é trabalho de compositor: o custo não depende do
+ * tamanho da curva.
+ */
+@keyframes giraOnda {
+  from {
+    opacity: 0;
+    transform: translateX(820px);
+  }
+
+  16% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes giraOndaInversa {
+  from {
+    opacity: 0;
+    transform: translateX(-820px);
+  }
+
+  16% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/**
+ * Os nós acendem atrás da linha, um a um, com uma oscilação antes de firmar —
+ * é o sinal chegando, não um fade. `--i` é a posição na janela (ver o
+ * componente), então o ritmo não abre buracos quando a janela desliza.
+ */
+@keyframes noAcende {
+  0% {
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  42% {
+    opacity: 0.12;
+  }
+
+  58% {
+    opacity: 1;
+  }
+
+  70% {
+    opacity: 0.35;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+/**
+ * O cintilar do ponto: ele pisca antes de firmar, como um contato fechando.
+ *
+ * **O piscar nunca apaga o ponto.** Os vales param em 0.45 e 0.7, e o primeiro
+ * quadro já vale 0.35 — um ponto que sai do zero e mergulha até quase nada lê
+ * como "ainda não carregou", e é exatamente isso que acontecia com o nó que
+ * chega à janela pela ponta: ele passava quase um segundo entre invisível e
+ * apagado antes de firmar.
+ *
+ * Vive no ponto, e não no botão em volta, porque é o ponto que pode ser
+ * remontado a cada passo no tempo — o botão carrega a transição de `left`/`top`
+ * e precisa continuar sendo o mesmo elemento, senão o nó saltaria para a posição
+ * nova em vez de deslizar até ela.
+ */
+@keyframes pontoAcende {
+  0% {
+    opacity: 0.35;
+    transform: scale(0.55);
+  }
+
+  22% {
+    opacity: 1;
+  }
+
+  38% {
+    opacity: 0.45;
+  }
+
+  56% {
+    opacity: 1;
+  }
+
+  70% {
+    opacity: 0.7;
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .curva {
   position: relative;
   flex: none;
@@ -32,6 +153,65 @@
 
 .curva[data-arrastando] {
   cursor: grabbing;
+}
+
+/**
+ * A onda inversa é a mesma curva espelhada no eixo — `scaleY(-1)` em torno de
+ * y=66, que é a linha de repouso. Sem caminho novo, sem geometria nova: só um
+ * `transform` sobre o `d` que a principal já usa.
+ *
+ * `transform-box: view-box` para o `transform-origin` ser lido em unidades do
+ * `viewBox`, e não da bounding box do próprio path.
+ */
+.inversa {
+  transform-box: view-box;
+  transform-origin: 500px 66px;
+  transform: scaleY(-1);
+}
+
+/**
+ * O giro da entrada mora no grupo de **fora**: o de dentro carrega o
+ * `translateX` da janela, escrito pelo JS, e uma animação de `transform` no
+ * mesmo elemento o apagaria.
+ */
+.curva[data-entrada] .giro {
+  animation: giraOnda 1.45s cubic-bezier(0.05, 0.8, 0.16, 1);
+}
+
+.curva[data-entrada] .giro[data-lado='inverso'] {
+  animation-name: giraOndaInversa;
+}
+
+/**
+ * Só os nós **dentro da janela** acendem: os de fora têm `opacity: 0` no style
+ * inline, e uma animação passaria por cima disso e os mostraria fora de lugar.
+ *
+ * `backwards` cobre o atraso — o estado final (opacidade 1) já é o que o inline
+ * diz para quem está dentro, então a animação se retira sem deixar rastro.
+ */
+.curva[data-entrada] .no[data-dentro] {
+  animation: noAcende 0.62s ease-out calc(980ms + var(--i, 0) * 90ms) backwards;
+}
+
+/**
+ * **Só o ponto que virou o ativo cintila.** Fazer todos piscarem a cada passo
+ * enchia a linha de movimento sem informação nenhuma — o que mudou foi *qual*
+ * nó está selecionado, e é esse que deve responder.
+ *
+ * Quem reinicia a animação é o próprio CSS: `data-frente` aparece, o
+ * `animation-name` passa de `none` para `pontoAcende` e ela começa do zero. Sem
+ * `key`, sem remontagem, sem contador no componente.
+ *
+ * `--pisca` e `--fila` vêm do componente e valem juntos: na entrada da seção são
+ * ~1s de espera mais 90ms por posição na fila, para os pontos acenderem **atrás**
+ * das ondas e um depois do outro; num passo no tempo são **zero** nos dois, onde
+ * qualquer atraso é só demora. `--fila` existe justamente para o escalonamento
+ * poder ser desligado — `data-entrada` fica no elemento enquanto a seção está
+ * ativa e não distingue os dois casos.
+ */
+.no[data-frente] .ponto {
+  animation: pontoAcende 0.42s ease-out calc(var(--pisca, 0ms) + var(--i, 0) * var(--fila, 0ms))
+    backwards;
 }
 
 .svg {
@@ -68,9 +248,9 @@
   border: 1px solid rgb(255 255 255 / 42%);
   border-radius: 50%;
   transition:
-    width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
-    height 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
-    background 0.5s,
+    width 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
+    height 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background 0.32s,
     border-color 0.4s;
 }
 

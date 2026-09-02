@@ -46,7 +46,7 @@ export function JourneySection({ ativo }: { ativo: boolean }) {
           ))}
         </div>
 
-        <TimelineCurve lista={lista} linha={linha} />
+        <TimelineCurve lista={lista} linha={linha} ativo={ativo} />
 
         <div className={styles.controles}>
           <button
