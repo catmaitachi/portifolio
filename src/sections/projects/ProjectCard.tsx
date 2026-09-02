@@ -22,6 +22,8 @@ interface ProjectCardProps {
   indice: number;
   geo: Geometria;
   aberto: boolean;
+  /** seção ativa: dispara a entrada do cartão, escalonada por `geo.ordem` */
+  ativo: boolean;
   /**
    * Se o cartão entra na tabulação.
    *
@@ -38,6 +40,7 @@ export function ProjectCard({
   projeto,
   indice,
   geo,
+  ativo,
   aberto,
   focavel,
   onAlternar,
@@ -62,8 +65,10 @@ export function ProjectCard({
     >
       <div
         className={styles.cartao}
+        style={{ '--ordem': geo.ordem } as React.CSSProperties}
         data-vaga={vaga || undefined}
         data-frente={geo.naFrente || undefined}
+        data-entrada={ativo || undefined}
         role="button"
         tabIndex={focavel ? 0 : -1}
         aria-expanded={aberto}

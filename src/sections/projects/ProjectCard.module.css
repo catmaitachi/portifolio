@@ -1,3 +1,39 @@
+/**
+ * Entrada da seção: os cartões sobem, o do meio primeiro.
+ *
+ * A animação mora no `.cartao` e não no `.orbe` de propósito — o `.orbe` carrega
+ * o `transform` da órbita, escrito pelo JS, e uma animação de `transform` o
+ * sobrescreveria enquanto roda, derrubando o cartão do lugar no anel. Aqui os
+ * dois se compõem: o pai posiciona, o filho entra.
+ *
+ * **Sem quique.** O cartão vem e para — nada de passar do lugar e voltar, que é
+ * gesto de desenho animado e briga com a régua de 1px do resto da página. O que
+ * dá caráter é a ordem das duas coisas: a opacidade chega antes do movimento,
+ * então o cartão se materializa no ar e só depois assenta.
+ *
+ * Mesma gramática da entrada dos canais de contato, que chegam das laterais: a
+ * opacidade primeiro, o deslocamento depois, sem quique.
+ *
+ * O curso é **longo** de propósito — o cartão tem 436px de altura, e um pulo de
+ * 40px nele mal se lê. A escala inicial entra pela mesma razão: não é o quique
+ * que foi tirado daqui, é um só passo de aproximação, sem passar do ponto.
+ */
+@keyframes cartaoSobe {
+  from {
+    opacity: 0;
+    transform: translateY(120px) scale(0.93);
+  }
+
+  38% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /** Posição do cartão no anel. O `transform` completo vem do JS (`useOrbit`). */
 .orbe {
   position: absolute;
@@ -22,6 +58,19 @@
   background: rgb(0 0 0 / 42%);
   cursor: pointer;
   transition: border-color 0.5s ease;
+}
+
+/**
+ * `backwards`, nunca `forwards`: o estado final da animação é o estado natural
+ * do cartão, e o que precisa ser coberto é o **atraso** — sem ele o cartão
+ * apareceria no lugar certo e só depois cairia para começar a subir.
+ *
+ * `--ordem` vem de `useOrbit` (0 no cartão da frente), então acrescentar
+ * projetos não pede nada aqui.
+ */
+.cartao[data-entrada] {
+  animation: cartaoSobe 0.82s cubic-bezier(0.16, 0.84, 0.24, 1) calc(var(--ordem, 0) * 175ms)
+    backwards;
 }
 
 /* chanfro dos dois cantos opostos — ver "Cantos chanfrados" no CLAUDE.md */

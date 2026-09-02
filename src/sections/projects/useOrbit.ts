@@ -14,6 +14,12 @@ export interface Geometria {
   /** opacidade final do cartão */
   foco: number;
   naFrente: boolean;
+  /**
+   * Distância em passos até o cartão da frente: 0 nele, 1 nos vizinhos, e assim
+   * por diante. É o que escalona a entrada da seção — o do meio chega primeiro e
+   * os outros vêm atrás, sem que o CSS precise saber quantos cartões existem.
+   */
+  ordem: number;
 }
 
 export interface Orbit {
@@ -175,6 +181,8 @@ export function useOrbit(total: number): Orbit {
          */
         foco: Number((vaga ? 0.34 + 0.3 * prof : 0.52 + 0.48 * prof).toFixed(3)),
         naFrente: i === ativo,
+        // circular: com n=5, o cartão 4 está a um passo do cartão 0, não a quatro
+        ordem: Math.min(Math.abs(i - ativo), n - Math.abs(i - ativo)),
       };
     },
     [ativo, n],

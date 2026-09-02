@@ -75,6 +75,7 @@ export function ProjectsSection({ ativo }: { ativo: boolean }) {
                 projeto={p}
                 indice={i}
                 geo={orbita.geometria(i, p.estado === 'definir')}
+                ativo={ativo}
                 aberto={orbita.aberto === i}
                 focavel={orbita.aberto === null || orbita.aberto === i}
                 onAlternar={() => orbita.alternar(i, p.estado !== 'definir')}
