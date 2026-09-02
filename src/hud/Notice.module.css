@@ -56,7 +56,12 @@
   padding: 14px 14px 15px;
   border: 1px solid rgb(255 255 255 / 18%);
   border-radius: 2px;
-  background: rgb(0 0 0 / 62%);
+  /**
+   * Preto sólido, nunca translúcido: o aviso nasce sobre o céu, e estrela,
+   * meteoro e onda de choque passando por trás de um texto de 11px tiram dele a
+   * leitura de painel. Um aviso é a única coisa do HUD que existe para ser lida.
+   */
+  background: #000;
   /**
    * `forwards` na saída, nunca `both`: com `backwards` ela aplicaria o próprio
    * estado inicial e passaria por cima da entrada, que vem antes na lista.
