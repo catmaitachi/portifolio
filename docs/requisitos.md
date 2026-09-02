@@ -4,7 +4,7 @@
 
 **RF01** — O sistema deve exibir 5 seções navegáveis por scroll vertical com snap: Início, Sobre, Projetos, Trajetória e Contato.
 
-**RF02** — O sistema deve permitir navegação entre seções via menu lateral, clique e teclado (↑/↓, PageUp/Down, Home/End).
+**RF02** — O sistema deve permitir navegação entre seções via menu lateral, clique e teclado (↑/↓, PageUp/Down, Home/End), e no mobile também pela rolagem da faixa de seções, que deve mover a página e o destaque de forma contínua durante o gesto.
 
 **RF03** — O sistema deve destacar visualmente a seção ativa no menu de navegação.
 
@@ -56,7 +56,7 @@
 
 **RF27** — O sistema deve acender uma estrela e disparar uma onda de choque que desloca as estrelas vizinhas quando o visitante clicar ou tocar em uma área vazia da cena.
 
-**RF28** — O sistema deve impor um tempo de recarga entre duas estrelas, indicado por um medidor circular que se fecha durante a espera e desaparece quando a funcionalidade volta a estar disponível.
+**RF28** — O sistema deve impor um tempo de recarga entre duas estrelas acesas, indicado por um medidor circular que se fecha durante a espera e desaparece quando a funcionalidade volta a estar disponível.
 
 **RF29** — O sistema deve sugerir a funcionalidade de acender estrelas por meio de um aviso dispensável, que não deve ser exibido a quem já a descobriu em qualquer visita anterior.
 
@@ -94,7 +94,7 @@
 
 **RNF08** — O layout deve ser responsivo, com breakpoints para mobile (≤640px) e telas baixas (≤720px de altura).
 
-**RNF09** — No mobile, a navegação deve ser exibida como faixa horizontal rolável, que se centraliza na seção ativa, e o layout em coluna única.
+**RNF09** — No mobile, a navegação deve ser exibida como faixa horizontal rolável, com o rótulo de cada seção visível, e a seção ativa deve permanecer centralizada em qualquer posição da lista; o layout fica em coluna única.
 
 **RNF10** — A interface deve fornecer `aria-label` no menu de navegação, no seletor de idioma, no carrossel de projetos, na linha do tempo e no grupo de canais de contato.
 

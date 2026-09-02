@@ -39,7 +39,7 @@ import styles from './App.module.css';
  * esquerdo só existe enquanto ele estiver em zero (ver `useNovaHint`).
  */
 export function App() {
-  const { ref, indice, irPara } = useSectionScroll();
+  const { ref, indice, irPara, seguirFracao, soltarFracao } = useSectionScroll();
   const chaveAtiva = SECOES[indice]?.key ?? 'inicio';
   const [novas, setNovas] = useState(0);
   const aoAcender = useCallback(() => setNovas((n) => n + 1), []);
@@ -60,7 +60,12 @@ export function App() {
         <ContactSection ativo={chaveAtiva === 'contato'} />
       </div>
 
-      <NavMenu indice={indice} irPara={irPara} />
+      <NavMenu
+        indice={indice}
+        irPara={irPara}
+        seguirFracao={seguirFracao}
+        soltarFracao={soltarFracao}
+      />
       <Credit />
       <Version />
       <NovaGauge disparo={novas} segundos={DURACAO.novaRecarga} />

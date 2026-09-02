@@ -117,15 +117,14 @@
   .nav {
     --nav-top: auto;
 
-    /* 52 + os 20px de respiro abaixo deixam o traço onde ele estava, nos ~78px */
-    --nav-bottom: 52px;
+    --nav-bottom: 56px;
     --nav-left: 0;
     --nav-right: 0;
     --nav-tx: 0px;
     --nav-ty: 0px;
     --nav-dir: row;
     --nav-align: center;
-    --nav-gap: 16px;
+    --nav-gap: 38px;
 
     /**
      * O risco ativo cresce em **escala**, não em largura.
@@ -141,28 +140,46 @@
      */
     --nav-risco-w: var(--nav-risco);
     --nav-risco-esc: calc(var(--nav-risco-ativo) / var(--nav-risco));
-    --nav-risco-rot: 90deg;
+    --nav-risco-rot: 0deg;
 
     /**
-     * `safe center` e não `center`: com transbordo, o `center` puro empurra o
-     * início do conteúdo para fora do alcance da rolagem, e o primeiro item
-     * fica inatingível. O `safe` desiste de centralizar exatamente nesse caso e
-     * alinha ao início, que é o que se pode rolar.
+     * **Meia tela de folga em cada ponta**, e é isso que faz a seção ativa ficar
+     * sempre no centro.
+     *
+     * Sem o padding, o primeiro e o último item nunca chegam ao meio: o
+     * navegador limita `scrollLeft` a [0, scrollWidth − clientWidth], e
+     * centralizar uma ponta pediria rolagem além disso. Ficavam encostados na
+     * borda enquanto os do meio centralizavam, e o traço ativo saltava de
+     * posição conforme a seção.
+     *
+     * Com `50%`, o scroll necessário para centralizar o primeiro item é metade
+     * da largura dele, que é positivo e alcançável; para o último sobra a mesma
+     * folga do outro lado. Ele também torna o `justify-content` irrelevante,
+     * porque a faixa passa a transbordar sempre.
      */
-    justify-content: safe center;
+    padding-inline: 50%;
 
     /**
-     * O respiro vertical **não é estético**: `overflow-x: auto` obriga o eixo Y
-     * a computar `auto` junto, e o risco ativo está rotacionado 90° e escalado
-     * para 34px sobre uma caixa de layout de 1px. Sem altura para ele, a própria
-     * faixa cortaria as pontas do traço que marca onde o visitante está.
+     * `overflow-x: auto` obriga o eixo Y a computar `auto` junto, então tudo que
+     * passar da caixa do item é cortado pela própria faixa em vez de transbordar.
+     * O respiro cobre isso e dá altura de toque ao mesmo tempo.
      */
-    padding-block: 20px;
-    padding-inline: 24px;
+    padding-block: 12px;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scroll-behavior: smooth;
     scrollbar-width: none;
+
+    /**
+     * O arraste também termina no centro.
+     *
+     * Sem o encaixe, o `scrollTo` centraliza a cada troca de seção mas um
+     * arraste solto no meio do caminho deixa a faixa parada onde o dedo saiu. O
+     * `mandatory` com `align: center` faz o item mais próximo assumir o centro
+     * quando a rolagem para, então a faixa nunca descansa numa posição
+     * intermediária.
+     */
+    scroll-snap-type: x mandatory;
   }
 
   .nav::-webkit-scrollbar {
@@ -171,13 +188,23 @@
     height: 0;
   }
 
-  /* sem isto os itens se comprimem em vez de transbordar, e não há o que rolar */
+  /**
+   * O item vira uma coluna: rótulo em cima, risco embaixo.
+   *
+   * Numa faixa horizontal o risco lê como sublinhado do item ativo, que é o que
+   * uma barra de navegação faz — por isso ele perde a rotação de 90° que tinha
+   * quando era o único conteúdo visível.
+   *
+   * `flex: none` não é detalhe: sem ele os itens se comprimem para caber, a
+   * faixa nunca transborda e **não há o que rolar**. Era exatamente esse o caso
+   * enquanto os rótulos ficavam ocultos: cinco riscos de 12px somam 172px, e a
+   * rolagem existia no CSS sem nada para rolar.
+   */
   .item {
     flex: none;
-  }
-
-  .rotulo {
-    display: none;
+    flex-direction: column;
+    gap: 7px;
+    scroll-snap-align: center;
   }
 }
 
