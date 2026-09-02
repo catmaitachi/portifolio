@@ -38,6 +38,26 @@
   height: 0;
 }
 
+/**
+ * Escala do conteúdo, escrita por `useEscalaQueCabe` na própria seção.
+ *
+ * O `zoom` fica nos **filhos** e o `--esc` na seção, e essa divisão é o que
+ * mantém o padding de fora: o espaço do HUD no rodapé não se negocia com a
+ * altura da tela, e encolher junto traria o conteúdo de volta para debaixo da
+ * barra de seções.
+ *
+ * Vale para todos os filhos, não só para o `.bloco`. No Sobre o carrossel de
+ * formações é irmão dele, e enquanto o `zoom` morava no bloco os badges ficavam
+ * de fora da escala inteira — a seção parecia caber enquanto eles transbordavam.
+ *
+ * O valor é **medido** no DOM, não estimado por faixa de altura: degraus por
+ * media query saem de uma conta de quanto o conteúdo deveria ocupar, e essa
+ * conta erra a cada texto novo, troca de idioma ou projeto acrescentado.
+ */
+.rolavel > * {
+  zoom: var(--esc, var(--esc-max, 1));
+}
+
 .rolavel > *:first-child {
   margin-top: auto;
 }
@@ -150,17 +170,55 @@
   white-space: nowrap;
 }
 
+/**
+ * Mobile: os respiros acompanham a altura da tela.
+ *
+ * `svh` e não `vh`: em `vh` a conta é feita sobre a viewport **grande**, com a
+ * barra de endereço recolhida, e ela superestima o que existe enquanto a barra
+ * está visível — que é justamente quando o conteúdo aperta. `svh` assume a barra
+ * na tela, então o que couber cabe sempre; e diferente de `dvh` ele não muda
+ * durante a rolagem, então nada reflowa no meio do gesto.
+ *
+ * Os respiros ficam **fora** do `zoom` do `.bloco`, e é isso que separa os dois
+ * mecanismos: aqui se decide quanto espaço sobra, lá dentro quanto o conteúdo
+ * ocupa. Medir o conteúdo também em `svh` encolheria duas vezes, porque o `zoom`
+ * multiplica o que estiver dentro dele.
+ *
+ * O rodapé é a exceção e sai de `--hud-rodape`: ali não há o que negociar com a
+ * altura, porque o espaço é do HUD.
+ */
 @media (width <= 640px) {
+  /**
+   * O conteúdo já começa menor no mobile.
+   *
+   * Desenhado no tamanho de desktop ele fica grande demais numa tela estreita
+   * mesmo quando cabe: título e retrato dominam, e sobra pouco respiro entre as
+   * partes. `useEscalaQueCabe` só **reduz** a partir deste teto, nunca aumenta,
+   * então quem decide o tamanho de partida continua sendo o CSS.
+   */
   .secao {
-    --pt: 76px;
-    --pb: 116px;
+    --esc-max: 0.9;
+
+    --pt: clamp(52px, 9svh, 78px);
+    /* o rodapé é do HUD; o respiro é só o que separa o conteúdo dele */
+    --pb: calc(var(--hud-rodape) + clamp(10px, 2svh, 18px));
     --px: 20px;
-    --gap: 14px;
+    --gap: clamp(11px, 1.8svh, 15px);
   }
 }
 
-/* telas baixas (paisagem curta): sobra menos altura, então os respiros encolhem */
-@media (height <= 720px) {
+/**
+ * Telas baixas: sobra menos altura, então os respiros encolhem.
+ *
+ * **A faixa exige `width > 640px`**, e isso não é detalhe de escrita. A regra
+ * foi pensada para paisagem curta, onde o menu é uma coluna à direita e o rodapé
+ * está livre; sem o limite de largura ela também alcançava 360×640 e 375×667,
+ * que são celulares comuns em pé. Nesses o menu é a faixa de baixo, e o `--pb`
+ * caía de 116px para ~70px contra os 100px que o HUD ocupa: o conteúdo corria
+ * por baixo da barra de seções. O mobile tem os próprios valores, que já se
+ * adaptam à altura sozinhos.
+ */
+@media (width > 640px) and (height <= 720px) {
   .secao {
     --pt: clamp(44px, 7vh, 72px);
     --pb: clamp(70px, 11vh, 96px);

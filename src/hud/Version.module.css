@@ -42,13 +42,17 @@
 }
 
 /**
- * Mobile: a faixa da direita é do menu, então a versão vai para o centro e
- * encosta no rodapé — espelho exato do seletor de idioma no topo, que usa o
- * mesmo recuo de borda (`max(2.4vh, 20px)`) e a mesma centragem.
+ * Mobile: a faixa da direita é do menu, então a versão vai para o centro,
+ * abaixo da barra de seções.
+ *
+ * Ela sobe um pouco em relação à borda: encostada no rodapé ficava espremida
+ * contra o limite da tela, e em aparelhos com barra de gestos chegava a
+ * disputar espaço com ela. Os 34px ainda deixam folga até a base da faixa
+ * (`--hud-nav-base`, 56px), que é o que a mantém legível como linha própria.
  */
 @media (width <= 640px) {
   .versao {
-    --ver-bottom: max(2.4vh, 20px);
+    --ver-bottom: max(4.2vh, 34px);
     --ver-left: 50%;
     --ver-right: auto;
     --ver-tx: -50%;

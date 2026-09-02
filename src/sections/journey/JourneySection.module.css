@@ -91,7 +91,8 @@
   }
 }
 
-@media (height <= 720px) {
+/* paisagem curta; no mobile os valores acima já se adaptam sozinhos */
+@media (width > 640px) and (height <= 720px) {
   .secao {
     --exph: 210px;
     --exp-curva: 80px;

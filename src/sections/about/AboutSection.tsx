@@ -1,4 +1,6 @@
+import { useRef } from 'react';
 import { useDecipher } from '~/hooks/useDecipher';
+import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
 import styles from './AboutSection.module.css';
@@ -23,10 +25,14 @@ import { PortraitCard } from './PortraitCard';
  */
 export function AboutSection({ ativo }: { ativo: boolean }) {
   const t = useT();
+  const secaoRef = useRef<HTMLElement>(null);
+  // o conteúdo encolhe até caber na altura que a tela tem
+  useEscalaQueCabe(secaoRef);
   const bio = useDecipher(ativo, t.sobre.paragrafos);
 
   return (
     <section
+      ref={secaoRef}
       className={`${comum.secao} ${comum.rolavel} ${styles.secao}`}
       aria-label={t.nav.sobre}
       data-secao-ativa={ativo || undefined}

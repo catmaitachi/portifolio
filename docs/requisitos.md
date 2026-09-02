@@ -92,9 +92,9 @@
 
 **RNF07** — A animação de fundo deve pausar quando a aba do navegador não estiver visível, e as contagens de tempo da interface não devem correr com a aba oculta.
 
-**RNF08** — O layout deve ser responsivo, com breakpoints para mobile (≤640px) e telas baixas (≤720px de altura).
+**RNF08** — O layout deve ser responsivo, com breakpoints para mobile (≤640px) e para paisagem curta (largura acima de 640px e altura ≤720px), e o conteúdo de cada seção deve ser reduzido proporcionalmente quando não couber na altura disponível.
 
-**RNF09** — No mobile, a navegação deve ser exibida como faixa horizontal rolável, com o rótulo de cada seção visível, e a seção ativa deve permanecer centralizada em qualquer posição da lista; o layout fica em coluna única.
+**RNF09** — No mobile, a navegação deve ser exibida como faixa horizontal rolável, com o rótulo de cada seção visível, e a seção ativa deve permanecer centralizada em qualquer posição da lista; o layout fica em coluna única, e o conteúdo das seções não pode invadir o espaço ocupado pelo HUD no rodapé.
 
 **RNF10** — A interface deve fornecer `aria-label` no menu de navegação, no seletor de idioma, no carrossel de projetos, na linha do tempo e no grupo de canais de contato.
 

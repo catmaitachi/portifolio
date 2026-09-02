@@ -102,16 +102,44 @@
   text-wrap: pretty;
 }
 
+/**
+ * Mobile: empilhado e mais compacto.
+ *
+ * O Sobre é a seção mais alta das quatro, porque é a única que empilha retrato,
+ * texto e formações um sobre o outro. O `zoom` do `.bloco` reduz tudo junto, mas
+ * partindo de um conteúdo que já era o mais denso — os números aqui baixam o
+ * ponto de partida, e é a soma dos dois que faz a seção caber.
+ */
 @media (width <= 640px) {
   .secao {
     --cols: 1fr;
-    --corpo-gap: 16px;
+
+    /**
+     * Respiro entre as três peças empilhadas.
+     *
+     * `--corpo-gap` separa o retrato do texto; `--gap` (da `.secao`) separa o
+     * bloco do carrossel de formações, que é irmão dele e não filho. No desktop
+     * as três estão lado a lado ou têm largura de sobra, e um respiro curto
+     * basta; empilhadas numa coluna estreita elas encostam umas nas outras e a
+     * seção lê como um bloco só.
+     *
+     * Cabem porque o retrato e a coluna de texto encolheram: a folga que a
+     * redução abriu volta aqui como separação, em vez de sobrar no rodapé.
+     */
+    --corpo-gap: 22px;
+    --gap: 24px;
+
     /* empilhado, o retrato está acima do texto e não tem base para respeitar */
     --coluna-max: none;
-    --retrato: 116px;
-    --txt: min(30vh, 220px);
-    --pfs: 11.5px;
-    --plh: 1.75;
+    --retrato: 96px;
+    --txt: min(26vh, 180px);
+    --pfs: 11px;
+    --plh: 1.7;
+  }
+
+  /* título e texto continuam sendo uma peça só, e não pedem o mesmo respiro */
+  .coluna {
+    gap: 12px;
   }
 }
 
@@ -119,7 +147,8 @@
  * Telas baixas: vem depois na cascata de propósito. Em paisagem curta ela ganha
  * dos tokens do mobile, que é o que se quer — o gargalo ali é a altura.
  */
-@media (height <= 720px) {
+/* paisagem curta; no mobile os valores acima já se adaptam sozinhos */
+@media (width > 640px) and (height <= 720px) {
   .secao {
     --retrato: 150px;
     --txt: 22vh;

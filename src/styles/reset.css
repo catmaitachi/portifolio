@@ -6,6 +6,28 @@
  * escopado ao componente que o usa.
  */
 
+/**
+ * Contrato do rodapé do mobile.
+ *
+ * Em `≤640px` o HUD ocupa a faixa de baixo: a barra de seções e, abaixo dela, a
+ * versão. As seções precisam reservar esse espaço no `padding-bottom`, e nenhuma
+ * delas conhece o `NavMenu` — então o número mora aqui, uma vez, e as duas
+ * pontas derivam dele.
+ *
+ * Ele estava duplicado em valores soltos (`bottom: 56px` na faixa contra
+ * `--pb: 116px` nas seções), e foi assim que saíram de sincronia: bastou uma
+ * media query de altura baixar o `--pb` para 70px que o conteúdo passou a correr
+ * por baixo da barra em qualquer celular de tela curta.
+ */
+:root {
+  /* onde a barra de seções começa, medindo do fundo da tela */
+  --hud-nav-base: 56px;
+  /* rótulo + risco + o respiro vertical da faixa */
+  --hud-nav-altura: 44px;
+  /* topo do rodapé: abaixo disso é território do HUD */
+  --hud-rodape: calc(var(--hud-nav-base) + var(--hud-nav-altura));
+}
+
 *,
 *::before,
 *::after {

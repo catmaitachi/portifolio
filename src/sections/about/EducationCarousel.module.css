@@ -46,6 +46,15 @@
 
 .badge {
   --bw: 312px;
+  --badge-pad: clamp(14px, 1.9vmin, 18px);
+  --badge-gap: 13px;
+  --badge-corpo-gap: 10px;
+  --logo-w: 58px;
+  --logo-h: 40px;
+  --fs-inst: 11px;
+  --fs-nivel: 8.5px;
+  --fs-curso: 10px;
+
   /**
    * Abertura do detalhe. Fechado ele mede 0 e a margem negativa engole o `gap`
    * do medidor; aberto, mede o suficiente para "2022.12" e devolve o respiro.
@@ -55,10 +64,10 @@
 
   display: flex;
   flex: none;
-  gap: 13px;
+  gap: var(--badge-gap);
   align-items: center;
   width: var(--bw);
-  padding: clamp(14px, 1.9vmin, 18px);
+  padding: var(--badge-pad);
   border: 1px solid rgb(255 255 255 / 13%);
   border-radius: 2px;
   transition:
@@ -144,8 +153,8 @@
 
 .logo {
   flex: none;
-  width: 58px;
-  height: 40px;
+  width: var(--logo-w);
+  height: var(--logo-h);
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
@@ -155,7 +164,7 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--badge-corpo-gap);
   min-width: 0;
 }
 
@@ -168,7 +177,7 @@
 
 .instituicao {
   color: #fff;
-  font-size: 11px;
+  font-size: var(--fs-inst);
   letter-spacing: 0.2em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -177,7 +186,7 @@
 .nivel {
   overflow: hidden;
   color: rgb(255 255 255 / 50%);
-  font-size: 8.5px;
+  font-size: var(--fs-nivel);
   letter-spacing: 0.18em;
   text-transform: uppercase;
   text-overflow: ellipsis;
@@ -186,15 +195,38 @@
 
 .curso {
   color: rgb(255 255 255 / 55%);
-  font-size: 10px;
+  font-size: var(--fs-curso);
   font-weight: 300;
   line-height: 1.45;
   letter-spacing: 0.04em;
   text-wrap: pretty;
 }
 
+/**
+ * Mobile: o cartão fica **mais largo e mais baixo**.
+ *
+ * O badge é a peça mais densa da seção Sobre, e o `zoom` do `.bloco` sozinho não
+ * a resolvia. A primeira tentativa foi estreitá-lo junto com o resto, e ela saiu
+ * pela culatra: em 208px sobravam 132px para o texto, e "Tecnologia da
+ * Informação" pede 138px mesmo a 9px. O curso quebrava em duas linhas, e o
+ * cartão ficava **mais alto** do que era antes de encolher.
+ *
+ * Aqui a largura não custa nada: no mobile os badges não cabem lado a lado de
+ * qualquer jeito, então viram carrossel e rolam. Alargar devolve o curso a uma
+ * linha só, e é isso que baixa a altura — que é a dimensão realmente disputada.
+ * As fontes voltaram para perto do tamanho de desktop pela mesma razão: o que
+ * apertava era o espaço horizontal, não o vertical.
+ */
 @media (width <= 640px) {
   .badge {
-    --bw: 246px;
+    --bw: 258px;
+    --badge-pad: 12px;
+    --badge-gap: 10px;
+    --badge-corpo-gap: 8px;
+    --logo-w: 50px;
+    --logo-h: 34px;
+    --fs-inst: 10.5px;
+    --fs-nivel: 8px;
+    --fs-curso: 10px;
   }
 }

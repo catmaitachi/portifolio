@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useArrowKeys } from '~/hooks/useArrowKeys';
+import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
 import { ProjectCard } from './ProjectCard';
@@ -15,6 +16,9 @@ import { useOrbit } from './useOrbit';
  */
 export function ProjectsSection({ ativo }: { ativo: boolean }) {
   const t = useT();
+  const secaoRef = useRef<HTMLElement>(null);
+  // o conteúdo encolhe até caber na altura que a tela tem
+  useEscalaQueCabe(secaoRef);
   const lista = t.projetos.lista;
   const orbita = useOrbit(lista.length);
   const { fechar } = orbita;
@@ -47,6 +51,7 @@ export function ProjectsSection({ ativo }: { ativo: boolean }) {
 
   return (
     <section
+      ref={secaoRef}
       className={`${comum.secao} ${comum.rolavel} ${styles.secao}`}
       aria-label={t.nav.projetos}
     >

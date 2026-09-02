@@ -117,7 +117,8 @@
   .nav {
     --nav-top: auto;
 
-    --nav-bottom: 56px;
+    /* a mesma base que as seções reservam de padding: ver `--hud-rodape` */
+    --nav-bottom: var(--hud-nav-base);
     --nav-left: 0;
     --nav-right: 0;
     --nav-tx: 0px;

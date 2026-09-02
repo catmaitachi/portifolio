@@ -1,4 +1,6 @@
+import { useRef } from 'react';
 import { CANAIS } from '~/content';
+import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
 import { ChannelCard } from './ChannelCard';
@@ -16,10 +18,14 @@ import { useMailto } from './useMailto';
  */
 export function ContactSection({ ativo }: { ativo: boolean }) {
   const t = useT();
+  const secaoRef = useRef<HTMLElement>(null);
+  // o conteúdo encolhe até caber na altura que a tela tem
+  useEscalaQueCabe(secaoRef);
   const form = useMailto(t);
 
   return (
     <section
+      ref={secaoRef}
       className={`${comum.secao} ${comum.rolavel} ${styles.secao}`}
       aria-label={t.nav.contato}
     >
