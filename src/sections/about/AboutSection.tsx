@@ -1,3 +1,4 @@
+import { useDecipher } from '~/hooks/useDecipher';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
 import styles from './AboutSection.module.css';
@@ -14,9 +15,15 @@ import { PortraitCard } from './PortraitCard';
  * A biografia tem rolagem **própria** (`.texto`), com `overscroll-behavior:
  * contain`: chegar ao fim do texto não encadeia a rolagem para a seção e não
  * dispara uma troca acidental de seção.
+ *
+ * A entrada da seção é a **decriptografia** da bio: o texto chega cifrado e se
+ * resolve da esquerda para a direita, um parágrafo depois do outro
+ * (`useDecipher`). O hook escreve direto no DOM, então trocar de idioma ou
+ * rolar não paga render nenhum por isso.
  */
 export function AboutSection({ ativo }: { ativo: boolean }) {
   const t = useT();
+  const bio = useDecipher(ativo, t.sobre.paragrafos);
 
   return (
     <section
@@ -35,7 +42,7 @@ export function AboutSection({ ativo }: { ativo: boolean }) {
 
           <div className={styles.coluna}>
             <h2 className={comum.titulo}>{t.sobre.titulo}</h2>
-            <div className={styles.texto}>
+            <div ref={bio} className={styles.texto}>
               {t.sobre.paragrafos.map((par, i) => (
                 <p key={i} className={styles.paragrafo}>
                   {par}
