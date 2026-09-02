@@ -1,4 +1,11 @@
-import { TAU } from '../math';
+import { fastSin, TAU } from '../math';
+
+/**
+ * Raio abaixo do qual a estrela é desenhada como quadrado. Em menos de 2px de
+ * diâmetro, círculo e quadrado ocupam os mesmos pixels — e o quadrado custa
+ * quatro retas contra as quatro curvas do `arc`.
+ */
+const R_QUADRADO = 1;
 import type { Layer, StageEnv } from '../types';
 
 interface StarfieldOptions {
@@ -153,7 +160,9 @@ export function Starfield({
         sdx[i] = ox;
         sdy[i] = oy;
 
-        const a = sbase[i] * (1 - twinkleAmount + twinkleAmount * Math.sin(t * sspd[i] + sph[i]));
+        // LUT, não `Math.sin`: isto roda uma vez por estrela por quadro, e são
+        // ~1120 delas — é o laço mais quente da cena inteira
+        const a = sbase[i] * (1 - twinkleAmount + twinkleAmount * fastSin(t * sspd[i] + sph[i]));
         let b = (a * buckets) | 0;
         if (b >= buckets) b = buckets - 1;
         else if (b < 0) b = 0;
@@ -181,6 +190,20 @@ export function Starfield({
           }
           if (px < -8 || px > W + 8 || py < -8 || py > H + 8) continue;
           const r = ssz[i];
+          /**
+           * Estrela pequena vira quadrado.
+           *
+           * `arc` desenha um círculo com quatro curvas de Bézier; `rect`, com
+           * quatro retas. Abaixo de `R_QUADRADO` a estrela tem menos de 2px de
+           * diâmetro e as duas formas caem nos mesmos pixels — e **82% delas
+           * estão nessa faixa** (ver a distribuição no `resize`). Os dois entram
+           * no mesmo path, então continua um `fill()` por balde.
+           */
+          if (r < R_QUADRADO) {
+            const d = r + r;
+            ctx.rect(px - r, py - r, d, d);
+            continue;
+          }
           // moveTo antes do arc: sem ele o subcaminho anterior se liga a este
           ctx.moveTo(px + r, py);
           ctx.arc(px, py, r, 0, TAU);

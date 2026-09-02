@@ -13,5 +13,8 @@ const SK = ST / TAU;
 /** Seno por tabela. Precisão de ~0.1° — suficiente para efeito visual. */
 export const fastSin = (v: number): number => SIN[((v * SK) | 0) & STM];
 
+/** Cosseno pela mesma tabela, com um quarto de volta de defasagem. */
+export const fastCos = (v: number): number => SIN[(((v + TAU / 4) * SK) | 0) & STM];
+
 export const clamp = (v: number, lo: number, hi: number): number =>
   v < lo ? lo : v > hi ? hi : v;

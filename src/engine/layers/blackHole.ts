@@ -1,4 +1,4 @@
-import { fastSin, TAU } from '../math';
+import { fastCos, fastSin, TAU } from '../math';
 import type { FadableLayer, StageEnv } from '../types';
 
 interface BlackHoleOptions {
@@ -168,8 +168,10 @@ export function BlackHole({
         ctx.beginPath();
         for (let i = g; i < NO; i += 2) {
           const rr = orb[i] * R;
-          const px = cx + Math.cos(oa[i]) * rr;
-          const py = cy + Math.sin(oa[i]) * rr;
+          // LUT: 260 poeiras × 2 chamadas por quadro. O erro de ~0.1° dá menos
+          // de 0.2px no raio da órbita — abaixo do pixel que se desenha
+          const px = cx + fastCos(oa[i]) * rr;
+          const py = cy + fastSin(oa[i]) * rr;
           const sz = osz[i];
           ctx.moveTo(px + sz, py);
           ctx.arc(px, py, sz, 0, TAU);
