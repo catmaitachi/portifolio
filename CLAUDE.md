@@ -116,15 +116,22 @@ Ordem do array = ordem de `update`; `z` = ordem de desenho.
 publicada pela `Supernova` — as duas lidas pelo `Starfield`, que não sabe quem as publicou.
 **Uma camada nunca importa outra.**
 
+O puxão do buraco negro mora em `engine/gravity.ts`, e as duas camadas que o sentem (`Starfield` e
+`Supernova`) importam **de lá**, não uma da outra. Elas precisam concordar: as estrelas acesas ficam
+lado a lado com as do campo no mesmo céu, e uma conta divergente salta aos olhos. O módulo separa
+**preparar** de **puxar** por causa do contrato de desempenho — `reach²` e a recíproca do alcance não
+podem ser recalculadas nas ~1120 estrelas de cada quadro, então cada camada guarda o próprio campo
+preparado e o próprio destino, e nada ali é estado compartilhado.
+
 ### Camadas
 
 | Camada | Arquivo | z | Notas |
 |---|---|---|---|
 | `Nebula` | `layers/nebula.ts` | 0 | Buffer de 128px, 5 massas brancas em deriva, repintado a 12fps e ampliado pela GPU. alpha 0.16. |
-| `Starfield` | `layers/starfield.ts` | 10 | ~1120 estrelas (densidade por área), TypedArrays, repulsão do ponteiro por mola, gravidade e cintilar via LUT, 8 baldes de opacidade = 8 `fill()`/quadro. Estrela com raio < 1px vai como `rect`, não `arc` — são 82% delas. Cintilar lento (±22%). |
+| `Starfield` | `layers/starfield.ts` | 10 | ~1120 estrelas (densidade por área), TypedArrays, repulsão do ponteiro por mola, gravidade de `engine/gravity.ts` e cintilar via LUT, 8 baldes de opacidade = 8 `fill()`/quadro. Estrela com raio < 1px vai como `rect`, não `arc` — são 82% delas. Cintilar lento (±22%). |
 | `Constellations` | `layers/constellations.ts` | 12 | Figuras do céu real. Estrelas herdam as propriedades do `Starfield`; linha de 1px num único `stroke()`; posições do quadro em `vx_/vy_` pré-alocados. As arestas se desenham das pontas para dentro quando a camada aparece (`drawTime`). `opacity` em 0 tira a camada do `update` **e** do `draw`. |
 | `BlackHole` | `layers/blackHole.ts` | 20 | Raio `0.14·min(W,H)`. Plasma 96×96 por LUT de senos a 20fps (alpha .22), 260 poeiras em órbita kepleriana, halo .18/.06 até 3.4R (degradês em cache por centro/raio/força), horizonte preto + borda **preta** suavizando — nunca borda brilhante. |
-| `Supernova` | `layers/supernova.ts` | 14 | A estrela que o visitante acende. Pool de 12 estrelas (guardadas em fração da tela), uma onda de cada vez, recarga no relógio do motor. Depois de 4s a estrela passa a responder ao ponteiro. Ociosa custa duas comparações. |
+| `Supernova` | `layers/supernova.ts` | 14 | A estrela que o visitante acende. Pool de 12 estrelas (guardadas em fração da tela), uma onda de cada vez, recarga no relógio do motor. Sente a gravidade desde o nascimento; a repulsão do ponteiro entra depois de 2s. Ociosa custa duas comparações. |
 | `Meteors` | `layers/meteors.ts` | 30 | Pool de 3, intervalo 4–13s, rastro por gradiente linear. |
 
 ### Contrato de desempenho
@@ -256,12 +263,27 @@ estrelas — quem a aplica, dentro do laço que já existe: sem onda, o custo é
 já foi varrido), e o empurrão entra como **deslocamento**, então a mola que já devolvia as estrelas
 depois do ponteiro devolve estas também — nada aqui precisa lembrar de desfazer nada.
 
-**A estrela nasce presa e solta depois.** Durante os primeiros `settle` segundos (4) ela ignora o
-ponteiro: o cursor está exatamente em cima dela quando o clarão acontece, e uma estrela que fugisse
-do dedo que a acendeu pareceria um erro. Passado esse tempo ela vira uma estrela como as outras — a
-repulsão entra por uma rampa de 0,9s, nunca por um interruptor, e a mesma mola do `Starfield` a
-devolve ao repouso quando o ponteiro sai. Os números da repulsão (110px, 26, mola 2.6) **espelham os
-do `Starfield`**: uma camada não importa a outra, então mexer lá pede mexer aqui.
+**A estrela nasce presa ao ponteiro e solta depois.** Durante os primeiros `settle` segundos (2) ela
+o ignora: o cursor está exatamente em cima dela quando o clarão acontece, e uma estrela que fugisse
+do dedo que a acendeu pareceria um erro. O que precisa ser coberto é a **onda** (1,35s); passado
+isso o gesto já terminou. A repulsão entra por uma rampa de 0,9s, nunca por um interruptor, o que
+leva a força total a ~2,9s, e a mesma mola do `Starfield` devolve a estrela ao repouso quando o
+ponteiro sai.
+
+**"Como as outras" inclui cair para o horizonte.** A estrela acesa sentia o ponteiro mas não a
+gravidade, e ficava parada num céu inteiro que gira — o que lê como defeito, não como estrela nova.
+O puxão vem do mesmo `engine/gravity.ts` que o campo usa, e entra **depois da mola**, como lá: a mola
+puxa de volta para o repouso e o puxão do horizonte é somado por cima do que sobrou. Invertida, a
+mola comeria o puxão do mesmo quadro e a estrela nunca sairia do lugar.
+
+**Só o ponteiro espera.** O `settle` (2s, com rampa de 0,9s) existe para a estrela não fugir do dedo
+que a acendeu — o cursor está exatamente em cima dela no instante do clarão. O buraco negro nunca
+esteve sob esse dedo: ele está no centro da tela, então não há de que proteger a estrela, e a
+gravidade age **desde o primeiro quadro, sem rampa**. Também não faz degrau, porque o puxão é
+aceleração somada quadro a quadro e não um salto de posição.
+
+Só a repulsão do ponteiro segue duplicada: os números (110px, 26, mola 2.6) **espelham os do
+`Starfield`**, e mexer lá pede mexer aqui. A gravidade não tem mais esse problema.
 
 A força da onda está **calibrada contra o que a cena já tinha**: 620 px/s de pico desloca uma estrela em
 ~23px no auge da passagem da crista, a mesma ordem de grandeza da repulsão do ponteiro. Menos que

@@ -1,3 +1,4 @@
+import { campoVazio, prepararCampo, puxar } from '../gravity';
 import { fastSin, TAU } from '../math';
 import type { Layer, StageEnv } from '../types';
 
@@ -19,13 +20,18 @@ interface SupernovaOptions {
   /** quantas estrelas novas o céu guarda antes de reciclar a mais antiga */
   pool?: number;
   /**
-   * Segundos até a estrela acesa passar a responder ao ponteiro.
+   * Segundos até a estrela acesa passar a responder ao **ponteiro**.
    *
-   * Ela nasce presa: enquanto o clarão e a onda acontecem, o cursor está
-   * exatamente em cima dela, e uma estrela que fugisse do dedo que a acendeu
-   * pareceria um erro. Passado esse tempo ela vira uma estrela como as outras.
+   * Ela nasce presa a ele: enquanto o clarão acontece, o cursor está exatamente
+   * em cima dela, e uma estrela que fugisse do dedo que a acendeu pareceria um
+   * erro. O que precisa ser coberto é a onda, que dura `wave` (1,35s) — passado
+   * isso o gesto já terminou e não há mais o que proteger. A rampa de `SOLTA`
+   * empurra a força total para ~2,9s, o que dá margem de sobra.
+   *
+   * Só o ponteiro espera: a gravidade age desde o primeiro quadro.
    */
   settle?: number;
+
   /**
    * Repulsão do ponteiro — **espelha os valores do `Starfield`** (raio 110px,
    * impulso 26, mola 2.6), para que a estrela acesa se mova exatamente como as
@@ -66,8 +72,17 @@ export interface SupernovaLayer extends Layer {
  *
  * As estrelas novas ficam guardadas em **fração da tela**, não em px: o céu que
  * o visitante montou sobrevive a um resize ou a uma rotação sem escorregar. O
- * deslocamento do ponteiro é somado por cima, em px, exatamente como no campo de
- * estrelas — e só depois de `settle` segundos de vida (ver a opção).
+ * deslocamento é somado por cima, em px, exatamente como no campo de estrelas —
+ * e só depois de `settle` segundos de vida (ver a opção).
+ *
+ * **A estrela acesa cai para o horizonte como qualquer outra.** O puxão vem de
+ * `engine/gravity`, o mesmo módulo que o campo de estrelas usa: elas ficam lado
+ * a lado no mesmo céu, e uma estrela parada enquanto as vizinhas giram lê como
+ * defeito. Só a repulsão do ponteiro continua com os números duplicados aqui.
+ *
+ * **Só o ponteiro espera.** O `settle` existe para a estrela não fugir do dedo
+ * que a acendeu, e o buraco negro nunca esteve sob esse dedo: ele cai sobre ela
+ * desde o primeiro quadro, como cai sobre qualquer estrela do campo.
  */
 export function Supernova({
   name = 'nova',
@@ -77,7 +92,7 @@ export function Supernova({
   reach = 0.55,
   force = 620,
   pool = 12,
-  settle = 4,
+  settle = 2,
   repel = 110,
   repelForce = 26,
   spring = 2.6,
@@ -95,6 +110,10 @@ export function Supernova({
   /* deslocamento em px sobre a posição de repouso, como no campo de estrelas */
   const dx = new Float32Array(pool);
   const dy = new Float32Array(pool);
+
+  /* o mesmo puxão que o campo de estrelas sente, do mesmo módulo */
+  const campo = campoVazio();
+  const puxao = { x: 0, y: 0 };
   let proxima = 0;
   let acesas = 0;
 
@@ -174,7 +193,8 @@ export function Supernova({
       if (!acesas) return;
 
       /**
-       * A estrela acesa ganha a física do ponteiro depois de `settle` segundos.
+       * A estrela acesa ganha a repulsão do ponteiro depois de `settle`
+       * segundos — o suficiente para a onda passar.
        *
        * O ganho entra por uma rampa de `SOLTA` segundos, não por um interruptor:
        * um ponto parado que de repente salta para longe do cursor lê como falha,
@@ -182,19 +202,24 @@ export function Supernova({
        */
       const { dt, mouse } = env;
       const usaMouse = mouse.active && !env.camera.moving;
+      // durante o zoom da intro a gravidade fica desligada, como no campo de estrelas
+      const temGrav = prepararCampo(env.camera.moving ? null : env.bus.gravity, campo);
 
       for (let i = 0; i < pool; i++) {
         if (!viva[i]) continue;
         idade[i] += dt;
         const ganho = Math.min(1, Math.max(0, (idade[i] - settle) / SOLTA));
-        if (!ganho && !dx[i] && !dy[i]) continue;
+        // sem gravidade e sem ponteiro, uma estrela em repouso não custa nada
+        if (!ganho && !temGrav && !dx[i] && !dy[i]) continue;
+        const px = fx[i] * env.W;
+        const py = fy[i] * env.H;
 
         let ox = dx[i];
         let oy = dy[i];
 
         if (usaMouse && ganho) {
-          const mx = fx[i] * env.W + ox - mouse.x;
-          const my = fy[i] * env.H + oy - mouse.y;
+          const mx = px + ox - mouse.x;
+          const my = py + oy - mouse.y;
           const d2 = mx * mx + my * my;
           if (d2 < R2 && d2 > 0.01) {
             const d = Math.sqrt(d2);
@@ -207,6 +232,29 @@ export function Supernova({
         // a mesma mola do campo de estrelas: o deslocamento nunca é permanente
         ox -= ox * dt * spring;
         oy -= oy * dt * spring;
+
+        /**
+         * A gravidade entra **depois da mola**, como no campo de estrelas.
+         *
+         * A ordem importa: a mola puxa de volta para o repouso, e o puxão do
+         * horizonte é somado por cima do que sobrou. Invertida, a mola comeria
+         * o puxão do mesmo quadro e a estrela nunca sairia do lugar.
+         *
+         * **Sem atraso e sem rampa**, ao contrário do ponteiro. O `settle`
+         * existe porque o cursor está em cima da estrela no instante do clarão;
+         * o buraco negro está no centro da tela e nunca esteve sob o dedo, então
+         * não há de que proteger a estrela. E o puxão é aceleração somada quadro
+         * a quadro, não um salto de posição: entrar com força total desde o
+         * nascimento não produz degrau nenhum.
+         */
+        if (temGrav) {
+          puxao.x = 0;
+          puxao.y = 0;
+          puxar(campo, px + ox, py + oy, dt, puxao);
+          ox += puxao.x;
+          oy += puxao.y;
+        }
+
         dx[i] = ox;
         dy[i] = oy;
       }

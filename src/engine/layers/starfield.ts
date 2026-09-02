@@ -1,4 +1,5 @@
 import { fastSin, TAU } from '../math';
+import { campoVazio, prepararCampo, puxar } from '../gravity';
 
 /**
  * Raio abaixo do qual a estrela é desenhada como quadrado. Em menos de 2px de
@@ -55,14 +56,16 @@ export function Starfield({
   let bucket!: Int32Array;
   const count = new Int32Array(buckets);
 
-  // LUT de gravidade: índice = (d/alcance)² · 255. Evita a divisão e a potência
-  // por estrela — o perfil de queda é sempre o mesmo, só a escala muda.
-  const GLUT = new Float32Array(256);
-  for (let i = 0; i < 256; i++) {
-    const q = i / 255;
-    const d = Math.sqrt(q) || 1e-4;
-    GLUT[i] = Math.min(1, 0.055 / (d * d + 0.02)) * (1 - q);
-  }
+  /**
+   * O puxão vem de `engine/gravity`, não de uma tabela local.
+   *
+   * As estrelas que a supernova acende sentem a mesma gravidade, e elas ficam
+   * lado a lado com estas no mesmo céu: se as contas divergirem, a diferença
+   * salta aos olhos. O campo é preparado uma vez por quadro e reusado nas ~1120
+   * estrelas.
+   */
+  const campo = campoVazio();
+  const puxao = { x: 0, y: 0 };
 
   return {
     name,
@@ -93,16 +96,10 @@ export function Starfield({
       const moving = env.camera.moving;
       // durante o zoom da intro, repulsão e gravidade ficam desligadas
       const useMouse = mouse.active && !moving;
-      const grav = moving ? null : env.bus.gravity;
+      const temGrav = prepararCampo(moving ? null : env.bus.gravity, campo);
       // a onda também some durante o zoom da intro: empurrar um céu que ainda
       // está chegando não lê como onda, lê como tremor
       const onda = moving ? null : env.bus.shock;
-      let INF2 = 0;
-      let inv2 = 0;
-      if (grav) {
-        INF2 = grav.reach * grav.reach;
-        inv2 = 255 / INF2;
-      }
 
       for (let b = 0; b < buckets; b++) count[b] = 0;
 
@@ -125,20 +122,12 @@ export function Starfield({
         ox -= ox * dt * 2.6;
         oy -= oy * dt * 2.6;
 
-        if (grav) {
-          const gx = grav.x - (sx[i] + ox);
-          const gy = grav.y - (sy[i] + oy);
-          const g2 = gx * gx + gy * gy;
-          if (g2 < INF2) {
-            const gi = GLUT[(g2 * inv2) | 0] * grav.k;
-            const gd = Math.sqrt(g2) || 1e-4;
-            const nx = gx / gd;
-            const ny = gy / gd;
-            const pull = gi * grav.radius * 2.4;
-            // a componente perpendicular (·0.55) dá o giro do disco
-            ox += (nx * pull - ny * pull * 0.55) * dt * 2.2;
-            oy += (ny * pull + nx * pull * 0.55) * dt * 2.2;
-          }
+        if (temGrav) {
+          puxao.x = 0;
+          puxao.y = 0;
+          puxar(campo, sx[i] + ox, sy[i] + oy, dt, puxao);
+          ox += puxao.x;
+          oy += puxao.y;
         }
         if (onda) {
           const wx = sx[i] + ox - onda.x;
