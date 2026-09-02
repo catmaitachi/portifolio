@@ -171,6 +171,42 @@
           "Acompanhamento do paciente entre sessões, sem depender da memória dele."
         ],
         "stack": ["React", "TypeScript", "Java"]
+      },
+      {
+        "key": "vaga-05",
+        "cargo": "—",
+        "org": "A definir",
+        "periodo": "2025.08",
+        "tipo": "estagio",
+        "bullets": ["Espaço reservado — troque pelo que aconteceu aqui."],
+        "stack": ["—"]
+      },
+      {
+        "key": "vaga-06",
+        "cargo": "—",
+        "org": "A definir",
+        "periodo": "2026.01",
+        "tipo": "academico",
+        "bullets": ["Espaço reservado — troque pelo que aconteceu aqui."],
+        "stack": ["—"]
+      },
+      {
+        "key": "vaga-07",
+        "cargo": "—",
+        "org": "A definir",
+        "periodo": "2026.06",
+        "tipo": "freela",
+        "bullets": ["Espaço reservado — troque pelo que aconteceu aqui."],
+        "stack": ["—"]
+      },
+      {
+        "key": "vaga-08",
+        "cargo": "—",
+        "org": "A definir",
+        "periodo": "2026.11",
+        "tipo": "evento",
+        "bullets": ["Espaço reservado — troque pelo que aconteceu aqui."],
+        "stack": ["—"]
       }
     ]
   },

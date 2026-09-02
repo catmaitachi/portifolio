@@ -171,6 +171,42 @@
           "Follow-up between sessions that does not rely on the patient remembering."
         ],
         "stack": ["React", "TypeScript", "Java"]
+      },
+      {
+        "key": "vaga-05",
+        "cargo": "—",
+        "org": "To be defined",
+        "periodo": "2025.08",
+        "tipo": "estagio",
+        "bullets": ["Placeholder — replace with what happened here."],
+        "stack": ["—"]
+      },
+      {
+        "key": "vaga-06",
+        "cargo": "—",
+        "org": "To be defined",
+        "periodo": "2026.01",
+        "tipo": "academico",
+        "bullets": ["Placeholder — replace with what happened here."],
+        "stack": ["—"]
+      },
+      {
+        "key": "vaga-07",
+        "cargo": "—",
+        "org": "To be defined",
+        "periodo": "2026.06",
+        "tipo": "freela",
+        "bullets": ["Placeholder — replace with what happened here."],
+        "stack": ["—"]
+      },
+      {
+        "key": "vaga-08",
+        "cargo": "—",
+        "org": "To be defined",
+        "periodo": "2026.11",
+        "tipo": "evento",
+        "bullets": ["Placeholder — replace with what happened here."],
+        "stack": ["—"]
       }
     ]
   },
