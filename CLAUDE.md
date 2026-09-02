@@ -219,8 +219,13 @@ próprio no build; nada da primeira pintura depende dele.
 - o buraco negro existe só na seção `inicio` — `tween(bh, 'strength', 0, 1.8)` encolhe e apaga (o
   raio é `R0·strength·camera.k`), o que lê como afastamento;
 - cada outra seção tem um céu próprio, e a troca é um cruzamento de opacidades;
-- **cada seção ocupa uma diagonal diferente do céu.** Nunca repetir as coordenadas de um `placement`
-  entre seções — a troca fica invisível.
+- **uma figura por seção, num canto próprio.** Duas enchiam o céu e disputavam o olho com o
+  conteúdo, que é o que a página existe para mostrar; o campo de estrelas já dá densidade ao fundo.
+  Com uma só, o canto passa a ser a identidade da seção, e os quatro estão ocupados: Sobre no
+  inferior direito (`cancer`), Projetos no superior direito (`crux`), Trajetória no superior esquerdo
+  (`ursaMajor`) e Contato no inferior esquerdo (`phoenix`);
+- **nunca repetir as coordenadas de um `placement` entre seções** — a troca fica invisível, e com uma
+  figura só isso pesa ainda mais.
 
 `tween(obj, key, to, dur)` interpola qualquer propriedade num rAF próprio, cancelando o anterior na
 mesma propriedade.
