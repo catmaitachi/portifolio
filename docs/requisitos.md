@@ -106,7 +106,7 @@
 
 **RNF08** — O layout deve ser responsivo, com breakpoints para mobile (≤640px) e telas baixas (≤720px de altura).
 
-**RNF09** — No mobile, a navegação deve ser exibida como faixa horizontal e o layout em coluna única.
+**RNF09** — No mobile, a navegação deve ser exibida como faixa horizontal rolável, que se centraliza na seção ativa, e o layout em coluna única.
 
 **RNF10** — A interface deve fornecer `aria-label` no menu de navegação, no seletor de idioma, no carrossel de projetos, na linha do tempo e no grupo de canais de contato.
 

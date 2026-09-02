@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import type { SectionKey } from '~/content';
 import { useFlip } from '~/hooks/useFlip';
 import { useT } from '~/i18n/useLanguage';
@@ -14,11 +14,13 @@ interface NavMenuProps {
 /**
  * Menu de seções: rótulo + risco de 1px que cresce na seção ativa.
  *
- * No desktop é uma coluna à direita. No mobile vira uma faixa horizontal que
- * **desliza para pôr a seção ativa no centro da tela**: `--navdx` é medido em
- * coordenadas de layout (`offsetLeft`/`offsetWidth`), imunes ao `transform` já
- * aplicado ao próprio nav — `getBoundingClientRect` daria um valor que se
- * realimenta a cada medição.
+ * No desktop é uma coluna à direita. No mobile vira uma **faixa rolável** que se
+ * centraliza sozinha na seção ativa: a rolagem é nativa, então o dedo alcança
+ * qualquer item, e a centralização é um `scrollTo` a cada troca de seção.
+ *
+ * A medida é `offsetLeft`/`offsetWidth`, coordenadas de layout: elas não mudam
+ * com o `scrollLeft` que este efeito escreve, então a conta não se realimenta.
+ * `getBoundingClientRect` daria um valor diferente a cada medição.
  *
  * A medida acontece um quadro depois da troca de seção, então **o layout da
  * faixa no mobile não pode depender de qual seção está ativa**: se ele mudar, a
@@ -35,38 +37,33 @@ interface NavMenuProps {
 export function NavMenu({ secoes, indice, irPara }: NavMenuProps) {
   const t = useT();
   const navRef = useRef<HTMLElement>(null);
-  const [dx, setDx] = useState(0);
   // a troca de ordem desliza: ver `useFlip`
   useFlip(navRef, secoes);
 
   useEffect(() => {
-    const medir = () => {
+    const centralizar = () => {
       const nav = navRef.current;
       if (!nav || !nav.children.length) return;
+      // no desktop a coluna não transborda, e não há nada a rolar
+      if (nav.scrollWidth <= nav.clientWidth) return;
       const i = Math.max(0, Math.min(nav.children.length - 1, indice));
       const alvo = nav.children[i] as HTMLElement;
-      const proximo = Math.round(nav.offsetWidth / 2 - (alvo.offsetLeft + alvo.offsetWidth / 2));
-      setDx((atual) => (atual === proximo ? atual : proximo));
+      nav.scrollTo({ left: alvo.offsetLeft + alvo.offsetWidth / 2 - nav.clientWidth / 2 });
     };
 
     // um quadro de espera: no primeiro render as larguras ainda não existem
-    const raf = requestAnimationFrame(medir);
-    window.addEventListener('resize', medir);
+    const raf = requestAnimationFrame(centralizar);
+    window.addEventListener('resize', centralizar);
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener('resize', medir);
+      window.removeEventListener('resize', centralizar);
     };
     // `secoes` entra porque reordenar move os itens sob o ativo: a faixa do
     // mobile precisa recentrar sobre a posição nova
   }, [indice, secoes]);
 
   return (
-    <nav
-      ref={navRef}
-      className={styles.nav}
-      aria-label={t.a11y.secoes}
-      style={{ '--navdx': `${dx}px` } as React.CSSProperties}
-    >
+    <nav ref={navRef} className={styles.nav} aria-label={t.a11y.secoes}>
       {secoes.map((key, i) => {
         const ativo = i === indice;
         return (

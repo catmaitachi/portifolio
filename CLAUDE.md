@@ -417,9 +417,9 @@ Três detalhes que decorrem disso, e que separam funcionar de tremer:
 
 - **`useLayoutEffect`, nunca `useEffect`.** A inversão precisa entrar antes da pintura; um quadro na
   posição nova antes de voltar se vê como tremor.
-- **As medidas são `offsetTop`/`offsetLeft`**, coordenadas de layout — imunes ao `--navdx` já
-  aplicado ao nav e ao próprio transform que o hook escreve nos filhos. É a mesma razão pela qual
-  `--navdx` não usa `getBoundingClientRect`: as duas se realimentariam.
+- **As medidas são `offsetTop`/`offsetLeft`**, coordenadas de layout — imunes ao `scrollLeft` da
+  faixa do mobile e ao próprio transform que o hook escreve nos filhos. É a mesma razão pela qual a
+  centralização do menu não usa `getBoundingClientRect`: as duas se realimentariam.
 - **Um reflow só para todos.** Ler o contêiner uma vez entre inverter e soltar fixa o estado
   invertido; fazer isso filho a filho seriam N reflows por troca.
 
@@ -427,8 +427,8 @@ O mesmo hook serve ao seletor de perfil, onde o que se move é o orbe escolhido 
 Filhos com `data-oculto` não participam: quem estava fora do fluxo não tem posição comparável com a
 de quem estava no layout, e animá-lo daria um deslocamento inventado.
 
-`--navdx` passou a depender também de `secoes`: reordenar move os itens sob o ativo, e a faixa do
-mobile precisa recentrar sobre a posição nova.
+A centralização da faixa do mobile passou a depender também de `secoes`: reordenar move os itens sob
+o ativo, e o `scrollTo` precisa recentrar sobre a posição nova.
 
 ---
 
@@ -603,14 +603,29 @@ seta no próprio elemento porque a seção Sobre não reivindica ←/→ para si
 `editandoTexto()` — a regra de "aqui a seta é do cursor" — mora junto do hook, e tanto a rolagem
 quanto as seções a usam. Duplicada, ela sairia de sincronia no dia em que um campo novo aparecesse.
 
-Menu vertical à direita: rótulo + risco de 1px que cresce (12px → 34px) na seção ativa. No mobile é
-uma faixa horizontal que desliza para pôr a seção ativa no centro (`--navdx`, medido em coordenadas
-de layout `offsetLeft`/`offsetWidth` — imunes ao `transform` já aplicado ao próprio nav).
+Menu vertical à direita: rótulo + risco de 1px que cresce (12px → 34px) na seção ativa.
 
-**No mobile o risco ativo cresce em escala, não em largura** — e isso não é cosmético. `--navdx` é
-medido **um quadro depois** da troca de seção; se a largura do risco fizesse parte do layout, a
-faixa inteira estaria reflowando durante os 0.45s da transição e a medida sairia sobre uma geometria
-que ainda ia se acomodar. O traço ativo parava exatamente 11px — `(34−12)/2` — fora do centro, para
+**No mobile é uma faixa rolável**, e a rolagem é nativa. A versão anterior media a posição do item
+ativo e deslocava o nav inteiro por `transform` num `--navdx`: centralizava, mas a faixa era
+intocável, e o que saísse da tela só voltava navegando. Com `overflow-x` o dedo alcança qualquer
+item, a inércia vem de graça, e a centralização do ativo passa a ser um `scrollTo` — a mesma medida
+de antes (`offsetLeft`/`offsetWidth`, coordenadas de layout que não mudam com o `scrollLeft` que o
+efeito escreve), agora aplicada ao eixo de rolagem em vez de a um transform.
+
+Duas coisas que a rolagem trouxe junto e não são opcionais:
+
+- **`justify-content: safe center`**, nunca `center` puro. Com transbordo, o `center` empurra o
+  início do conteúdo para fora do alcance da rolagem e o primeiro item fica inatingível; o `safe`
+  desiste de centralizar exatamente nesse caso e alinha ao início.
+- **`padding-block: 20px` na faixa.** `overflow-x: auto` obriga o eixo Y a computar `auto` junto, e
+  o risco ativo está rotacionado 90° e escalado para 34px sobre uma caixa de layout de 1px — sem
+  altura para ele, a própria faixa cortaria as pontas do traço que marca onde o visitante está. O
+  `bottom` desceu de 72px para 52px para compensar e manter o traço onde ele estava.
+
+**No mobile o risco ativo cresce em escala, não em largura** — e isso não é cosmético. A
+centralização é medida **um quadro depois** da troca de seção; se a largura do risco fizesse parte
+do layout, a faixa inteira estaria reflowando durante os 0.45s da transição e a medida sairia sobre
+uma geometria que ainda ia se acomodar. O traço ativo parava exatamente 11px — `(34−12)/2` — fora do centro, para
 o lado de onde veio. Com `--nav-risco-w` fixo e o crescimento em `scaleX`, o layout da faixa é
 invariante: a medida continua vindo do DOM, sem número duplicado no JS, e acerta o centro em
 qualquer índice. Os comprimentos vivem sem unidade (`--nav-risco: 12`, `--nav-risco-ativo: 34`)

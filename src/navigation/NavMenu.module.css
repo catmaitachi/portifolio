@@ -50,7 +50,6 @@
   gap: var(--nav-gap);
   align-items: var(--nav-align);
   transform: translate(var(--nav-tx), var(--nav-ty));
-  transition: transform 0.5s cubic-bezier(0.3, 0.7, 0.2, 1);
   animation: fina 1s ease-out 4.9s both;
 }
 
@@ -110,13 +109,28 @@
 }
 
 /* mobile: faixa horizontal, sem rótulos — só os riscos, que giram para a vertical */
+/**
+ * Mobile: a faixa **rola**, em vez de ser deslocada por `transform`.
+ *
+ * A versão anterior media a posição do item ativo e escrevia o deslocamento num
+ * `--navdx` aplicado ao nav inteiro. Funcionava para centralizar, mas a faixa
+ * era intocável: o que saísse da tela só voltava navegando, e com uma seção a
+ * mais os itens das pontas ficariam inalcançáveis.
+ *
+ * Com rolagem nativa o dedo alcança tudo, e a centralização do ativo passa a ser
+ * um `scrollTo` — a mesma medida de antes, escrita em `scrollLeft` em vez de num
+ * transform. O ganho não é só de alcance: sai um transform que disputava o eixo
+ * com o FLIP da reordenação, e a inércia do toque vem de graça.
+ */
 @media (width <= 640px) {
   .nav {
     --nav-top: auto;
-    --nav-bottom: 72px;
-    --nav-left: 50%;
-    --nav-right: auto;
-    --nav-tx: calc(-50% + var(--navdx, 0px));
+
+    /* 52 + os 20px de respiro abaixo deixam o traço onde ele estava, nos ~78px */
+    --nav-bottom: 52px;
+    --nav-left: 0;
+    --nav-right: 0;
+    --nav-tx: 0px;
     --nav-ty: 0px;
     --nav-dir: row;
     --nav-align: center;
@@ -125,9 +139,9 @@
     /**
      * O risco ativo cresce em **escala**, não em largura.
      *
-     * Aqui a largura é layout: se o ativo passa de 12px para 34px, a faixa
-     * inteira reflowa durante 0.45s — e `--navdx` é medido um quadro depois da
-     * troca, ou seja, sobre uma faixa que ainda vai se mexer. O traço parava
+     * A largura é layout: se o ativo passa de 12px para 34px, a faixa inteira
+     * reflowa durante 0.45s, e a centralização é medida um quadro depois da
+     * troca — ou seja, sobre uma faixa que ainda vai se mexer. O traço parava
      * exatamente 11px ((34−12)/2) fora do centro, para o lado de onde veio.
      *
      * Com a largura fixa em `--nav-risco`, o layout da faixa é invariante: a
@@ -137,6 +151,38 @@
     --nav-risco-w: var(--nav-risco);
     --nav-risco-esc: calc(var(--nav-risco-ativo) / var(--nav-risco));
     --nav-risco-rot: 90deg;
+
+    /**
+     * `safe center` e não `center`: com transbordo, o `center` puro empurra o
+     * início do conteúdo para fora do alcance da rolagem, e o primeiro item
+     * fica inatingível. O `safe` desiste de centralizar exatamente nesse caso e
+     * alinha ao início, que é o que se pode rolar.
+     */
+    justify-content: safe center;
+
+    /**
+     * O respiro vertical **não é estético**: `overflow-x: auto` obriga o eixo Y
+     * a computar `auto` junto, e o risco ativo está rotacionado 90° e escalado
+     * para 34px sobre uma caixa de layout de 1px. Sem altura para ele, a própria
+     * faixa cortaria as pontas do traço que marca onde o visitante está.
+     */
+    padding-block: 20px;
+    padding-inline: 24px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  /* sem isto os itens se comprimem em vez de transbordar, e não há o que rolar */
+  .item {
+    flex: none;
   }
 
   .rotulo {
@@ -145,6 +191,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .nav {
+    scroll-behavior: auto;
+  }
+
   .item {
     transition:
       color 0.45s,
