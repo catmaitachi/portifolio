@@ -87,8 +87,14 @@ export function ContactSection({ ativo }: { ativo: boolean }) {
         <div className={styles.canais}>
           <span className={styles.ou}>{t.contato.ou}</span>
           <div className={styles.grade} role="group" aria-label={t.a11y.canais}>
-            {CANAIS.map((c) => (
-              <ChannelCard key={c.key} canal={c} />
+            {CANAIS.map((c, i) => (
+              <ChannelCard
+                key={c.key}
+                canal={c}
+                entrando={ativo}
+                indice={i}
+                total={CANAIS.length}
+              />
             ))}
           </div>
         </div>

@@ -1,3 +1,30 @@
+/**
+ * Entrada da seção: o cartão chega da sua lateral e para.
+ *
+ * Mesma gramática da entrada dos cartões de projeto — opacidade primeiro,
+ * deslocamento depois, sem quique —, só que na horizontal. `--dir` (-1, 0 ou 1)
+ * e `--ordem` vêm do componente, que é quem sabe a posição na grade.
+ *
+ * O `translateY` de 10px é comum aos três: sem ele, o cartão central — o único
+ * com `--dir: 0` — não teria de onde vir e entraria só por opacidade, quebrando
+ * a fila.
+ */
+@keyframes canalEntra {
+  from {
+    opacity: 0;
+    transform: translate(calc(var(--dir, 0) * 46px), 10px);
+  }
+
+  45% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
 .canal {
   display: flex;
   flex-direction: column;
@@ -18,6 +45,12 @@
     corner-shape: bevel;
     border-radius: 14px 2px;
   }
+}
+
+/* `backwards` cobre o atraso; o estado final já é o natural do cartão */
+.canal[data-entrada] {
+  animation: canalEntra 0.62s cubic-bezier(0.16, 0.84, 0.24, 1) calc(var(--ordem, 0) * 110ms)
+    backwards;
 }
 
 .canal:hover {
