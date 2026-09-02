@@ -8,15 +8,23 @@ import {
   cxA,
   cyA,
   dentroDaJanela,
-  PASSO,
+  DUR_PULSO,
+  PULSOS,
   VIEW_H,
   VIEW_W,
 } from './timelineGeometry';
 import type { Timeline } from './useTimeline';
 
-/** Defasagem dos pulsos que viajam pela curva, em segundos. */
-const PULSOS = ['-0.5s', '0s', '-13s', '-26s'] as const;
-const DURACAO_PULSO = '39s';
+/**
+ * Os pulsos, prontos para o SMIL.
+ *
+ * Quantos são e quanto dura a volta saem do comprimento do caminho
+ * (`timelineGeometry`); aqui só viram string. A defasagem é a duração dividida
+ * pelo número deles, então ficam igualmente espaçados na curva por construção —
+ * um caminho mais longo ganha pulsos em vez de espaçá-los mais.
+ */
+const DURACAO_PULSO = `${DUR_PULSO}s`;
+const DEFASAGENS = Array.from({ length: PULSOS }, (_, k) => `-${(k * DUR_PULSO) / PULSOS}s`);
 
 interface TimelineCurveProps {
   lista: Experiencia[];
@@ -180,9 +188,9 @@ export function TimelineCurve({ lista, linha, ativo }: TimelineCurveProps) {
               <>
                 {/* um anel maior à frente dos pontos, para o pulso ter volume */}
                 <circle r="7" fill="none" stroke="rgba(255,255,255,.16)" strokeWidth="1" vectorEffect="non-scaling-stroke">
-                  <animateMotion dur={DURACAO_PULSO} begin={PULSOS[0]} repeatCount="indefinite" path={CAMINHO} />
+                  <animateMotion dur={DURACAO_PULSO} begin="-0.5s" repeatCount="indefinite" path={CAMINHO} />
                 </circle>
-                {PULSOS.slice(1).map((begin) => (
+                {DEFASAGENS.map((begin) => (
                   <circle key={begin} r="2.6" fill="#fff" opacity=".8">
                     <animateMotion dur={DURACAO_PULSO} begin={begin} repeatCount="indefinite" path={CAMINHO} />
                   </circle>
@@ -199,9 +207,9 @@ export function TimelineCurve({ lista, linha, ativo }: TimelineCurveProps) {
         const y = cyA(u);
         const dentro = dentroDaJanela(uTela);
         const naFrente = i === ativa;
-        // posição dentro da janela (0..VAGAS-1): o passo é uniforme, então ela
+        // posição dentro da janela (0..vagas-1): o passo é uniforme, então ela
         // sai de `uTela` sem contador nem lista auxiliar por render
-        const vaga = Math.round(uTela / PASSO);
+        const vaga = Math.round(uTela / janela.passo);
         // nó no alto da curva → rótulo embaixo, e vice-versa
         const noAlto = y < VIEW_H / 2;
 

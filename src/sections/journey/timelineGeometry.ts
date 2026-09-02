@@ -6,15 +6,25 @@
  * mesmo sistema de coordenadas**.
  *
  * O ponto central do desenho: a onda está ancorada no **tempo**, não na tela. O
- * caminho cobre três janelas (u de −1 a 2) e navegar é um `translateX` no grupo
- * — a curva anda junto com os nós e **nunca é recalculada**.
+ * caminho cobre várias janelas e navegar é um `translateX` no grupo — a curva
+ * anda junto com os nós e **nunca é recalculada**.
  */
 
 /** Vagas visíveis na janela. Mais entradas não poluem a curva: elas entram pela janela. */
 export const VAGAS = 6;
 
+/**
+ * Vagas numa tela estreita.
+ *
+ * A curva ocupa a largura da tela em qualquer tamanho, então o que muda com ela
+ * é a distância entre os nós: seis em 360px caem a ~62px um do outro, e o
+ * rótulo `ano.mês` de um encosta no do vizinho muito antes de a área de toque de
+ * 38px ficar sem ambiguidade. Com quatro a distância dobra.
+ */
+export const VAGAS_ESTREITO = 4;
+
 /** Espaçamento entre eventos, em fração da largura da curva. Sempre uniforme. */
-export const PASSO = 1 / (VAGAS - 1);
+export const passoDe = (vagas: number): number => 1 / (vagas - 1);
 
 export const VIEW_W = 1000;
 export const VIEW_H = 132;
@@ -33,25 +43,63 @@ export const cxA = (u: number): number => 44 + SPAN * u;
  */
 export const cyA = (u: number): number => 66 - 42 * Math.sin(2 * Math.PI * (u - 0.125));
 
-/** Amostras do caminho. 216 pontos em três janelas = ~1 ponto a cada 4px de tela. */
-const AMOSTRAS = 216;
+/**
+ * Janelas cobertas pelo caminho, e o `u` onde ele começa.
+ *
+ * Só uma delas está na tela a cada momento; as outras são a folga por onde a
+ * onda desliza. Duas coisas gastam essa folga:
+ *
+ * - **o deslocamento da janela**, que vale `(n − vagas) / (vagas − 1)` janelas e
+ *   cresce quando as vagas diminuem — com quatro vagas cada passo anda ⅓ de
+ *   período contra ⅕ com seis, então sete entradas no mobile deslocam uma janela
+ *   inteira, cinco vezes o que deslocam no desktop;
+ * - **a animação de entrada**, ±820px ≈ 0,9 janela, em sentidos opostos para a
+ *   onda principal e a inversa.
+ *
+ * Passar da folga descobre a ponta da curva, e a onda aparece começando do nada
+ * no meio da tela. Cinco janelas dão teto para ~1,95 janela de deslocamento:
+ * **nove entradas no mobile, quinze no desktop**. Passar disso pede uma janela a
+ * mais aqui — e só isso, porque tudo que depende do comprimento sai daqui.
+ */
+const JANELAS = 5;
+const U0 = -2;
+
+/** Amostras por janela: ~13 unidades do viewBox entre pontos, numa senoide suave. */
+const POR_JANELA = 72;
 
 /**
  * O caminho da onda, em `d` de `<path>`.
  *
  * Calculado uma única vez no carregamento do módulo: ele não depende de estado
- * nenhum, só das constantes acima.
+ * nenhum, só das constantes acima — nem do número de vagas, que muda o
+ * espaçamento dos nós e o quanto a curva desliza, nunca o desenho dela.
  */
 export const CAMINHO: string = (() => {
+  const amostras = POR_JANELA * JANELAS;
   let d = '';
-  for (let k = 0; k <= AMOSTRAS; k++) {
-    const u = -1 + (3 * k) / AMOSTRAS;
+  for (let k = 0; k <= amostras; k++) {
+    const u = U0 + (JANELAS * k) / amostras;
     d += `${k ? 'L' : 'M'}${cxA(u).toFixed(1)},${cyA(u).toFixed(1)}`;
   }
   return d;
 })();
 
+/**
+ * Os pulsos que viajam pela curva: quantos são e quanto levam para percorrê-la.
+ *
+ * Os dois saem de `JANELAS`, para que o comprimento do caminho não mude o que se
+ * vê. 13s por janela mantém a **velocidade** do pulso; um pulso por janela
+ * mantém a **densidade** — em média um na tela a qualquer momento. A defasagem é
+ * `DUR_PULSO / PULSOS`, então eles ficam igualmente espaçados na curva.
+ */
+export const PULSOS = JANELAS;
+export const DUR_PULSO = 13 * JANELAS;
+
 export interface Janela {
+  /** vagas desta janela — muda com a largura da tela */
+  vagas: number;
+  /** espaçamento entre vagas, em fração da largura */
+  passo: number;
   /** deslocamento atual (pode ser fracionário durante o arraste) */
   desl: number;
   /** deslocamento máximo — 0 quando tudo cabe */
@@ -67,23 +115,26 @@ export interface Janela {
 }
 
 /**
- * Estado da janela para `total` eventos, deslocada em `desl`.
+ * Estado da janela de `vagas` para `total` eventos, deslocada em `desl`.
  *
  * Com **menos entradas que vagas** o grupo fica centrado (`base`) e a janela não
  * desliza. Com mais, `primeiro = maxDesl − desl` diz qual evento ocupa a
  * primeira vaga.
  */
-export function calcularJanela(total: number, desl: number): Janela {
+export function calcularJanela(total: number, desl: number, vagas: number): Janela {
   const n = Math.max(1, total);
-  const maxDesl = Math.max(0, n - VAGAS);
+  const passo = passoDe(vagas);
+  const maxDesl = Math.max(0, n - vagas);
   const d = Math.max(0, Math.min(maxDesl, desl));
   const primeiro = maxDesl - d;
-  const cabeTudo = n < VAGAS;
-  const base = cabeTudo ? (1 - (n - 1) * PASSO) / 2 : 0;
-  const S = cabeTudo ? 0 : primeiro * PASSO;
-  const uDe = (i: number) => i * PASSO + base;
+  const cabeTudo = n < vagas;
+  const base = cabeTudo ? (1 - (n - 1) * passo) / 2 : 0;
+  const S = cabeTudo ? 0 : primeiro * passo;
+  const uDe = (i: number) => i * passo + base;
 
   return {
+    vagas,
+    passo,
     desl: d,
     maxDesl,
     primeiro,
@@ -100,9 +151,9 @@ export function calcularJanela(total: number, desl: number): Janela {
  * não se move só porque o visitante mudou de evento.
  */
 export function janelaQueContem(janela: Janela, alvo: number): number {
-  const { maxDesl, primeiro } = janela;
+  const { maxDesl, primeiro, vagas } = janela;
   let desl = janela.desl;
-  if (alvo > primeiro + VAGAS - 1) desl = maxDesl - (alvo - VAGAS + 1);
+  if (alvo > primeiro + vagas - 1) desl = maxDesl - (alvo - vagas + 1);
   else if (alvo < primeiro) desl = maxDesl - alvo;
   return Math.max(0, Math.min(maxDesl, desl));
 }

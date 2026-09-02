@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { calcularJanela, janelaQueContem, VAGAS, type Janela } from './timelineGeometry';
+import { calcularJanela, janelaQueContem, type Janela } from './timelineGeometry';
+import { useVagas } from './useVagas';
 
 export interface Timeline {
   curvaRef: React.RefObject<HTMLDivElement | null>;
@@ -29,9 +30,10 @@ export function useTimeline(total: number): Timeline {
   const [desl, setDesl] = useState(0);
   const [arrastando, setArrastando] = useState(false);
 
+  const vagas = useVagas();
   const n = Math.max(1, total);
   const ativa = ativaBruta === null ? n - 1 : Math.min(Math.max(ativaBruta, 0), n - 1);
-  const janela = useMemo(() => calcularJanela(n, desl), [n, desl]);
+  const janela = useMemo(() => calcularJanela(n, desl, vagas), [n, desl, vagas]);
 
   // o arraste lê os valores correntes sem re-registrar os listeners a cada quadro
   const janelaRef = useRef(janela);
@@ -40,6 +42,18 @@ export function useTimeline(total: number): Timeline {
   ativaRef.current = ativa;
   const nRef = useRef(n);
   nRef.current = n;
+
+  /**
+   * A janela mudou de tamanho com a largura da tela (uma rotação, tipicamente).
+   *
+   * O deslocamento é contado em eventos, e `calcularJanela` já o limita ao novo
+   * máximo — mas limitar não basta: com menos vagas o evento ativo pode ter
+   * ficado fora da janela, e girar o aparelho não pode apagar da tela justamente
+   * o que estava sendo lido. Puxa o deslocamento de volta o mínimo para contê-lo.
+   */
+  useEffect(() => {
+    setDesl((d) => janelaQueContem(calcularJanela(nRef.current, d, vagas), ativaRef.current));
+  }, [vagas]);
 
   const mudar = useCallback((d: number) => {
     const total = nRef.current;
@@ -55,10 +69,11 @@ export function useTimeline(total: number): Timeline {
   /**
    * Arrastar a curva = navegar no tempo.
    *
-   * A largura da curva vale `VAGAS − 1` passos, então arrastar 1/5 da largura
-   * move exatamente um evento. O deslocamento é **fracionário** enquanto o dedo
-   * está na tela: a curva acompanha o movimento em vez de saltar de evento em
-   * evento.
+   * A largura da curva vale `vagas − 1` passos, então arrastar 1/5 da largura
+   * move um evento no desktop e 1/3 dela move um no mobile — o gesto acompanha o
+   * espaçamento que está na tela, em vez de um número fixo. O deslocamento é
+   * **fracionário** enquanto o dedo está na tela: a curva segue o movimento em
+   * vez de saltar de evento em evento.
    */
   useEffect(() => {
     const el = curvaRef.current;
@@ -74,7 +89,7 @@ export function useTimeline(total: number): Timeline {
       pendente = 0;
       const j = janelaRef.current;
       if (x0 === null) return;
-      const alvo = desl0 + ((ultimo - x0) / larg) * (VAGAS - 1);
+      const alvo = desl0 + ((ultimo - x0) / larg) * (j.vagas - 1);
       setDesl(Math.max(0, Math.min(j.maxDesl, alvo)));
     };
 

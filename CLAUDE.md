@@ -27,7 +27,7 @@ npm run check:i18n   # confere se pt.json e en.json continuam paralelos
 | `src/hud/` | Anéis, mira, seletor de idioma, crédito, versão, notificações. | `i18n` |
 | `src/sections/` | Uma pasta por seção. | `content`, `i18n`, componentes |
 | `src/components/` | Peças genéricas (`Figure`). | nada |
-| `src/hooks/` | Hooks transversais (`useReducedMotion`, `useArrowKeys`, `useDecipher`). | nada |
+| `src/hooks/` | Hooks transversais (`useReducedMotion`, `useArrowKeys`, `useDecipher`, `useMediaQuery`). | nada |
 
 A dependência só aponta para baixo nessa tabela. **Nenhuma seção importa outra**, e nenhuma sabe o
 próprio índice — recebe apenas `ativo: boolean`. Quem conhece a lista de seções é o `App`.
@@ -514,10 +514,11 @@ em torno de y=66 devolve exatamente a onda oposta, sobre o mesmo `d`.
 Navegar abre e fecha o par como um fole, e é isso que dá leitura de rotação a uma figura que só
 translada.
 
-O curso de entrada vem do próprio desenho: o caminho cobre **três** janelas (u de -1 a 2), de
-x=-868 a x=1868 num `viewBox` de 1000. Esses **868px de sobra de cada lado são o teto do
-deslocamento** — passar deles descobre a ponta da curva e a onda aparece começando do nada no meio
-da tela. Os 820 usados são esse limite com folga.
+O curso de entrada vem do próprio desenho: o caminho cobre **cinco** janelas (u de −2 a 3), de
+x=−1780 a x=2780 num `viewBox` de 1000. As quatro janelas de sobra são a folga por onde a onda
+desliza, e **duas coisas a gastam ao mesmo tempo**: o deslocamento da janela e estes 820px de
+entrada, que correm em sentidos opostos para a principal e a inversa. Passar da folga descobre a
+ponta da curva e a onda aparece começando do nada no meio da tela.
 
 A animação de entrada mora num `<g>` **externo**: o de dentro carrega o `translateX` da janela,
 escrito pelo JS, e uma animação de `transform` no mesmo elemento o apagaria — o mesmo motivo pelo
@@ -763,7 +764,8 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | `Notice` | `--aviso-top --aviso-left --aviso-w` |
 | `Credit` | `--credito-vis` |
 
-Faixas: `≤640px` (mobile: coluna única, nav horizontal, seletor centrado) e `≤720px de altura`
+Faixas: `≤640px` (mobile: coluna única, nav horizontal, seletor centrado, quatro vagas na linha do
+tempo) e `≤720px de altura`
 (telas baixas: retrato 150px, texto 22vh, paddings menores). **A segunda vem depois na cascata de
 propósito** — em paisagem curta ela ganha nos tokens compartilhados, porque ali o gargalo é a altura.
 
@@ -964,28 +966,56 @@ tipo escrito na vertical (`writing-mode`); no conteúdo, o período como **núme
 
 A geometria é matemática pura em `timelineGeometry.ts` — sem React e sem DOM.
 
-- A onda está ancorada no **tempo**, não na tela: `y = 66 − 42·sen(2π(u − ⅛))` amostrada em 216
-  pontos cobrindo **três janelas** (u de −1 a 2), calculada uma única vez. Navegar é um `translateX`
-  no `<g>` — a onda anda junto com os nós e o caminho **nunca é recalculado**.
+- A onda está ancorada no **tempo**, não na tela: `y = 66 − 42·sen(2π(u − ⅛))` amostrada a 72
+  pontos por janela, cobrindo **cinco janelas** (u de −2 a 3), calculada uma única vez. Navegar é um
+  `translateX` no `<g>` — a onda anda junto com os nós e o caminho **nunca é recalculado**. Ele não
+  depende do número de vagas: elas mudam o espaçamento dos nós e o quanto a curva desliza, nunca o
+  desenho dela.
 - Duas cópias do caminho: a cinza inteira e a branca de progresso, **cortada por um `clipPath`
   vertical** que vem do passado e para exatamente na data ativa. A curva é função de x, então a
   borda vertical do corte cai sobre o nó — erro de 0px por construção.
   *Tracejado com `pathLength` foi descartado: com `non-scaling-stroke` o dash é medido em pixels de
   tela e a escala do viewBox não é uniforme, então o traço passava do ponto.*
-- Quatro `<circle>` com `<animateMotion>` de 39s (defasados em 13s) mantêm um pulso viajando pela curva.
+- Os pulsos que viajam pela curva saem do comprimento dela: `PULSOS = JANELAS` e
+  `DUR_PULSO = 13s × JANELAS`, com defasagem `DUR_PULSO / PULSOS`. Assim um caminho mais longo ganha
+  pulsos em vez de espaçá-los mais — 13s por janela mantém a **velocidade**, um pulso por janela
+  mantém a **densidade** (em média um na tela), e eles ficam igualmente espaçados por construção.
+  São cinco `<circle>` mais o anel maior que corre meio segundo à frente do primeiro.
 - `vector-effect="non-scaling-stroke"` mantém 1px apesar do esticamento não uniforme.
 
-**Janela de seis eventos, passo uniforme.** O espaçamento é sempre `1/5` da largura (`VAGAS=6`,
-`PASSO`) — mais entradas não poluem a linha, elas entram pela janela, que desliza. A data é
-**rótulo, não posição** (formato **ano.mês**). Com menos de seis entradas o grupo fica centrado
-(`base`).
+**Janela de seis eventos — quatro no mobile —, passo uniforme.** O espaçamento é sempre
+`1/(vagas−1)` da largura: `1/5` no desktop, `1/3` em `≤640px`. Mais entradas não poluem a linha,
+elas entram pela janela, que desliza. A data é **rótulo, não posição** (formato **ano.mês**). Com
+menos entradas que vagas o grupo fica centrado (`base`).
+
+A curva ocupa a largura da tela em qualquer tamanho, então é a **distância entre os nós** que o
+mobile aperta: seis em 360px caem a ~62px um do outro, e os rótulos `ano.mês` se encostam muito
+antes de as áreas de toque de 38px ficarem ambíguas. Com quatro, a distância dobra.
+
+Isso **não cabe numa media query**. O número de vagas decide o espaçamento dos nós, o quanto a curva
+desliza por passo e o quanto um arraste anda — geometria em JavaScript, não estilo. Quem lê a
+largura é `useVagas`, sobre o `useMediaQuery` de `src/hooks/` e a mesma consulta `≤640px` do resto
+da página (`TELA_ESTREITA`), e é **reativo**: girar o
+aparelho troca a janela, e um efeito em `useTimeline` puxa o deslocamento de volta o mínimo para o
+evento ativo continuar visível. Limitar o deslocamento ao novo máximo não bastaria — a rotação não
+pode apagar da tela justamente o que estava sendo lido.
+
+**Menos vagas gastam mais folga da curva**, e é essa a única coisa que amarra as duas pontas do
+assunto: com quatro vagas cada passo desloca ⅓ de período contra ⅕ com seis, então as sete entradas
+de hoje deslocam **uma janela inteira** no mobile — cinco vezes o que deslocam no desktop. É por
+isso que o caminho cobre cinco janelas e não as três de antes: com três, a ponta direita parava em
+x=956 num viewBox de 1000, e o canto direito da curva ficava sem linha já no estado inicial. As
+cinco dão teto para ~1,95 janela de deslocamento: **nove entradas no mobile, quinze no desktop.**
+Passar disso pede uma janela a mais em `JANELAS`, e só isso — a duração dos pulsos e quantos são
+saem de lá.
 
 Os nós são **botões HTML por cima** do SVG, não `<circle>`: precisam de área de toque de 38px, foco
 de teclado e um rótulo que não estica junto com o `preserveAspectRatio="none"`. Ficam posicionados
 em `left/top` como % do mesmo viewBox. O rótulo troca de lado conforme a curva sobe ou desce.
 
 Navegação: arrastar a curva (deslocamento **fracionário** enquanto o dedo está na tela — arrastar
-1/5 da largura = um evento), as setas ←/→ (com foco no palco **e também sem foco**, enquanto a seção
+`1/(vagas−1)` da largura = um evento, então o gesto acompanha o espaçamento que está na tela), as
+setas ←/→ (com foco no palco **e também sem foco**, enquanto a seção
 estiver ativa) ou os dois botões de 38px abaixo da curva, que apagam nas pontas.
 A navegação **não é circular**: as pontas são pontas.
 
