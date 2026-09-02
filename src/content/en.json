@@ -13,22 +13,8 @@
     "legenda": "Software Developer"
   },
 
-  "perfis": {
-    "explorar": {
-      "nome": "Just exploring",
-      "dica": "Browse the portfolio in its original order"
-    },
-    "projeto": {
-      "nome": "Focus on projects",
-      "dica": "Projects first, with contact right after"
-    },
-    "vaga": {
-      "nome": "Focus on skills",
-      "dica": "Start with the journey and the background"
-    }
-  },
-
   "sobre": {
+    "indice": "01",
     "titulo": "About Me",
     "paragrafos": [
       "I'm a software designer in the age of AI. While generative models speed up coding, my role lies in what comes before it: envisioning, structuring, and planning solid systems, guided by Software Engineering best practices.",
@@ -72,6 +58,7 @@
   },
 
   "projetos": {
+    "indice": "02",
     "titulo": "Projects",
     "intro": "My highlights, the projects I like most.",
     "banner": "...",
@@ -120,6 +107,7 @@
   },
 
   "experiencia": {
+    "indice": "03",
     "titulo": "Journey",
     "intro": "My professional story, year by year.",
     "tipos": {
@@ -228,6 +216,7 @@
   },
 
   "contato": {
+    "indice": "04",
     "titulo": "Let us talk",
     "intro": "Open to opportunities and collaborations.",
     "email": "lukasspiazzi@outlook.com",
@@ -258,8 +247,6 @@
   "a11y": {
     "secoes": "Portfolio sections",
     "idioma": "Switch language between Portuguese and English",
-    "perfis": "Access profile — reorders the sections by what you came for",
-    "perfisAbrir": "Choose an access profile",
     "projetos": "Projects — open a card to read the description",
     "experiencia": "Journey — use the arrow keys to move through the years",
     "canais": "Contact channels",

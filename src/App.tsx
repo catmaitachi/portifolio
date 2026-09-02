@@ -1,13 +1,11 @@
-import { Fragment, useCallback, useState } from 'react';
-import type { SectionKey } from '~/content';
+import { useCallback, useState } from 'react';
+import { SECOES } from '~/content';
 import { Credit } from '~/hud/Credit';
 import { Hud } from '~/hud/Hud';
 import { LanguageToggle } from '~/hud/LanguageToggle';
 import { Notice } from '~/hud/Notice';
 import { NovaGauge } from '~/hud/NovaGauge';
-import { ProfilePicker } from '~/hud/ProfilePicker';
 import { useNovaHint } from '~/hud/useNovaHint';
-import { useProfile } from '~/hud/useProfile';
 import { Version } from '~/hud/Version';
 import { useT } from '~/i18n/useLanguage';
 import { NavMenu } from '~/navigation/NavMenu';
@@ -21,28 +19,6 @@ import { JourneySection } from '~/sections/journey/JourneySection';
 import { ProjectsSection } from '~/sections/projects/ProjectsSection';
 import styles from './App.module.css';
 
-interface Montagem {
-  ativo: boolean;
-  indice: string;
-}
-
-/**
- * Qual componente responde por cada chave de seção.
- *
- * É o único lugar do projeto que faz essa ligação, e existe porque a **ordem
- * deixou de ser fixa**: com o perfil de acesso reordenando a rolagem, o JSX não
- * pode mais listar as seções de cima para baixo. Nenhuma seção ganha
- * conhecimento novo com isso — ela continua recebendo só `ativo` e o número que
- * lhe cabe.
- */
-const MONTAR: Record<SectionKey, (p: Montagem) => React.ReactNode> = {
-  inicio: () => <HeroSection />,
-  sobre: (p) => <AboutSection {...p} />,
-  projetos: (p) => <ProjectsSection {...p} />,
-  experiencia: (p) => <JourneySection {...p} />,
-  contato: (p) => <ContactSection {...p} />,
-};
-
 /**
  * Montagem da página.
  *
@@ -50,14 +26,8 @@ const MONTAR: Record<SectionKey, (p: Montagem) => React.ReactNode> = {
  * contêiner de seções (com `scroll-snap`) na frente. Só o contêiner rola — o
  * documento tem `overflow: hidden`.
  *
- * O App é a única peça que conhece a lista de seções **e a ordem em que elas
- * saem**. Cada seção só sabe se está ativa e que número ocupa; nenhuma sabe qual
- * é a sua vizinha.
- *
- * O perfil de acesso é dele pelo mesmo motivo: escolher um perfil é reordenar a
- * rolagem, e a ordem é a única coisa que o App sabe e as seções não. A cena não
- * é tocada por isso — `CEUS` é indexado por **chave**, então cada seção leva o
- * próprio céu para onde for.
+ * O App é a única peça que conhece a lista de seções. Cada seção só sabe se está
+ * ativa; nenhuma sabe qual é a sua vizinha nem o seu índice.
  *
  * Também é ele quem liga a supernova ao seu medidor: a cena avisa que uma
  * estrela foi acesa e o HUD desenha a recarga. Os dois recebem o **mesmo**
@@ -69,9 +39,8 @@ const MONTAR: Record<SectionKey, (p: Montagem) => React.ReactNode> = {
  * esquerdo só existe enquanto ele estiver em zero (ver `useNovaHint`).
  */
 export function App() {
-  const { perfil, secoes, escolher } = useProfile();
-  const { ref, indice, irPara } = useSectionScroll(secoes.length);
-  const chaveAtiva = secoes[indice] ?? 'inicio';
+  const { ref, indice, irPara } = useSectionScroll();
+  const chaveAtiva = SECOES[indice]?.key ?? 'inicio';
   const [novas, setNovas] = useState(0);
   const aoAcender = useCallback(() => setNovas((n) => n + 1), []);
   const dica = useNovaHint(novas);
@@ -82,24 +51,16 @@ export function App() {
       <SpaceCanvas secao={chaveAtiva} onNova={aoAcender} />
       <Hud ativo={chaveAtiva === 'inicio'} />
       <LanguageToggle />
-      <ProfilePicker perfil={perfil} escolher={escolher} ativo={chaveAtiva === 'inicio'} />
 
       <div ref={ref} className={styles.rolagem}>
-        {/**
-         * `Fragment`, nunca um elemento de embrulho: as seções precisam ser
-         * **filhas diretas** de `.rolagem` para o `scroll-snap` valer, e o filtro
-         * da supernova exige que o alvo do toque seja a caixa de uma `<section>`
-         * — uma `<div>` no meio quebraria os dois de uma vez.
-         */}
-        {secoes.map((key, i) => (
-          <Fragment key={key}>
-            {/* o número é a posição na ordem escolhida; a abertura não numera */}
-            {MONTAR[key]({ ativo: chaveAtiva === key, indice: String(i).padStart(2, '0') })}
-          </Fragment>
-        ))}
+        <HeroSection />
+        <AboutSection ativo={chaveAtiva === 'sobre'} />
+        <ProjectsSection ativo={chaveAtiva === 'projetos'} />
+        <JourneySection ativo={chaveAtiva === 'experiencia'} />
+        <ContactSection ativo={chaveAtiva === 'contato'} />
       </div>
 
-      <NavMenu secoes={secoes} indice={indice} irPara={irPara} />
+      <NavMenu indice={indice} irPara={irPara} />
       <Credit />
       <Version />
       <NovaGauge disparo={novas} segundos={DURACAO.novaRecarga} />

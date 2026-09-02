@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { SECOES } from '~/content';
 import { editandoTexto } from '~/hooks/useArrowKeys';
 
 export interface SectionScroll {
   ref: React.RefObject<HTMLDivElement | null>;
-  /** índice da seção ativa, dentro da ordem em vigor */
+  /** índice da seção ativa, dentro de `SECOES` */
   indice: number;
   irPara: (i: number) => void;
 }
@@ -18,12 +19,8 @@ export interface SectionScroll {
  * O teclado é global (↑/↓, PageUp/Down, Home/End) para funcionar sem que o
  * visitante precise clicar em nada primeiro, mas sai do caminho quando o foco
  * está num campo de texto.
- *
- * O `total` vem de fora porque a ordem das seções passou a depender do perfil de
- * acesso escolhido: o hook navega por **posição**, e quem sabe o que há em cada
- * posição é o `App`.
  */
-export function useSectionScroll(total: number): SectionScroll {
+export function useSectionScroll(): SectionScroll {
   const ref = useRef<HTMLDivElement>(null);
   const [indice, setIndice] = useState(0);
   const rafRef = useRef(0);
@@ -32,14 +29,9 @@ export function useSectionScroll(total: number): SectionScroll {
   const indiceRef = useRef(0);
   indiceRef.current = indice;
 
-  // o listener global de teclado é registrado uma vez; o total corrente chega
-  // por ref, senão trocar de perfil o re-registraria
-  const totalRef = useRef(total);
-  totalRef.current = total;
-
   const irPara = useCallback((i: number) => {
     const el = ref.current;
-    const n = totalRef.current || 1;
+    const n = SECOES.length || 1;
     const alvo = Math.max(0, Math.min(n - 1, i));
     el?.scrollTo({ top: alvo * el.clientHeight, behavior: 'smooth' });
     setIndice(alvo);
@@ -86,7 +78,7 @@ export function useSectionScroll(total: number): SectionScroll {
           break;
         case 'End':
           e.preventDefault();
-          irPara(totalRef.current - 1);
+          irPara(SECOES.length - 1);
           break;
       }
     };

@@ -16,7 +16,7 @@ import { useTimeline } from './useTimeline';
  * enquanto a seção estiver ativa — pedir um clique antes de navegar é atrito
  * desnecessário numa seção que só tem uma coisa a navegar.
  */
-export function JourneySection({ ativo, indice }: { ativo: boolean; indice: string }) {
+export function JourneySection({ ativo }: { ativo: boolean }) {
   const t = useT();
   const lista = t.experiencia.lista;
   const linha = useTimeline(lista.length);
@@ -30,7 +30,7 @@ export function JourneySection({ ativo, indice }: { ativo: boolean; indice: stri
     >
       <div className={`${comum.bloco} ${styles.bloco}`} data-ativo={ativo || undefined}>
         <p className={comum.indice}>
-          <span>{indice}</span>
+          <span>{t.experiencia.indice}</span>
           <span className={comum.indiceRisco} aria-hidden="true" />
         </p>
 

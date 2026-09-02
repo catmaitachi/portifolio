@@ -14,7 +14,7 @@ import { useMailto } from './useMailto';
  * O `<form>` com `onSubmit` é deliberado: dá o Enter de graça em qualquer campo,
  * que é como se envia um formulário de uma linha.
  */
-export function ContactSection({ ativo, indice }: { ativo: boolean; indice: string }) {
+export function ContactSection({ ativo }: { ativo: boolean }) {
   const t = useT();
   const form = useMailto(t);
 
@@ -25,7 +25,7 @@ export function ContactSection({ ativo, indice }: { ativo: boolean; indice: stri
     >
       <div className={`${comum.bloco} ${styles.bloco}`} data-ativo={ativo || undefined}>
         <p className={comum.indice}>
-          <span>{indice}</span>
+          <span>{t.contato.indice}</span>
           <span className={comum.indiceRisco} aria-hidden="true" />
         </p>
 

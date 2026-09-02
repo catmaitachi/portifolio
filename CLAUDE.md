@@ -27,11 +27,10 @@ npm run check:i18n   # confere se pt.json e en.json continuam paralelos
 | `src/hud/` | Anéis, mira, seletor de idioma, crédito, versão, notificações. | `i18n` |
 | `src/sections/` | Uma pasta por seção. | `content`, `i18n`, componentes |
 | `src/components/` | Peças genéricas (`Figure`). | nada |
-| `src/hooks/` | Hooks transversais (`useReducedMotion`, `useArrowKeys`, `useDecipher`, `useMediaQuery`, `useFlip`). | nada |
+| `src/hooks/` | Hooks transversais (`useReducedMotion`, `useArrowKeys`, `useDecipher`, `useMediaQuery`). | nada |
 
-A dependência só aponta para baixo nessa tabela. **Nenhuma seção importa outra**, e nenhuma sabe
-qual é a sua vizinha — recebe apenas `ativo: boolean` e o número que lhe cabe. Quem conhece a lista
-de seções **e a ordem em que elas saem** é o `App`.
+A dependência só aponta para baixo nessa tabela. **Nenhuma seção importa outra**, e nenhuma sabe o
+próprio índice — recebe apenas `ativo: boolean`. Quem conhece a lista de seções é o `App`.
 
 O alias `~` aponta para `src/`: mover um arquivo de pasta não quebra os imports dos vizinhos.
 
@@ -282,156 +281,6 @@ câmera.
 
 ---
 
-## Perfis de acesso
-
-Três orbes na lateral esquerda da abertura. Escolher um **reordena as seções** segundo o interesse
-mais provável de quem chegou — é a única coisa que o perfil faz hoje, e a simplicidade é
-deliberada: reordenar não esconde nada, não muda texto e não cria uma versão do portfólio que
-alguém deixa de ver.
-
-| Perfil | Ordem |
-|---|---|
-| `explorar` (padrão) | Início → Sobre → Projetos → Trajetória → Contato |
-| `projeto` | Início → **Projetos → Contato** → Sobre → Trajetória |
-| `vaga` | Início → **Trajetória → Sobre** → Projetos → Contato |
-
-Quem chega com um projeto quer contratar, então o Contato vem **logo depois** dos projetos: a
-avaliação e a decisão ficam coladas. Quem chega com uma vaga avalia a pessoa antes do trabalho, e
-por isso Trajetória e formação vêm primeiro.
-
-**Todo perfil começa em `inicio`.** A abertura é a mesma para todo mundo — é lá que o perfil se
-escolhe, e é a única seção onde o buraco negro existe (`SECAO_DO_BURACO_NEGRO`). Um perfil que
-começasse noutro lugar tiraria da página a sua própria porta de entrada.
-
-Cada perfil lista as seções **por extenso** (`shared.json → perfis`), em vez de declarar só o que
-promove. Custa uma linha a mais por perfil e devolve uma garantia: a ordem é sempre uma permutação
-completa, então nenhuma seção some por esquecimento. O que ficou de fora fica visível na leitura do
-próprio dado.
-
-### Onde isso encosta no resto
-
-- **A cena não é tocada.** `CEUS` é indexado por **chave**, nunca por posição, então cada seção
-  leva o próprio céu para onde for. Foi por isso que reordenar saiu barato — e é uma razão para
-  `scenePlan` continuar indexado por chave.
-- **`SECOES` deixou de ser a ordem de rolagem** e virou só a ordem canônica do conteúdo. Quem navega
-  recebe a lista por parâmetro: `useSectionScroll(total)` e `NavMenu({ secoes })`. O hook navega por
-  **posição** e não sabe o que há em cada uma.
-- **O JSX não pode mais listar as seções de cima para baixo.** `MONTAR` (`App.tsx`) liga chave a
-  componente, e é o único lugar do projeto que faz isso. As seções são renderizadas dentro de um
-  `Fragment`, **nunca de um elemento de embrulho**: elas precisam ser filhas diretas de `.rolagem`
-  para o `scroll-snap` valer, e o filtro da supernova exige que o alvo do toque seja a caixa de uma
-  `<section>` — uma `<div>` no meio quebraria os dois de uma vez.
-- **O índice numérico virou posição.** `01`–`04` saíram dos dicionários e passam pelo `App` como
-  prop: com a ordem variável, um número fixo por seção faria o visitante ler `02, 01, 03`. O índice
-  volta a significar *onde estou*, que é o que um índice diz.
-
-A escolha é persistida em `localStorage` (`portfolio.perfil`), como o idioma: quem volta ao
-portfólio volta provavelmente pelo mesmo motivo. A leitura é tolerante de propósito — armazenamento
-bloqueado ou perfil de uma versão anterior caem no padrão, porque um portfólio que não abre por
-causa de uma preferência guardada errou a ordem das prioridades.
-
-### O orbe
-
-Uma esfera translúcida: dois meridianos girando em `rotateY`, um equador deitado em `rotateX` e um
-brilho especular **parado**. É esse contraste que produz a leitura de rotação — a fonte de luz é
-externa à esfera, então ela fica onde está enquanto o corpo passa por baixo. Um brilho que girasse
-junto leria como um anel piscando, não como um volume.
-
-Sem `perspective`, também de propósito: a projeção fica ortográfica, que é como uma esfera distante
-se comporta. Um círculo em `rotateY` se achata e volta, e isso *é* um meridiano — não precisa de
-mais nada.
-
-**O glifo não gira.** Ele existe para ser lido, e metade do tempo de cabeça para baixo o tornaria
-decoração. Os três são desenhos de traço inline no componente, e não arquivos em `assets/icons/`:
-aqueles são marcas de terceiros carregadas como `<img>`, que não herdam cor; estes precisam
-acompanhar o `color` do botão em cada estado.
-
-**O rótulo vai embaixo do orbe, não ao lado.** Ao lado, "Foco em habilidades" empurrava a coluna
-para ~218px e encostava no nome da abertura em qualquer janela abaixo de ~1000px. Embaixo, a coluna
-tem a largura do próprio rótulo, a frase quebra em duas linhas e a faixa central fica livre.
-
-### O seletor é um menu, sempre
-
-Só o perfil em vigor aparece; um clique abre os outros dois, o seguinte escolhe. A abertura é a
-seção do **nome** — três esferas paradas competindo com ele em toda visita, inclusive nas de quem já
-escolheu, é preço alto para uma escolha que se faz uma vez.
-
-A **direção** da expansão é a única diferença entre as telas, e mora inteira no CSS: vertical no
-desktop, onde o seletor é uma coluna na lateral esquerda, e horizontal no mobile, onde ele é uma
-faixa logo abaixo do seletor de idioma. O componente não sabe em qual dos dois está — `--perfil-dir`
-e o par `--perfil-de-x`/`--perfil-de-y` (de onde os itens entram) resolvem tudo.
-
-Fechado, os não escolhidos vão para `position: absolute` na âncora da lista. Isso não é só escondê-los:
-tira-os do fluxo, então a lista passa a medir um orbe e o grupo encolhe junto — no mobile é o que
-mantém a faixa recentrada sob o idioma. A âncora é `top/left: 0`, que com um item no fluxo é
-exatamente onde ele está, seja ele o primeiro, o do meio ou o último.
-
-**Abrir move o orbe que já estava lá**, e por isso o seletor também usa `useFlip`. Os dois que
-entram têm a própria animação em `opacity`/`transform`; o escolhido muda de posição por *layout*, e
-sem o FLIP saltaria justamente no quadro em que o olho está nele. Elementos com `data-oculto` não
-participam — a posição de quem estava fora do fluxo não é comparável com a de quem estava no
-layout.
-
-### Sutil, como o resto
-
-A intensidade foi reduzida um degrau inteiro depois da primeira versão: brilho especular de 26% para
-14%, meridianos de 13% para 8%, equador de 9% para 5%, borda de 16% para 11%.
-
-O que mais puxava o olho era o **halo do escolhido** — um `box-shadow` de 18px que acendia um canto
-da abertura e competia com o nome. Ele saiu: o orbe em vigor se distingue por **contraste de linha**,
-com a borda um pouco mais clara. São três elementos lado a lado, e a comparação é local — não
-precisa de brilho para ser lida. Vale aqui a regra geral da página: ao mexer nesses valores, mexer
-para baixo.
-
-### Estado e animação não dividem propriedade
-
-O seletor são **dois elementos**, e a marcação a mais não é decoração. O de fora carrega a entrada
-da cascata (`fina`, 5s, `both`); o de dentro carrega a opacidade que diz se a abertura é a seção
-ativa, mais o `inert`.
-
-Numa camada só isso não funciona, e o modo como falha é instrutivo: `animation-fill-mode: both`
-mantém o **último quadro** depois que a animação termina, e o valor animado ganha de qualquer
-propriedade normal no mesmo elemento. `fina` termina em `opacity: 1`, então tanto a regra base
-(`opacity: 0`) quanto a de estado eram ignoradas a partir dos 6s — e o seletor, que existe só na
-abertura, reaparecia em todas as seções. É o mesmo motivo pelo qual a entrada da curva da trajetória
-mora num `<g>` externo, e o corolário da regra que já estava aqui sobre o crédito: **o que a
-animação escreve, o estado não pode disputar.**
-
-Sair da tela continua sendo por opacidade e `inert`, nunca por `display: none` — um elemento que sai
-da árvore reinicia a animação atrasada ao voltar, e são cinco segundos invisível.
-
-### A reordenação é animada no menu
-
-Quem escolhe um perfil está na abertura, e as outras quatro seções estão abaixo da dobra: elas
-reordenam **fora da tela**, onde ninguém vê. O menu lateral é o único lugar em que a nova ordem
-aparece no momento em que ela acontece, e é lá que a troca vira movimento. Sem isso, clicar num
-perfil não produziria retorno nenhum.
-
-A técnica é **FLIP**, em `hooks/useFlip.ts`, porque não há propriedade que interpole a posição de um
-filho num flex: o React já escreveu o layout novo quando o efeito roda, então cada filho é puxado de
-volta para onde estava com a transição desligada e solto no quadro seguinte — ele desliza de uma
-posição à outra. Quem usa marca os filhos com `data-flip="<chave estável>"` e declara a transição de
-`transform` no CSS; o hook só escreve o ponto de partida.
-
-Três detalhes que decorrem disso, e que separam funcionar de tremer:
-
-- **`useLayoutEffect`, nunca `useEffect`.** A inversão precisa entrar antes da pintura; um quadro na
-  posição nova antes de voltar se vê como tremor.
-- **As medidas são `offsetTop`/`offsetLeft`**, coordenadas de layout — imunes ao `scrollLeft` da
-  faixa do mobile e ao próprio transform que o hook escreve nos filhos. É a mesma razão pela qual a
-  centralização do menu não usa `getBoundingClientRect`: as duas se realimentariam.
-- **Um reflow só para todos.** Ler o contêiner uma vez entre inverter e soltar fixa o estado
-  invertido; fazer isso filho a filho seriam N reflows por troca.
-
-O mesmo hook serve ao seletor de perfil, onde o que se move é o orbe escolhido quando o menu abre.
-Filhos com `data-oculto` não participam: quem estava fora do fluxo não tem posição comparável com a
-de quem estava no layout, e animá-lo daria um deslocamento inventado.
-
-A centralização da faixa do mobile passou a depender também de `secoes`: reordenar move os itens sob
-o ativo, e o `scrollTo` precisa recentrar sobre a posição nova.
-
----
-
 ## Idiomas (i18n)
 
 **Nenhuma string literal na interface** — inclusive os rótulos de acessibilidade. Todo texto vem de
@@ -562,11 +411,9 @@ paga um `<picture>` e um segundo arquivo para manter em sincronia.
 
 ### Adicionar uma seção
 
-1. entrada em `shared.json → secoes` (a ordem canônica) **e em cada perfil de
-   `shared.json → perfis`** — todo perfil lista as seções por extenso, então uma seção que não
-   entrar em todos some para quem escolheu aquele perfil;
+1. entrada em `shared.json → secoes` (a ordem ali **é** a ordem de rolagem);
 2. a chave em `nav`, nos dois dicionários, e em `SectionKey` (`content/types.ts`);
-3. um componente em `src/sections/`, com uma linha em `MONTAR` (`App.tsx`);
+3. um componente em `src/sections/`, montado no `App`;
 4. opcionalmente, um céu em `scene/scenePlan.ts`.
 
 ---
@@ -793,12 +640,7 @@ Cronograma da abertura:
 3. `2.9s` mira (4 ticks cardinais) surge com `miraIn` e passa a pulsar em cascata
 
 Depois, na página: etiqueta 3.5s → nome 3.75s (`tituloIn`: borrão + `letter-spacing` fechando) →
-legenda 4.5s → menu 4.9s → **perfis 5.0s** → crédito 5.2s → seletor de idioma 5.4s → versão 5.6s.
-
-O seletor de perfil entra **junto com o menu**, e de propósito: um está na borda esquerda e o outro
-na direita, então os dois abrem a moldura lateral ao mesmo tempo. Pôr os perfis no fim da fila
-atrasaria a única escolha que a abertura pede, e empurraria a dica da supernova (6,5s) para cima da
-própria entrada — 6,5s continua sendo o primeiro instante em que a tela está parada.
+legenda 4.5s → menu 4.9s → crédito 5.2s → seletor de idioma 5.4s → versão 5.6s.
 
 Tudo em `transform` e `clip-path` = compositor da GPU, zero custo de CPU.
 
@@ -859,9 +701,7 @@ deixa a cena atravessar.
 
 O canto superior esquerdo é o único que o HUD deixou vago (idioma no topo à direita, menu à direita,
 versão embaixo à direita, medidor embaixo à esquerda). No mobile o aviso **desce** para
-`max(16vh, 142px)`, porque lá a faixa do topo tem duas coisas centradas antes dele: o seletor de
-idioma e, sob ele, o seletor de perfil recolhido. O painel é preto sólido, então sobrepor ali não
-seria transparência — seria o aviso apagando o seletor.
+`max(7.4vh, 62px)`, porque lá o seletor de idioma passa a ocupar o centro do topo.
 
 O painel **fica montado durante a animação de saída** e sai do DOM no `animationend` — checando
 `e.target === e.currentTarget`, porque o evento borbulha e o risco lateral também é animado.
@@ -936,12 +776,11 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | `LanguageToggle` | `--lang-left --lang-right --lang-tx` |
 | `Version` | `--ver-bottom --ver-left --ver-right --ver-tx` |
 | `NovaGauge` | `--nova-bottom --nova-left --nova-size` |
-| `ProfilePicker` | `--perfil-orbe --perfil-gap --perfil-left --perfil-rotulo` |
 | `Notice` | `--aviso-top --aviso-left --aviso-w` |
 | `Credit` | `--credito-vis` |
 
-Faixas: `≤640px` (mobile: coluna única, nav horizontal, seletor de idioma centrado, quatro vagas na
-linha do tempo, perfis como menu) e `≤720px de altura`
+Faixas: `≤640px` (mobile: coluna única, nav horizontal, seletor centrado, quatro vagas na linha do
+tempo) e `≤720px de altura`
 (telas baixas: retrato 150px, texto 22vh, paddings menores). **A segunda vem depois na cascata de
 propósito** — em paisagem curta ela ganha nos tokens compartilhados, porque ali o gargalo é a altura.
 

@@ -13,22 +13,8 @@
     "legenda": "Desenvolvedor de Software"
   },
 
-  "perfis": {
-    "explorar": {
-      "nome": "Só explorar",
-      "dica": "Percorrer o portfólio na ordem original"
-    },
-    "projeto": {
-      "nome": "Foco em projetos",
-      "dica": "Os projetos primeiro, e o contato logo em seguida"
-    },
-    "vaga": {
-      "nome": "Foco em habilidades",
-      "dica": "Começar pela trajetória e pela formação"
-    }
-  },
-
   "sobre": {
+    "indice": "01",
     "titulo": "Sobre Mim",
     "paragrafos": [
       "Sou um projetista de software na era da IA. Enquanto os modelos generativos aceleram a codificação, meu papel é o que vem antes: idealizar, estruturar e planejar sistemas sólidos, guiados pelas melhores práticas de Engenharia de Software.",
@@ -72,6 +58,7 @@
   },
 
   "projetos": {
+    "indice": "02",
     "titulo": "Projetos",
     "intro": "Meus destaques, os projetos de que mais gosto.",
     "banner": "...",
@@ -120,6 +107,7 @@
   },
 
   "experiencia": {
+    "indice": "03",
     "titulo": "Trajetória",
     "intro": "Minha história profissional, ano a ano.",
     "tipos": {
@@ -228,6 +216,7 @@
   },
 
   "contato": {
+    "indice": "04",
     "titulo": "Vamos conversar",
     "intro": "Aberto a oportunidades e colaborações.",
     "email": "lukasspiazzi@outlook.com",
@@ -258,8 +247,6 @@
   "a11y": {
     "secoes": "Seções do portfólio",
     "idioma": "Alternar idioma entre português e inglês",
-    "perfis": "Perfil de acesso — reordena as seções pelo seu interesse",
-    "perfisAbrir": "Escolher perfil de acesso",
     "projetos": "Projetos — abra um cartão para ler a descrição",
     "experiencia": "Trajetória — use as setas para percorrer os anos",
     "canais": "Canais de contato",

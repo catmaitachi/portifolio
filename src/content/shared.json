@@ -16,12 +16,6 @@
     { "key": "contato" }
   ],
 
-  "perfis": [
-    { "key": "explorar", "secoes": ["inicio", "sobre", "projetos", "experiencia", "contato"] },
-    { "key": "projeto", "secoes": ["inicio", "projetos", "contato", "sobre", "experiencia"] },
-    { "key": "vaga", "secoes": ["inicio", "experiencia", "sobre", "projetos", "contato"] }
-  ],
-
   "canais": [
     {
       "key": "github",

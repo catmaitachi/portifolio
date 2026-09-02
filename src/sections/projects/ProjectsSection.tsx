@@ -13,7 +13,7 @@ import { useOrbit } from './useOrbit';
  * está ativa), arraste horizontal ou os traços-índice abaixo. Clique no cartão
  * da frente abre a descrição sobre ele — exceto numa vaga, que gira mas não abre.
  */
-export function ProjectsSection({ ativo, indice }: { ativo: boolean; indice: string }) {
+export function ProjectsSection({ ativo }: { ativo: boolean }) {
   const t = useT();
   const lista = t.projetos.lista;
   const orbita = useOrbit(lista.length);
@@ -52,7 +52,7 @@ export function ProjectsSection({ ativo, indice }: { ativo: boolean; indice: str
     >
       <div className={`${comum.bloco} ${styles.bloco}`} data-ativo={ativo || undefined}>
         <p className={comum.indice}>
-          <span>{indice}</span>
+          <span>{t.projetos.indice}</span>
           <span className={comum.indiceRisco} aria-hidden="true" />
         </p>
 

@@ -3,11 +3,10 @@ import { useEffect, useState } from 'react';
 /**
  * Uma media query como valor booleano reativo.
  *
- * Existe para o que o CSS não alcança: decisões que mudam **geometria ou
- * estrutura**, não estilo — quantas vagas cabem na linha do tempo, se o seletor
- * de perfil vira um menu que abre. O CSS continua responsável por tudo que é
- * aparência; quando a largura precisa mudar um número que o JavaScript usa para
- * calcular, ela precisa chegar até aqui.
+ * Existe para o que o CSS não alcança: decisões que mudam **geometria**, não
+ * estilo — quantas vagas cabem na janela da linha do tempo, por exemplo. O CSS
+ * continua responsável por tudo que é aparência; quando a largura precisa mudar
+ * um número que o JavaScript usa para calcular, ela precisa chegar até aqui.
  *
  * É reativo porque a largura muda com a rotação do aparelho e com o
  * redimensionamento da janela, e nenhuma das duas pode deixar a página operando

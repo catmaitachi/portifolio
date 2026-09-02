@@ -146,14 +146,7 @@
  */
 @media (width <= 640px) {
   .aviso {
-    /**
-     * Mais para baixo do que o topo pediria: em `≤640px` a faixa superior tem
-     * duas coisas centradas antes do aviso — o seletor de idioma e, logo abaixo
-     * dele, o seletor de perfil recolhido. O painel é **preto sólido**, então
-     * uma sobreposição aqui não seria transparência: seria o aviso apagando o
-     * seletor.
-     */
-    --aviso-top: max(16vh, 142px);
+    --aviso-top: max(7.4vh, 62px);
     --aviso-left: 20px;
   }
 }
