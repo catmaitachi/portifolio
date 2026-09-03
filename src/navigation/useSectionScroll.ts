@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { SECOES } from '~/content';
 import { editandoTexto } from '~/hooks/useArrowKeys';
 
@@ -47,8 +47,13 @@ export function useSectionScroll(): SectionScroll {
   const rafRef = useRef(0);
   // o handler global lê o índice sem entrar nas dependências do efeito, o que
   // manteria o listener sendo trocado a cada seção
-  const indiceRef = useRef(0);
-  indiceRef.current = indice;
+  const indiceRef = useRef(indice);
+
+  // escrita num efeito, nunca no corpo: o render precisa ser puro e o React pode
+  // descartá-lo (ver a nota longa em `NavMenu`)
+  useLayoutEffect(() => {
+    indiceRef.current = indice;
+  });
   /** seção para onde uma rolagem programática está indo; `null` fora dela */
   const alvoRef = useRef<number | null>(null);
   const desistirRef = useRef(0);

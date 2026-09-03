@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { SectionKey } from '~/content';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
 import { CEUS, DURACAO, nomeDoCeu, SECAO_DO_BURACO_NEGRO, TOQUE_PARADO } from './scenePlan';
@@ -29,7 +29,6 @@ interface SpaceCanvasProps {
 export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const onNovaRef = useRef(onNova);
-  onNovaRef.current = onNova;
   const semMovimento = useReducedMotion();
 
   // a cena aplicada mais recente e a função que sabe aplicá-la; ficam em ref
@@ -37,14 +36,37 @@ export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
   const aplicarRef = useRef<((secao: SectionKey) => void) | null>(null);
   const pendenteRef = useRef<SectionKey>(secao);
   const semMovimentoRef = useRef(semMovimento);
-  semMovimentoRef.current = semMovimento;
+
+  /**
+   * As refs de valor corrente são escritas **num efeito**, nunca no corpo: o
+   * render precisa ser puro, porque o React pode executá-lo e descartar o
+   * resultado. `useLayoutEffect` porque quem as lê é o laço da cena e um
+   * listener de ponteiro, e o valor precisa estar novo antes da próxima pintura.
+   */
+  useLayoutEffect(() => {
+    onNovaRef.current = onNova;
+    semMovimentoRef.current = semMovimento;
+  });
 
   useEffect(() => {
     const cv = canvasRef.current;
     if (!cv) return;
 
-    let vivo = true;
-    let destruir: (() => void) | null = null;
+    /**
+     * O cleanup precisa **possuir** tudo que este efeito registra, e o que ele
+     * registra nasce depois de um `await`.
+     *
+     * Os listeners vão num `AbortController`: `abort()` os remove de uma vez, e
+     * funciona mesmo que o cleanup corra **antes** de eles existirem — o sinal já
+     * está abortado quando o `addEventListener` acontece, e o navegador
+     * simplesmente não registra. É o que dispensa rastrear cada listener por uma
+     * variável que pode estar nula.
+     *
+     * O `stage` continua precisando de uma referência, porque criá-lo aloca
+     * canvas, rAF e observadores que só ele sabe soltar.
+     */
+    const controle = new AbortController();
+    let destruirStage: (() => void) | null = null;
 
     void (async () => {
       const {
@@ -57,7 +79,15 @@ export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
         Supernova,
         tween,
       } = await import('~/engine');
-      if (!vivo) return;
+      /**
+       * A guarda fica **depois** do `await`, e é aí que ela serve.
+       *
+       * Ela não checa o resultado do import: checa se o componente ainda existe
+       * depois da espera. Movida para antes, seria sempre verdadeira (o efeito
+       * acabou de começar) e deixaria de proteger o único caso que importa —
+       * desmontar enquanto o motor carrega, criando uma cena que ninguém desfaz.
+       */
+      if (controle.signal.aborted) return;
 
       // Ordem do array = ordem de update; `z` = ordem de desenho. O buraco negro
       // atualiza antes do campo de estrelas porque publica a gravidade que ele lê.
@@ -161,22 +191,27 @@ export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
         alvoVazio = false;
       };
 
-      window.addEventListener('pointerdown', aoDescer, { passive: true });
-      window.addEventListener('pointerup', aoSubir, { passive: true });
-      window.addEventListener('pointercancel', aoCancelar, { passive: true });
+      const sinal = controle.signal;
+      window.addEventListener('pointerdown', aoDescer, { passive: true, signal: sinal });
+      window.addEventListener('pointerup', aoSubir, { passive: true, signal: sinal });
+      window.addEventListener('pointercancel', aoCancelar, { passive: true, signal: sinal });
 
-      destruir = () => {
+      destruirStage = () => {
         aplicarRef.current = null;
-        window.removeEventListener('pointerdown', aoDescer);
-        window.removeEventListener('pointerup', aoSubir);
-        window.removeEventListener('pointercancel', aoCancelar);
         stage.destroy();
       };
+
+      // desmontou enquanto o resto desta função corria: desfaz na hora, porque o
+      // cleanup já passou e não vai voltar
+      if (sinal.aborted) {
+        destruirStage();
+        destruirStage = null;
+      }
     })();
 
     return () => {
-      vivo = false;
-      destruir?.();
+      controle.abort();
+      destruirStage?.();
     };
   }, []);
 

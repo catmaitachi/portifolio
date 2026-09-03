@@ -51,7 +51,9 @@ export function JourneyEntry({ entrada, indice, ativa }: JourneyEntryProps) {
 
         <ol className={styles.atividades}>
           {bullets.map((b, i) => (
-            <li key={i} className={styles.atividade}>
+            // a chave é o texto da atividade; o índice segue sendo o número que
+            // aparece na ficha, mas identidade e numeração são coisas diferentes
+            <li key={b} className={styles.atividade}>
               <span className={styles.numero} aria-hidden="true">
                 {String(i + 1).padStart(2, '0')}
               </span>

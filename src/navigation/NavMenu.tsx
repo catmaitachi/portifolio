@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { SECOES } from '~/content';
 import { useT } from '~/i18n/useLanguage';
 import styles from './NavMenu.module.css';
@@ -12,6 +12,32 @@ interface NavMenuProps {
 
 /** Espera sem eventos de scroll para considerar a faixa parada. */
 const REPOUSO = 140;
+
+/** `scrollLeft` que põe o item `i` no centro da faixa. */
+const encaixeDe = (nav: HTMLElement, i: number): number => {
+  const el = nav.children[i] as HTMLElement;
+  return el.offsetLeft + el.offsetWidth / 2 - nav.clientWidth / 2;
+};
+
+/**
+ * Onde a faixa está, em índice fracionário.
+ *
+ * Os encaixes não são igualmente espaçados — os rótulos têm larguras
+ * diferentes —, então a conversão procura o par que contém a posição atual e
+ * interpola entre os dois índices. Fora das pontas, prende na ponta.
+ */
+const fracaoDe = (nav: HTMLElement): number => {
+  const n = nav.children.length;
+  if (n < 2) return 0;
+  const x = nav.scrollLeft;
+  for (let i = 0; i < n - 1; i++) {
+    const a = encaixeDe(nav, i);
+    const b = encaixeDe(nav, i + 1);
+    if (x < a) return i;
+    if (x <= b) return b === a ? i : i + (x - a) / (b - a);
+  }
+  return n - 1;
+};
 
 /**
  * Menu de seções: rótulo + risco de 1px que cresce na seção ativa.
@@ -64,37 +90,27 @@ export function NavMenu({ indice, irPara, seguirFracao, soltarFracao }: NavMenuP
   const navRef = useRef<HTMLElement>(null);
   // o listener de scroll é registrado uma vez; o índice corrente chega por ref
   const indiceRef = useRef(indice);
-  indiceRef.current = indice;
+
+  /**
+   * A escrita mora **num efeito**, nunca no corpo do componente.
+   *
+   * Escrever `ref.current = valor` durante o render é o atalho óbvio e está
+   * errado: o render precisa ser puro, porque o React pode executá-lo e
+   * **descartar** o resultado — Strict Mode em desenvolvimento, ou uma
+   * renderização concorrente interrompida por uma atualização mais urgente. Uma
+   * escrita feita ali vaza de um trabalho que nunca chegou à tela.
+   *
+   * `useLayoutEffect` e não `useEffect` porque `centralizar` lê esta ref dentro
+   * de um `rAF`: o layout effect corre antes da pintura, então o quadro seguinte
+   * já enxerga o índice novo.
+   */
+  useLayoutEffect(() => {
+    indiceRef.current = indice;
+  });
   const programaticoRef = useRef(false);
   const emGestoRef = useRef(false);
   /** o ponteiro está na faixa: enquanto estiver, o gesto não pode terminar */
   const dedoRef = useRef(false);
-
-  /** `scrollLeft` que põe o item `i` no centro da faixa. */
-  const encaixeDe = (nav: HTMLElement, i: number) => {
-    const el = nav.children[i] as HTMLElement;
-    return el.offsetLeft + el.offsetWidth / 2 - nav.clientWidth / 2;
-  };
-
-  /**
-   * Onde a faixa está, em índice fracionário.
-   *
-   * Os encaixes não são igualmente espaçados — os rótulos têm larguras
-   * diferentes —, então a conversão procura o par que contém a posição atual e
-   * interpola entre os dois índices. Fora das pontas, prende na ponta.
-   */
-  const fracaoDe = (nav: HTMLElement) => {
-    const n = nav.children.length;
-    if (n < 2) return 0;
-    const x = nav.scrollLeft;
-    for (let i = 0; i < n - 1; i++) {
-      const a = encaixeDe(nav, i);
-      const b = encaixeDe(nav, i + 1);
-      if (x < a) return i;
-      if (x <= b) return b === a ? i : i + (x - a) / (b - a);
-    }
-    return n - 1;
-  };
 
   // a faixa acompanha a seção ativa
   useEffect(() => {

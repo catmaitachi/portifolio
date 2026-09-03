@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { calcularJanela, janelaQueContem, type Janela } from './timelineGeometry';
 import { useVagas } from './useVagas';
 
@@ -37,11 +37,19 @@ export function useTimeline(total: number): Timeline {
 
   // o arraste lê os valores correntes sem re-registrar os listeners a cada quadro
   const janelaRef = useRef(janela);
-  janelaRef.current = janela;
   const ativaRef = useRef(ativa);
-  ativaRef.current = ativa;
   const nRef = useRef(n);
-  nRef.current = n;
+
+  /**
+   * Escritas num efeito, nunca no corpo: o render precisa ser puro e o React
+   * pode descartá-lo. `useLayoutEffect` porque o arraste lê estas refs dentro de
+   * um `rAF`, e o quadro seguinte já precisa do valor novo.
+   */
+  useLayoutEffect(() => {
+    janelaRef.current = janela;
+    ativaRef.current = ativa;
+    nRef.current = n;
+  });
 
   /**
    * A janela mudou de tamanho com a largura da tela (uma rotação, tipicamente).

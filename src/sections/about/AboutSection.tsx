@@ -49,8 +49,17 @@ export function AboutSection({ ativo }: { ativo: boolean }) {
           <div className={styles.coluna}>
             <h2 className={comum.titulo}>{t.sobre.titulo}</h2>
             <div ref={bio} className={styles.texto}>
-              {t.sobre.paragrafos.map((par, i) => (
-                <p key={i} className={styles.paragrafo}>
+              {/**
+               * A chave é o próprio texto, não a posição.
+               *
+               * Com o índice, trocar de idioma reaproveitava os mesmos `<p>` e só
+               * reescrevia o conteúdo — e é dentro desses nós que `useDecipher`
+               * escreve caractere a caractere. Com o texto como chave o React os
+               * recria, e o efeito (que tem `textos` nas dependências) recomeça
+               * sobre nós limpos, sem herdar a cifra do idioma anterior.
+               */}
+              {t.sobre.paragrafos.map((par) => (
+                <p key={par} className={styles.paragrafo}>
                   {par}
                 </p>
               ))}

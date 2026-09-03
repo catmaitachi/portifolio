@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
 
 /** Marca que o visitante já acendeu uma estrela alguma vez. */
@@ -44,7 +44,12 @@ function marcarDescoberta(): void {
  */
 function useEsperaVisivel(ms: number, ativo: boolean, aoTerminar: () => void): void {
   const cb = useRef(aoTerminar);
-  cb.current = aoTerminar;
+
+  // escrita num efeito, nunca no corpo: o render precisa ser puro e pode ser
+  // descartado. O `setTimeout` abaixo lê sempre a versão mais recente daqui.
+  useLayoutEffect(() => {
+    cb.current = aoTerminar;
+  });
 
   useEffect(() => {
     if (!ativo) return;
@@ -99,19 +104,31 @@ function useEsperaVisivel(ms: number, ativo: boolean, aoTerminar: () => void): v
  */
 export function useNovaHint(novas: number): { visivel: boolean; fechar: () => void } {
   const semMovimento = useReducedMotion();
-  const [dispensado, setDispensado] = useState(jaDescobriu);
+  const [fechado, setFechado] = useState(jaDescobriu);
   const [visivel, setVisivel] = useState(false);
 
-  // acender a primeira estrela é a descoberta: registra e nunca mais sugere
+  /**
+   * Ter acendido uma estrela **é** ter descoberto: `dispensado` sai daí, em vez
+   * de ser um estado que um efeito ajusta quando `novas` muda.
+   *
+   * Com o ajuste num efeito havia um quadro entre a estrela acender e o aviso
+   * sumir, porque o efeito só corre depois do render que já usou o valor antigo.
+   * Derivado, os dois acontecem no mesmo quadro.
+   */
+  const dispensado = fechado || novas > 0;
+
+  /**
+   * O efeito continua existindo, mas só para o que é **efeito colateral de
+   * verdade**: gravar a descoberta fora do React, para a dica não voltar na
+   * próxima visita. Ele não decide mais nada sobre a tela.
+   */
   useEffect(() => {
-    if (!novas) return;
-    marcarDescoberta();
-    setDispensado(true);
+    if (novas) marcarDescoberta();
   }, [novas]);
 
   const podeSugerir = !dispensado && !semMovimento;
   const mostrar = useCallback(() => setVisivel(true), []);
-  const fechar = useCallback(() => setDispensado(true), []);
+  const fechar = useCallback(() => setFechado(true), []);
 
   // conta a espera; depois conta a permanência e o aviso se retira sozinho
   useEsperaVisivel(ESPERA, podeSugerir && !visivel, mostrar);

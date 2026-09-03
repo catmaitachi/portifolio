@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
 
 /** Pausa após qualquer interação, em ms. */
@@ -38,11 +38,19 @@ export function useAutoCarousel(total: number): AutoCarousel {
 
   // lidos dentro do rAF sem entrar nas dependências do efeito
   const totalRef = useRef(total);
-  totalRef.current = total;
   const ativoRef = useRef(ativo);
-  ativoRef.current = ativo;
   const semMovimentoRef = useRef(semMovimento);
-  semMovimentoRef.current = semMovimento;
+
+  /**
+   * Escritas num efeito, nunca no corpo: o render precisa ser puro e o React
+   * pode descartá-lo. `useLayoutEffect` porque o laço da deriva lê estas refs
+   * num `rAF`, e com `useEffect` haveria um quadro lendo o valor anterior.
+   */
+  useLayoutEffect(() => {
+    totalRef.current = total;
+    ativoRef.current = ativo;
+    semMovimentoRef.current = semMovimento;
+  });
 
   const pausarRef = useRef<() => void>(() => {});
   const andarRef = useRef<(d: number) => void>(() => {});

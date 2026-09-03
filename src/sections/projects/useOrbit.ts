@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 /** Deslocamento mínimo do arraste para contar como um passo da órbita, em px. */
 const LIMIAR_ARRASTE = 46;
@@ -55,7 +55,12 @@ export function useOrbit(total: number): Orbit {
 
   const n = Math.max(1, total);
   const nRef = useRef(n);
-  nRef.current = n;
+
+  // escrita num efeito, nunca no corpo: o render precisa ser puro e o React pode
+  // descartá-lo (ver a nota longa em `NavMenu`)
+  useLayoutEffect(() => {
+    nRef.current = n;
+  });
 
   const girar = useCallback((delta: number) => {
     const total = nRef.current;

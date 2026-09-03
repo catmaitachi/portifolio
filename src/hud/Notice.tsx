@@ -1,4 +1,4 @@
-import { useEffect, useState, type AnimationEvent } from 'react';
+import { useState, type AnimationEvent } from 'react';
 import styles from './Notice.module.css';
 
 interface NoticeProps {
@@ -35,9 +35,18 @@ interface NoticeProps {
 export function Notice({ aberto, titulo, texto, rotuloFechar, onFechar }: NoticeProps) {
   const [montado, setMontado] = useState(aberto);
 
-  useEffect(() => {
-    if (aberto) setMontado(true);
-  }, [aberto]);
+  /**
+   * A montagem é decidida **durante o render**, não num efeito.
+   *
+   * Num efeito, o quadro em que `aberto` vira `true` ainda renderiza com
+   * `montado` falso e devolve `null`; só o render seguinte põe o painel no DOM.
+   * O aviso perdia um quadro para aparecer, e a animação de entrada começava
+   * atrasada em relação ao que a disparou. Aqui o React descarta esta saída e
+   * re-renderiza na hora, sem pintar o estado intermediário.
+   *
+   * A atualização converge porque a própria condição deixa de valer depois dela.
+   */
+  if (aberto && !montado) setMontado(true);
 
   if (!montado) return null;
 
