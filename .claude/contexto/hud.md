@@ -51,7 +51,17 @@ espaço com a versão centrada nem com a faixa do menu).
 
 Só existe no DOM depois da primeira supernova, e `key={disparo}` é o que reinicia a animação a cada
 estrela. A recarga inteira é CSS de duração `--recarga`; o perímetro do arco vem do componente
-(`2π·r`), que é quem conhece o `r` do SVG. `aria-hidden` porque não há informação ali: é o retorno
+(`2π·r`), que é quem conhece o `r` do SVG.
+
+**O número de segundos vem do disparo, não de uma constante.** A supernova tem três níveis de carga
+e cada um cobra uma recarga própria; a cena avisa qual nível acendeu e o `App` lê a recarga daquele
+nível na mesma `NOVA_NIVEIS` que o motor usa para cobrá-la. É o mesmo contrato de sempre, agora com
+uma tabela no lugar de um número: o círculo precisa fechar exatamente quando o próximo disparo passa
+a ser aceito.
+
+O **nível** não aparece aqui. Ele se mostra na cena, sob o dedo que está carregando, que é onde o
+visitante já está olhando — trazê-lo para o canto custaria um caminho novo entre o motor e o React
+durante a carga, para dizer o que a tela já diz. `aria-hidden` porque não há informação ali: é o retorno
 visual de um gesto de ponteiro, e nada existe só por esse caminho.
 
 Detalhe que já custou uma iteração: a animação de saída usa `forwards`, **nunca `both`**. Com
@@ -88,7 +98,8 @@ rótulo do botão, que serve a qualquer aviso) e um bloco por notificação.
 ### A dica da supernova
 
 A supernova é a única coisa da página que **ninguém descobre lendo**: não há botão nem rótulo, e
-quem não clica no vazio nunca sabe que ela existe. `useNovaHint` (`hud/useNovaHint.ts`) decide
+quem não clica no vazio nunca sabe que ela existe. O aviso conta as duas metades do gesto, clicar e
+segurar, porque a segunda é ainda mais invisível que a primeira. `useNovaHint` (`hud/useNovaHint.ts`) decide
 quando contar, e o `App` liga as pontas — o mesmo contador que alimenta o medidor de recarga.
 
 A espera é de **6,5 s**, não dos 5 s que a ideia pedia: a abertura termina em 6,2 s (a versão entra

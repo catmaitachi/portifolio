@@ -1,13 +1,24 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { SectionKey } from '~/content';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
-import { CEUS, DURACAO, nomeDoCeu, SECAO_DO_BURACO_NEGRO, TOQUE_PARADO } from './scenePlan';
+import {
+  CEUS,
+  DURACAO,
+  nomeDoCeu,
+  NOVA_NIVEIS,
+  SECAO_DO_BURACO_NEGRO,
+  TOQUE_PARADO,
+} from './scenePlan';
 import styles from './SpaceCanvas.module.css';
 
 interface SpaceCanvasProps {
   secao: SectionKey;
-  /** chamado quando uma supernova é de fato acesa (e não engolida pela recarga) */
-  onNova?: () => void;
+  /**
+   * Chamado quando uma supernova é de fato acesa (e não engolida pela recarga),
+   * com o nível que a carga atingiu. É por ele que o HUD sabe qual recarga
+   * desenhar.
+   */
+  onNova?: (nivel: number) => void;
 }
 
 /**
@@ -20,11 +31,11 @@ interface SpaceCanvasProps {
  * O motor entra por `import()` dinâmico — ele é o maior pedaço de JavaScript da
  * página e nada na primeira pintura depende dele.
  *
- * É aqui também que mora a regra de **quando um toque vira supernova**. O canvas
+ * É aqui também que mora a regra de **quando um gesto vira supernova**. O canvas
  * fica atrás do contêiner de rolagem, então nenhum clique chega a ele: quem
  * escuta é a janela, e a decisão de "isto foi o vazio, não o conteúdo" é
- * conhecimento do DOM da página — o motor não deve tê-lo. A camada só recebe um
- * ponto e responde se aceitou ou não.
+ * conhecimento do DOM da página — o motor não deve tê-lo. A camada só recebe o
+ * começo, o fim e a desistência do gesto, e responde com o nível que saiu dali.
  */
 export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -101,10 +112,7 @@ export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
         }),
       );
 
-      const nova = Supernova({
-        cooldown: DURACAO.novaRecarga,
-        wave: DURACAO.novaOnda,
-      });
+      const nova = Supernova({ niveis: NOVA_NIVEIS });
 
       const stage = createStage(cv, [
         Nebula(), // z 0
@@ -149,16 +157,24 @@ export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
       aplicar(pendenteRef.current);
 
       /**
-       * Toque no vazio = supernova.
+       * Pressionar o vazio carrega; soltar acende.
        *
        * "Vazio" é literalmente o canvas ou a caixa de uma seção — nunca um
        * descendente dela. Clicar num cartão, num botão, num campo ou no bloco de
        * conteúdo é interação com a página, e a página vem primeiro.
        *
-       * O par pointerdown/pointerup existe por causa das superfícies de arraste:
-       * a órbita de Projetos e a curva da Trajetória são arrastadas por cima
-       * dessa mesma área, e um arraste não pode terminar em estrela. Acima de
-       * `TOQUE_PARADO` px o gesto é de outro dono.
+       * O gesto passou a ter **duração**: a carga abre no `pointerdown` e o nível
+       * sobe enquanto o botão fica pressionado. Isso muda onde o filtro de arraste
+       * age. Antes bastava decidir no fim, porque o gesto era instantâneo; agora
+       * uma carga pode ficar acesa por segundos enquanto o visitante, na verdade,
+       * está rolando a página ou girando a órbita de Projetos. Por isso o
+       * `pointermove` **aborta** assim que o gesto passa de `TOQUE_PARADO` px: o
+       * arraste é de outro dono, e devolvê-lo tarde deixaria um poço de gravidade
+       * no caminho.
+       *
+       * O `blur` é a rede de segurança do outro lado: soltar o botão fora da
+       * janela pode não gerar `pointerup` nenhum, e uma carga sem fim ficaria
+       * presa puxando o céu.
        */
       let alvoVazio = false;
       let px = 0;
@@ -167,34 +183,50 @@ export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
       const noVazio = (alvo: EventTarget | null): boolean =>
         alvo instanceof Element && (alvo === cv || alvo.tagName === 'SECTION');
 
+      const virouArraste = (e: PointerEvent): boolean =>
+        Math.abs(e.clientX - px) > TOQUE_PARADO || Math.abs(e.clientY - py) > TOQUE_PARADO;
+
       const aoDescer = (e: PointerEvent) => {
         alvoVazio =
           !semMovimentoRef.current &&
           e.isPrimary &&
           (e.pointerType !== 'mouse' || e.button === 0) &&
-          noVazio(e.target);
+          noVazio(e.target) &&
+          // durante o zoom da intro a cena ainda está chegando: nada de carga
+          !stage.env.camera.moving;
         px = e.clientX;
         py = e.clientY;
+        if (alvoVazio) nova.carregar(e.clientX, e.clientY);
+      };
+
+      const aoMover = (e: PointerEvent) => {
+        if (!alvoVazio || !virouArraste(e)) return;
+        alvoVazio = false;
+        nova.abortar();
       };
 
       const aoSubir = (e: PointerEvent) => {
         if (!alvoVazio) return;
         alvoVazio = false;
-        if (Math.abs(e.clientX - px) > TOQUE_PARADO) return;
-        if (Math.abs(e.clientY - py) > TOQUE_PARADO) return;
-        // durante o zoom da intro a cena ainda está chegando: nada de onda
-        if (stage.env.camera.moving) return;
-        if (nova.disparar(e.clientX, e.clientY)) onNovaRef.current?.();
+        if (virouArraste(e)) {
+          nova.abortar();
+          return;
+        }
+        const nivel = nova.soltar();
+        if (nivel) onNovaRef.current?.(nivel);
       };
 
       const aoCancelar = () => {
         alvoVazio = false;
+        nova.abortar();
       };
 
       const sinal = controle.signal;
       window.addEventListener('pointerdown', aoDescer, { passive: true, signal: sinal });
+      window.addEventListener('pointermove', aoMover, { passive: true, signal: sinal });
       window.addEventListener('pointerup', aoSubir, { passive: true, signal: sinal });
       window.addEventListener('pointercancel', aoCancelar, { passive: true, signal: sinal });
+      window.addEventListener('blur', aoCancelar, { passive: true, signal: sinal });
 
       destruirStage = () => {
         aplicarRef.current = null;

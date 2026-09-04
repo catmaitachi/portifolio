@@ -43,6 +43,16 @@ export interface Shock {
 /** Barramento entre camadas. Cada publicação é opcional por definição. */
 export interface StageBus {
   gravity?: Gravity | null;
+  /**
+   * Poço da carga da supernova: nasce sob o ponteiro pressionado, aperta enquanto
+   * o gesto dura e some quando ele termina.
+   *
+   * É o **mesmo tipo** da gravidade do buraco negro de propósito: quem consome
+   * soma os dois com o mesmo `puxar`, e `engine/gravity` não precisa saber que
+   * existem dois poços. Um campo separado, e não uma lista, porque os ciclos de
+   * vida são diferentes — o buraco negro é permanente e a carga é um gesto.
+   */
+  well?: Gravity | null;
   shock?: Shock | null;
 }
 
