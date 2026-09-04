@@ -8,8 +8,10 @@ Camada = `{ name, z, enabled, resize(env), update(env), draw(ctx, env) }`.
 Ordem do array = ordem de `update`; `z` = ordem de desenho.
 
 `env`: `W H dpr cx cy t dt mouse{x,y,active} camera{k,moving,progress,fade} bus{}`.
-`env.bus` é o barramento entre camadas: `bus.gravity`, publicada pelo `BlackHole`, e `bus.shock`,
-publicada pela `Supernova` — as duas lidas pelo `Starfield`, que não sabe quem as publicou.
+`env.bus` é o barramento entre camadas: `bus.gravity`, publicada pelo `BlackHole`, e `bus.well` e
+`bus.shock`, publicadas pela `Supernova` (a carga e a explosão) — as três lidas pelo `Starfield`, que
+não sabe quem as publicou. `well` é do **mesmo tipo** que `gravity`, então o consumidor soma os dois
+poços com o mesmo `puxar`.
 **Uma camada nunca importa outra.**
 
 O puxão do buraco negro mora em `engine/gravity.ts`, e as duas camadas que o sentem (`Starfield` e
@@ -19,6 +21,11 @@ lado a lado com as do campo no mesmo céu, e uma conta divergente salta aos olho
 podem ser recalculadas nas ~1120 estrelas de cada quadro, então cada camada guarda o próprio campo
 preparado e o próprio destino, e nada ali é estado compartilhado.
 
+O plasma seguiu o mesmo caminho e mora em `engine/plasma.ts`: `criarPlasma(size)` devolve um buffer e
+um `pintar(t)`, e o `BlackHole` e a `Supernova` criam cada um o seu. Aqui as duas não precisam
+concordar em nada, mas o efeito é por pixel e traz junto uma máscara, uma tabela de contraste e um
+`ImageData` — duplicar isso numa segunda camada seria duplicar o trecho mais caro do motor.
+
 ### Camadas
 
 | Camada | Arquivo | z | Notas |
@@ -27,7 +34,7 @@ preparado e o próprio destino, e nada ali é estado compartilhado.
 | `Starfield` | `layers/starfield.ts` | 10 | ~1120 estrelas (densidade por área), TypedArrays, repulsão do ponteiro por mola, gravidade de `engine/gravity.ts` e cintilar via LUT, 8 baldes de opacidade = 8 `fill()`/quadro. Estrela com raio < 1px vai como `rect`, não `arc` — são 82% delas. Cintilar lento (±22%). |
 | `Constellations` | `layers/constellations.ts` | 12 | Figuras do céu real. Estrelas herdam as propriedades do `Starfield`; linha de 1px num único `stroke()`; posições do quadro em `vx_/vy_` pré-alocados. As arestas se desenham das pontas para dentro quando a camada aparece (`drawTime`). `opacity` em 0 tira a camada do `update` **e** do `draw`. |
 | `BlackHole` | `layers/blackHole.ts` | 20 | Raio `0.14·min(W,H)`. Plasma 96×96 por LUT de senos a 20fps (alpha .22), 260 poeiras em órbita kepleriana, halo .18/.06 até 3.4R (degradês em cache por centro/raio/força), horizonte preto + borda **preta** suavizando — nunca borda brilhante. |
-| `Supernova` | `layers/supernova.ts` | 14 | A estrela que o visitante acende. Pool de 12 estrelas (guardadas em fração da tela), uma onda de cada vez, recarga no relógio do motor. Sente a gravidade desde o nascimento; a repulsão do ponteiro entra depois de 2s. Ociosa custa duas comparações. |
+| `Supernova` | `layers/supernova.ts` | 14 | A estrela que o visitante carrega e acende. Pressionar abre um poço (`bus.well`) que aperta em quatro níveis; soltar explode com força, alcance, duração e recarga daquele nível. Pool de 12 estrelas (guardadas em fração da tela), uma onda de cada vez, carga e recarga no relógio do motor. Plasma a partir do nível 2 (criado na primeira vez), estrela massiva num buffer de disco no 3, e no 4 ela implode com um pico de 3,2× no puxão e vira um horizonte de 22px com poeira. Degradês em cache com `globalAlpha`, e nem o pulso nem o raio da estrela entram na chave do cache. Ociosa custa três comparações. |
 | `Meteors` | `layers/meteors.ts` | 30 | Pool de 3, intervalo 4–13s, rastro por gradiente linear. |
 
 ### Contrato de desempenho

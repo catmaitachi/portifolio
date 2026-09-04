@@ -30,9 +30,10 @@ interface StarfieldOptions {
  * grupo vira um único `fill()`: 8 chamadas de desenho para ~1120 estrelas, em
  * vez de 1120 mudanças de `globalAlpha`.
  *
- * Lê `env.bus.gravity` (buraco negro) e `env.bus.shock` (supernova) sem saber
- * quem os publicou. Os dois entram como deslocamento, nunca como posição: a mola
- * de volta ao repouso é a mesma para os dois e devolve o céu ao lugar sozinha.
+ * Lê `env.bus.gravity` (buraco negro), `env.bus.well` (a carga da supernova) e
+ * `env.bus.shock` (a explosão dela) sem saber quem os publicou. Os três entram
+ * como deslocamento, nunca como posição: a mola de volta ao repouso é a mesma
+ * para todos e devolve o céu ao lugar sozinha.
  */
 export function Starfield({
   name = 'stars',
@@ -65,6 +66,14 @@ export function Starfield({
    * estrelas.
    */
   const campo = campoVazio();
+  /**
+   * O segundo poço: a carga da supernova, enquanto o visitante segura o ponteiro.
+   *
+   * Ele é do mesmo tipo do primeiro e usa o mesmo `puxar`, então some do laço
+   * sozinho quando o gesto termina. Sem carga o custo é a comparação de `temPoco`,
+   * exatamente o que `temGrav` já custa fora do Início.
+   */
+  const poco = campoVazio();
   const puxao = { x: 0, y: 0 };
 
   return {
@@ -97,6 +106,7 @@ export function Starfield({
       // durante o zoom da intro, repulsão e gravidade ficam desligadas
       const useMouse = mouse.active && !moving;
       const temGrav = prepararCampo(moving ? null : env.bus.gravity, campo);
+      const temPoco = prepararCampo(moving ? null : env.bus.well, poco);
       // a onda também some durante o zoom da intro: empurrar um céu que ainda
       // está chegando não lê como onda, lê como tremor
       const onda = moving ? null : env.bus.shock;
@@ -126,6 +136,13 @@ export function Starfield({
           puxao.x = 0;
           puxao.y = 0;
           puxar(campo, sx[i] + ox, sy[i] + oy, dt, puxao);
+          ox += puxao.x;
+          oy += puxao.y;
+        }
+        if (temPoco) {
+          puxao.x = 0;
+          puxao.y = 0;
+          puxar(poco, sx[i] + ox, sy[i] + oy, dt, puxao);
           ox += puxao.x;
           oy += puxao.y;
         }

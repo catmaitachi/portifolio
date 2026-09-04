@@ -1,4 +1,5 @@
 import { fastCos, fastSin, TAU } from '../math';
+import { criarPlasma } from '../plasma';
 import type { FadableLayer, StageEnv } from '../types';
 
 interface BlackHoleOptions {
@@ -38,64 +39,8 @@ export function BlackHole({
   halo = { inner: 0.18, outer: 0.06, reach: 3.4 },
   dust = { count: 260, speed: 0.6 },
 }: BlackHoleOptions = {}): BlackHoleLayer {
-  /* plasma: campo de senos num buffer de 96×96, tudo por LUT */
-  const P = plasma.size;
-  const pcv = document.createElement('canvas');
-  pcv.width = P;
-  pcv.height = P;
-  const pctx = pcv.getContext('2d')!;
-  const pimg = pctx.createImageData(P, P);
-  const pd = pimg.data;
-  // máscara (anel) e raio pré-calculados: constantes por pixel, não por quadro
-  const pmask = new Float32Array(P * P);
-  const prad = new Float32Array(P * P);
-  for (let y = 0; y < P; y++) {
-    for (let x = 0; x < P; x++) {
-      const nx = (x - P / 2) / (P / 2);
-      const ny = (y - P / 2) / (P / 2);
-      const r = Math.sqrt(nx * nx + ny * ny);
-      pmask[y * P + x] =
-        Math.max(0, Math.min(1, (r - 0.11) / 0.1)) * Math.max(0, 1 - Math.pow(r / 0.95, 1.7));
-      const dx = (x - P / 2) / 13;
-      const dy = (y - P / 2) / 13;
-      prad[y * P + x] = Math.sqrt(dx * dx + dy * dy) * 1.6;
-    }
-  }
-  // curva de contraste do plasma, também em tabela
-  const POW = new Float32Array(257);
-  for (let i = 0; i <= 256; i++) POW[i] = Math.pow(i / 256, 3.2) * 255;
-
-  const paintPlasma = (time: number) => {
-    const cos = Math.cos(time * 0.3);
-    const sin = Math.sin(time * 0.3);
-    const t1 = time;
-    const t2 = time * 0.7;
-    const t3 = time * 1.4;
-    const t4 = time * 0.5;
-    for (let y = 0; y < P; y++) {
-      const dy = (y - P / 2) / 13;
-      const bx = -dy * sin;
-      const by = dy * cos;
-      for (let x = 0; x < P; x++) {
-        const dx = (x - P / 2) / 13;
-        const rx = dx * cos + bx;
-        const ry = dx * sin + by;
-        const k = y * P + x;
-        const v =
-          fastSin(rx + t1) + fastSin(ry * 0.9 - t2) + fastSin(prad[k] - t3) + fastSin((rx + ry) * 0.7 + t4);
-        let q = ((v + 4) * 32) | 0;
-        if (q < 0) q = 0;
-        else if (q > 256) q = 256;
-        const g = POW[q];
-        const i = k * 4;
-        pd[i] = g;
-        pd[i + 1] = g;
-        pd[i + 2] = g;
-        pd[i + 3] = g * pmask[k];
-      }
-    }
-    pctx.putImageData(pimg, 0, 0);
-  };
+  /* plasma: o campo de senos vem de `engine/plasma`, compartilhado com a carga da supernova */
+  const campo = criarPlasma(plasma.size);
 
   /* poeira orbitando o horizonte: órbita kepleriana (mais perto = mais rápido) */
   const NO = dust.count;
@@ -145,7 +90,7 @@ export function BlackHole({
       acc += env.dt;
       if (acc >= 1 / plasma.fps) {
         acc = 0;
-        paintPlasma(env.t * plasma.speed);
+        campo.pintar(env.t * plasma.speed);
       }
       const step = env.dt * dust.speed * 0.35;
       for (let i = 0; i < NO; i++) oa[i] += step * Math.pow(1 / orb[i], 1.5);
@@ -160,7 +105,7 @@ export function BlackHole({
 
       const ps = R * 9;
       ctx.globalAlpha = plasma.alpha * k;
-      ctx.drawImage(pcv, cx - ps / 2, cy - ps / 2, ps, ps);
+      ctx.drawImage(campo.canvas, cx - ps / 2, cy - ps / 2, ps, ps);
 
       // dois grupos de poeira = dois fills, cada um com sua opacidade
       for (let g = 0; g < 2; g++) {

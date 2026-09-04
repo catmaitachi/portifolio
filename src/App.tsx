@@ -10,7 +10,7 @@ import { Version } from '~/hud/Version';
 import { useT } from '~/i18n/useLanguage';
 import { NavMenu } from '~/navigation/NavMenu';
 import { useSectionScroll } from '~/navigation/useSectionScroll';
-import { DURACAO } from '~/scene/scenePlan';
+import { NOVA_NIVEIS } from '~/scene/scenePlan';
 import { SpaceCanvas } from '~/scene/SpaceCanvas';
 import { AboutSection } from '~/sections/about/AboutSection';
 import { ContactSection } from '~/sections/contact/ContactSection';
@@ -30,10 +30,15 @@ import styles from './App.module.css';
  * ativa; nenhuma sabe qual é a sua vizinha nem o seu índice.
  *
  * Também é ele quem liga a supernova ao seu medidor: a cena avisa que uma
- * estrela foi acesa e o HUD desenha a recarga. Os dois recebem o **mesmo**
- * `DURACAO.novaRecarga`, então o círculo fecha exatamente quando o próximo
- * disparo passa a ser aceito. Um contador é todo o estado que isso custa, e ele
- * muda no máximo uma vez a cada recarga.
+ * estrela foi acesa, com o nível que a carga atingiu, e o HUD desenha a recarga
+ * **daquele nível**. Os dois lados leem a mesma `NOVA_NIVEIS`, então o círculo
+ * fecha exatamente quando o próximo disparo passa a ser aceito.
+ *
+ * Um contador e um número são todo o estado que isso custa, e eles mudam uma vez
+ * por disparo. O que acontece **durante** a carga (o poço, o plasma, o horizonte,
+ * o estalo de cada promoção) vive inteiro na cena, sob o dedo do visitante: é
+ * onde a informação já está, e o React não precisa render por quadro para
+ * mostrá-la.
  *
  * O mesmo contador alimenta a dica da supernova: o aviso do canto superior
  * esquerdo só existe enquanto ele estiver em zero (ver `useNovaHint`).
@@ -41,9 +46,11 @@ import styles from './App.module.css';
 export function App() {
   const { ref, indice, irPara, seguirFracao, soltarFracao } = useSectionScroll();
   const chaveAtiva = SECOES[indice]?.key ?? 'inicio';
-  const [novas, setNovas] = useState(0);
-  const aoAcender = useCallback(() => setNovas((n) => n + 1), []);
-  const dica = useNovaHint(novas);
+  const [nova, setNova] = useState({ disparo: 0, recarga: NOVA_NIVEIS[0].recarga });
+  const aoAcender = useCallback((nivel: number) => {
+    setNova((n) => ({ disparo: n.disparo + 1, recarga: NOVA_NIVEIS[nivel - 1].recarga }));
+  }, []);
+  const dica = useNovaHint(nova.disparo);
   const t = useT();
 
   return (
@@ -68,7 +75,7 @@ export function App() {
       />
       <Credit />
       <Version />
-      <NovaGauge disparo={novas} segundos={DURACAO.novaRecarga} />
+      <NovaGauge disparo={nova.disparo} segundos={nova.recarga} />
       <Notice
         aberto={dica.visivel}
         titulo={t.aviso.nova.titulo}

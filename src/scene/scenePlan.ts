@@ -1,4 +1,4 @@
-import type { Placement } from '~/engine';
+import type { NivelNova, Placement } from '~/engine';
 import type { SectionKey } from '~/content';
 
 /**
@@ -63,22 +63,74 @@ export const DURACAO = {
   /** intro: a câmera parte de dentro do horizonte e recua */
   cameraZoom: 1.5,
   cameraFator: 26,
-  /**
-   * Supernova: a onda dura bem menos que a recarga, então nunca há duas na tela
-   * — é essa folga que permite ao motor guardar uma onda só.
-   *
-   * A recarga é o **mesmo número** que o HUD desenha no medidor do canto: o
-   * `App` lê daqui e entrega aos dois lados, porque um círculo que fecha antes
-   * (ou depois) de a funcionalidade voltar mente para quem está olhando.
-   */
-  novaOnda: 1.35,
-  novaRecarga: 3,
 } as const;
 
 /**
- * Deslocamento máximo, em px, que um toque pode ter e ainda contar como toque.
+ * Os níveis da supernova, como dado.
+ *
+ * A tabela mora aqui, e não na fábrica da camada, porque a recarga é o **mesmo
+ * número** que o HUD desenha no medidor do canto: o motor a cobra e o `App` a
+ * entrega ao `NovaGauge`, e um círculo que fecha antes (ou depois) de a
+ * funcionalidade voltar mente para quem está olhando. Com níveis, esse número
+ * deixou de ser um só, mas continua tendo uma fonte só.
+ *
+ * **Os dois níveis do meio são longos de propósito.** São quatro segundos de plasma crescendo e três
+ * de estrela crescendo, e é neles que a carga se vê chegando a algum lugar; sem esse trecho, cada
+ * nível seria só mais um degrau logo depois do anterior.
+ *
+ * **E o último não aparece do nada.** Um buraco negro é o que sobra quando uma estrela massiva
+ * colapsa, então a estrela vem antes: ela cresce dos 7s aos 10s e implode ali, e o horizonte nasce
+ * de dentro do clarão.
+ *
+ * Dois valores não são livres:
+ *
+ * - **`recarga` > `onda`, em todos os níveis.** É essa folga que permite ao motor
+ *   guardar uma onda só; quebrá-la exigiria um pool de ondas e um laço a mais por
+ *   estrela no campo de estrelas.
+ * - **`poco.k`.** Com o puxão de `engine/gravity` e a mola de 2.6 do campo de
+ *   estrelas, o deslocamento de equilíbrio é `k · raio · 5.28 / 2.6` px. É essa
+ *   conta que decide se a carga lê como gravidade forte ou como um tremor.
+ */
+export const NOVA_NIVEIS: readonly NivelNova[] = [
+  { segurar: 0, recarga: 3, onda: 1.35, alcance: 0.55, forca: 620, poco: { reach: 150, k: 1 }, brilho: 1 },
+  {
+    segurar: 3,
+    recarga: 4.2,
+    onda: 1.7,
+    alcance: 0.78,
+    forca: 980,
+    poco: { reach: 240, k: 2 },
+    brilho: 1.45,
+  },
+  {
+    segurar: 7,
+    recarga: 5.5,
+    onda: 2.1,
+    alcance: 1,
+    forca: 1420,
+    poco: { reach: 300, k: 2.7 },
+    brilho: 1.95,
+  },
+  {
+    segurar: 10,
+    recarga: 7,
+    onda: 2.5,
+    alcance: 1.3,
+    forca: 2000,
+    poco: { reach: 380, k: 3.6 },
+    brilho: 2.5,
+  },
+] as const;
+
+/**
+ * Deslocamento máximo, em px, que um gesto pode ter e ainda contar como toque.
  *
  * Acima disso foi arraste — e arraste é da rolagem, da órbita ou da curva do
  * tempo, nunca da supernova.
+ *
+ * São 14px e não os 6px de antes porque o gesto passou a durar segundos: um dedo
+ * (ou uma mão no mouse) segurando por três segundos não fica dentro de 6px, e a
+ * carga era abortada justamente em quem estava tentando carregá-la. O limite é um
+ * só e vale para o gesto inteiro, do `pointerdown` ao `pointerup`.
  */
-export const TOQUE_PARADO = 6;
+export const TOQUE_PARADO = 14;
