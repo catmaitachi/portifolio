@@ -6,6 +6,12 @@
   (IBM Plex Mono 200/300/400).
 - Tudo sutil. A intensidade foi reduzida várias vezes na fase de design (nebulosa, halo, borda do
   horizonte) — ao mexer nesses valores, mexer para baixo.
+- **O céu é brilho, não ponto.** Cada estrela é um núcleo aceso dentro de um halo fraco, assado a
+  partir do shader que serviu de referência (ver `motor.md`). A regra acima vale em dobro aqui: um
+  halo cobre muito mais tela que um ponto de 1px, e a primeira calibragem chegou a 4,7% de
+  luminância média — uma parede de bolhas, com o preto profundo virado cinza. Hoje são 0,09%. Se o
+  fundo voltar a clarear, o botão é `GLOW_ALPHA` em `engine/star.ts`, e depois dele a densidade
+  do `Starfield`.
 
 ### Cantos chanfrados
 

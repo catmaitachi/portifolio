@@ -1,5 +1,6 @@
 import type { ConstellationKey } from '../catalog/constellations';
 import { CONSTELLATIONS } from '../catalog/constellations';
+import { desenharEstrela, extensaoDe, flareDe, GLOW_ALPHA } from '../star';
 import { fastSin, TAU } from '../math';
 import type { FadableLayer, StageEnv } from '../types';
 
@@ -397,21 +398,28 @@ export function Constellations({
       }
       ctx.stroke();
 
-      ctx.fillStyle = '#fff';
+      /**
+       * As estrelas da figura, com o mesmo desenho do campo.
+       *
+       * **Sem deriva e sem lente**, ao contrário das do campo, e por um motivo cada.
+       * A deriva desmancharia a figura, que é justamente uma forma reconhecível; a
+       * lente seria uma promessa falsa, porque estas não sentem gravidade — o
+       * `update` daqui só tem o ponteiro e a mola, nunca `puxar`. Esticar o que
+       * não se move seria desenhar uma física que não existe.
+       */
+      const { dpr } = env;
       for (let b = 0; b < buckets; b++) {
         const n = count[b];
         if (!n) continue;
-        ctx.globalAlpha = ((b + 0.5) / buckets) * this.opacity;
-        ctx.beginPath();
+        const alfa = ((b + 0.5) / buckets) * this.opacity * GLOW_ALPHA;
         const off = b * N;
         for (let k = 0; k < n; k++) {
           const i = bucket[off + k];
-          const r = sz[i];
-          ctx.moveTo(vx_[i] + r, vy_[i]);
-          ctx.arc(vx_[i], vy_[i], r, 0, TAU);
+          const flare = flareDe(sz[i], env.t, ph[i]);
+          desenharEstrela(ctx, dpr, vx_[i], vy_[i], extensaoDe(sz[i]), alfa, flare, 1, 1, 0);
         }
-        ctx.fill();
       }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     },
   };
 }

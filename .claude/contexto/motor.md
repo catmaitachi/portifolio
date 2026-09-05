@@ -21,6 +21,12 @@ lado a lado com as do campo no mesmo céu, e uma conta divergente salta aos olho
 podem ser recalculadas nas ~1120 estrelas de cada quadro, então cada camada guarda o próprio campo
 preparado e o próprio destino, e nada ali é estado compartilhado.
 
+O desenho da estrela seguiu o mesmo caminho e mora em `engine/star.ts`: os sprites, o tamanho na
+tela, a deriva, o alongamento da lente e o `dentroDoAlcance` que decide se o puxão é gravidade de
+verdade. Três camadas desenham estrelas (`Starfield`, `Supernova`, `Constellations`) e elas ficam lado
+a lado no mesmo céu, então divergir ali é visível na hora — antes disso os números estavam
+duplicados em duas delas com uma nota pedindo que mudassem juntos.
+
 O plasma seguiu o mesmo caminho e mora em `engine/plasma.ts`: `criarPlasma(size)` devolve um buffer e
 um `pintar(t)`, e o `BlackHole` e a `Supernova` criam cada um o seu. Aqui as duas não precisam
 concordar em nada, mas o efeito é por pixel e traz junto uma máscara, uma tabela de contraste e um
@@ -31,49 +37,71 @@ concordar em nada, mas o efeito é por pixel e traz junto uma máscara, uma tabe
 | Camada | Arquivo | z | Notas |
 |---|---|---|---|
 | `Nebula` | `layers/nebula.ts` | 0 | Buffer de 128px, 5 massas brancas em deriva, repintado a 12fps e ampliado pela GPU. alpha 0.16. |
-| `Starfield` | `layers/starfield.ts` | 10 | ~1120 estrelas (densidade por área), TypedArrays, repulsão do ponteiro por mola, gravidade de `engine/gravity.ts` e cintilar via LUT, 8 baldes de opacidade = 8 `fill()`/quadro. Estrela com raio < 1px vai como `rect`, não `arc` — são 82% delas. Cintilar lento (±22%). Um segundo passe por balde desenha o brilho em cruz e o streak num `stroke()` só. |
-| `Constellations` | `layers/constellations.ts` | 12 | Figuras do céu real. Estrelas herdam as propriedades do `Starfield`; linha de 1px num único `stroke()`; posições do quadro em `vx_/vy_` pré-alocados. As arestas se desenham das pontas para dentro quando a camada aparece (`drawTime`). `opacity` em 0 tira a camada do `update` **e** do `draw`. |
+| `Starfield` | `layers/starfield.ts` | 10 | ~354 estrelas num 1280×720 (densidade por área), TypedArrays, repulsão do ponteiro por mola, gravidade de `engine/gravity.ts` e cintilar via LUT, 8 baldes de opacidade. O desenho é o sprite de `engine/star.ts` por `drawImage`, com deriva ambiente de 8px e a lente da gravidade esticando o brilho. Cintilar lento (±22%). |
+| `Constellations` | `layers/constellations.ts` | 12 | Figuras do céu real. Estrelas herdam as propriedades do `Starfield`; linha de 1px num único `stroke()`; as estrelas saem do mesmo sprite de `engine/star.ts`, sem deriva e sem lente; posições do quadro em `vx_/vy_` pré-alocados. As arestas se desenham das pontas para dentro quando a camada aparece (`drawTime`). `opacity` em 0 tira a camada do `update` **e** do `draw`. |
 | `BlackHole` | `layers/blackHole.ts` | 20 | Raio `0.14·min(W,H)`. Plasma 96×96 por LUT de senos a 20fps (alpha .22), 260 poeiras em órbita kepleriana, halo .18/.06 até 3.4R (degradês em cache por centro/raio/força), horizonte preto + borda **preta** suavizando — nunca borda brilhante. |
 | `Supernova` | `layers/supernova.ts` | 14 | A estrela que o visitante carrega e acende. Pressionar abre um poço (`bus.well`) que aperta em quatro níveis; soltar explode com força, alcance, duração e recarga daquele nível. Pool de 12 estrelas (guardadas em fração da tela), uma onda de cada vez, carga e recarga no relógio do motor. Plasma a partir do nível 2 (criado na primeira vez), estrela massiva num buffer de disco no 3, e no 4 ela implode com um pico de 3,2× no puxão e vira um horizonte de 22px com poeira. Degradês em cache com `globalAlpha`, e nem o pulso nem o raio da estrela entram na chave do cache. Ociosa custa três comparações. |
 | `Meteors` | `layers/meteors.ts` | 30 | Pool de 3, intervalo 4–13s, rastro por gradiente linear. |
 
-### Deriva, cruz e streak
+### O brilho, a deriva e a lente
 
-Três coisas que o campo de estrelas ganhou no `draw`, e **só no `draw`**: nada disso entra em
-`sdx`/`sdy`, porque ali passariam pela mola, pelo puxão e pelo teste de streak.
+Uma estrela **não é um ponto**. O desenho vem de `engine/star.ts`, que assa o `Star()` do shader
+do Galaxy pixel a pixel em dois sprites — o brilho (núcleo saturado mais halo) e as oito pontas — e
+as três camadas que desenham estrelas usam os mesmos. É o arranjo de `gravity.ts` e `plasma.ts`, e
+aqui pesa mais: elas ficam lado a lado no mesmo céu, e uma desenhada com outra linguagem salta aos
+olhos.
 
-- **A deriva ambiente** (0,9px de amplitude a 0,16 de velocidade) reaproveita a fase do cintilar
-  (`sph`), então não custa um array novo. Ela some durante o zoom da intro, como o ponteiro e a
-  gravidade: um céu que ainda está chegando não lê como ambiente, lê como tremor. E entra **depois**
-  da transformação da câmera, senão o zoom a multiplicaria por 26.
-- **O brilho em cruz** é das estrelas com raio ≥ 1.1, que é o começo real da faixa grande no
-  `resize`. Com o `R_QUADRADO` (=1) entrariam também as pequenas entre 1.0 e 1.05, e a cruz deixaria
-  de ser a marca das maiores. Cada braço mede 2,4 raios: o maior dá ~9,5px, um terço do espaçamento
-  típico entre estrelas. Mais que isso e a cruz vira ruído.
-- **O streak só existe com gravidade de verdade**, `bus.gravity` ou `bus.well`. O deslocamento
-  grande sozinho não basta: a repulsão do ponteiro empurra na mesma ordem de grandeza, e um traço
-  atrás do cursor não é gravidade, é rastro de mouse. O teste é `dentroDoAlcance`, função pura sobre
-  os dois campos que o quadro já preparou. Ele é uma **fração** (0,2) do deslocamento, com teto de
-  46px: com o deslocamento cru, 60% dos traços encostavam no teto e todos ficavam do mesmo tamanho,
-  que é o oposto do que o traço existe para dizer.
+**A consequência que motivou tudo:** esticar um borrão dá um rastro suave; esticar um ponto dava um
+risco de 1px, que foi o que existiu aqui por uma versão e não se parecia com gravidade.
 
-**O desenho é em lote, e isso não é preciosismo.** O alcance do buraco negro é `raio·6.2`, ~625px
-numa tela 1280×720, e o deslocamento de equilíbrio já passa dos 16px em cerca de 60% dele: na seção
-Início cerca de 140 estrelas são candidatas a traço em qualquer quadro. Um `stroke()` por estrela
-seriam centenas de chamadas por quadro, o tempo todo. Como está, o quadro custa no máximo
-**8 `fill()` + 8 `stroke()`**, e esse número não depende de quantas estrelas estão sendo puxadas.
+Dois números não são cópia literal do shader, e não deveriam ser:
 
-As posições do segundo passe são **recomputadas**, não guardadas: um array a mais por quadro é
-alocação. A conta precisa ser a mesma do primeiro passe (mesma deriva, mesmo zoom, mesmo corte de
-bordas), senão a cruz sai do lugar do ponto.
+- **a queda do halo é `1/d²`, não `1/d`.** Lá o campo é avaliado por fragmento com
+  `uGlowIntensity = 0.3`, o que dá halo fraco e núcleo nítido de graça. Aqui o sprite é *reduzido*
+  até o tamanho da estrela na tela: assar com 0,3 põe o núcleo em meio pixel e o filtro bilinear o
+  come; assar com 1 deixa o halo três vezes mais forte que o de lá, e o céu vira uma parede de
+  bolhas com 4,7% de luminância média. Com o expoente 2 o núcleo fica nos 5% do raio e o halo cai
+  para o nível do componente (0,111 contra 0,100 em d=0,15);
+- **a afiação dos raios é 380, não 1000.** Pelo mesmo motivo de escala: 1000 daria um traço de
+  0,48px na tela, que some na redução. 380 devolve os ~1,3px que o componente mostra.
 
-Para os dois campos preparados chegarem ao `draw`, `temGrav`/`temPoco` viraram estado de escopo da
-camada. `update` roda sempre antes do `draw` no mesmo quadro (ordem do array em `createStage`).
+Em ambos, copiar o número seria menos fiel que copiar o resultado.
 
-As estrelas acesas da supernova ganham os mesmos dois desenhos, com os mesmos números, porque ficam
-lado a lado com as do campo no mesmo céu. Lá o pool é de 12, então o `stroke()` sai por estrela e
-não em lote. `dentroDoAlcance` está duplicado nas duas camadas com a nota de sempre: **uma camada
-nunca importa outra**, e mexer num número pede mexer no outro.
+**A densidade acompanha o brilho.** `density` foi de 3250 para 2600 px² por estrela: um ponto de 1px
+pedia volume para o céu ler como céu, um brilho de 14 a 34px tem presença, e amontoá-los vira névoa.
+São 354 estrelas num 1280×720, com 0,09% de luminância média — pontos nítidos sobre preto.
+
+**A deriva** (8px, em períodos de 12s e 30s) vive só no `draw`. Somada ao deslocamento ela entraria
+na mola, no puxão e no teste da lente, e um céu que respira viraria um céu sempre sendo puxado. Os
+períodos são diferentes em X e Y de propósito: o vagar é de Lissajous, não um circulinho. Ela entra
+por `camera.fade` durante o zoom da intro, senão haveria um pulo de 8px no quadro em que ele termina.
+
+**A lente** estica o brilho na direção do deslocamento, e é o que substituiu o traço:
+
+- **só com gravidade de verdade** — `bus.gravity` ou `bus.well`, nunca a repulsão do ponteiro, que
+  empurra na mesma ordem de grandeza mas leria como rastro de mouse. O portão é `dentroDoAlcance`;
+- **o alongamento está ao quadrado**, e é o que faz o buraco negro parecer estar num lugar. No shader
+  o que estica não é o deslocamento, é o **gradiente** dele: o campo desloca com `1/d` e estica com
+  `1/d²`, então longe do centro as estrelas andam muito e deformam pouco. Aqui o deslocamento vem da
+  mola, que satura, e usá-lo cru esticava 70% do céu a 2x — uma tela inteira borrada. Ao quadrado a
+  mediana cai para perto de 1,2x e só o miolo chega a 2,4x;
+- **estica no comprimento e mantém a largura.** Comprimir no eixo curto, que é o que uma lente faz,
+  devolveria o risco fino; assim o rastro é sempre ao menos tão largo quanto a estrela;
+- **o alfa cai com `1/√s`**, porque um borrão esticado espalha a mesma luz por mais área. Sem isso a
+  estrela puxada ficaria mais brilhante que a parada.
+
+**O custo.** No pior caso — seção Início, buraco negro em presença total e carga no último nível —
+são ~700 `drawImage` e ~620 `setTransform` por quadro, com 0,8ms de lógica em JS e nenhum degradê
+recriado. A assadura dos dois sprites custa 3,8ms, uma vez, junto do `import()` do motor.
+
+**`setTransform` é destrutivo.** O palco monta a matriz uma vez no `resize` e o laço só devolve
+`globalAlpha` e `globalCompositeOperation` entre camadas. Quem mexer nela **tem** de devolvê-la ao
+sair: as três camadas de estrelas fazem isso na última linha do `draw`.
+
+As estrelas das figuras não têm deriva nem lente, e cada exclusão tem motivo próprio: a deriva
+desmancharia a forma, que é justamente o que se quer reconhecer; e a lente seria promessa falsa,
+porque o `update` de lá só tem ponteiro e mola, nunca `puxar` — esticar o que não se move seria
+desenhar uma física que não existe.
 
 ### Contrato de desempenho
 

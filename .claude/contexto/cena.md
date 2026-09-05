@@ -216,13 +216,13 @@ Só a repulsão do ponteiro segue duplicada: os números (110px, 26, mola 2.6) *
 `Starfield`**, e mexer lá pede mexer aqui. A gravidade não tem mais esse problema.
 
 **O tamanho da estrela é a marca do nível.** O que nasce de uma carga cheia fica maior, cintila mais
-forte e ganha uma auréola: é a luz que sobra depois de a onda passar, e o que diferencia um céu
-montado com paciência de um montado a toques.
+forte e mostra as oito pontas com mais peso: é a luz que sobra depois de a onda passar, e o que
+diferencia um céu montado com paciência de um montado a toques.
 
-A auréola é **muito** discreta, e isso não é timidez. Quem diferencia a estrela já é o próprio ponto,
-maior e cintilando mais forte; a auréola só confirma. Numa página de preto e linhas de 1px, um halo
-que se lê à primeira vista vira a coisa mais brilhante da tela e passa a puxar o olho para o canto do
-céu onde o visitante calhou de clicar.
+A auréola que existia aqui saiu quando o céu passou a ser desenhado por `engine/star.ts`: o sprite
+**é** um halo, e somar outro por cima repunha exatamente o excesso de brilho que já tinha sido pedido
+de volta uma vez. O que distingue a estrela acesa agora é o tamanho e o peso das pontas, não uma
+segunda camada de luz.
 
 Com `prefers-reduced-motion: reduce` a supernova **não carrega e não dispara**: a onda é movimento
 amplo e inesperado, e o medidor perderia o sentido com as durações zeradas. É a mesma decisão do zoom
