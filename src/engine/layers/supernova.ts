@@ -1,48 +1,16 @@
-import { campoVazio, prepararCampo, puxar, type Campo } from '../gravity';
+import { campoVazio, prepararCampo, puxar } from '../gravity';
+import {
+  alongamentoDe,
+  dentroDoAlcance,
+  desenharEstrela,
+  extensaoDe,
+  GLOW_ALPHA,
+  respiraFlare,
+  temAlongamento,
+} from '../star';
 import { fastCos, fastSin, TAU } from '../math';
 import { criarPlasma, type Plasma } from '../plasma';
 import type { Layer, StageEnv } from '../types';
-
-/**
- * Brilho em cruz e streak da estrela acesa, espelhando `layers/starfield.ts`.
- *
- * Os números são os de lá, porque as estrelas acesas ficam lado a lado com as do
- * campo no mesmo céu e uma cruz de tamanho diferente salta aos olhos. É a mesma nota
- * que a repulsão do ponteiro já carrega aqui: **mexer lá pede mexer aqui.**
- *
- * A gravidade é o contrário: ela vem de `engine/gravity.ts`, um lugar só. O que
- * se duplica abaixo é o *teste* de alcance, que é função pura sobre dois campos
- * já preparados. Importar a camada vizinha seria pior, e uma camada nunca importa
- * outra.
- */
-const FLARE_LEN = 2.4;
-const DECORACAO_ALPHA = 0.5;
-const STREAK_MAG_MIN = 16;
-const STREAK_MAG_MIN2 = STREAK_MAG_MIN * STREAK_MAG_MIN;
-const STREAK_GANHO = 0.2;
-const STREAK_LEN_MAX = 46;
-
-/** Espelha `dentroDoAlcance` de `layers/starfield.ts`. */
-function dentroDoAlcance(
-  x: number,
-  y: number,
-  campo: Campo,
-  poco: Campo,
-  temGrav: boolean,
-  temPoco: boolean,
-): boolean {
-  if (temGrav) {
-    const gx = x - campo.x;
-    const gy = y - campo.y;
-    if (gx * gx + gy * gy < campo.alcance2) return true;
-  }
-  if (temPoco) {
-    const px = x - poco.x;
-    const py = y - poco.y;
-    if (px * px + py * py < poco.alcance2) return true;
-  }
-  return false;
-}
 
 /**
  * Um nível de carga da supernova.
@@ -654,78 +622,58 @@ export function Supernova({
       if (!acesas && ondaT < 0 && saida <= 0 && promocao < 0) return;
       const { W, H, t } = env;
 
-      /* estrelas acesas: um ponto branco que nasce grande e assenta */
+      /**
+       * As estrelas acesas, com o mesmo desenho do campo.
+       *
+       * Vem tudo de `engine/estrela.ts` — o sprite, o tamanho, o alongamento da
+       * lente — e é essa a razão de aquele módulo existir: estas ficam lado a
+       * lado com as do campo no mesmo céu, e uma delas desenhada com outra
+       * linguagem salta aos olhos. Aqui o pool é de 12, então não há lote a
+       * preservar e cada uma sai com a sua matriz.
+       *
+       * A auréola que havia aqui saiu junto: o sprite **é** um halo, e somar
+       * outro por cima repunha exatamente o excesso de brilho que já tinha sido
+       * pedido de volta uma vez.
+       */
       if (acesas) {
-        ctx.fillStyle = '#fff';
         for (let i = 0; i < pool; i++) {
           if (!viva[i]) continue;
           const a = idade[i];
-          const b = brilho[i] || 1;
-          // nasce com 3.4px e assenta em 1.15px ao longo de ~1.2s, vezes o nível
+          const nivel = brilho[i] || 1;
+          const ex = fx[i] * W + dx[i];
+          const ey = fy[i] * H + dy[i];
+
+          // nasce grande e assenta em ~1,2s, como antes; o nível dá o tamanho de repouso
           const cresc = a < 1.2 ? 1 - a / 1.2 : 0;
-          const r = (1.15 + cresc * cresc * 2.25) * b;
+          const ext = extensaoDe(1.15 * nivel) * (1 + cresc * cresc * 0.7);
           const cintila = 0.82 + 0.18 * fastSin(t * 0.9 + fase[i]);
-          const nascendo = Math.min(1, a / 0.12);
-          const cx = fx[i] * W + dx[i];
-          const cy = fy[i] * H + dy[i];
+          const alfa = Math.min(1, Math.min(1, a / 0.12) * cintila * GLOW_ALPHA * 1.4);
+          // a estrela acesa mostra as pontas por ser o que é, não por tamanho:
+          // o peso vem do nível da carga, mas o respiro é o do resto do céu
+          const flare = Math.min(1, 0.6 + 0.4 * (nivel - 1)) * respiraFlare(t, fase[i]);
 
-          /**
-           * A auréola do que nasceu forte: a luz que fica é a marca do nível.
-           *
-           * Ela é **muito** discreta de propósito. O que diferencia a estrela de
-           * carga cheia já é o próprio ponto, que é maior e cintila mais forte; a
-           * auréola só confirma. Numa página que é preto e linhas de 1px, um
-           * halo que se lê à primeira vista vira a coisa mais brilhante da tela e
-           * puxa o olho para um canto qualquer do céu.
-           */
-          if (b > 1.1) {
-            ctx.globalAlpha = nascendo * cintila * 0.035 * b;
-            ctx.beginPath();
-            ctx.moveTo(cx + r * 2.8, cy);
-            ctx.arc(cx, cy, r * 2.8, 0, TAU);
-            ctx.fill();
-          }
-
-          ctx.globalAlpha = nascendo * cintila;
-          ctx.beginPath();
-          ctx.moveTo(cx + r, cy);
-          ctx.arc(cx, cy, r, 0, TAU);
-          ctx.fill();
-
-          /**
-           * A cruz e o traço, os mesmos do campo de estrelas.
-           *
-           * Aqui o pool é de 12, então um `stroke()` por estrela não é problema:
-           * lá são ~1120 e o desenho precisa sair em lote. O traço só aparece com
-           * gravidade de verdade: puxão do buraco negro ou da carga, nunca o
-           * empurrão do ponteiro.
-           */
-          const braco = r * FLARE_LEN;
-          ctx.beginPath();
-          ctx.moveTo(cx - braco, cy);
-          ctx.lineTo(cx + braco, cy);
-          ctx.moveTo(cx, cy - braco);
-          ctx.lineTo(cx, cy + braco);
+          let s = 1;
+          let ux = 1;
+          let uy = 0;
           if (temGrav || temPoco) {
             const ox = dx[i];
             const oy = dy[i];
             const mag2 = ox * ox + oy * oy;
             if (
-              mag2 > STREAK_MAG_MIN2 &&
+              temAlongamento(mag2) &&
               dentroDoAlcance(fx[i] * W, fy[i] * H, campo, campoPoco, temGrav, temPoco)
             ) {
               const mag = Math.sqrt(mag2);
-              const alvo = mag * STREAK_GANHO;
-              const len = alvo < STREAK_LEN_MAX ? alvo : STREAK_LEN_MAX;
-              ctx.moveTo(cx - (ox / mag) * len, cy - (oy / mag) * len);
-              ctx.lineTo(cx, cy);
+              s = alongamentoDe(mag);
+              ux = ox / mag;
+              uy = oy / mag;
             }
           }
-          ctx.globalAlpha = nascendo * cintila * DECORACAO_ALPHA;
-          ctx.lineWidth = 1;
-          ctx.strokeStyle = '#fff';
-          ctx.stroke();
+
+          desenharEstrela(ctx, env.dpr, ex, ey, ext, alfa, flare, s, ux, uy);
         }
+        // a matriz volta antes de tudo o que vem abaixo, que desenha em px de tela
+        ctx.setTransform(env.dpr, 0, 0, env.dpr, 0, 0);
         ctx.globalAlpha = 1;
       }
 
