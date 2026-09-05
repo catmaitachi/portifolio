@@ -150,14 +150,26 @@ fica atrás dele. Quem escuta é a janela, e o filtro é estrito: o alvo precisa
 a caixa de uma `<section>` — **nunca um descendente dela**. Clicar num cartão, num campo, num botão ou
 no bloco de conteúdo é interação com a página, e a página vem primeiro.
 
-**Ter duração mudou onde o filtro de arraste age.** Antes bastava decidir no fim, porque o gesto era
-instantâneo. Agora uma carga pode ficar acesa por segundos enquanto o visitante está, na verdade,
-rolando a página ou girando a órbita de Projetos, então é o `pointermove` que **aborta** assim que o
-gesto passa de `TOQUE_PARADO` px. Abortar não explode e não cobra recarga: o gesto era de outro dono.
+**Mover o dedo ou o mouse não cancela a carga.** O poço fica ancorado no ponto onde o gesto começou, e
+isso resolve um problema real do celular: o próprio dedo cobre o efeito, e afastá-lo sem soltar é a
+única forma de vê-lo. Uma versão anterior cancelava a carga acima de um limiar de deslocamento
+(`TOQUE_PARADO`) — pensada para não atrapalhar o arraste da órbita e da curva do tempo — mas isso
+tornava a supernova invisível em qualquer toque real, já que o dedo nunca fica perfeitamente parado.
 
-**E o limite subiu de 6px para 14px.** Um dedo (ou uma mão no mouse) segurando por três segundos não
-fica dentro de 6px, e o limite antigo cancelava a carga justamente em quem estava tentando carregá-la.
-É um número só, valendo do `pointerdown` ao `pointerup`.
+**A pergunta que sobra é onde o gesto terminou, e ela se resolve no `pointerup`**, checando
+`noVazio(e.target)` de novo, sem medir distância nenhuma:
+
+- no **toque**, `e.target` continua sendo o elemento do `pointerdown` original (captura implícita da
+  plataforma) — mover o dedo livremente nunca muda o alvo, então a checagem passa sempre que o gesto
+  começou no vazio, não importa por onde o dedo andou;
+- no **mouse**, o alvo muda de verdade conforme o cursor anda — soltar o botão sobre um cartão faz
+  `noVazio` falhar ali, e a carga aborta sem disparar. É exatamente o caso que o limiar antigo
+  protegia, resolvido pela pergunta certa em vez de uma régua em pixels.
+
+**Um arraste de página de verdade nunca chega a esse ponto.** Quando o navegador assume um toque para
+rolar, ele emite `pointercancel` para aquele ponteiro — o mesmo comportamento já documentado a
+propósito da faixa de navegação do mobile (`navegacao.md`) — e é o `aoCancelar` de sempre quem cobre
+isso, sem precisar de nenhum código novo.
 
 **O `blur` da janela é a rede do outro lado.** Soltar o botão fora da janela pode não gerar
 `pointerup` nenhum, e uma carga sem fim ficaria presa puxando o céu.

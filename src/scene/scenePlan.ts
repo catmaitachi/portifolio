@@ -121,16 +121,3 @@ export const NOVA_NIVEIS: readonly NivelNova[] = [
     brilho: 2.5,
   },
 ] as const;
-
-/**
- * Deslocamento máximo, em px, que um gesto pode ter e ainda contar como toque.
- *
- * Acima disso foi arraste — e arraste é da rolagem, da órbita ou da curva do
- * tempo, nunca da supernova.
- *
- * São 14px e não os 6px de antes porque o gesto passou a durar segundos: um dedo
- * (ou uma mão no mouse) segurando por três segundos não fica dentro de 6px, e a
- * carga era abortada justamente em quem estava tentando carregá-la. O limite é um
- * só e vale para o gesto inteiro, do `pointerdown` ao `pointerup`.
- */
-export const TOQUE_PARADO = 14;

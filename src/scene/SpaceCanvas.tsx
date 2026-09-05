@@ -1,14 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { SectionKey } from '~/content';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
-import {
-  CEUS,
-  DURACAO,
-  nomeDoCeu,
-  NOVA_NIVEIS,
-  SECAO_DO_BURACO_NEGRO,
-  TOQUE_PARADO,
-} from './scenePlan';
+import { CEUS, DURACAO, nomeDoCeu, NOVA_NIVEIS, SECAO_DO_BURACO_NEGRO } from './scenePlan';
 import styles from './SpaceCanvas.module.css';
 
 interface SpaceCanvasProps {
@@ -36,6 +29,8 @@ interface SpaceCanvasProps {
  * escuta é a janela, e a decisão de "isto foi o vazio, não o conteúdo" é
  * conhecimento do DOM da página — o motor não deve tê-lo. A camada só recebe o
  * começo, o fim e a desistência do gesto, e responde com o nível que saiu dali.
+ * Mover o ponteiro no meio do caminho não é mais decisão dela: o gesto só é
+ * julgado pelo alvo no início e no fim, nunca pelo percurso entre eles.
  */
 export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -163,28 +158,36 @@ export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
        * descendente dela. Clicar num cartão, num botão, num campo ou no bloco de
        * conteúdo é interação com a página, e a página vem primeiro.
        *
-       * O gesto passou a ter **duração**: a carga abre no `pointerdown` e o nível
-       * sobe enquanto o botão fica pressionado. Isso muda onde o filtro de arraste
-       * age. Antes bastava decidir no fim, porque o gesto era instantâneo; agora
-       * uma carga pode ficar acesa por segundos enquanto o visitante, na verdade,
-       * está rolando a página ou girando a órbita de Projetos. Por isso o
-       * `pointermove` **aborta** assim que o gesto passa de `TOQUE_PARADO` px: o
-       * arraste é de outro dono, e devolvê-lo tarde deixaria um poço de gravidade
-       * no caminho.
+       * O gesto tem **duração**: a carga abre no `pointerdown` e o nível sobe
+       * enquanto o botão fica pressionado. Mover o dedo ou o mouse **não cancela
+       * a carga** — o poço continua ancorado no ponto onde o gesto começou, e é
+       * isso que resolve um problema real do celular: o próprio dedo cobre o
+       * efeito, e escorregá-lo para o lado sem soltar é a única forma de vê-lo.
+       *
+       * A pergunta que sobra é "onde o gesto terminou", e ela se resolve sozinha
+       * no `pointerup`, checando `noVazio(e.target)` outra vez, sem medir
+       * distância nenhuma:
+       *
+       * - no **toque**, `e.target` é sempre o elemento do `pointerdown` original
+       *   (captura implícita) — mover o dedo livremente nunca muda o alvo, então
+       *   a checagem passa sempre que o gesto começou no vazio;
+       * - no **mouse**, o alvo muda de verdade conforme o cursor anda — se o
+       *   botão for solto sobre um cartão de verdade, `noVazio` falha ali e a
+       *   carga aborta sem disparar.
+       *
+       * Um arraste de página de verdade nunca chega a este ponto: quando o
+       * navegador assume um toque para rolar, ele emite `pointercancel` para
+       * aquele ponteiro, e é o `aoCancelar` abaixo quem cobre esse caso — a
+       * mesma plataforma que já resolve isso na faixa de navegação do mobile.
        *
        * O `blur` é a rede de segurança do outro lado: soltar o botão fora da
        * janela pode não gerar `pointerup` nenhum, e uma carga sem fim ficaria
        * presa puxando o céu.
        */
       let alvoVazio = false;
-      let px = 0;
-      let py = 0;
 
       const noVazio = (alvo: EventTarget | null): boolean =>
         alvo instanceof Element && (alvo === cv || alvo.tagName === 'SECTION');
-
-      const virouArraste = (e: PointerEvent): boolean =>
-        Math.abs(e.clientX - px) > TOQUE_PARADO || Math.abs(e.clientY - py) > TOQUE_PARADO;
 
       const aoDescer = (e: PointerEvent) => {
         alvoVazio =
@@ -194,21 +197,13 @@ export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
           noVazio(e.target) &&
           // durante o zoom da intro a cena ainda está chegando: nada de carga
           !stage.env.camera.moving;
-        px = e.clientX;
-        py = e.clientY;
         if (alvoVazio) nova.carregar(e.clientX, e.clientY);
-      };
-
-      const aoMover = (e: PointerEvent) => {
-        if (!alvoVazio || !virouArraste(e)) return;
-        alvoVazio = false;
-        nova.abortar();
       };
 
       const aoSubir = (e: PointerEvent) => {
         if (!alvoVazio) return;
         alvoVazio = false;
-        if (virouArraste(e)) {
+        if (!noVazio(e.target)) {
           nova.abortar();
           return;
         }
@@ -223,7 +218,6 @@ export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
 
       const sinal = controle.signal;
       window.addEventListener('pointerdown', aoDescer, { passive: true, signal: sinal });
-      window.addEventListener('pointermove', aoMover, { passive: true, signal: sinal });
       window.addEventListener('pointerup', aoSubir, { passive: true, signal: sinal });
       window.addEventListener('pointercancel', aoCancelar, { passive: true, signal: sinal });
       window.addEventListener('blur', aoCancelar, { passive: true, signal: sinal });
