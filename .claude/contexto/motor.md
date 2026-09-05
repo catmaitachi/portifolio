@@ -31,11 +31,49 @@ concordar em nada, mas o efeito é por pixel e traz junto uma máscara, uma tabe
 | Camada | Arquivo | z | Notas |
 |---|---|---|---|
 | `Nebula` | `layers/nebula.ts` | 0 | Buffer de 128px, 5 massas brancas em deriva, repintado a 12fps e ampliado pela GPU. alpha 0.16. |
-| `Starfield` | `layers/starfield.ts` | 10 | ~1120 estrelas (densidade por área), TypedArrays, repulsão do ponteiro por mola, gravidade de `engine/gravity.ts` e cintilar via LUT, 8 baldes de opacidade = 8 `fill()`/quadro. Estrela com raio < 1px vai como `rect`, não `arc` — são 82% delas. Cintilar lento (±22%). |
+| `Starfield` | `layers/starfield.ts` | 10 | ~1120 estrelas (densidade por área), TypedArrays, repulsão do ponteiro por mola, gravidade de `engine/gravity.ts` e cintilar via LUT, 8 baldes de opacidade = 8 `fill()`/quadro. Estrela com raio < 1px vai como `rect`, não `arc` — são 82% delas. Cintilar lento (±22%). Um segundo passe por balde desenha o brilho em cruz e o streak num `stroke()` só. |
 | `Constellations` | `layers/constellations.ts` | 12 | Figuras do céu real. Estrelas herdam as propriedades do `Starfield`; linha de 1px num único `stroke()`; posições do quadro em `vx_/vy_` pré-alocados. As arestas se desenham das pontas para dentro quando a camada aparece (`drawTime`). `opacity` em 0 tira a camada do `update` **e** do `draw`. |
 | `BlackHole` | `layers/blackHole.ts` | 20 | Raio `0.14·min(W,H)`. Plasma 96×96 por LUT de senos a 20fps (alpha .22), 260 poeiras em órbita kepleriana, halo .18/.06 até 3.4R (degradês em cache por centro/raio/força), horizonte preto + borda **preta** suavizando — nunca borda brilhante. |
 | `Supernova` | `layers/supernova.ts` | 14 | A estrela que o visitante carrega e acende. Pressionar abre um poço (`bus.well`) que aperta em quatro níveis; soltar explode com força, alcance, duração e recarga daquele nível. Pool de 12 estrelas (guardadas em fração da tela), uma onda de cada vez, carga e recarga no relógio do motor. Plasma a partir do nível 2 (criado na primeira vez), estrela massiva num buffer de disco no 3, e no 4 ela implode com um pico de 3,2× no puxão e vira um horizonte de 22px com poeira. Degradês em cache com `globalAlpha`, e nem o pulso nem o raio da estrela entram na chave do cache. Ociosa custa três comparações. |
 | `Meteors` | `layers/meteors.ts` | 30 | Pool de 3, intervalo 4–13s, rastro por gradiente linear. |
+
+### Deriva, cruz e streak
+
+Três coisas que o campo de estrelas ganhou no `draw`, e **só no `draw`**: nada disso entra em
+`sdx`/`sdy`, porque ali passariam pela mola, pelo puxão e pelo teste de streak.
+
+- **A deriva ambiente** (0,9px de amplitude a 0,16 de velocidade) reaproveita a fase do cintilar
+  (`sph`), então não custa um array novo. Ela some durante o zoom da intro, como o ponteiro e a
+  gravidade: um céu que ainda está chegando não lê como ambiente, lê como tremor. E entra **depois**
+  da transformação da câmera, senão o zoom a multiplicaria por 26.
+- **O brilho em cruz** é das estrelas com raio ≥ 1.1, que é o começo real da faixa grande no
+  `resize`. Com o `R_QUADRADO` (=1) entrariam também as pequenas entre 1.0 e 1.05, e a cruz deixaria
+  de ser a marca das maiores. Cada braço mede 2,4 raios: o maior dá ~9,5px, um terço do espaçamento
+  típico entre estrelas. Mais que isso e a cruz vira ruído.
+- **O streak só existe com gravidade de verdade**, `bus.gravity` ou `bus.well`. O deslocamento
+  grande sozinho não basta: a repulsão do ponteiro empurra na mesma ordem de grandeza, e um traço
+  atrás do cursor não é gravidade, é rastro de mouse. O teste é `dentroDoAlcance`, função pura sobre
+  os dois campos que o quadro já preparou. Ele é uma **fração** (0,2) do deslocamento, com teto de
+  46px: com o deslocamento cru, 60% dos traços encostavam no teto e todos ficavam do mesmo tamanho,
+  que é o oposto do que o traço existe para dizer.
+
+**O desenho é em lote, e isso não é preciosismo.** O alcance do buraco negro é `raio·6.2`, ~625px
+numa tela 1280×720, e o deslocamento de equilíbrio já passa dos 16px em cerca de 60% dele: na seção
+Início cerca de 140 estrelas são candidatas a traço em qualquer quadro. Um `stroke()` por estrela
+seriam centenas de chamadas por quadro, o tempo todo. Como está, o quadro custa no máximo
+**8 `fill()` + 8 `stroke()`**, e esse número não depende de quantas estrelas estão sendo puxadas.
+
+As posições do segundo passe são **recomputadas**, não guardadas: um array a mais por quadro é
+alocação. A conta precisa ser a mesma do primeiro passe (mesma deriva, mesmo zoom, mesmo corte de
+bordas), senão a cruz sai do lugar do ponto.
+
+Para os dois campos preparados chegarem ao `draw`, `temGrav`/`temPoco` viraram estado de escopo da
+camada. `update` roda sempre antes do `draw` no mesmo quadro (ordem do array em `createStage`).
+
+As estrelas acesas da supernova ganham os mesmos dois desenhos, com os mesmos números, porque ficam
+lado a lado com as do campo no mesmo céu. Lá o pool é de 12, então o `stroke()` sai por estrela e
+não em lote. `dentroDoAlcance` está duplicado nas duas camadas com a nota de sempre: **uma camada
+nunca importa outra**, e mexer num número pede mexer no outro.
 
 ### Contrato de desempenho
 
