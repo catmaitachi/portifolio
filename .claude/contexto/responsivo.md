@@ -14,6 +14,7 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | `NavMenu` | `--nav-top --nav-bottom --nav-left --nav-right --nav-tx --nav-ty --nav-dir --nav-align --nav-gap --nav-risco --nav-risco-ativo --nav-risco-w --nav-risco-esc --nav-risco-rot` |
 | `LanguageToggle` | `--lang-left --lang-right --lang-tx` |
 | `Version` | `--ver-bottom --ver-left --ver-right --ver-tx` |
+| `ModeHeader` | `--cab-left --cab-tx --cab-fs` |
 | `NovaGauge` | `--nova-bottom --nova-left --nova-size` |
 | `Notice` | `--aviso-top --aviso-left --aviso-w` |
 | `Credit` | `--credito-vis` |
@@ -28,6 +29,17 @@ alcançava também 360×640 e 375×667, que são celulares comuns em pé: ali o 
 `--pb` caía de 116px para ~70px contra os 100px que o HUD ocupa, e **o conteúdo corria por baixo da
 barra de seções**. As duas faixas descrevem situações diferentes, então não podem se sobrepor.
 
+### O topo e o rodapé são contratos
+
+O HUD ocupa as duas pontas da tela e as seções precisam reservar as duas. Nenhuma seção conhece o
+`NavMenu` nem o `ModeHeader`, então os números moram em `:root` (`reset.css`) e as duas pontas
+derivam deles.
+
+No topo, o `--pt` é `max(--pt-livre, --hud-topo + --hud-topo-respiro)`: as media queries mexem só em
+`--pt-livre`, e o cabeçalho é um **piso**, não um valor somado. Com os números de hoje o piso não
+alcança o respiro de tela larga nem o do mobile, então nada mudou de tamanho quando o cabeçalho
+nasceu; ele só passa a mandar em paisagem curta, que é onde o respiro apertava.
+
 ### O rodapé do mobile é um contrato
 
 Em `≤640px` o HUD ocupa a faixa de baixo: a barra de seções e, abaixo dela, a versão. As seções
@@ -39,6 +51,10 @@ precisam reservar esse espaço, e nenhuma delas conhece o `NavMenu`. O número m
 | `--hud-nav-base` | onde a barra de seções começa, medindo do fundo |
 | `--hud-nav-altura` | rótulo + risco + o respiro vertical da faixa |
 | `--hud-rodape` | a soma: abaixo disso é território do HUD |
+| `--hud-topo-base` | onde o cabeçalho de modo começa, medindo do topo |
+| `--hud-topo-altura` | a linha dos dois modos (a prévia flutua por cima e não reserva nada) |
+| `--hud-topo` | a soma: acima disso é território do HUD |
+| `--hud-topo-respiro` | o que separa o conteúdo do cabeçalho, espelhando o respiro do rodapé |
 
 Ele existe porque os números estavam duplicados em valores soltos (`bottom: 56px` na faixa contra
 `--pb: 116px` nas seções), e foi assim que saíram de sincronia sem ninguém notar.

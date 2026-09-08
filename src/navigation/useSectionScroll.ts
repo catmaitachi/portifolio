@@ -1,12 +1,19 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { SECOES } from '~/content';
 import { editandoTexto } from '~/hooks/useArrowKeys';
 
 export interface SectionScroll {
   ref: React.RefObject<HTMLDivElement | null>;
-  /** índice da seção ativa, dentro de `SECOES` */
+  /** índice da seção ativa, dentro da lista do modo em vigor */
   indice: number;
-  irPara: (i: number) => void;
+  /**
+   * Vai para a seção `i`.
+   *
+   * `suave: false` posiciona **sem animação**, e existe para os dois casos em que
+   * a animação seria mentira: abrir um endereço já apontando para uma seção (a
+   * página desfilaria por tudo na frente de quem chegou) e trocar de modo, onde a
+   * lista de seções mudou embaixo e não há trajeto a mostrar.
+   */
+  irPara: (i: number, suave?: boolean) => void;
   /** posiciona a página **entre** seções, para um gesto que a arrasta continuamente */
   seguirFracao: (f: number) => void;
   /** encerra esse gesto, assentando a página na seção `i` */
@@ -40,25 +47,43 @@ const ASSENTAR = 480;
  * O teclado é global (↑/↓, PageUp/Down, Home/End) para funcionar sem que o
  * visitante precise clicar em nada primeiro, mas sai do caminho quando o foco
  * está num campo de texto.
+ *
+ * **O total vem por parâmetro, não de `SECOES`.** Cada modo tem a sua lista, e
+ * quem a conhece é o `App`; o hook só precisa saber quantas seções existem para
+ * limitar o alcance. Ele o lê por ref, então trocar de modo não recria `irPara`
+ * nem faz o listener de teclado ser registrado de novo.
  */
-export function useSectionScroll(): SectionScroll {
+export function useSectionScroll(total: number): SectionScroll {
   const ref = useRef<HTMLDivElement>(null);
   const [indice, setIndice] = useState(0);
   const rafRef = useRef(0);
   // o handler global lê o índice sem entrar nas dependências do efeito, o que
   // manteria o listener sendo trocado a cada seção
   const indiceRef = useRef(indice);
+  const totalRef = useRef(total);
 
   // escrita num efeito, nunca no corpo: o render precisa ser puro e o React pode
   // descartá-lo (ver a nota longa em `NavMenu`)
   useLayoutEffect(() => {
     indiceRef.current = indice;
+    totalRef.current = total;
   });
   /** seção para onde uma rolagem programática está indo; `null` fora dela */
   const alvoRef = useRef<number | null>(null);
   const desistirRef = useRef(0);
   /** devolve o `scroll-snap` depois que o assentamento do gesto chega */
   const snapRef = useRef(0);
+  /**
+   * Alvo que ainda não pôde ser aplicado por falta de altura.
+   *
+   * A posição de uma seção é `índice × clientHeight`, e num contêiner de altura
+   * zero isso dá zero para qualquer índice: abrir um endereço apontando para a
+   * última seção deixaria o React nela e a rolagem no topo, mostrando uma seção
+   * inativa, isto é, vazia. Acontece quando a página é montada antes de a
+   * viewport ter tamanho. Guardar o alvo e aplicá-lo quando a altura chega custa
+   * um listener e resolve o caso inteiro.
+   */
+  const pendenteRef = useRef<number | null>(null);
 
   const limparAlvo = useCallback(() => {
     alvoRef.current = null;
@@ -66,18 +91,37 @@ export function useSectionScroll(): SectionScroll {
   }, []);
 
   const irPara = useCallback(
-    (i: number) => {
+    (i: number, suave = true) => {
       const el = ref.current;
-      const n = SECOES.length || 1;
+      const n = totalRef.current || 1;
       const alvo = Math.max(0, Math.min(n - 1, i));
+      setIndice(alvo);
+      if (!el?.clientHeight) {
+        pendenteRef.current = alvo;
+        return;
+      }
+      pendenteRef.current = null;
       alvoRef.current = alvo;
       clearTimeout(desistirRef.current);
       desistirRef.current = window.setTimeout(limparAlvo, DESISTIR);
-      el?.scrollTo({ top: alvo * el.clientHeight, behavior: 'smooth' });
-      setIndice(alvo);
+      el.scrollTo({ top: alvo * el.clientHeight, behavior: suave ? 'smooth' : 'auto' });
     },
     [limparAlvo],
   );
+
+  // a altura chegou: o alvo guardado vira posição, e sem animação — a viagem que
+  // ele descrevia já passou
+  useEffect(() => {
+    const aplicar = () => {
+      const el = ref.current;
+      const alvo = pendenteRef.current;
+      if (alvo === null || !el?.clientHeight) return;
+      pendenteRef.current = null;
+      el.scrollTo({ top: alvo * el.clientHeight, behavior: 'auto' });
+    };
+    window.addEventListener('resize', aplicar);
+    return () => window.removeEventListener('resize', aplicar);
+  }, []);
 
   /**
    * A página acompanha um gesto que corre **entre** seções.
@@ -100,7 +144,7 @@ export function useSectionScroll(): SectionScroll {
       // um gesto novo cancela a devolução do snap do gesto anterior
       clearTimeout(snapRef.current);
       el.style.scrollSnapType = 'none';
-      const n = SECOES.length || 1;
+      const n = totalRef.current || 1;
       el.scrollTop = Math.max(0, Math.min(n - 1, f)) * el.clientHeight;
     },
     [limparAlvo],
@@ -124,7 +168,7 @@ export function useSectionScroll(): SectionScroll {
   const soltarFracao = useCallback((i: number) => {
     const el = ref.current;
     if (!el || !el.clientHeight) return;
-    const n = SECOES.length || 1;
+    const n = totalRef.current || 1;
     const alvo = Math.max(0, Math.min(n - 1, i));
     el.scrollTo({ top: alvo * el.clientHeight, behavior: 'smooth' });
     clearTimeout(snapRef.current);
@@ -190,7 +234,7 @@ export function useSectionScroll(): SectionScroll {
           break;
         case 'End':
           e.preventDefault();
-          irPara(SECOES.length - 1);
+          irPara(totalRef.current - 1);
           break;
       }
     };

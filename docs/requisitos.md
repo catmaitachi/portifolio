@@ -2,7 +2,13 @@
 
 ## Requisitos Funcionais (RF)
 
-**RF01** — O sistema deve exibir 5 seções navegáveis por scroll vertical com snap: Início, Sobre, Projetos, Trajetória e Contato.
+**RF01** — O sistema deve exibir dois modos, Pessoal e Profissional, cada um com a própria lista de seções navegáveis por scroll vertical com snap. O modo profissional traz Início, Sobre, Projetos, Trajetória e Contato; o pessoal traz Início, Sobre e Contato.
+
+**RF01a** — O sistema deve permitir alternar entre os modos por um cabeçalho no topo, que ao receber o ponteiro exibe as seções do modo apontado e anima a transição entre as duas listas.
+
+**RF01b** — O sistema deve refletir o modo e a seção no endereço (`#modo/secao`), de forma que o link possa ser compartilhado, a página recarregada no mesmo ponto e o botão voltar desfaça a troca de modo.
+
+**RF01c** — A seção Contato deve exibir os canais do modo em vigor.
 
 **RF02** — O sistema deve permitir navegação entre seções via menu lateral, clique e teclado (↑/↓, PageUp/Down, Home/End), e no mobile também pela rolagem da faixa de seções, que deve mover a página e o destaque de forma contínua durante o gesto.
 

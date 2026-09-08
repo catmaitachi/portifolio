@@ -3,6 +3,7 @@ import { useArrowKeys } from '~/hooks/useArrowKeys';
 import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
+import type { SectionProps } from '../types';
 import { ProjectCard } from './ProjectCard';
 import styles from './ProjectsSection.module.css';
 import { useOrbit } from './useOrbit';
@@ -14,7 +15,7 @@ import { useOrbit } from './useOrbit';
  * está ativa), arraste horizontal ou os traços-índice abaixo. Clique no cartão
  * da frente abre a descrição sobre ele — exceto numa vaga, que gira mas não abre.
  */
-export function ProjectsSection({ ativo }: { ativo: boolean }) {
+export function ProjectsSection({ ativo, indice }: SectionProps) {
   const t = useT();
   const secaoRef = useRef<HTMLElement>(null);
   // o conteúdo encolhe até caber na altura que a tela tem
@@ -57,7 +58,7 @@ export function ProjectsSection({ ativo }: { ativo: boolean }) {
     >
       <div className={`${comum.bloco} ${styles.bloco}`} data-ativo={ativo || undefined}>
         <p className={comum.indice}>
-          <span>{t.projetos.indice}</span>
+          <span>{indice}</span>
           <span className={comum.indiceRisco} aria-hidden="true" />
         </p>
 

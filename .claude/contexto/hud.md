@@ -12,9 +12,47 @@ Cronograma da abertura:
 3. `2.9s` mira (4 ticks cardinais) surge com `miraIn` e passa a pulsar em cascata
 
 Depois, na página: etiqueta 3.5s → nome 3.75s (`tituloIn`: borrão + `letter-spacing` fechando) →
-legenda 4.5s → menu 4.9s → crédito 5.2s → seletor de idioma 5.4s → versão 5.6s.
+legenda 4.5s → menu 4.9s → cabeçalho de modo 5.0s → crédito 5.2s → seletor de idioma 5.4s →
+versão 5.6s.
+
+O cabeçalho chega **junto do menu** porque os dois são navegação: um decide o lado do site, o outro a
+seção dentro dele. Terminada a cascata, aos 6,2s, o brilho do nome começa a passar (ver
+`HeroSection`).
 
 Tudo em `transform` e `clip-path` = compositor da GPU, zero custo de CPU.
+
+### Cabeçalho de modo
+
+`ModeHeader` fica no **centro do topo**, o único canto que o HUD tinha deixado vago. Dois nomes,
+Pessoal e Profissional, e uma prévia que abre ao passar o ponteiro. Quem manda no que ele faz está em
+`navegacao.md`; aqui ficam as decisões de HUD.
+
+**O topo ganhou um contrato, como o rodapé já tinha.** `--hud-topo-base`, `--hud-topo-altura` e
+`--hud-topo` moram em `:root` (`reset.css`), e o `--pt` das seções é `max(--pt-livre, --hud-topo +
+respiro)`. As media queries redefinem só `--pt-livre`: quem mexer na altura do cabeçalho mexe em um
+número só, e as seções acompanham. Foi exatamente esse número solto em dois lugares que deixou o
+conteúdo correr por baixo da barra do rodapé uma vez.
+
+**As duas prévias ficam montadas**, empilhadas numa célula de grade só. É isso que permite animar a
+troca: uma lista que só existisse enquanto o seu modo estivesse apontado não teria de onde sair. A
+célula tem a largura da lista mais longa, então nada salta na troca, e a mais curta se centra nela.
+
+**O lado de onde cada uma entra sai da posição em `MODOS`**, por `--lado`: a mostrada fica em zero e
+as outras se deslocam pela diferença de índice. Ninguém escreve "direita" em lugar nenhum, e um
+terceiro modo não pediria conta nova.
+
+**Sem ponteiro não há prévia** (`@media (hover: none)`): num aparelho de toque, tocar o nome do modo
+é a troca inteira, e um painel que abrisse no toque ficaria aberto cobrindo o topo da seção até o
+toque seguinte. A prévia fechada também sai da tabulação, pela regra de sempre.
+
+**O painel é `position: absolute`** para que a caixa do `<nav>` continue sendo só a linha dos nomes.
+O cabeçalho não é o canvas nem uma `<section>`, então pressioná-lo não acende supernova — e uma zona
+morta do tamanho do painel, no meio do topo, seria zona morta o tempo todo, não só no hover.
+
+**No mobile ele encosta na esquerda.** "Pessoal | Profissional" mede 218px numa tela de 375, e o
+seletor de idioma ocupa os 68px da direita: centrado, um passava por cima do outro. Por isso o
+seletor **deixou de ir para o centro no mobile** e ficou onde já estava, à direita: entre duas letras
+e a navegação que decide o lado do site, quem cede o centro é o seletor.
 
 ### Versão
 

@@ -3,6 +3,7 @@ import { useArrowKeys } from '~/hooks/useArrowKeys';
 import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
+import type { SectionProps } from '../types';
 import { JourneyEntry } from './JourneyEntry';
 import styles from './JourneySection.module.css';
 import { TimelineCurve } from './TimelineCurve';
@@ -18,7 +19,7 @@ import { useTimeline } from './useTimeline';
  * enquanto a seção estiver ativa — pedir um clique antes de navegar é atrito
  * desnecessário numa seção que só tem uma coisa a navegar.
  */
-export function JourneySection({ ativo }: { ativo: boolean }) {
+export function JourneySection({ ativo, indice }: SectionProps) {
   const t = useT();
   const secaoRef = useRef<HTMLElement>(null);
   // o conteúdo encolhe até caber na altura que a tela tem
@@ -36,7 +37,7 @@ export function JourneySection({ ativo }: { ativo: boolean }) {
     >
       <div className={`${comum.bloco} ${styles.bloco}`} data-ativo={ativo || undefined}>
         <p className={comum.indice}>
-          <span>{t.experiencia.indice}</span>
+          <span>{indice}</span>
           <span className={comum.indiceRisco} aria-hidden="true" />
         </p>
 

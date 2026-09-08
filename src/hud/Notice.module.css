@@ -141,8 +141,8 @@
 }
 
 /**
- * Mobile: o seletor de idioma deixa o canto direito e vai para o centro do topo,
- * então o aviso desce para não passar por baixo dele.
+ * Mobile: o painel tem quase a largura da tela e o cabeçalho de modo ocupa o
+ * centro do topo, então o aviso desce para não passar por baixo dele.
  */
 @media (width <= 640px) {
   .aviso {

@@ -3,6 +3,7 @@ import { useDecipher } from '~/hooks/useDecipher';
 import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
+import type { SectionProps } from '../types';
 import styles from './AboutSection.module.css';
 import { EducationCarousel } from './EducationCarousel';
 import { PortraitCard } from './PortraitCard';
@@ -23,7 +24,7 @@ import { PortraitCard } from './PortraitCard';
  * (`useDecipher`). O hook escreve direto no DOM, então trocar de idioma ou
  * rolar não paga render nenhum por isso.
  */
-export function AboutSection({ ativo }: { ativo: boolean }) {
+export function AboutSection({ ativo, indice }: SectionProps) {
   const t = useT();
   const secaoRef = useRef<HTMLElement>(null);
   // o conteúdo encolhe até caber na altura que a tela tem
@@ -39,7 +40,7 @@ export function AboutSection({ ativo }: { ativo: boolean }) {
     >
       <div className={`${comum.bloco} ${styles.bloco}`} data-ativo={ativo || undefined}>
         <p className={comum.indice}>
-          <span>{t.sobre.indice}</span>
+          <span>{indice}</span>
           <span className={comum.indiceRisco} aria-hidden="true" />
         </p>
 

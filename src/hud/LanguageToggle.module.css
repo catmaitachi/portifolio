@@ -48,11 +48,16 @@
   color: rgb(255 255 255 / 20%);
 }
 
-/* mobile: centrado, para não brigar com o polegar na borda */
+/**
+ * No mobile ele fica onde já está: à direita.
+ *
+ * Ele ia para o centro enquanto o centro do topo estava vago. Com o cabeçalho de
+ * modo ali, os dois se sobreporiam, e entre um seletor de duas letras e a
+ * navegação que decide o lado do site, quem cede o centro é o seletor. O recuo
+ * cai para a borda de 20px, que é o mesmo do resto do HUD no mobile.
+ */
 @media (width <= 640px) {
   .botao {
-    --lang-left: 50%;
-    --lang-right: auto;
-    --lang-tx: -50%;
+    --lang-right: 20px;
   }
 }

@@ -14,6 +14,16 @@ export type Lang = 'pt' | 'en';
 
 export type SectionKey = 'inicio' | 'sobre' | 'projetos' | 'experiencia' | 'contato';
 
+/**
+ * Os dois lados do site.
+ *
+ * Cada modo traz as seções que tem e os canais de contato que mostra (ver
+ * `modos` em `shared.json`). O Início é comum aos dois e só troca de texto:
+ * `modos.<key>` no dicionário carrega a etiqueta e a legenda dele, e o nome
+ * continuando em `hero`, porque o nome não muda de lado nenhum.
+ */
+export type ModoKey = 'pessoal' | 'profissional';
+
 export type EstadoFormacao = 'concluido' | 'cursando' | 'pretensao';
 export type EstadoProjeto = 'ativo' | 'arquivado' | 'definir';
 
@@ -81,15 +91,19 @@ export interface Experiencia {
 
 export interface Dictionary {
   nav: Record<SectionKey, string>;
-  hero: { etiqueta: string; nome: string; legenda: string };
-  sobre: { indice: string; titulo: string; paragrafos: string[] };
+  /**
+   * Rótulo de cada modo no cabeçalho, mais a etiqueta e a legenda que ele dá ao
+   * Início. `Record` total: um modo novo quebra o build nos dois dicionários.
+   */
+  modos: Record<ModoKey, { rotulo: string; etiqueta: string; legenda: string }>;
+  hero: { nome: string };
+  sobre: { titulo: string; paragrafos: string[] };
   formacoes: {
     titulo: string;
     estados: Record<EstadoFormacao, string>;
     lista: Formacao[];
   };
   projetos: {
-    indice: string;
     titulo: string;
     intro: string;
     banner: string;
@@ -98,7 +112,6 @@ export interface Dictionary {
     lista: Projeto[];
   };
   experiencia: {
-    indice: string;
     titulo: string;
     intro: string;
     tipos: Record<string, string>;
@@ -106,7 +119,6 @@ export interface Dictionary {
     lista: Experiencia[];
   };
   contato: {
-    indice: string;
     titulo: string;
     intro: string;
     email: string;
@@ -137,6 +149,7 @@ export interface Dictionary {
   };
   a11y: {
     secoes: string;
+    modos: string;
     idioma: string;
     projetos: string;
     experiencia: string;
@@ -159,8 +172,24 @@ export interface Secao {
   key: SectionKey;
 }
 
+/**
+ * Um modo: as seções que ele tem, na ordem em que rolam, e os canais que a
+ * seção Contato mostra nele.
+ *
+ * `secoes` é a ordem de rolagem **em vigor**, e `Shared.secoes` passa a ser só a
+ * ordem canônica, contra a qual estas listas são conferidas por `check:i18n`.
+ * Os canais são chaves de `canais`, não os objetos: o cartão de um canal é o
+ * mesmo dos dois lados, muda só quem aparece.
+ */
+export interface Modo {
+  key: ModoKey;
+  secoes: SectionKey[];
+  canais: string[];
+}
+
 export interface Shared {
   secoes: Secao[];
+  modos: Modo[];
   canais: Canal[];
   logos: Record<string, { escala: number }>;
 }

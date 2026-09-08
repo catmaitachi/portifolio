@@ -1,8 +1,9 @@
-import { useRef } from 'react';
-import { CANAIS } from '~/content';
+import { useMemo, useRef } from 'react';
+import { canaisDoModo } from '~/content';
 import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
+import type { SectionProps } from '../types';
 import { ChannelCard } from './ChannelCard';
 import styles from './ContactSection.module.css';
 import { useMailto } from './useMailto';
@@ -16,8 +17,17 @@ import { useMailto } from './useMailto';
  * O `<form>` com `onSubmit` é deliberado: dá o Enter de graça em qualquer campo,
  * que é como se envia um formulário de uma linha.
  */
-export function ContactSection({ ativo }: { ativo: boolean }) {
+export function ContactSection({ ativo, indice, modo }: SectionProps) {
   const t = useT();
+  /**
+   * Os canais são os do modo: Instagram e TikTok no pessoal, GitHub e LinkedIn no
+   * profissional. O cartão é o mesmo dos dois lados, muda só quem aparece.
+   *
+   * O `useMemo` não é por custo — a lista tem dois itens — e sim por identidade:
+   * `canaisDoModo` monta um array novo a cada chamada, e uma lista nova por render
+   * faria os cartões perderem a chance de ser comparados.
+   */
+  const canais = useMemo(() => canaisDoModo(modo), [modo]);
   const secaoRef = useRef<HTMLElement>(null);
   // o conteúdo encolhe até caber na altura que a tela tem
   useEscalaQueCabe(secaoRef);
@@ -31,7 +41,7 @@ export function ContactSection({ ativo }: { ativo: boolean }) {
     >
       <div className={`${comum.bloco} ${styles.bloco}`} data-ativo={ativo || undefined}>
         <p className={comum.indice}>
-          <span>{t.contato.indice}</span>
+          <span>{indice}</span>
           <span className={comum.indiceRisco} aria-hidden="true" />
         </p>
 
@@ -93,14 +103,8 @@ export function ContactSection({ ativo }: { ativo: boolean }) {
         <div className={styles.canais}>
           <span className={styles.ou}>{t.contato.ou}</span>
           <div className={styles.grade} role="group" aria-label={t.a11y.canais}>
-            {CANAIS.map((c, i) => (
-              <ChannelCard
-                key={c.key}
-                canal={c}
-                entrando={ativo}
-                indice={i}
-                total={CANAIS.length}
-              />
+            {canais.map((c, i) => (
+              <ChannelCard key={c.key} canal={c} entrando={ativo} indice={i} total={canais.length} />
             ))}
           </div>
         </div>

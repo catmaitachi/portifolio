@@ -24,8 +24,20 @@ Quem avalia o candidato para uma vaga ou um estágio.
 
 Quem chegou pelo link, sem objetivo definido.
 
-**HU07.** Como visitante curioso, quero rolar pelas cinco seções e ver a cena de fundo responder à navegação, para conhecer a pessoa por trás do portfólio sem procurar nada específico.
+**HU07.** Como visitante curioso, quero rolar pelas seções do lado em que estou e ver a cena de fundo responder à navegação, para conhecer a pessoa por trás do portfólio sem procurar nada específico.
 
 **HU08.** Como visitante que já leu o que interessava, quero descobrir que clicar no vazio acende uma estrela, e receber a dica caso eu não descubra sozinho, para ter o que fazer na página depois da leitura.
 
 **HU09.** Como visitante que navega pelo teclado ou que se incomoda com movimento na tela, quero percorrer todas as seções sem mouse e ter as animações reduzidas quando meu sistema pede isso, para usar o portfólio inteiro.
+
+## Quem veio pela pessoa, não pelo profissional
+
+Um amigo, alguém de outra rede, ou quem recebeu o link pessoal.
+
+**HU10.** Como quem chegou por curiosidade sobre a pessoa, quero alternar para o lado pessoal pelo cabeçalho e ver o que tem lá antes de trocar, para não precisar navegar às cegas para descobrir.
+
+**HU11.** Como quem quer mandar o lado pessoal para um amigo, quero copiar o endereço e que ele abra exatamente onde eu estava, para o link valer o que eu quis dizer com ele.
+
+**HU12.** Como quem alterna entre os dois lados, quero continuar na mesma seção quando ela existe do outro lado, e que o botão voltar desfaça a troca, para não perder o lugar da leitura.
+
+**HU13.** Como quem veio pelo lado pessoal, quero encontrar os canais que fazem sentido ali (Instagram, TikTok) em vez dos profissionais, para seguir a pessoa onde ela realmente publica isso.

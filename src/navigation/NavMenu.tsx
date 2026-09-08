@@ -1,9 +1,18 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
-import { SECOES } from '~/content';
+import type { SectionKey } from '~/content';
 import { useT } from '~/i18n/useLanguage';
 import styles from './NavMenu.module.css';
 
 interface NavMenuProps {
+  /**
+   * As seções do modo em vigor, na ordem em que rolam.
+   *
+   * Vem por prop, e não de `SECOES`, porque cada modo tem a sua lista e quem a
+   * conhece é o `App`. A medição da faixa continua saindo do DOM
+   * (`nav.children[i]`), então uma lista mais curta ou mais longa não pede nada
+   * aqui: os encaixes se refazem com o layout.
+   */
+  secoes: SectionKey[];
   indice: number;
   irPara: (i: number) => void;
   seguirFracao: (f: number) => void;
@@ -85,7 +94,7 @@ const fracaoDe = (nav: HTMLElement): number => {
  * cresce em escala e não em largura (ver `NavMenu.module.css`). Animar largura
  * ali de novo traz o desalinhamento de volta.
  */
-export function NavMenu({ indice, irPara, seguirFracao, soltarFracao }: NavMenuProps) {
+export function NavMenu({ secoes, indice, irPara, seguirFracao, soltarFracao }: NavMenuProps) {
   const t = useT();
   const navRef = useRef<HTMLElement>(null);
   // o listener de scroll é registrado uma vez; o índice corrente chega por ref
@@ -222,18 +231,18 @@ export function NavMenu({ indice, irPara, seguirFracao, soltarFracao }: NavMenuP
 
   return (
     <nav ref={navRef} className={styles.nav} aria-label={t.a11y.secoes}>
-      {SECOES.map((s, i) => {
+      {secoes.map((key, i) => {
         const ativo = i === indice;
         return (
           <button
-            key={s.key}
+            key={key}
             type="button"
             className={styles.item}
             data-ativo={ativo || undefined}
             aria-current={ativo ? 'true' : undefined}
             onClick={() => irPara(i)}
           >
-            <span className={styles.rotulo}>{t.nav[s.key]}</span>
+            <span className={styles.rotulo}>{t.nav[key]}</span>
             <span className={styles.risco} aria-hidden="true" />
           </button>
         );

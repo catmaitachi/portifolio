@@ -28,8 +28,29 @@ componente.
 | Arquivo | O que guarda |
 |---|---|
 | `pt.json` / `en.json` | Todo o texto, nos dois idiomas. Mesmas chaves, mesmas listas, mesma ordem. |
-| `shared.json` | O que não muda entre idiomas: ordem das seções, canais de contato, escala óptica dos logos. |
+| `shared.json` | O que não muda entre idiomas: ordem canônica das seções, **os dois modos**, canais de contato, escala óptica dos logos. |
 | `assets.ts` | Registro de imagens. JSON não importa arquivo, e o Vite precisa do `import` para versionar o asset. |
+
+### Os dois modos
+
+`shared.json → modos` guarda, para cada lado do site, as seções que ele tem e os canais de contato
+que ele mostra:
+
+```json
+{ "key": "pessoal", "secoes": ["inicio", "sobre", "contato"], "canais": ["instagram", "tiktok"] }
+```
+
+- `secoes` é a **ordem de rolagem** daquele lado, e cada chave precisa existir em `secoes` (a lista
+  canônica). O TypeScript pega isso, porque é `SectionKey`;
+- `canais` são chaves de `canais`, e o TypeScript **não** pega, porque chave de canal é `string`. Um
+  erro de digitação ali faria o canal simplesmente não aparecer daquele lado, sem erro de build e sem
+  nada no console. Quem pega é o `npm run check:i18n`;
+- os textos de cada modo (o rótulo no cabeçalho, e a etiqueta e a legenda que ele dá ao Início) ficam
+  em `modos` nos dois dicionários. É `Record` total: um modo novo quebra o build até os dois terem
+  o texto.
+
+**O número da seção não está no dicionário.** Ele é a posição na ordem do modo em vigor, entregue por
+prop. Escrito como texto, um lado com menos seções leria 02, 05, 03.
 
 ### Adicionar um projeto
 
@@ -128,7 +149,9 @@ paga um `<picture>` e um segundo arquivo para manter em sincronia.
 
 ### Adicionar uma seção
 
-1. entrada em `shared.json → secoes` (a ordem ali **é** a ordem de rolagem);
+1. entrada em `shared.json → secoes` (a ordem canônica) **e** na lista `secoes` de cada modo que
+   deve tê-la, que é o que decide onde ela rola;
 2. a chave em `nav`, nos dois dicionários, e em `SectionKey` (`content/types.ts`);
-3. um componente em `src/sections/`, montado no `App`;
+3. um componente em `src/sections/` recebendo `SectionProps`, e uma linha em `MONTAR` (`App.tsx`),
+   que é o único lugar que liga chave a componente;
 4. opcionalmente, um céu em `scene/scenePlan.ts`.

@@ -1,5 +1,12 @@
 ## Pendências
 
+- **O lado pessoal ainda é só Início, Sobre e Contato.** As seções de Música (Spotify), Jogos (Steam)
+  e Filmes (Letterboxd) dependem de um back-end para guardar os segredos, porque nenhuma das quatro
+  APIs pode ser chamada do navegador. O plano é Vercel, com uma função por provedor em `/api`.
+- **O LoL ficou de fora, e não por falta de tentativa.** Não existe API de terceiro legítima para
+  histórico de partidas: todo rastreador usa a chave própria dele na API da Riot, e a chave pessoal
+  expira a cada 24 horas.
+
 - **Descrição do ClinPlay** é rascunho — o próprio texto avisa (`projetos.lista[0].descricao`, nos
   dois dicionários). Substituir pelo que o projeto realmente faz.
 - **Dois projetos são vagas** (`vaga-02`, `vaga-03`, estado `definir`): giram na órbita e não abrem

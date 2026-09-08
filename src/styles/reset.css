@@ -26,6 +26,15 @@
   --hud-nav-altura: 44px;
   /* topo do rodapé: abaixo disso é território do HUD */
   --hud-rodape: calc(var(--hud-nav-base) + var(--hud-nav-altura));
+
+  /* onde o cabeçalho de modo começa, medindo do topo (o mesmo recuo do idioma) */
+  --hud-topo-base: max(2.4vh, 20px);
+  /* a linha dos dois modos; a prévia do hover flutua por cima e não reserva nada */
+  --hud-topo-altura: 22px;
+  /* base do cabeçalho: acima disso é território do HUD */
+  --hud-topo: calc(var(--hud-topo-base) + var(--hud-topo-altura));
+  /* o que separa o conteúdo do cabeçalho, espelhando o respiro do rodapé */
+  --hud-topo-respiro: clamp(10px, 2svh, 18px);
 }
 
 *,

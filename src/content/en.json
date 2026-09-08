@@ -7,14 +7,24 @@
     "contato": "Contact"
   },
 
+  "modos": {
+    "pessoal": {
+      "rotulo": "Personal",
+      "etiqueta": "Personal",
+      "legenda": "Music, games and films"
+    },
+    "profissional": {
+      "rotulo": "Professional",
+      "etiqueta": "Portfolio",
+      "legenda": "Software Developer"
+    }
+  },
+
   "hero": {
-    "etiqueta": "Portfolio",
-    "nome": "Lucas Spiazzi",
-    "legenda": "Software Developer"
+    "nome": "Lucas Spiazzi"
   },
 
   "sobre": {
-    "indice": "01",
     "titulo": "About Me",
     "paragrafos": [
       "I'm a software designer in the age of AI. While generative models speed up coding, my role lies in what comes before it: envisioning, structuring, and planning solid systems, guided by Software Engineering best practices.",
@@ -58,7 +68,6 @@
   },
 
   "projetos": {
-    "indice": "02",
     "titulo": "Projects",
     "intro": "My highlights, the projects I like most.",
     "banner": "...",
@@ -107,7 +116,6 @@
   },
 
   "experiencia": {
-    "indice": "03",
     "titulo": "Journey",
     "intro": "My professional story, year by year.",
     "tipos": {
@@ -216,7 +224,6 @@
   },
 
   "contato": {
-    "indice": "04",
     "titulo": "Let us talk",
     "intro": "Open to opportunities and collaborations.",
     "email": "lukasspiazzi@outlook.com",
@@ -245,7 +252,8 @@
   },
 
   "a11y": {
-    "secoes": "Portfolio sections",
+    "secoes": "Sections",
+    "modos": "Switch between the personal site and the professional portfolio",
     "idioma": "Switch language between Portuguese and English",
     "projetos": "Projects — open a card to read the description",
     "experiencia": "Journey — use the arrow keys to move through the years",

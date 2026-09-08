@@ -18,6 +18,7 @@ const ler = (nome) => JSON.parse(readFileSync(new URL(nome, raiz), 'utf8'));
 
 const pt = ler('pt.json');
 const en = ler('en.json');
+const shared = ler('shared.json');
 
 const problemas = [];
 
@@ -86,6 +87,37 @@ function marcadores(s) {
 for (const chave of ['assunto', 'assinatura']) {
   if (marcadores(pt.contato[chave]) !== marcadores(en.contato[chave])) {
     problemas.push(`contato.${chave}: marcadores {} diferentes entre os idiomas`);
+  }
+}
+
+/**
+ * Os modos referenciam seções e canais por chave, e chave é `string` no JSON.
+ *
+ * O TypeScript pega `secoes` (é `SectionKey[]`) mas não pega `canais`, que é
+ * `string[]` porque a chave de canal não é união fechada. Um erro de digitação
+ * ali não quebra nada: o canal simplesmente **não aparece** naquele lado do site,
+ * sem erro de build e sem nada no console. É o mesmo tipo de defeito silencioso
+ * que este script existe para pegar.
+ */
+const secoesConhecidas = new Set(shared.secoes.map((s) => s.key));
+const canaisConhecidos = new Set(shared.canais.map((c) => c.key));
+for (const k of Object.keys(pt.modos ?? {})) {
+  if (!shared.modos.some((m) => m.key === k)) {
+    problemas.push(`pt.json modos.${k}: modo que não está em shared.json`);
+  }
+}
+for (const modo of shared.modos ?? []) {
+  if (!modo.secoes?.length) problemas.push(`modos.${modo.key}: sem seção nenhuma`);
+  if (!pt.modos?.[modo.key]) problemas.push(`modos.${modo.key}: sem textos nos dicionários`);
+  for (const k of modo.secoes ?? []) {
+    if (!secoesConhecidas.has(k)) {
+      problemas.push(`modos.${modo.key}.secoes: "${k}" não está em secoes`);
+    }
+  }
+  for (const k of modo.canais ?? []) {
+    if (!canaisConhecidos.has(k)) {
+      problemas.push(`modos.${modo.key}.canais: "${k}" não está em canais`);
+    }
   }
 }
 

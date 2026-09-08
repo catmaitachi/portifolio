@@ -7,10 +7,18 @@
  *
  * Responsivo por tokens: os valores base moram nas declarações abaixo e cada
  * media query só os redefine.
+ *
+ * **O topo tem um contrato, como o rodapé.** `--pt-livre` é o respiro que a
+ * altura da tela permite, e `--pt` é ele **ou** o que o cabeçalho de modo exige,
+ * o que for maior. As media queries redefinem só `--pt-livre`: quem mexer na
+ * altura do cabeçalho mexe em `--hud-topo-altura` (`reset.css`) e as seções
+ * acompanham sozinhas. Foi exatamente esse número solto em dois lugares que
+ * deixou o conteúdo correr por baixo da barra do rodapé uma vez.
  */
 
 .secao {
-  --pt: clamp(56px, 9vh, 96px);
+  --pt-livre: clamp(56px, 9vh, 96px);
+  --pt: max(var(--pt-livre), calc(var(--hud-topo) + var(--hud-topo-respiro)));
   --pb: clamp(84px, 13vh, 120px);
   --px: max(150px, 5vw);
   --gap: clamp(16px, 2.4vmin, 28px);
@@ -199,7 +207,7 @@
   .secao {
     --esc-max: 0.9;
 
-    --pt: clamp(52px, 9svh, 78px);
+    --pt-livre: clamp(52px, 9svh, 78px);
     /* o rodapé é do HUD; o respiro é só o que separa o conteúdo dele */
     --pb: calc(var(--hud-rodape) + clamp(10px, 2svh, 18px));
     --px: 20px;
@@ -220,7 +228,7 @@
  */
 @media (width > 640px) and (height <= 720px) {
   .secao {
-    --pt: clamp(44px, 7vh, 72px);
+    --pt-livre: clamp(44px, 7vh, 72px);
     --pb: clamp(70px, 11vh, 96px);
   }
 }

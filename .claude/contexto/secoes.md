@@ -192,6 +192,9 @@ Composição aberta de 840px. Sem moldura: índice + título, intro, o **e-mail 
 - É um `<form>` com `onSubmit` de propósito: dá o Enter de graça em qualquer campo.
 - O status vai num `aria-live` e **reserva altura mesmo vazio**, senão a mensagem de erro empurraria
   os cartões ao aparecer.
+- **Os canais são os do modo**: Instagram e TikTok no pessoal, GitHub e LinkedIn no profissional. O
+  cartão é o mesmo dos dois lados, muda só quem aparece, e a ordem é a que o modo lista, porque é
+  dela que sai a distância ao centro da grade que escalona a entrada.
 - Canal sem `url` é espaço reservado: tracejado, apagado e fora da navegação. A `url` passa pelo
   mesmo `urlExterna()` dos projetos — é o ponto único em que endereço de dicionário vira `href`.
 - Ícones em `src/assets/icons/` — **glifos brancos locais, nunca CDN**: um ícone que não carrega
