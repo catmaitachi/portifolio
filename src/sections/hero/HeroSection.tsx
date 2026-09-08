@@ -8,6 +8,11 @@ import styles from './HeroSection.module.css';
  * câmera (1.5s): etiqueta 3.5s → nome 3.75s → legenda 4.5s. O nome usa
  * `tituloIn`, em que o `letter-spacing` fecha enquanto o borrão sai — a palavra
  * se materializa em vez de simplesmente aparecer.
+ *
+ * Terminada a abertura do HUD, aos 6,2s, uma faixa clara passa pelo nome de tempos
+ * em tempos (`brilhoNome` no módulo). É CSS puro, sem componente e sem dependência:
+ * o efeito é um degradê recortado no texto, e mover o `background-position` é
+ * trabalho do compositor.
  */
 export function HeroSection() {
   const t = useT();

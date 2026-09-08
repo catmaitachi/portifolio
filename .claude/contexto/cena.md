@@ -40,8 +40,8 @@ inferior esquerdo: o anel se fecha enquanto a espera corre e some quando a funci
 |---|---|---|
 | 1 | o toque | o poço: escurecimento radial, um anel de alcance que cresce e um de compressão que encolhe |
 | 2 | 3,0s | plasma, o mesmo campo de senos do buraco negro, crescendo dos 3s aos 7s |
-| 3 | 7,0s | uma estrela massiva, que cresce de 12px a 46px com o plasma virando coroa em volta |
-| 4 | 10,0s | a estrela implode e o horizonte de eventos nasce do colapso |
+| 3 | 7,0s | uma estrela **supermassiva**, que cresce até 220px de diâmetro com o plasma virando coroa |
+| 4 | 10,0s | ela **colapsa** num núcleo crítico de ~22px, que fica tremendo até você soltar |
 
 Cada promoção tem um **estalo**: um anel de 1px que sai do centro com um clarão curto atrás. O que
 aparece depois explica *o que* mudou; o estalo diz *quando*. É o único aviso de nível, e ele acontece
@@ -51,9 +51,13 @@ por disparo em vez de uma vez por quadro.
 A explosão, o clarão e a estrela que fica escalam com o nível, e **a recarga também**: 3s, 4,2s, 5,5s
 e 7s. Um nível que não custa nada não é uma escolha.
 
-**O buraco negro não aparece do nada.** Ele é o que sobra quando uma estrela massiva colapsa, e é essa
-a razão de existir o nível 3: sem ele, o momento mais forte da carga acontecia sem que nada tivesse
-morrido para produzi-lo. A estrela cresce por três segundos e implode aos 10s.
+**Não há buraco negro no fim, e nunca deveria ter havido.** Uma supernova não é uma estrela virando
+buraco negro na frente de quem olha; é uma estrela supermassiva que comprime e **estoura**. O horizonte
+de eventos que ficava aqui era um final emprestado do buraco negro do Início, e a leitura ficava
+errada: o gesto terminava criando outra coisa em vez de destruir a que estava ali.
+
+Hoje o arco é o certo. A estrela cresce por três segundos, colapsa aos 10s num núcleo crítico e
+**espera** — soltar é o que a faz estourar.
 
 **O nível 2 é longo, e o plasma é o que se vê andando ali dentro.** São quatro segundos entre acender
 e o horizonte se formar, e o plasma cresce de 96px a 226px nesse intervalo, com o brilho subindo
@@ -63,18 +67,33 @@ mais um degrau logo depois do anterior, e uma carga longa precisa de um meio em 
 algum lugar.
 
 **A estrela é um disco de luz num buffer**, não um degradê em coordenadas de tela. O raio muda em todo
-quadro (três segundos crescendo, meio segundo implodindo), e um degradê absoluto teria de ser
+quadro (três segundos crescendo, meio segundo comprimindo), e um degradê absoluto teria de ser
 recriado junto, porque a chave do cache é o raio. Com o buffer, o raio é contínuo e não custa nada, e
 o **mesmo** buffer desenhado maior e mais apagado vira o halo. O plasma continua desenhado por baixo:
 a máscara dele já é um anel com o miolo vazio, então ele vira a coroa da estrela sem nenhuma máscara
 nova. Uma pulsação lenta de ±8% na opacidade é a queima.
 
-**O colapso é o único momento da carga em que tudo se inverte.** A estrela implode por uma curva que
+**A coroa acompanha o raio da estrela, e não um número solto.** Com a supermassiva em 220px, uma coroa
+de tamanho fixo passaria a ser menor que o corpo que envolve, e deixaria de ser coroa para virar um
+disco atrás dela. O limbo — o anel de 1px na borda — também pesa mais desde que ela cresceu: é a
+única linha reta do desenho, e é ele que diz onde o corpo acaba e o brilho começa. Sem ele a
+supermassiva é uma mancha.
+
+**O colapso é o único momento da carga em que tudo se inverte.** A estrela comprime por uma curva que
 acelera, porque colapso gravitacional não é encolhimento uniforme, e o brilho **sobe** enquanto ela
-some, que é a mesma luz espremida em cada vez menos área. Um anel vem do alcance do poço para o
+encolhe, que é a mesma luz espremida em cada vez menos área. Um anel vem do alcance do poço para o
 centro **ganhando** opacidade, ao contrário do estalo, que sai do centro e se apaga. E a promoção ao
 último nível **não tem estalo**: um anel se expandindo no mesmo instante em que outro implode não lê
 como nada.
+
+**Ela para num núcleo, não em zero**, e é isso que faz do colapso um estado em vez de uma passagem. O
+que sobra são ~10% do auge, e esse ponto **treme** — rápido e curto, não no compasso lento de
+"carregado ao máximo" que o poço usa. Uma estrela prestes a estourar não respira. Aqui o tremor pode
+entrar no raio, ao contrário do que vale para o poço: a estrela é um `drawImage` de buffer, e não há
+degradê com cache de raio para invalidar.
+
+A coroa também fica recolhida depois de comprimir, em vez de voltar ao tamanho. O miolo caiu e as
+camadas de fora seguem brilhando à espera da onda, que é o que se vê numa estrela nesse estado.
 
 **E ele puxa o céu de verdade.** O **k** publicado ganha um pico de 3,2× que sobe e volta dentro dos 0,45s
 do colapso, então não sobra nada para desfazer e a mola de sempre devolve as estrelas. O número foi
@@ -82,9 +101,6 @@ calibrado contra o que se vê: as estrelas perto do centro já estão saturadas 
 mostra o colapso é a **borda** do campo. A 200px do centro o deslocamento vai de 42px para 92px, e é
 esse anel externo saltando para dentro que lê como sucção. Em 4× a mesma estrela atravessa o centro e
 sai do outro lado, o que lê como salto.
-
-**O horizonte nasce de dentro do clarão**, passado 28% do colapso: 22px de raio, formando-se em 0,7s,
-com halo mais forte que o do plasma e poeira suficiente para o disco ler como disco.
 
 **Dos três desenhos do poço, o anel de alcance é o mais apagado.** Ele só marca onde a física acaba,
 e a 330px do centro é o maior objeto da tela; com o contraste dos outros dois, viraria um círculo
@@ -125,6 +141,30 @@ e `engine/gravity` não precisou saber que passaram a existir dois poços. São 
 e não uma lista, porque os ciclos de vida são diferentes — o buraco negro é permanente e a carga é um
 gesto. Sem carga, o custo no laço das ~1120 estrelas é a comparação de `temPoco`, exatamente o que
 `temGrav` já custava fora do Início.
+
+**O que cai fundo demais para de orbitar.** O puxão tem uma componente perpendicular (`GIRO`) e a mola
+fixa um raio de equilíbrio, então sem mais nada o que é absorvido fica **girando num anel** em vez de se
+juntar — e o que foi engolido não se move mais. `capturar` (em `engine/gravity.ts`, irmã de `puxar`)
+resolve isso mirando o **centro exato** em vez de somar mais força: força só mudaria o raio do
+equilíbrio, que é justamente o que produz a órbita.
+
+Três coisas nela não são detalhe:
+
+- **ela fala por último**, depois do puxão e da mola, e é isso que a deixa vencer o equilíbrio;
+- **a força cresce para dentro** (`g²`, zero na borda da zona), senão haveria uma circunferência visível
+  separando "girando" de "preso";
+- **só o poço da supernova a chama.** No buraco negro do Início o giro é o disco de acreção, que é o
+  efeito que ele existe para ter.
+
+O raio da zona sai do `k` do próprio campo, com teto: o `k` publicado leva o pico do colapso junto, e
+sem o teto a zona inflaria para quase mil pixels justamente quando a sucção deveria ser mais brutal —
+com `g²` medido contra um raio enorme, quem está a duzentos pixels vira "quase na borda" e converge
+devagar.
+
+**Quem desenha também precisa saber quem está preso.** A estrela capturada tem o maior deslocamento do
+céu — ele vale o vetor inteiro até o centro — e sem essa consulta o desenho a trataria como a mais
+puxada de todas: esticada num rastro comprido e ainda tremendo com a deriva. Só que ela parou, e o
+que não se move não borra nem respira.
 
 **Puxar e empurrar é tudo o que eles fazem.** A mola que já existia no `Starfield` traz cada estrela
 de volta sozinha, então nada aqui precisa lembrar de desfazer nada — e é ela que fixa o equilíbrio: o

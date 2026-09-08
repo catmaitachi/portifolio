@@ -34,6 +34,38 @@
   }
 }
 
+/**
+ * O brilho que atravessa o nome.
+ *
+ * Uma faixa clara passando por um degradê recortado no texto. O efeito veio do
+ * `ShinyText`, que o faz com `motion` e um `requestAnimationFrame` escrevendo
+ * `background-position` a cada quadro; aqui é um keyframe, que o compositor anima
+ * sozinho e que não custa a primeira dependência de runtime do projeto.
+ *
+ * **A pausa é parte do efeito.** A varredura leva 2,8s dos 8,4s do ciclo, e nos 5,6s
+ * restantes a faixa fica estacionada fora do texto. Numa página que é toda quieta,
+ * um brilho que nunca para vira o elemento mais inquieto da tela.
+ *
+ * A varredura já foi de 2,6s e de 1,8s. O encurtamento partia de que **velocidade lê
+ * como brilho**, o que é verdade enquanto o contraste é baixo: uma faixa pálida só se
+ * percebe pelo movimento. Com o degrau de 89 níveis de hoje a crista se vê parada, e
+ * aí a lentidão passa a favor — a passada tem tempo de atravessar o nome inteiro em
+ * vez de piscar por cima dele.
+ */
+@keyframes brilhoNome {
+  0% {
+    background-position: 150% center;
+  }
+
+  33.3% {
+    background-position: -50% center;
+  }
+
+  100% {
+    background-position: -50% center;
+  }
+}
+
 @keyframes reguaIn {
   from {
     transform: scaleX(0);
@@ -90,6 +122,36 @@
    * fechando na entrada.
    */
   margin: 0;
+
+  /**
+   * A base não é branco puro, e não pode ser: uma faixa branca sobre `#fff` não
+   * existe, porque não há para onde subir. **O contraste entre base e crista é o
+   * efeito inteiro**, e a primeira calibragem (`#c9c9c9`) tinha 54 níveis de degrau —
+   * a faixa passava sem que se visse passar. `#a6a6a6` dá 89, um pouco além do
+   * `#b5b5b5` do componente de origem, e é o mínimo que se lê num nome desse tamanho.
+   *
+   * **E a faixa é estreita.** Os pontos de parada foram de 35/65 para 42/58: espalhada
+   * pelo dobro da largura, a crista deixa de ser um reflexo e vira um clareamento geral
+   * do nome, que é o que fazia o efeito parecer sutil mesmo antes de o contraste subir.
+   *
+   * **O branco é um platô, não um ponto.** Com um único `#fff` em 50% o valor cheio
+   * existe numa linha de espessura zero, e o que cada letra recebe é sempre uma amostra
+   * do caminho — o auge nunca chega à tela. Entre 47% e 53% o branco é branco de
+   * verdade por uma faixa que cabe em uma ou duas letras, que é o mais claro que
+   * `background-clip: text` consegue dar: acima de `#fff` não há para onde ir, e um
+   * `text-shadow` seria um halo permanente em volta do nome, não um brilho que passa.
+   */
+  background-image: linear-gradient(
+    120deg,
+    #a6a6a6 0%,
+    #a6a6a6 40%,
+    #fff 47%,
+    #fff 53%,
+    #a6a6a6 60%,
+    #a6a6a6 100%
+  );
+  background-size: 200% auto;
+  background-clip: text;
   color: #fff;
   font-size: clamp(13px, min(6.4vmin, 6.8vw), 74px);
   font-weight: 400;
@@ -100,7 +162,30 @@
   text-transform: uppercase;
   word-spacing: -0.12em;
   white-space: nowrap;
-  animation: tituloIn 1.6s cubic-bezier(0.22, 0.8, 0.2, 1) 3.75s both;
+
+  /* O brilho espera a **abertura inteira**, não só o `tituloIn` do próprio nome. Ela
+     termina em 6,2s (a versão entra em 5,6s e leva 0,6s — ver `hud.md`), e é o mesmo
+     instante que `useNovaHint` toma como "a tela já está parada". Nos 5,4s de antes o
+     brilho corria enquanto crédito, idioma e versão ainda entravam, e a primeira
+     passada, que é a única que alguém vê chegando, disputava atenção com elas. */
+  animation:
+    tituloIn 1.6s cubic-bezier(0.22, 0.8, 0.2, 1) 3.75s both,
+    brilhoNome 8.4s linear 6.2s infinite;
+  -webkit-text-fill-color: transparent;
+}
+
+/**
+ * Menos movimento devolve o branco, em vez de congelar o degradê.
+ *
+ * O `reset.css` zera a duração de toda animação, e sem esta regra o nome ficaria
+ * parado na cor **base** — mais apagado do que era antes de existir brilho nenhum.
+ * Quem pede menos movimento tem de receber o mesmo nome, não um pior.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .nome {
+    background-image: none;
+    -webkit-text-fill-color: #fff;
+  }
 }
 
 .legenda {
