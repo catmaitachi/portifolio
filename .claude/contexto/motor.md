@@ -16,7 +16,10 @@ poços com o mesmo `puxar`.
 
 O puxão do buraco negro mora em `engine/gravity.ts`, e as duas camadas que o sentem (`Starfield` e
 `Supernova`) importam **de lá**, não uma da outra. Elas precisam concordar: as estrelas acesas ficam
-lado a lado com as do campo no mesmo céu, e uma conta divergente salta aos olhos. O módulo separa
+lado a lado com as do campo no mesmo céu, e uma conta divergente salta aos olhos. Ele tem também `capturar`, que prende no centro exato o que já caiu fundo demais para orbitar, e
+`capturado`, que diz a quem desenha o quanto uma estrela está presa (uma estrela parada não pode sair
+esticada nem tremendo). **Só o poço da supernova chama as duas** — no buraco negro o giro é o disco de
+acreção. O módulo separa
 **preparar** de **puxar** por causa do contrato de desempenho — `reach²` e a recíproca do alcance não
 podem ser recalculadas nas ~1120 estrelas de cada quadro, então cada camada guarda o próprio campo
 preparado e o próprio destino, e nada ali é estado compartilhado.
@@ -40,7 +43,7 @@ concordar em nada, mas o efeito é por pixel e traz junto uma máscara, uma tabe
 | `Starfield` | `layers/starfield.ts` | 10 | ~354 estrelas num 1280×720 (densidade por área), TypedArrays, repulsão do ponteiro por mola, gravidade de `engine/gravity.ts` e cintilar via LUT, 8 baldes de opacidade. O desenho é o sprite de `engine/star.ts` por `drawImage`, com deriva ambiente de 8px e a lente da gravidade esticando o brilho. Cintilar lento (±22%). |
 | `Constellations` | `layers/constellations.ts` | 12 | Figuras do céu real. Estrelas herdam as propriedades do `Starfield`; linha de 1px num único `stroke()`; as estrelas saem do mesmo sprite de `engine/star.ts`, sem deriva e sem lente; posições do quadro em `vx_/vy_` pré-alocados. As arestas se desenham das pontas para dentro quando a camada aparece (`drawTime`). `opacity` em 0 tira a camada do `update` **e** do `draw`. |
 | `BlackHole` | `layers/blackHole.ts` | 20 | Raio `0.14·min(W,H)`. Plasma 96×96 por LUT de senos a 20fps (alpha .22), 260 poeiras em órbita kepleriana, halo .18/.06 até 3.4R (degradês em cache por centro/raio/força), horizonte preto + borda **preta** suavizando — nunca borda brilhante. |
-| `Supernova` | `layers/supernova.ts` | 14 | A estrela que o visitante carrega e acende. Pressionar abre um poço (`bus.well`) que aperta em quatro níveis; soltar explode com força, alcance, duração e recarga daquele nível. Pool de 12 estrelas (guardadas em fração da tela), uma onda de cada vez, carga e recarga no relógio do motor. Plasma a partir do nível 2 (criado na primeira vez), estrela massiva num buffer de disco no 3, e no 4 ela implode com um pico de 3,2× no puxão e vira um horizonte de 22px com poeira. Degradês em cache com `globalAlpha`, e nem o pulso nem o raio da estrela entram na chave do cache. Ociosa custa três comparações. |
+| `Supernova` | `layers/supernova.ts` | 14 | A estrela que o visitante carrega e acende. Pressionar abre um poço (`bus.well`) que aperta em quatro níveis; soltar explode com força, alcance, duração e recarga daquele nível. Pool de 12 estrelas (guardadas em fração da tela), uma onda de cada vez, carga e recarga no relógio do motor. Plasma a partir do nível 2 (criado na primeira vez), estrela supermassiva de 220px num buffer de disco no 3, e no 4 ela colapsa com um pico de 3,2× no puxão até um núcleo crítico de ~22px que treme à espera do release. Sem buraco negro no fim. O degradê do poço fica em cache com `globalAlpha`, e o pulso não entra na chave dele. Ociosa custa três comparações. |
 | `Meteors` | `layers/meteors.ts` | 30 | Pool de 3, intervalo 4–13s, rastro por gradiente linear. |
 
 ### O brilho, a deriva e a lente

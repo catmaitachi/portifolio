@@ -1,5 +1,5 @@
 import { fastSin, TAU } from '../math';
-import { campoVazio, prepararCampo, puxar } from '../gravity';
+import { campoVazio, capturado, capturar, prepararCampo, puxar } from '../gravity';
 import {
   alongamentoDe,
   dentroDoAlcance,
@@ -164,6 +164,19 @@ export function Starfield({
           puxar(poco, sx[i] + ox, sy[i] + oy, dt, puxao);
           ox += puxao.x;
           oy += puxao.y;
+          /**
+           * O que caiu fundo demais para de orbitar.
+           *
+           * Vem **depois** do puxão e da mola de propósito: a captura é o último a
+           * falar, e é isso que a deixa vencer o equilíbrio que produzia o anel
+           * girando. Só o poço da supernova a chama — no buraco negro o giro é o
+           * disco de acreção, que é o efeito que ele existe para ter.
+           */
+          puxao.x = 0;
+          puxao.y = 0;
+          capturar(poco, sx[i] + ox, sy[i] + oy, dt, puxao);
+          ox += puxao.x;
+          oy += puxao.y;
         }
         if (onda) {
           const wx = sx[i] + ox - onda.x;
@@ -222,9 +235,20 @@ export function Starfield({
             px = cx + (px - cx) * zk;
             py = cy + (py - cy) * zk;
           }
+          /**
+           * O que está preso não respira nem borra.
+           *
+           * A estrela capturada tem o maior deslocamento do céu — ele é o vetor
+           * inteiro até o centro — então sem esta consulta ela sairia esticada
+           * num rastro longo e ainda tremendo. As duas coisas descrevem
+           * movimento, e ela justamente parou.
+           */
+          const preso = temPoco ? capturado(poco, px, py) : 0;
+
           // depois da câmera, sempre: antes, o zoom multiplicaria a deriva por 26
-          px += derivaEmX(t, sph[i]) * derivaK;
-          py += derivaEmY(t, sph[i]) * derivaK;
+          const dk = derivaK * (1 - preso);
+          px += derivaEmX(t, sph[i]) * dk;
+          py += derivaEmY(t, sph[i]) * dk;
 
           const ext = extensaoDe(ssz[i]);
           // a margem é a extensão do brilho: um halo de 54px entra em cena bem
@@ -251,7 +275,7 @@ export function Starfield({
               dentroDoAlcance(sx[i], sy[i], campo, poco, temGrav, temPoco)
             ) {
               const mag = Math.sqrt(mag2);
-              s = alongamentoDe(mag);
+              s = 1 + (alongamentoDe(mag) - 1) * (1 - preso);
               ux = dxi / mag;
               uy = dyi / mag;
             }

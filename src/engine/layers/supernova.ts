@@ -8,7 +8,7 @@ import {
   respiraFlare,
   temAlongamento,
 } from '../star';
-import { fastCos, fastSin, TAU } from '../math';
+import { fastSin, TAU } from '../math';
 import { criarPlasma, type Plasma } from '../plasma';
 import type { Layer, StageEnv } from '../types';
 
@@ -136,8 +136,9 @@ const NIVEL_UNICO: readonly NivelNova[] = [
  *
  * **Pressionar o vazio abre um poço** que puxa as estrelas vizinhas e aperta
  * enquanto o gesto dura; **soltar** libera a explosão. Quanto mais tempo, maior o
- * nível: o poço cresce, ganha plasma e depois um horizonte de eventos, e a
- * explosão, o clarão e a estrela que fica escalam junto. A recarga também, porque
+ * nível: o poço cresce, ganha plasma, depois uma estrela supermassiva, e no fim
+ * ela **colapsa** num núcleo crítico que espera o release. A explosão, o clarão e a
+ * estrela que fica escalam junto. A recarga também, porque
  * um nível que não custa nada não é uma escolha.
  *
  * A física atravessa o `bus` nos dois sentidos do gesto: a carga publica
@@ -148,9 +149,9 @@ const NIVEL_UNICO: readonly NivelNova[] = [
  * de desfazer nada.
  *
  * **Custo quando ociosa: zero.** Sem carga, sem onda e sem estrela acesa, `update`
- * e `draw` saem em três comparações. Os degradês do poço e do horizonte ficam em
- * cache com os stops fixos e a intensidade em `globalAlpha`, então a carga inteira
- * não recria um gradiente por quadro; o plasma segue o padrão da cena, buffer
+ * e `draw` saem em três comparações. O degradê do poço fica em cache com os stops
+ * fixos e a intensidade em `globalAlpha`, então a carga inteira não recria um
+ * gradiente por quadro; o plasma segue o padrão da cena, buffer
  * pequeno repintado a 20fps e ampliado pela GPU, e ele só é **criado** na primeira
  * vez que uma carga chega ao nível 2 — quem nunca segura não paga o `ImageData`.
  *
@@ -203,9 +204,18 @@ export function Supernova({
    * vira a coroa dela: a máscara do buffer já é um anel com o miolo vazio, então
    * o disco aparece exatamente pelo buraco que o plasma deixa.
    */
-  const ESTRELA_MIN = 12;
-  const ESTRELA_MAX = 46;
+  const ESTRELA_MIN = 16;
+  const ESTRELA_MAX = 110;
   const ESTRELA_ENTRA = 0.45;
+
+  /**
+   * O que sobra da estrela depois de comprimir, em fração do auge.
+   *
+   * O colapso não a leva a zero: leva a um **núcleo crítico** de uns 11px, que fica
+   * ali tremendo até o gesto acabar. É o estado de uma estrela prestes a estourar,
+   * e é ele que a explosão do release resolve.
+   */
+  const NUCLEO = 0.1;
 
   /**
    * O colapso.
@@ -215,9 +225,7 @@ export function Supernova({
    * estalo se expande, e um anel se expandindo no mesmo instante em que outro
    * implode não lê como nada.
    */
-  const COLAPSO = 0.45;
-  /** fração do colapso a partir da qual o horizonte começa a nascer */
-  const COLAPSO_HORIZ = 0.28;
+  const COLAPSO = 0.6;
   /**
    * Multiplicador do puxão no auge da implosão.
    *
@@ -228,18 +236,6 @@ export function Supernova({
    * centro e sai do outro lado, o que lê como salto, não como gravidade.
    */
   const PICO_GRAV = 3.2;
-
-  /**
-   * O horizonte do último nível.
-   *
-   * Ele é o prêmio de uma carga longa, então não pode ser um ponto: chega maior
-   * que o resto do desenho, leva 0,7s para se formar (o plasma que ele substitui
-   * levou quatro segundos crescendo) e traz poeira suficiente para o disco ler
-   * como disco.
-   */
-  const HORIZ_R = 22;
-  const HORIZ_CRESCE = 0.7;
-  const POEIRA = 34;
 
   const ultimo = niveis[niveis.length - 1];
 
@@ -292,7 +288,7 @@ export function Supernova({
   let pocoReach = 0;
   let pocoK = 0;
   let carga01 = 0;
-  /** 0..1 dentro do nível corrente: é ele que faz o plasma crescer até o horizonte */
+  /** 0..1 dentro do nível corrente: é ele que faz o plasma e a estrela crescerem */
   let fase01 = 0;
   let abertura = 0;
   let satura = 0;
@@ -304,38 +300,18 @@ export function Supernova({
   let plasmaAcc = 0;
   let plasmaFade = 0;
 
-  /* a estrela massiva, e o colapso que a transforma no horizonte */
+  /* a estrela supermassiva, e o colapso que a comprime num núcleo crítico */
   let disco: HTMLCanvasElement | null = null;
   let estrelaFade = 0;
   let estrelaR = 0;
   let colapso = -1;
 
-  /* horizonte de eventos do último nível, com poeira em órbita kepleriana */
-  let horiz = 0;
-  const oa = new Float32Array(POEIRA);
-  const orb = new Float32Array(POEIRA);
-  const osz = new Float32Array(POEIRA);
-  const ovel = new Float32Array(POEIRA);
-  for (let i = 0; i < POEIRA; i++) {
-    oa[i] = Math.random() * TAU;
-    orb[i] = 1.15 + Math.pow(Math.random(), 1.6) * 1.2;
-    osz[i] = 0.35 + Math.random() * 0.65;
-    // a velocidade orbital é constante por partícula: tabelá-la aqui tira uma
-    // potência por partícula por quadro do laço
-    ovel[i] = Math.pow(1 / orb[i], 1.5);
-  }
-
-  /* degradês em cache: stops fixos, intensidade por `globalAlpha`. É o que evita
-     recriá-los por quadro enquanto o poço escurece e o horizonte cresce */
+  /* o degradê do poço em cache: stops fixos, intensidade por `globalAlpha`. É o
+     que evita recriá-lo por quadro enquanto o escurecimento aperta */
   let gpx = -1;
   let gpy = -1;
   let gpr = -1;
   let gPoco: CanvasGradient | null = null;
-  let ghx = -1;
-  let ghy = -1;
-  let ghr = -1;
-  let gHalo: CanvasGradient | null = null;
-  let gBorda: CanvasGradient | null = null;
 
   /** dimensões do último `resize`: é contra elas que o gesto vira fração */
   let larg = 1;
@@ -367,7 +343,6 @@ export function Supernova({
       estrelaFade = 0;
       estrelaR = 0;
       colapso = -1;
-      horiz = 0;
       pocoReach = niveis[0].poco.reach;
       pocoK = 0;
       carga01 = 0;
@@ -482,10 +457,6 @@ export function Supernova({
           // é o colapso que o leva a zero
           if (n === 2) estrelaR = ESTRELA_MIN + (ESTRELA_MAX - ESTRELA_MIN) * p;
         }
-        // o horizonte só nasce depois de a implosão ter passado do meio
-        if (colapso >= COLAPSO * COLAPSO_HORIZ) {
-          horiz = Math.min(1, horiz + dt / HORIZ_CRESCE);
-        }
       } else {
         if (env.bus.well) env.bus.well = null;
         if (saida > 0) saida = Math.max(0, saida - dt / SAIDA);
@@ -507,10 +478,6 @@ export function Supernova({
           plasmaAcc = 0;
           plasma.pintar(env.t * PLASMA_VEL);
         }
-      }
-      if (horiz > 0 && saida > 0) {
-        const passo = dt * 0.21;
-        for (let i = 0; i < POEIRA; i++) oa[i] += passo * ovel[i];
       }
 
       /* a explosão */
@@ -736,10 +703,21 @@ export function Supernova({
         if (plasma && plasmaFade > 0) {
           const cresc = cargaN >= 2 ? 1 : fase01;
           ctx.globalCompositeOperation = 'lighter';
-          // no colapso a coroa é sugada junto com a estrela, e volta depois: a
-          // sucção é o momento, não o estado. Parada no valor encolhido, ela
-          // deixaria o horizonte com um disco menor do que o da própria estrela
-          const ps = (96 + 130 * cresc) * (1 - 0.45 * fastSin(eColapso * (TAU / 2)));
+          /**
+           * A coroa acompanha o raio da estrela, e não um número solto.
+           *
+           * Com a supermassiva em 220px de diâmetro, uma coroa de tamanho fixo
+           * passaria a ser menor que o corpo que ela envolve — deixaria de ser
+           * coroa e viraria um disco atrás dela.
+           *
+           * No colapso ela é sugada e **fica** encolhida, ao contrário de antes. O
+           * núcleo comprimido permanece, então o envelope também tem de
+           * permanecer recolhido: é o que se vê numa estrela cujo miolo caiu e
+           * cujas camadas de fora ainda brilham, esperando a onda.
+           */
+          const pEstrela =
+            cargaN >= 2 ? (estrelaR - ESTRELA_MIN) / (ESTRELA_MAX - ESTRELA_MIN) : 0;
+          const ps = (96 + 130 * cresc + 148 * pEstrela) * (1 - 0.55 * eColapso);
           ctx.globalAlpha = PLASMA_ALPHA * (0.55 + 0.45 * cresc) * plasmaFade * saida;
           ctx.drawImage(plasma.canvas, cx - ps / 2, cy - ps / 2, ps, ps);
           ctx.globalAlpha = 1;
@@ -747,21 +725,32 @@ export function Supernova({
         }
 
         /**
-         * Nível 3: a estrela massiva, e a morte dela.
+         * A estrela supermassiva, e o colapso dela.
          *
-         * **A implosão acelera**: o raio cai por uma curva quadrática, porque um
+         * **A compressão acelera**: o raio cai por uma curva quadrática, porque um
          * colapso gravitacional não é um encolhimento uniforme. E o brilho **sobe**
          * enquanto ele acontece, que é a mesma luz espremida em cada vez menos
-         * área. A queima entra na opacidade, nunca no raio, pela razão de sempre.
+         * área.
+         *
+         * **Ela para num núcleo, não em zero.** O que sobra é um ponto crítico de uns
+         * 11px que fica ali até o gesto acabar — e que **treme**, rápido e curto, em
+         * vez de respirar no compasso lento do poço. Uma estrela prestes a estourar
+         * não respira. Aqui o tremor pode entrar no raio, ao contrário do que vale
+         * para o poço: o desenho é um `drawImage` de buffer, e não há degradê com
+         * cache de raio para invalidar.
          */
-        const implode = eColapso > 0 ? Math.max(0, 1 - eColapso * eColapso) : 1;
-        const Re = estrelaR * implode * saida;
+        const implode = eColapso > 0 ? 1 - (1 - NUCLEO) * eColapso * eColapso : 1;
+        const critico = colapso >= COLAPSO ? 1 : 0;
+        const tremor = 1 + 0.14 * critico * fastSin(t * 17);
+        const Re = estrelaR * implode * tremor * saida;
         if (disco && estrelaFade > 0 && Re > 0.5) {
-          const aperto = 1 + 1.6 * (1 - implode);
+          const aperto = 1 + 2.2 * (1 - implode);
           const queima = 1 + 0.08 * fastSin(t * 3.1);
           ctx.globalCompositeOperation = 'lighter';
 
-          const halo = Re * 2.6;
+          // o halo aperta em volta do corpo: a 2,6 raios, com a supermassiva em
+          // 110px, ele virava uma bola difusa de 570px sem forma nenhuma
+          const halo = Re * 2;
           ctx.globalAlpha = Math.min(1, 0.28 * estrelaFade * saida * aperto);
           ctx.drawImage(disco, cx - halo, cy - halo, halo * 2, halo * 2);
 
@@ -769,10 +758,12 @@ export function Supernova({
           ctx.drawImage(disco, cx - Re, cy - Re, Re * 2, Re * 2);
 
           ctx.globalCompositeOperation = 'source-over';
-          // o limbo: é ele que dá borda de disco ao que senão seria só um borrão
+          // O limbo, e ele pesa mais desde que a estrela ficou grande: é a única
+          // linha reta do desenho, e é ela que diz onde o corpo acaba e o brilho
+          // começa. Sem ele a supermassiva é uma mancha; com ele é uma estrela.
           ctx.globalAlpha = 1;
           ctx.lineWidth = 1;
-          ctx.strokeStyle = `rgba(255,255,255,${(0.28 * estrelaFade * saida).toFixed(3)})`;
+          ctx.strokeStyle = `rgba(255,255,255,${(0.45 * estrelaFade * saida).toFixed(3)})`;
           ctx.beginPath();
           ctx.arc(cx, cy, Re, 0, TAU);
           ctx.stroke();
@@ -787,67 +778,6 @@ export function Supernova({
           ctx.drawImage(disco, cx - rf, cy - rf, rf * 2, rf * 2);
           ctx.globalAlpha = 1;
           ctx.globalCompositeOperation = 'source-over';
-        }
-
-        /**
-         * Nível 3: um horizonte de eventos, com o vocabulário do grande.
-         *
-         * O pulso de "carregado ao máximo" entra no **disco** e na opacidade do
-         * halo, nunca no raio que serve de chave para os degradês: um raio que
-         * oscila cinco por cento a cada quadro invalida o cache o tempo todo, e
-         * `createRadialGradient` por quadro é alocação pura. O raio base só muda
-         * enquanto o horizonte se forma, que são 0,7s.
-         */
-        const Rbase = HORIZ_R * horiz * saida;
-        const R = Rbase * pulso;
-        if (Rbase > 0.5) {
-          ctx.globalCompositeOperation = 'lighter';
-          for (let g = 0; g < 2; g++) {
-            ctx.fillStyle = '#fff';
-            ctx.beginPath();
-            for (let i = g; i < POEIRA; i += 2) {
-              const rr = orb[i] * R * 1.35;
-              const px = cx + fastCos(oa[i]) * rr;
-              const py = cy + fastSin(oa[i]) * rr;
-              const sz = osz[i];
-              ctx.moveTo(px + sz, py);
-              ctx.arc(px, py, sz, 0, TAU);
-            }
-            ctx.globalAlpha = (g ? 0.5 : 0.22) * saida;
-            ctx.fill();
-          }
-
-          const hq = Math.round(Rbase * 2) / 2;
-          if (hq !== ghr || cx !== ghx || cy !== ghy) {
-            ghr = hq;
-            ghx = cx;
-            ghy = cy;
-            gHalo = ctx.createRadialGradient(cx, cy, hq * 0.9, cx, cy, hq * 3.4);
-            gHalo.addColorStop(0, 'rgba(255,255,255,0.26)');
-            gHalo.addColorStop(0.28, 'rgba(255,255,255,0.09)');
-            gHalo.addColorStop(1, 'rgba(255,255,255,0)');
-            // borda **preta** suavizando para fora: o brilho vem do halo por
-            // baixo, nunca de um contorno
-            gBorda = ctx.createRadialGradient(cx, cy, hq * 0.96, cx, cy, hq * 1.25);
-            gBorda.addColorStop(0, 'rgba(0,0,0,1)');
-            gBorda.addColorStop(1, 'rgba(0,0,0,0)');
-          }
-          ctx.globalAlpha = saida * pulso;
-          ctx.fillStyle = gHalo!;
-          ctx.beginPath();
-          ctx.arc(cx, cy, ghr * 3.4, 0, TAU);
-          ctx.fill();
-
-          ctx.globalCompositeOperation = 'source-over';
-          ctx.fillStyle = '#000';
-          ctx.beginPath();
-          ctx.arc(cx, cy, R, 0, TAU);
-          ctx.fill();
-          ctx.fillStyle = gBorda!;
-          ctx.beginPath();
-          ctx.arc(cx, cy, ghr * 1.25, 0, TAU);
-          ctx.fill();
-          ctx.globalAlpha = 1;
         }
 
         /**
@@ -876,13 +806,13 @@ export function Supernova({
        *
        * É o sinal de que o nível subiu, e ele acontece sob o dedo: um anel que sai
        * do centro e um clarão curtíssimo atrás dele. O que aparece depois (plasma,
-       * horizonte) explica **o que** mudou; o estalo diz **quando**.
+       * estrela) explica **o que** mudou; o estalo diz **quando**.
        */
       if (promocao >= 0) {
         const e = promocao / ESTALO;
         const q = 1 - e;
-        // o estalo cresce com o nível que anuncia: o último é o que forma o
-        // horizonte, e chegar a ele merece mais que chegar ao anterior
+        // o estalo cresce com o nível que anuncia; o último nível não tem estalo
+        // nenhum, porque lá quem fala é o colapso
         const peso = 1 + 0.45 * (cargaN - 1);
         const raio = 16 + (pocoReach + 30) * (1 - q * q * q);
         ctx.lineWidth = 1;

@@ -101,3 +101,83 @@ export function puxar(campo: Campo, px: number, py: number, dt: number, fora: De
   fora.x += (nx * pull - ny * pull * GIRO) * dt * RITMO;
   fora.y += (ny * pull + nx * pull * GIRO) * dt * RITMO;
 }
+
+/**
+ * Raio da zona de captura por unidade de `k`, em px.
+ *
+ * Sai do próprio campo em vez de virar parâmetro: o `k` do poço já cresce com o
+ * nível da carga, então no nível 1 quase nada é capturado e no 4 um disco inteiro
+ * se junta, sem nenhum número novo atravessando o barramento.
+ */
+const CAPTURA_POR_K = 70;
+
+/**
+ * Teto do raio de captura, em px.
+ *
+ * O `k` publicado leva o pico do colapso junto (mais de três vezes o valor
+ * saturado), e sem teto a zona inflaria para quase mil pixels no pior instante.
+ * O problema não é o alcance, é a curva: com `g²` medido contra um raio enorme,
+ * quem está a duzentos pixels vira "quase na borda" e passa a convergir devagar —
+ * exatamente durante o momento em que a sucção deveria ser mais brutal.
+ */
+const CAPTURA_MAX = 260;
+
+/** Quanto da distância que falta a captura fecha por segundo, no miolo. */
+const CAPTURA_RITMO = 10;
+
+/**
+ * Prende no centro o que já caiu fundo demais para orbitar.
+ *
+ * **O alvo é o centro exato, não mais uma força.** Somar força só mudaria o raio de
+ * equilíbrio contra a mola de quem chama, e é justamente esse equilíbrio que
+ * produz a órbita: a estrela cai, a mola segura, e ela fica girando num anel. A
+ * captura move o deslocamento na direção do que a levaria ao centro, então ela
+ * converge e para — que é o que uma estrela absorvida faz.
+ *
+ * **A força cresce para dentro** (`g²`, zero na borda da zona): perto do limite a
+ * captura quase não se nota e a órbita ainda vale, no miolo ela domina a mola e
+ * prende. Sem isso haveria uma circunferência visível separando "girando" de
+ * "preso".
+ *
+ * **Só o poço da supernova chama isto.** No buraco negro o giro é o disco de
+ * acreção, que é o efeito desejado — lá as estrelas devem continuar orbitando.
+ */
+export function capturar(campo: Campo, px: number, py: number, dt: number, fora: Desloc): void {
+  const bruto = campo.k * CAPTURA_POR_K;
+  const raio = bruto > CAPTURA_MAX ? CAPTURA_MAX : bruto;
+  const gx = campo.x - px;
+  const gy = campo.y - py;
+  const g2 = gx * gx + gy * gy;
+  const r2 = raio * raio;
+  if (g2 >= r2) return;
+
+  const g = 1 - g2 / r2;
+  let taxa = g * g * dt * CAPTURA_RITMO;
+  if (taxa > 1) taxa = 1;
+  fora.x += gx * taxa;
+  fora.y += gy * taxa;
+}
+
+/**
+ * O quanto uma estrela está presa: 0 fora da zona, 1 no centro dela.
+ *
+ * Quem desenha precisa disto, e não só quem move. Uma estrela capturada tem
+ * deslocamento **enorme** — ele vale exatamente o vetor que a levou ao centro — e
+ * sem esta consulta o desenho a trataria como a mais puxada de todas: esticada
+ * num rastro comprido e ainda tremendo com a deriva ambiente. Só que ela não se
+ * move mais, e o que não se move não borra nem respira.
+ *
+ * Repete as quatro linhas de `capturar` em vez de fatorá-las: as duas rodam uma vez
+ * por estrela por quadro, e um valor de retorno a mais no caminho quente custaria
+ * mais que a repetição.
+ */
+export function capturado(campo: Campo, px: number, py: number): number {
+  const bruto = campo.k * CAPTURA_POR_K;
+  const raio = bruto > CAPTURA_MAX ? CAPTURA_MAX : bruto;
+  const gx = campo.x - px;
+  const gy = campo.y - py;
+  const g2 = gx * gx + gy * gy;
+  const r2 = raio * raio;
+  if (g2 >= r2) return 0;
+  return 1 - g2 / r2;
+}
