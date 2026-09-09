@@ -27,25 +27,6 @@
   `style`** dentro de um rAF coalescido. Um `setState` por `pointermove` re-renderizaria a seção
   dezenas de vezes por segundo para mudar dois números de `transform`.
 
-### O raio-x
-
-**O ponteiro revela o retrato desenhado em ASCII.** A arte é calculada **uma vez**, quando a imagem
-carrega (`useAsciiArt`): um canvas de 58 por 44 pixels recebe a foto com o mesmo recorte do
-`object-fit: cover` da moldura, e cada célula vira um glifo de uma rampa de dez degraus. O hover
-depois é opacidade em CSS, e nada é recalculado enquanto o cursor anda.
-
-- **O preto por baixo dos glifos é translúcido**, então a foto fantasma atrás deles. É isso que
-  separa um raio-x de uma troca de imagem.
-- **A rampa é ASCII puro**, pela mesma razão do alfabeto da decifragem da bio: um glifo que a fonte
-  não tem vira caixa vazia, e aqui isso é pior, porque o desenho é feito de densidade e a caixa vazia
-  é o glifo mais denso de todos.
-- **A grade cobre a moldura exatamente**, sem número de layout duplicado no JavaScript: a `.caixa` é
-  um `container-type: size` e o `<pre>` se dimensiona nela, com a fonte em `100cqw / colunas / 0,6`
-  (0,6 é o avanço do monoespaçado) e a entrelinha em `100cqh / linhas`.
-- **Sem ponteiro não há raio-x**, e é aceito: quem está no celular vê o retrato, que é o conteúdo. Um
-  gesto de toque para revelá-lo disputaria com a rolagem da seção, e a camada não carrega nenhuma
-  informação que a foto não carregue. Ela é `aria-hidden` pelo mesmo motivo.
-
 ### A bio muda de lado
 
 `sobre.paragrafos` é um `Record` **total por modo**: quem chega pelo lado pessoal não deve ler um
@@ -81,41 +62,68 @@ página (ver `responsivo.md`), e era ele que obrigava o Sobre inteiro a encolher
 celular, e com ele fora ela volta ao teto da escala sozinha. A segunda é de leitura: formação
 tem estado, data e progresso, e no rodapé de uma biografia isso lia como legenda do retrato.
 
-**Os diplomas ficam numa pilha vertical**, e ela é a órbita de Projetos deitada: `ang = (i −
-ativo)·2π/n` dá o seno, que agora é o deslocamento em **Y**, e o cosseno, que continua sendo a
-profundidade; dela saem escala, opacidade e `z-index`. O de cima e o de baixo se inclinam para
-dentro por `rotateX`, então os três leem como um anel visto de lado, e não como três cartões soltos.
-Nada de rAF: `ativo` muda e as `transition` fazem a volta, como lá.
+**Os diplomas ficam numa pilha, e pilha não é anel.** O da frente está por cima, os seguintes espiam
+por baixo dele, e avançar tira o de cima da mesa: ele sobe e se apaga, em vez de encolher junto com
+os de trás, porque saiu da pilha. Voltar o devolve por cima. Trazer para a frente o que estava
+embaixo é o que um anel faz, e é o que não se parece com papel empilhado.
+
+Daí decorre que **a navegação não é circular**: as pontas são pontas, como na curva da Trajetória. Do
+último não se avança para o primeiro, porque não há nada embaixo do último.
+
+A profundidade vem de escala e opacidade, **sem `perspective`**: uma inclinação em `rotateX` devolvia
+a leitura de anel, que é o que esta pilha não é. E, como em Projetos, nada de rAF — `ativo` muda e as
+`transition` fazem o movimento.
+
+**Ela abre no que está em curso**, não no primeiro da lista. A lista está em ordem cronológica, e
+abrir nela é abrir no que terminou há mais tempo; o que responde "onde ele está academicamente hoje"
+é o de agora. Sem nenhum `cursando`, o primeiro serve.
 
 **Não há arraste, e a ausência é a decisão.** Em Projetos o gesto é horizontal e não disputa nada;
 aqui ele seria vertical, que é o eixo em que a página rola com `scroll-snap`. Segurá-lo para a pilha
 exigiria `touch-action: none` sobre o maior elemento da seção, e o visitante perderia a rolagem
-justamente onde o dedo cai primeiro. Sobram o clique num diploma de trás, as setas ←/→ enquanto a
+justamente onde o dedo cai primeiro. Sobram o clique num diploma de baixo, as setas ←/→ enquanto a
 seção está ativa e os traços ao lado.
 
 **Os traços ficam em pé, ao lado da pilha.** Em Projetos eles são uma linha embaixo do palco porque a
-órbita anda de lado; um índice horizontal aqui apontaria para um eixo que não é o do movimento. E o
-palco tem a largura do diploma, não a do bloco: com `flex: 1` ele esticava até a borda e levava os
-traços para o canto direito da seção, longe da pilha que eles indexam.
+órbita anda de lado; um índice horizontal aqui apontaria para um eixo que não é o do movimento. Eles
+também são o único jeito de pular direto para um diploma que já saiu da pilha, já que voltar por cima
+é passo a passo. E o palco tem a largura do diploma, não a do bloco: com `flex: 1` ele esticava até a
+borda e levava os traços para o canto direito da seção, longe da pilha que eles indexam.
+
+**A altura do palco é derivada**, não escrita: é o cartão mais o passo de cada um que pode espiar por
+baixo dele. A seção passa esse número (`--atras`), porque é ela que sabe quantas formações existem, e
+o teto vem do hook (`VISIVEIS_ATRAS`). Com um número no CSS, três formações reservariam espaço para
+quatro.
 
 ### O diploma
 
-O badge de 312px virou um cartão de carta: logo grande à esquerda, instituição e nível no alto,
-curso em corpo de leitura e o medidor no pé.
+O badge de 312px virou um cartão de carta, e o que ele mostra deixou de depender do ponteiro: no
+badge a data e a fração ficavam **escondidas atrás da barra** e só o hover as revelava. Aqui está
+tudo que o conteúdo tem, ao mesmo tempo.
+
+| Onde | O quê |
+|---|---|
+| alto, à esquerda | o logo da instituição, em escala óptica própria (`shared.json → logos`) |
+| alto, ao lado | instituição em versalete espaçado, e o nível abaixo dela |
+| alto, à direita | o **selo** com o estado |
+| miolo | o curso, na maior tipografia do cartão |
+| pé | a posição na pilha, o dado do estado com o rótulo dele, a barra e a fração em número |
 
 - **A moldura é dupla**, um risco de 1px correndo por dentro do outro, que é a gramática de um
-  certificado. É o único ornamento que o cartão tem, porque selo, fita e serifa seriam formas que não
+  certificado. É o único ornamento do cartão, porque fita, brasão e serifa seriam formas que não
   existem em nenhum outro lugar da página. O risco de dentro acompanha o chanfro com um raio menor,
   senão os dois cantos cortados brigariam.
-- **O detalhe fica sempre visível**: a data em `concluido`, a fração `feito/total` em `cursando`. No
-  badge ele era largura zero e abria no hover, porque ali não havia linha para ele; nesta largura a
-  `.trilha` (`flex: 1`) cede o espaço sem apertar nada, e esconder atrás de um ponteiro o que já cabe
-  seria negá-lo a quem está no celular.
-- **Em `cursando` a barra é a fração real o tempo todo**, não um meio-termo decorativo, e a
-  `pretensao` mantém a moldura tracejada de sempre.
-- **O da frente é opaco**, contra os 52% dos outros, pelo mesmo motivo do cartão de projeto: a pilha
-  é fechada e a caixa dele cobre um pedaço dos vizinhos, que apareceriam através dele sem responder
-  ao clique.
+- **O estado mora no selo, e só nele.** Ele saía no medidor junto da barra, e a mesma palavra em dois
+  lugares do mesmo cartão seria repetição; no pé ela ainda competia com a fração, que é o número que
+  a barra explica.
+- **A fração aparece como número**, e a `pretensao` é a exceção: ela não tem o que mostrar, e um "0%"
+  leria como defeito em vez de "ainda não começou".
+- **O rótulo do dado é traduzido, o valor não.** "2022.12" e "4/8" são dados, idênticos nos dois
+  idiomas, como a versão no rodapé; quem traduz é o "Conclusão" e o "Etapas" ao lado
+  (`formacoes.rotulos`).
+- **O da frente é preto sólido**, e não os 92% do cartão de projeto: lá o vizinho fica quase todo
+  para fora, aqui ele está exatamente atrás, e 6% de transparência bastavam para o nome da outra
+  instituição fantasmar por cima do curso.
 
 ---
 

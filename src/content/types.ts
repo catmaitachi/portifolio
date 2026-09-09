@@ -154,6 +154,12 @@ export interface Dictionary {
     titulo: string;
     intro: string;
     estados: Record<EstadoFormacao, string>;
+    /**
+     * Os rótulos do dado que cada estado produz, no pé do diploma: a data de
+     * `concluido` e as etapas de `cursando`. O **valor** deles continua fora do
+     * dicionário, como a versão no rodapé — "2022.12" e "4/8" são dados.
+     */
+    rotulos: { conclusao: string; etapas: string };
     lista: Formacao[];
   };
   projetos: {

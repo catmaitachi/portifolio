@@ -1,16 +1,25 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 
+/**
+ * Quantos diplomas aparecem atrás do da frente. O resto some.
+ *
+ * A seção lê este número para dimensionar o palco: a altura dele é o cartão mais
+ * o passo de cada um que pode espiar por baixo, e um número solto no CSS sairia
+ * de sincronia com este no dia em que a pilha mostrasse um a mais.
+ */
+export const VISIVEIS_ATRAS = 3;
+
 export interface GeometriaDeck {
-  /** deslocamento vertical, como `calc()` sobre o raio da pilha */
-  pilhaY: string;
-  /** inclinação do diploma para dentro do anel, em `rotateX` */
-  giro: string;
+  /** deslocamento vertical, em `calc()` sobre o passo da pilha */
+  deslocamento: string;
   escala: number;
-  /** empilhamento: quem está na frente cobre quem está atrás */
+  /** empilhamento: quem está por cima cobre quem está por baixo */
   camada: number;
   opacidade: number;
   naFrente: boolean;
-  /** distância em passos até o diploma da frente, para escalonar a entrada */
+  /** se o diploma está na tela: fora dela ele sai do clique e da tabulação */
+  visivel: boolean;
+  /** distância até o da frente, para escalonar a entrada */
   ordem: number;
 }
 
@@ -22,27 +31,31 @@ export interface Deck {
 }
 
 /**
- * A pilha vertical dos diplomas.
+ * A pilha de diplomas.
  *
- * É a órbita de Projetos deitada: `ang = (i − ativo)·2π/n` dá o seno (agora o
- * deslocamento em **Y**) e o cosseno (a profundidade), e da profundidade saem
- * escala, opacidade e `z-index`. O de cima e o de baixo se inclinam para dentro
- * por `rotateX`, então a pilha lê como um anel visto de lado, e não como três
- * cartões soltos.
+ * **É uma pilha, e não um anel**, e a diferença é a regra inteira: o da frente
+ * está por cima, os seguintes espiam por baixo dele, e avançar tira o de cima da
+ * mesa. Voltar devolve à mesa o que tinha saído, por cima — nunca traz para a
+ * frente o que estava embaixo, que é o que um anel faz e é o que não se parece
+ * com papel empilhado.
+ *
+ * Daí decorre que **a navegação não é circular**: as pontas são pontas, como na
+ * linha do tempo da Trajetória. Do último não se avança para o primeiro, porque
+ * não há nada embaixo do último.
+ *
+ * O que já passou sobe e se apaga, em vez de encolher junto com os de trás: ele
+ * saiu da pilha, e continuar desenhando-o menor o poria de novo lá dentro.
  *
  * **Nada de rAF**: `ativo` muda e as `transition` de `transform` e `opacity`
- * fazem a volta, como lá.
+ * fazem o movimento, como na órbita de Projetos.
  *
- * **E, ao contrário de lá, não há arraste.** Em Projetos o gesto é horizontal e
- * não disputa nada; aqui ele seria vertical, que é exatamente o eixo em que a
- * página rola com `scroll-snap`. Segurar o gesto para a pilha exigiria
- * `touch-action: none` sobre o maior elemento da seção, e o visitante perderia a
- * rolagem justamente onde o dedo cai primeiro. Sobram o clique num diploma de
- * trás, as setas ←/→ e os traços ao lado, que é o mesmo conjunto de sempre menos
- * o gesto que não cabia.
+ * **E não há arraste.** Em Projetos o gesto é horizontal e não disputa nada;
+ * aqui ele seria vertical, que é o eixo em que a página rola com `scroll-snap`.
+ * Segurá-lo para a pilha exigiria `touch-action: none` sobre o maior elemento da
+ * seção, e o visitante perderia a rolagem justamente onde o dedo cai primeiro.
  */
-export function useDeck(total: number): Deck {
-  const [ativo, setAtivo] = useState(0);
+export function useDeck(total: number, inicial: number): Deck {
+  const [ativo, setAtivo] = useState(inicial);
 
   const n = Math.max(1, total);
   const nRef = useRef(n);
@@ -53,34 +66,41 @@ export function useDeck(total: number): Deck {
   });
 
   const andar = useCallback((delta: number) => {
-    const total = nRef.current;
-    setAtivo((atual) => (((atual + delta) % total) + total) % total);
+    setAtivo((atual) => Math.min(nRef.current - 1, Math.max(0, atual + delta)));
   }, []);
 
   const focar = useCallback((i: number) => setAtivo(i), []);
 
   const geometria = useCallback(
     (i: number): GeometriaDeck => {
-      const ang = ((i - ativo) * 2 * Math.PI) / n;
-      const sen = Math.sin(ang);
-      const cos = Math.cos(ang);
-      const prof = (cos + 1) / 2; // 1 na frente, 0 atrás
+      const d = i - ativo;
+
+      // já passou: sai por cima e se apaga
+      if (d < 0) {
+        return {
+          deslocamento: `calc(var(--dsaida, 60px) * ${d})`,
+          escala: 1.03,
+          camada: 100 + d,
+          opacidade: 0,
+          naFrente: false,
+          visivel: false,
+          ordem: -d,
+        };
+      }
+
+      const opacidade = Math.max(0, Number((d === 0 ? 1 : 0.66 - 0.22 * (d - 1)).toFixed(3)));
       return {
-        pilhaY: `calc(var(--dr, 120px) * ${sen.toFixed(4)})`,
-        giro: `${(sen * 24).toFixed(2)}deg`,
-        escala: Number((0.72 + 0.28 * prof).toFixed(3)),
-        camada: 100 + Math.round(cos * 50),
-        /**
-         * Piso alto pelo mesmo motivo da órbita: com n=3 a profundidade dos de
-         * trás é 0,25, e um falloff linear os apagaria no céu preto.
-         */
-        opacidade: Number((0.34 + 0.66 * prof).toFixed(3)),
-        naFrente: i === ativo,
-        // circular: com n=3, o último está a um passo do primeiro
-        ordem: Math.min(Math.abs(i - ativo), n - Math.abs(i - ativo)),
+        deslocamento: `calc(var(--dpasso, 34px) * ${d})`,
+        // encolher acompanha o afastamento: a pilha ganha profundidade sem perspectiva
+        escala: Number(Math.max(0.7, 1 - 0.045 * d).toFixed(3)),
+        camada: 200 - d,
+        opacidade,
+        naFrente: d === 0,
+        visivel: d <= VISIVEIS_ATRAS && opacidade > 0,
+        ordem: d,
       };
     },
-    [ativo, n],
+    [ativo],
   );
 
   return { ativo, andar, focar, geometria };

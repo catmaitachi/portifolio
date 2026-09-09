@@ -54,6 +54,10 @@
   "formacoes": {
     "titulo": "Education",
     "intro": "Where I studied, where I study, and where I plan to study.",
+    "rotulos": {
+      "conclusao": "Completion",
+      "etapas": "Steps"
+    },
     "estados": {
       "concluido": "Completed",
       "cursando": "In progress",

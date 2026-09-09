@@ -1,18 +1,28 @@
-/** Tokens da pilha de diplomas. */
+/**
+ * Tokens da pilha de diplomas.
+ *
+ * A altura do palco é **derivada**: o cartão da frente mais o passo de cada um
+ * dos que podem espiar por baixo dele. `--atras` vem da seção, que sabe quantas
+ * formações existem e conhece o teto do hook (`VISIVEIS_ATRAS`) — com um número
+ * escrito aqui, três formações reservariam espaço para quatro.
+ */
 .secao {
-  --dcw: 520px; /* largura do diploma */
-  --dch: 168px; /* altura do diploma */
-  --dr: 138px; /* raio da pilha */
-  --dh: 404px; /* altura do palco */
-  --dperspectiva: 1400px;
-  --dpad: 24px;
-  --dgap: 22px;
-  --dlogo-w: 96px;
-  --dlogo-h: 66px;
-  --dcorpo-gap: 12px;
-  --dfs-inst: 15px;
-  --dfs-nivel: 9.5px;
-  --dfs-curso: 13px;
+  --dcw: 620px; /* largura do diploma */
+  --dch: 236px; /* altura do diploma */
+  --dpasso: 42px; /* o quanto cada um de baixo escapa do de cima */
+  --dsaida: 64px; /* o quanto o que já passou sobe antes de sumir */
+  --dh: calc(var(--dch) + var(--dpasso) * var(--atras, 3));
+  --dpad: 26px;
+  --dgap: 18px;
+  --dlogo-w: 110px;
+  --dlogo-h: 74px;
+  --dfs-inst: 19px;
+  --dfs-nivel: 10px;
+  --dfs-curso: 20px;
+  --dfs-selo: 8.5px;
+  --dfs-valor: 11px;
+  --drodape-gap: 18px;
+  --drodape-pt: 14px;
 }
 
 .bloco {
@@ -33,18 +43,18 @@
  * Com `flex: 1` ele esticava até a borda e levava os traços para o canto
  * direito da seção, longe da pilha que eles indexam. Assim o par fica junto e a
  * arena centra os dois.
+ *
+ * **Sem `perspective`**: a pilha é papel sobre papel, e a profundidade vem da
+ * escala e da opacidade. Com perspectiva os de baixo ganhavam uma inclinação que
+ * lia como anel, que é justamente o que esta pilha não é.
  */
 .palco {
   position: relative;
   flex: 0 1 var(--dcw);
+  min-width: 0;
   max-width: var(--dcw);
   height: var(--dh);
-  /* origem à frente e um pouco acima: a pilha é vista levemente de cima */
-  perspective: var(--dperspectiva);
-  perspective-origin: 50% 44%;
-  transform-style: preserve-3d;
   outline: none;
-  min-width: 0;
 }
 
 .tracos {
@@ -90,27 +100,30 @@
 }
 
 /**
- * Mobile: o diploma perde largura antes de perder altura.
+ * Mobile: a largura é a que a tela cobra, e o resto acompanha.
  *
- * A largura é o eixo que a tela estreita cobra, e o cartão é uma linha de logo
- * mais três de texto: encolher a altura junto espremeria o medidor contra o
- * curso. O raio da pilha desce com ela, senão os dois de trás sairiam da caixa
- * do palco.
+ * O cartão vira a largura inteira e perde altura junto, porque o curso passa a
+ * caber em menos linhas do que o corpo de desktop pedia. O passo da pilha desce
+ * com a altura: mantido em 34px, o que escapa de cada um de baixo seria quase um
+ * quinto do cartão.
  */
 @media (width <= 640px) {
   .secao {
     --dcw: 100%;
-    --dch: 146px;
-    --dr: 104px;
-    --dh: 320px;
+    --dch: 190px;
+    --dpasso: 26px;
+    --dsaida: 44px;
     --dpad: 16px;
-    --dgap: 14px;
-    --dlogo-w: 62px;
-    --dlogo-h: 46px;
-    --dcorpo-gap: 9px;
-    --dfs-inst: 12px;
+    --dgap: 12px;
+    --dlogo-w: 68px;
+    --dlogo-h: 48px;
+    --dfs-inst: 13px;
     --dfs-nivel: 8.5px;
-    --dfs-curso: 11px;
+    --dfs-curso: 14px;
+    --dfs-selo: 7.5px;
+    --dfs-valor: 10px;
+    --drodape-gap: 10px;
+    --drodape-pt: 10px;
   }
 
   .arena {
@@ -118,11 +131,12 @@
   }
 }
 
-/* paisagem curta: sobra largura e falta altura, então a pilha se fecha */
+/* paisagem curta: sobra largura e falta altura, então o diploma se achata */
 @media (width > 640px) and (height <= 720px) {
   .secao {
-    --dch: 150px;
-    --dr: 112px;
-    --dh: 336px;
+    --dch: 200px;
+    --dpasso: 30px;
+    --dpad: 20px;
+    --dfs-curso: 17px;
   }
 }

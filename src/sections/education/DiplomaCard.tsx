@@ -5,35 +5,25 @@ import styles from './DiplomaCard.module.css';
 import type { GeometriaDeck } from './useDeck';
 
 /**
- * Preenchimento da barra, em porcentagem.
+ * Quanto da formação já aconteceu, em porcentagem.
  *
  * `cursando` é a **fração real** (`feito/total`), não um meio-termo decorativo:
  * a barra diz alguma coisa, e diz o tempo todo. Sem `progresso` no conteúdo ela
  * cai nos 50% de antes, que é o "em algum ponto do caminho".
  */
-function preenchimento(f: Formacao): string {
-  if (f.estado === 'concluido') return '100%';
-  if (f.estado === 'pretensao') return '0%';
+function fracao(f: Formacao): number {
+  if (f.estado === 'concluido') return 1;
+  if (f.estado === 'pretensao') return 0;
   const p = f.progresso;
-  if (!p || p.total <= 0) return '50%';
-  return `${Math.round(Math.min(1, Math.max(0, p.feito / p.total)) * 100)}%`;
-}
-
-/**
- * O detalhe da barra: a data de conclusão ou a fração do curso.
- *
- * Fica **fora do i18n** pelo mesmo motivo da versão no rodapé: "2022.12" e "4/8"
- * são dados, idênticos nos dois idiomas. Sem dado no conteúdo, o diploma
- * simplesmente não tem detalhe.
- */
-function detalhe(f: Formacao): string | null {
-  if (f.estado === 'concluido') return f.conclusao ?? null;
-  if (f.estado === 'cursando' && f.progresso) return `${f.progresso.feito}/${f.progresso.total}`;
-  return null;
+  if (!p || p.total <= 0) return 0.5;
+  return Math.min(1, Math.max(0, p.feito / p.total));
 }
 
 interface DiplomaCardProps {
   formacao: Formacao;
+  /** posição na lista, para o `01 / 03` do rodapé */
+  indice: number;
+  total: number;
   geo: GeometriaDeck;
   /** seção ativa: dispara a entrada, escalonada por `geo.ordem` */
   ativo: boolean;
@@ -43,32 +33,44 @@ interface DiplomaCardProps {
 /**
  * Um diploma da pilha.
  *
- * O badge que existia aqui era uma etiqueta de 312px, e virou um cartão de
- * carta: logo grande à esquerda, instituição e nível no alto, curso em corpo de
- * leitura e o medidor no pé, com a data ou a fração **sempre visíveis** — no
- * badge elas ficavam escondidas atrás da barra e só o hover as revelava, o que
- * num cartão deste tamanho seria esconder o que já cabe.
+ * O badge que existia aqui era uma etiqueta de 312px em que a data e a fração
+ * ficavam **escondidas atrás da barra**, e só o hover as revelava. Num cartão
+ * deste tamanho não há motivo para esconder nada, então tudo que o conteúdo tem
+ * está na tela: instituição, nível, curso, o estado num selo, o dado que o
+ * estado produz (a conclusão ou as etapas), a fração em número e a posição na
+ * pilha.
  *
- * A moldura é dupla, um risco de 1px por dentro do outro, que é o que separa um
- * diploma de um cartão qualquer. O interno usa os mesmos cantos chanfrados,
- * menores, para os dois acompanharem o corte.
+ * Duas coisas dão a leitura de diploma, e as duas são de régua, não de ornamento:
+ * a **moldura dupla**, um risco de 1px correndo por dentro do outro, e o **selo**
+ * no alto à direita, que é onde um certificado carimba o que ele certifica.
+ * Selo de fita, brasão ou serifa seriam formas que não existem em nenhum outro
+ * lugar da página.
  *
  * Como em Projetos, o `transform` da pilha mora no elemento **de fora** e a
  * animação de entrada no de dentro: uma animação de `transform` no mesmo
  * elemento apagaria a posição escrita pelo JS enquanto roda.
  */
-export function DiplomaCard({ formacao, geo, ativo, onFocar }: DiplomaCardProps) {
+export function DiplomaCard({ formacao, indice, total, geo, ativo, onFocar }: DiplomaCardProps) {
   const t = useT();
-  const extra = detalhe(formacao);
+  const parte = fracao(formacao);
+  const detalhe =
+    formacao.estado === 'concluido'
+      ? formacao.conclusao
+      : formacao.estado === 'cursando' && formacao.progresso
+        ? `${formacao.progresso.feito}/${formacao.progresso.total}`
+        : null;
+  const rotulo =
+    formacao.estado === 'concluido' ? t.formacoes.rotulos.conclusao : t.formacoes.rotulos.etapas;
 
   return (
     <article
       className={styles.vaga}
       style={{
         zIndex: geo.camada,
-        transform: `translateY(${geo.pilhaY}) rotateX(${geo.giro}) scale(${geo.escala})`,
+        transform: `translateY(${geo.deslocamento}) scale(${geo.escala})`,
         opacity: geo.opacidade,
       }}
+      aria-hidden={!geo.visivel || undefined}
     >
       <div
         className={styles.diploma}
@@ -77,7 +79,8 @@ export function DiplomaCard({ formacao, geo, ativo, onFocar }: DiplomaCardProps)
         data-frente={geo.naFrente || undefined}
         data-entrada={ativo || undefined}
         role="button"
-        tabIndex={0}
+        // o que está fora da pilha sai da tabulação, como em toda a página
+        tabIndex={geo.visivel ? 0 : -1}
         aria-current={geo.naFrente ? 'true' : undefined}
         aria-label={`${formacao.instituicao}, ${formacao.curso}`}
         onClick={onFocar}
@@ -89,31 +92,51 @@ export function DiplomaCard({ formacao, geo, ativo, onFocar }: DiplomaCardProps)
           onFocar();
         }}
       >
-        <span
-          className={styles.logo}
-          role="img"
-          aria-label={formacao.instituicao}
-          style={{
-            backgroundImage: LOGOS[formacao.slot] ? `url("${LOGOS[formacao.slot]}")` : undefined,
-            transform: `scale(${LOGO_ESCALAS[formacao.slot]?.escala ?? 1})`,
-          }}
-        />
+        <div className={styles.topo}>
+          <span
+            className={styles.logo}
+            role="img"
+            aria-label={formacao.instituicao}
+            style={{
+              backgroundImage: LOGOS[formacao.slot] ? `url("${LOGOS[formacao.slot]}")` : undefined,
+              transform: `scale(${LOGO_ESCALAS[formacao.slot]?.escala ?? 1})`,
+            }}
+          />
 
-        <div className={styles.corpo}>
-          <div className={styles.linhaTopo}>
+          <div className={styles.titulos}>
             <span className={styles.instituicao}>{formacao.instituicao}</span>
             <span className={styles.nivel}>{formacao.nivel}</span>
           </div>
 
-          <span className={styles.curso}>{formacao.curso}</span>
+          <span className={styles.selo}>{t.formacoes.estados[formacao.estado]}</span>
+        </div>
 
-          <div className={comum.medidor}>
-            <span className={comum.trilha}>
-              <span className={comum.preenchimento} style={{ width: preenchimento(formacao) }} />
+        <span className={styles.curso}>{formacao.curso}</span>
+
+        <div className={styles.rodape}>
+          <span className={styles.ordinal}>
+            {String(indice + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
+          </span>
+
+          {detalhe && (
+            <span className={styles.dado}>
+              <span className={styles.rotulo}>{rotulo}</span>
+              <span className={styles.valor}>{detalhe}</span>
             </span>
-            {extra && <span className={styles.detalhe}>{extra}</span>}
-            <span className={comum.estado}>{t.formacoes.estados[formacao.estado]}</span>
-          </div>
+          )}
+
+          <span className={comum.medidor}>
+            <span className={comum.trilha}>
+              <span
+                className={comum.preenchimento}
+                style={{ width: `${Math.round(parte * 100)}%` }}
+              />
+            </span>
+            {/* a pretensão não tem fração para mostrar, e um "0%" leria como defeito */}
+            {formacao.estado !== 'pretensao' && (
+              <span className={styles.parte}>{Math.round(parte * 100)}%</span>
+            )}
+          </span>
         </div>
       </div>
     </article>

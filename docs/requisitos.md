@@ -33,7 +33,7 @@ nunca apresentando falha como ausência.
 
 **RF08a** — A biografia deve mudar conforme o modo em vigor, com um texto por modo em cada idioma.
 
-**RF08b** — A seção Formação, exclusiva do modo profissional, deve exibir as formações como uma pilha vertical de diplomas, navegável por clique, setas e índice.
+**RF08b** — A seção Formação, exclusiva do modo profissional, deve exibir as formações como uma pilha vertical de diplomas, navegável por clique, setas e índice, aberta na formação em curso.
 
 **RF09** — O sistema deve indicar o estado de cada formação (concluído, cursando, pretensão).
 

@@ -54,6 +54,10 @@
   "formacoes": {
     "titulo": "Formação",
     "intro": "Onde eu estudei, onde eu estudo e onde eu pretendo estudar.",
+    "rotulos": {
+      "conclusao": "Conclusão",
+      "etapas": "Etapas"
+    },
     "estados": {
       "concluido": "Concluído",
       "cursando": "Cursando",

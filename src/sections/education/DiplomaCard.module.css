@@ -12,7 +12,7 @@
 @keyframes diplomaSobe {
   from {
     opacity: 0;
-    transform: translateY(52px) scale(0.95);
+    transform: translateY(56px) scale(0.95);
   }
 
   42% {
@@ -25,30 +25,37 @@
   }
 }
 
-/** Posição na pilha. O `transform` completo vem do JS (`useDeck`). */
+/**
+ * Posição na pilha. O `transform` completo vem do JS (`useDeck`).
+ *
+ * A origem é o **topo**: os de trás encolhem em direção à borda de cima, que é a
+ * que fica escondida atrás do da frente, e o que sobra deles aparece embaixo,
+ * como folha empilhada. Com a origem no centro eles encolheriam para dentro dos
+ * dois lados e a pilha viraria um leque.
+ */
 .vaga {
   position: absolute;
-  top: 50%;
+  top: 0;
   left: 50%;
-  width: var(--dcw, 520px);
-  height: var(--dch, 168px);
-  margin-top: calc(var(--dch, 168px) / -2);
-  margin-left: calc(var(--dcw, 520px) / -2);
+  width: var(--dcw, 620px);
+  height: var(--dch, 236px);
+  margin-left: calc(var(--dcw, 620px) / -2);
+  transform-origin: 50% 0;
   transition:
-    transform 0.9s cubic-bezier(0.22, 0.86, 0.2, 1),
-    opacity 0.75s ease;
+    transform 0.75s cubic-bezier(0.22, 0.86, 0.2, 1),
+    opacity 0.55s ease;
 }
 
 .diploma {
   position: relative;
   display: flex;
-  gap: var(--dgap, 22px);
-  align-items: center;
+  flex-direction: column;
+  gap: var(--dgap, 18px);
   height: 100%;
-  padding: var(--dpad, 24px);
+  padding: var(--dpad, 26px) var(--dpad, 26px) calc(var(--dpad, 26px) - 4px);
   border: 1px solid rgb(255 255 255 / 18%);
   border-radius: 2px;
-  background: rgb(0 0 0 / 52%);
+  background: rgb(0 0 0 / 62%);
   cursor: pointer;
   transition:
     border-color 0.5s ease,
@@ -59,13 +66,12 @@
  * A moldura de dentro é o que faz um diploma.
  *
  * Um risco de 1px correndo por dentro do outro é a gramática de um certificado,
- * e é o único ornamento que este cartão tem — nada de selo, fita ou serifa, que
- * seriam formas que não existem em nenhum outro lugar da página. Ele acompanha o
- * chanfro com um raio menor, senão os dois cantos cortados brigariam.
+ * e é o único ornamento que este cartão tem. Ele acompanha o chanfro com um raio
+ * menor, senão os dois cantos cortados brigariam.
  */
 .diploma::before {
   position: absolute;
-  inset: 7px;
+  inset: 8px;
   border: 1px solid rgb(255 255 255 / 7%);
   border-radius: 2px;
   content: '';
@@ -76,31 +82,33 @@
 @supports (corner-shape: bevel) {
   .diploma {
     corner-shape: bevel;
-    border-radius: 20px 2px;
+    border-radius: 22px 2px;
   }
 
   .diploma::before {
     corner-shape: bevel;
-    border-radius: 14px 2px;
+    border-radius: 15px 2px;
   }
 }
 
 /**
  * O da frente é opaco e mais aceso.
  *
- * A pilha é fechada, então a caixa do diploma da frente cobre um pedaço dos
- * outros dois; com o preto translúcido, o de trás aparecia através dele e não
- * respondia ao clique, porque ali o clique é do da frente. É a mesma decisão do
- * cartão de projeto: o que se vê do de trás é exatamente o que responde.
+ * A pilha é fechada, então a caixa do de cima cobre quase tudo dos de baixo. Aqui
+ * o preto é **sólido**, e não os 92% do cartão de projeto: lá o vizinho fica
+ * quase todo para fora, aqui ele está exatamente atrás, e 6% de transparência
+ * bastavam para o nome da outra instituição fantasmar por cima do curso. O que
+ * se vê do de baixo passa a ser só o que escapa embaixo, que é o que responde ao
+ * clique.
  */
 .diploma[data-frente] {
-  border-color: rgb(255 255 255 / 30%);
-  background: rgb(0 0 0 / 92%);
+  border-color: rgb(255 255 255 / 32%);
+  background: #000;
   cursor: default;
 }
 
 .diploma:hover {
-  border-color: rgb(255 255 255 / 40%);
+  border-color: rgb(255 255 255 / 42%);
 }
 
 /* pretensão: ainda não aconteceu, então a moldura é tracejada */
@@ -118,72 +126,154 @@
     backwards;
 }
 
+.topo {
+  display: flex;
+  gap: var(--dgap, 18px);
+  align-items: center;
+}
+
 .logo {
   flex: none;
-  width: var(--dlogo-w, 96px);
-  height: var(--dlogo-h, 66px);
+  width: var(--dlogo-w, 110px);
+  height: var(--dlogo-h, 74px);
   background-repeat: no-repeat;
-  background-position: center;
+  background-position: left center;
   background-size: contain;
 }
 
-.corpo {
+.titulos {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: var(--dcorpo-gap, 12px);
-  min-width: 0;
-}
-
-.linhaTopo {
-  display: flex;
-  gap: 10px;
-  align-items: baseline;
+  gap: 7px;
   min-width: 0;
 }
 
 .instituicao {
+  overflow: hidden;
   color: #fff;
-  font-size: var(--dfs-inst, 15px);
-  letter-spacing: 0.2em;
+  font-size: var(--dfs-inst, 19px);
+  letter-spacing: 0.22em;
   text-transform: uppercase;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .nivel {
   overflow: hidden;
   color: rgb(255 255 255 / 50%);
-  font-size: var(--dfs-nivel, 9.5px);
-  letter-spacing: 0.18em;
+  font-size: var(--dfs-nivel, 10px);
+  letter-spacing: 0.3em;
   text-transform: uppercase;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/**
+ * O selo: onde um certificado carimba o que ele certifica.
+ *
+ * É o estado da formação, e ele saiu do medidor por causa disso — a mesma
+ * palavra em dois lugares do mesmo cartão seria repetição, e no pé ela competia
+ * com a fração, que é o número que a barra explica.
+ */
+.selo {
+  flex: none;
+  align-self: flex-start;
+  padding: 7px 11px;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 2px;
+  color: rgb(255 255 255 / 72%);
+  font-size: var(--dfs-selo, 8.5px);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@supports (corner-shape: bevel) {
+  .selo {
+    corner-shape: bevel;
+    border-radius: 8px 2px;
+  }
+}
+
+.diploma[data-estado='pretensao'] .selo {
+  border-style: dashed;
+  color: rgb(255 255 255 / 52%);
+}
+
+/**
+ * O curso é a linha grande do diploma, e ele fica no miolo.
+ *
+ * `margin-top: auto` empurra o rodapé para baixo sem que nada precise ter altura
+ * fixa: instituição no alto, curso no meio, medidor no pé, e o cartão continua
+ * inteiro se o curso ocupar duas linhas.
+ */
 .curso {
-  overflow: hidden;
-  color: rgb(255 255 255 / 62%);
-  font-size: var(--dfs-curso, 13px);
+  margin-top: auto;
+  color: rgb(255 255 255 / 78%);
+  font-size: var(--dfs-curso, 20px);
   font-weight: 300;
-  line-height: 1.45;
-  letter-spacing: 0.04em;
-  text-overflow: ellipsis;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  text-wrap: pretty;
+}
+
+.rodape {
+  display: flex;
+  gap: var(--drodape-gap, 18px);
+  align-items: center;
+  padding-top: var(--drodape-pt, 14px);
+  border-top: 1px solid rgb(255 255 255 / 9%);
+}
+
+/* a posição na pilha, na régua do índice das seções */
+.ordinal {
+  flex: none;
+  color: rgb(255 255 255 / 26%);
+  font-size: 8.5px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.22em;
   white-space: nowrap;
 }
 
 /**
- * O detalhe fica **sempre visível**.
+ * O dado que o estado produz: a data de conclusão ou as etapas cumpridas.
  *
- * No badge ele era largura zero e abria no hover, porque ali não havia linha
- * para ele; num cartão desta largura a barra cede o espaço sem apertar nada, e
- * esconder atrás de um ponteiro o que já cabe seria negá-lo a quem está no
- * celular. O espaço sai da `.trilha`, que é `flex: 1`.
+ * Ele fica **sempre visível**. No badge era largura zero e abria no hover,
+ * porque ali não havia linha para ele; aqui há, e esconder atrás de um ponteiro
+ * o que já cabe seria negá-lo a quem está no celular.
+ *
+ * O valor fica **fora do i18n**, como a versão no rodapé: "2022.12" e "4/8" são
+ * dados, idênticos nos dois idiomas. Quem traduz é o rótulo ao lado.
  */
-.detalhe {
+.dado {
+  display: flex;
   flex: none;
-  color: rgb(255 255 255 / 82%);
+  gap: 7px;
+  align-items: baseline;
+}
+
+.rotulo {
+  color: rgb(255 255 255 / 34%);
+  font-size: 8px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+.valor {
+  color: rgb(255 255 255 / 86%);
+  font-size: var(--dfs-valor, 11px);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.16em;
+  white-space: nowrap;
+}
+
+.parte {
+  flex: none;
+  min-width: 4ch;
+  color: rgb(255 255 255 / 62%);
   font-size: 9px;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.22em;
-  white-space: nowrap;
+  letter-spacing: 0.12em;
+  text-align: right;
 }
