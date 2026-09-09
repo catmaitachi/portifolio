@@ -30,28 +30,17 @@
   /* a proporção do header.jpg da Steam é 460x215 */
   --arte-ar: 0.467;
 
-  /* a pilha: largura da carta, o quanto sobra à vista, e o lugar da legenda */
-  --carta-w: clamp(104px, 14vmin, 140px);
-
   /**
-   * A fração da largura que cada carta deixa à mostra, **sem unidade**.
+   * A largura do cartão da faixa, **entre** o pôster de Filmes e o cartão maior
+   * que esta seção já teve.
    *
-   * Escrita como porcentagem ela entra numa multiplicação por um comprimento e
-   * numa subtração de 1, e `calc` recusa as duas: a declaração inteira é
-   * descartada, sem erro no console, e a pilha volta a ser uma fila de cartões
-   * separados. Foi o que aconteceu na primeira versão.
+   * Filmes é pequeno porque tem duas faixas empilhadas numa seção de uma tela de
+   * altura; Jogos tem uma só, com o destaque acima dela, e ali sobra altura para
+   * o cartão ser maior sem passar do rodapé. Igual aos dois seria errado pelos
+   * dois lados: no tamanho de Filmes a arte não aproveita o espaço que existe, e
+   * no tamanho anterior as duas seções vizinhas deixariam de se parecer.
    */
-  --carta-visivel: 0.42;
-  --carta-legenda: 42px;
-
-  /* o quanto cada carta se afasta da anterior enquanto a pilha está apontada */
-  --carta-afasta: calc(var(--carta-w) * 0.14);
-
-  /* o que ainda falta abrir, na carta apontada, depois desse afastamento */
-  --carta-abre: calc(var(--carta-w) * 0.46);
-
-  /* metade para cada lado: a pilha abre onde o ponteiro está, e não a partir da ponta */
-  --carta-meio: calc(var(--carta-abre) / 2);
+  --faixa-item: clamp(88px, 11.5vmin, 124px);
 }
 
 .bloco {
@@ -200,247 +189,65 @@
   hyphens: manual;
 }
 
-/**
- * A pilha.
- *
- * Os jogos recentes deixaram de ser uma grade e viraram uma **pilha horizontal**:
- * as capas se sobrepõem, cada uma cobrindo a maior parte da anterior, e o que
- * sobra à vista de quem está embaixo é uma fatia da própria capa. Apontar uma
- * traz ela para a frente inteira.
- *
- * A troca resolve duas coisas. A grade gastava uma linha inteira por três ou
- * quatro jogos, e a seção vai passar a dividir o espaço com o League of Legends
- * (ver `pendencias.md`) — empilhadas, oito capas custam o que três custavam. E a
- * capa passou a ser a **em pé** (600x900, a da biblioteca da Steam): numa pilha
- * horizontal o que se vê de quem está embaixo é uma tira vertical, e a arte
- * deitada da loja não tem altura para sobreviver a esse recorte.
- *
- * **A ordem é a que a Steam devolve**, do mais recente para o mais antigo, e é
- * ela que decide quem fica por cima. Uma pilha em que o topo não é o mais novo
- * não é uma pilha, é um monte.
- *
- * Não há giro nem perspectiva aqui, e houve: a primeira versão inclinava cada
- * capa em 3D para imitar uma prateleira vista de esguelha, e a imitação não
- * pegou. A sobreposição sozinha já diz o que precisava ser dito, e diz sem
- * cobrar um ângulo em que nenhuma arte é legível.
- */
-.pilha {
+.cartao {
   display: flex;
-  align-items: flex-end;
-  margin: 0;
-
-  /* a folga é onde a carta apontada cresce, e onde a legenda dela aparece */
-  padding: 4px 0 var(--carta-legenda);
-
-  /**
-   * As duas pontas reservam o que o gesto desloca, senão a seção ganha rolagem
-   * lateral no primeiro apontar. À direita cabem o afastamento inteiro e a
-   * metade que abre; à esquerda, só a metade, que é o quanto quem está antes da
-   * carta apontada recua.
-   */
-  padding-inline-start: var(--carta-meio);
-  padding-inline-end: calc((var(--total, 6) - 1) * var(--carta-afasta) + var(--carta-meio));
-  list-style: none;
-}
-
-/**
- * Cada carta mostra só uma fatia, e a de cima cobre o resto.
- *
- * A sobreposição é margem negativa, não `gap`, porque é ela que faz a pilha ser
- * pilha: o que se vê de cada uma é `--carta-visivel` da largura dela.
- */
-.carta {
-  position: relative;
-  flex: none;
-  width: var(--carta-w);
-  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.carta + .carta {
-  margin-inline-start: calc(var(--carta-w) * (var(--carta-visivel) - 1));
-}
-
-/**
- * A ordem de pintura é a **inversa** da ordem do DOM.
- *
- * A pilha cresce para a direita e o topo dela é a primeira carta, que é a mais
- * recente; sem `--fundo`, a vizinha da direita cobriria justamente quem deveria
- * estar por cima, e a leitura da ordem se inverteria. Apontada, a carta sobe
- * para a frente de todas.
- */
-.carta {
-  z-index: var(--fundo, 1);
-}
-
-.carta:hover,
-.carta:focus-within {
-  z-index: 99;
-}
-
-/**
- * A pilha **se solta inteira** quando alguém a aponta, e depois **abre onde o
- * ponteiro está**.
- *
- * São dois movimentos e eles resolvem coisas diferentes. Antes havia só o
- * segundo, e ele era feio na ponta direita: a carta apontada subia para a frente
- * de todas e passava por cima das que vinham antes dela, então apontar o fim da
- * pilha cobria o começo. Empurrar só quem vem depois nunca ia consertar isso,
- * porque o problema é o que fica **atrás** do ponteiro.
- *
- * - **o afastamento geral** é proporcional à posição (`--ordem`), então a pilha
- *   se abre em leque a partir da esquerda assim que o ponteiro chega. Ele existe
- *   para que, na hora de levantar uma carta, quase não haja mais o que cobrir;
- * - **a abertura local** é o resto, dividido em dois: quem vem antes da carta
- *   apontada recua meia abertura e quem vem depois avança a outra metade. A
- *   pilha abre um vão no lugar exato onde se está olhando, em vez de empurrar
- *   tudo para um lado só, e a largura total cresce sempre a mesma coisa, não
- *   importa qual carta seja.
- *
- * Os dois viajam no **mesmo** `transform`, somados dentro de um `calc`: são
- * translações no mesmo eixo do mesmo elemento, e escritas em duas declarações a
- * segunda apagaria a primeira. Quem escolhe o valor de `--desloca` são os
- * seletores abaixo; quem o aplica é a regra do leque, uma só.
- *
- * `:has` é o que permite falar de quem vem **antes**, e não tem substituto aqui:
- * o combinador de irmão só anda para a frente. A alternativa seria um índice de
- * carta apontada no React, isto é, um render por movimento de ponteiro sobre uma
- * fileira de imagens.
- */
-.pilha:hover .carta,
-.pilha:focus-within .carta {
-  transform: translateX(calc(var(--ordem, 0) * var(--carta-afasta) + var(--desloca, 0px)));
-}
-
-.carta:hover ~ .carta,
-.carta:focus-within ~ .carta {
-  --desloca: var(--carta-meio);
-}
-
-.carta:has(~ .carta:hover),
-.carta:has(~ .carta:focus-within) {
-  --desloca: calc(var(--carta-meio) * -1);
-}
-
-.link {
-  display: block;
+  flex-direction: column;
+  gap: 7px;
   color: inherit;
   text-decoration: none;
 }
 
+/**
+ * A moldura da arte existe mesmo sem arte, e a arte fica colorida.
+ *
+ * Identidade de terceiro não se repinta, como os banners de projeto. Quando a
+ * Steam não tem a arte em pé, o que sobra é um retângulo de 1px na proporção
+ * certa, que é o espaço reservado de sempre; sem ele seria o ícone de imagem
+ * quebrada do navegador, a única coisa fora da paleta na página inteira.
+ *
+ * É a mesma peça do pôster de Filmes, com o mesmo 2:3 e a mesma inclinação: as
+ * duas faixas precisam ter a mesma silhueta para as seções vizinhas não lerem
+ * como dois desenhos diferentes.
+ */
 .capa {
   position: relative;
   display: block;
-  width: 100%;
   aspect-ratio: 2 / 3;
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 14%);
+  border: 1px solid rgb(255 255 255 / 12%);
   border-radius: 2px;
   background: rgb(255 255 255 / 3%);
+  opacity: 0.84;
 
-  /**
-   * A sombra sai pela **esquerda**, que é o lado por onde a carta cobre a de
-   * baixo. É ela que separa uma capa da outra: sem sombra, oito artes coloridas
-   * encostadas leem como uma faixa só, e a moldura de 1px some dentro delas.
-   */
-  box-shadow: -10px 0 16px rgb(0 0 0 / 62%);
+  /* o clarão acompanha a largura da capa, não os 240px do retrato */
+  --brilho-r: 130px;
+
+  /* a inclinação é escrita pelo JS (ver `useInclinacao`); daqui sai o retorno */
+  transform-style: preserve-3d;
+  will-change: transform;
   transition:
-    border-color 0.45s,
-    opacity 0.45s,
-    transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+    opacity 0.35s,
+    border-color 0.35s,
+    transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 @supports (corner-shape: bevel) {
   .capa {
-    border-radius: 10px 2px;
+    border-radius: 12px 2px;
     corner-shape: bevel;
   }
 }
 
-/* arte de jogo é identidade de terceiro: fica colorida, como os banners */
+.cartao:hover .capa {
+  border-color: rgb(255 255 255 / 28%);
+  opacity: 1;
+}
+
 .capa img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-/**
- * A legenda mora fora da capa, e o lugar dela é reservado o tempo todo.
- *
- * Ocupando espaço só quando aparece, ela empurraria a seção inteira a cada
- * apontar, que é justamente o degrau que faz a escala que cabe oscilar (ver
- * `useEscalaQueCabe`).
- */
-.legenda {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  width: max-content;
-  max-width: calc(var(--carta-w) * 2.2);
-  padding-top: 8px;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-/**
- * Apontar levanta a carta, e o teclado faz o mesmo pelo `:focus-within`.
- *
- * Uma pilha que só se abre para o ponteiro deixaria os jogos ilegíveis para quem
- * navega por tabulação, e ali o foco é exatamente o mesmo sinal do hover: alguém
- * está olhando para esta.
- */
-.carta:hover .capa,
-.carta:focus-within .capa {
-  border-color: rgb(255 255 255 / 32%);
-  transform: translateY(-8px) scale(1.05);
-}
-
-/**
- * Apontada a pilha, as outras capas **recuam em luz**.
- *
- * Com o leque aberto, todas as artes ficam à vista ao mesmo tempo, e oito
- * imagens coloridas lado a lado não dizem qual delas está sendo apontada: o
- * levantar de 8px sozinho é pouco contra isso. Apagar as demais é o que resta,
- * e é o recurso que a página já usa nos cartões laterais da órbita de Projetos.
- *
- * É opacidade, e não `filter`: a paleta é monocromática mas a arte é identidade
- * de terceiro e não se repinta, então o que se mexe é o quanto dela chega, nunca
- * a cor.
- */
-.pilha:hover .capa,
-.pilha:focus-within .capa {
-  opacity: 0.5;
-}
-
-.carta:hover .capa,
-.carta:focus-within .capa {
-  opacity: 1;
-}
-
-.carta:hover .legenda,
-.carta:focus-within .legenda {
-  opacity: 1;
-}
-
-/**
- * O contorno de foco acompanha a capa, não a caixa do link.
- *
- * A capa cresce e sobe quando é apontada, e o link continua na caixa de layout:
- * o contorno padrão desenharia um retângulo deslocado do que se vê, e a única
- * coisa pior que não ter indicador de foco é ter um apontando para o lugar
- * errado. Mudar de elemento é tudo que ele precisa — espessura, cor e
- * afastamento continuam sendo os do `reset.css`.
- */
-.link:focus-visible {
-  outline: none;
-}
-
-.link:focus-visible .capa {
-  outline: 1px solid rgb(255 255 255 / 55%);
-  outline-offset: 3px;
 }
 
 .nomePequeno {
@@ -474,49 +281,6 @@
   }
 
   .secao {
-    --carta-w: clamp(92px, 28vw, 116px);
-  }
-}
-
-/**
- * **Sem ponteiro não há pilha.** A carta empilhada depende de alguém poder
- * apontá-la para vir à frente, e num aparelho de toque isso não existe: as capas
- * ficariam cobertas para sempre, com nome e horas invisíveis.
- *
- * Ali ela vira o que já resolve isso em Filmes: uma faixa que rola de lado, com
- * as capas separadas e a legenda à mostra. É a mesma decisão da frase do
- * cabeçalho de modo, e pela mesma razão.
- */
-@media (hover: none) {
-  .pilha {
-    gap: 12px;
-    padding: 4px 0 0;
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    overscroll-behavior-x: contain;
-  }
-
-  .carta + .carta {
-    margin-inline-start: 0;
-  }
-
-  /* nada se afasta nem abre: a faixa já mostra todas as capas separadas */
-  .pilha {
-    --carta-afasta: 0px;
-    --carta-meio: 0px;
-  }
-
-  .carta {
-    scroll-snap-align: start;
-  }
-
-  .capa {
-    box-shadow: none;
-  }
-
-  .legenda {
-    position: static;
-    max-width: 100%;
-    opacity: 1;
+    --faixa-item: clamp(84px, 26vw, 104px);
   }
 }

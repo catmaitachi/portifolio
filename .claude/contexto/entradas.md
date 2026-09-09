@@ -15,7 +15,7 @@ entra com um gesto próprio**. `inicio` já tinha o seu: o zoom da câmera saind
 | Projetos | os cartões sobem, o do meio primeiro | `ProjectCard.module.css` |
 | Trajetória | duas ondas opostas giram e param; os nós acendem atrás delas | `TimelineCurve.module.css` |
 | Música | as linhas das duas listas chegam da esquerda, e o que está tocando sobe por último | `MusicSection.module.css` |
-| Jogos | as capas sobem, a do destaque antes das outras | `GamesSection.module.css` |
+| Jogos | o destaque sobe, e as capas da faixa sobem depois dele | `GamesSection.module.css` |
 | Filmes | os pôsteres se acendem, faixa por faixa | `FilmsSection.module.css` |
 | Contato | os canais chegam das laterais, o do meio primeiro | `ChannelCard.module.css` |
 
@@ -62,8 +62,9 @@ em 0,9s (`section.module.css`), e é fácil escrever uma cascata que se some a e
 dele: foi o que aconteceu em Jogos, onde as capas subiam 22px em 0,6s sem atraso nenhum. Os dois
 movimentos viravam um só, o menor terminava antes do maior, e a seção aparecia **sem entrada
 nenhuma** — não uma entrada discreta, uma entrada invisível. A cascata de lá hoje começa em 520ms, já
-com o bloco assentando, e as distâncias subiram para 40px no destaque e 28px nas capas, pela regra
-acima de a distância acompanhar o tamanho.
+com o bloco assentando, e a distância do destaque subiu para 40px, pela regra acima de a distância
+acompanhar o tamanho. As capas da faixa sobem só 14px, e ali o limite é outro: elas vivem dentro de
+um `overflow-x`, que corta no eixo Y tudo que passar do recuo da faixa.
 
 Quem escapa disso são as entradas que **não** transladam no eixo Y: os pôsteres de Filmes se acendem,
 e por isso leem por cima do movimento do bloco sem precisar esperá-lo.

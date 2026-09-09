@@ -309,6 +309,8 @@
     "experiencia": "Journey — use the arrow keys to move through the years",
     "canais": "Contact channels",
     "retrato": "Portrait",
+    "faixaAntes": "Previous in {lista}",
+    "faixaDepois": "Next in {lista}",
     "perfil": "My {rede} profile"
   }
 }

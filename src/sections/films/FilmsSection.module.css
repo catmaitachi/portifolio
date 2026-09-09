@@ -25,95 +25,13 @@
  */
 .secao {
   --poster: clamp(76px, 9.5vmin, 104px);
+
+  /* a largura do item da faixa comum (ver `sections/Faixa.module.css`) */
+  --faixa-item: var(--poster);
 }
 
 .bloco {
   max-width: 1000px;
-}
-
-.grupo {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-width: 0;
-}
-
-/* o mesmo rótulo de lista da seção de Música: as duas são listas de dado de fora */
-.tituloLista {
-  margin: 0;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgb(255 255 255 / 10%);
-  color: rgb(255 255 255 / 40%);
-  font-size: 8.5px;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  text-align: left;
-  hyphens: manual;
-}
-
-/**
- * A faixa que rola de lado.
- *
- * A rolagem é **nativa**: arrasto, roda e inércia vêm de graça, e não há um
- * quadro de JavaScript envolvido. É a mesma escolha do carrossel de formações e
- * da faixa de seções do mobile.
- *
- * Três coisas aqui não são opcionais, e as três já morderam este projeto em
- * outro lugar:
- *
- * - **`flex: none` nos itens.** Sem ele os pôsteres se comprimem para caber, a
- *   faixa nunca transborda e a rolagem não tem o que rolar;
- * - **`overscroll-behavior-inline: contain`**, senão chegar ao fim da faixa
- *   encadeia o gesto para fora dela;
- * - **`padding-bottom`**, porque `overflow-x` obriga o eixo Y a computar `auto`
- *   junto, e o que passar da caixa é cortado pela própria faixa.
- *
- * O `scroll-snap` é `proximity`, não `mandatory`: aqui não há um item "ativo"
- * que precise assentar no lugar certo, e obrigar o encaixe tiraria de quem
- * arrasta a liberdade de parar onde quiser.
- */
-/**
- * A faixa **reserva folga em volta**, e devolve o espaço com margem negativa.
- *
- * `overflow-x: auto` obriga o eixo Y a computar `auto` junto, então tudo que
- * passar da caixa é cortado pela própria faixa — e o pôster passa, porque ele
- * cresce e inclina ao ser apontado (ver `useInclinacao`). O recuo dá a ele por
- * onde crescer, e a margem negativa devolve ao layout o espaço que o recuo
- * tomou, então nada em volta se mexeu.
- */
-.carrossel {
-  display: flex;
-  gap: clamp(10px, 1.8vmin, 20px);
-  margin: -14px -14px 0;
-  padding: 14px 14px 20px;
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
-  overscroll-behavior-inline: contain;
-  list-style: none;
-  scrollbar-width: none;
-}
-
-.carrossel::-webkit-scrollbar {
-  display: none;
-}
-
-/**
- * O apontado passa a ser pintado por cima dos vizinhos.
- *
- * Um elemento com `transform` cria contexto de empilhamento mas continua sendo
- * pintado na ordem do DOM: sem isso o pôster que cresce fica **por baixo** do
- * seguinte, e a borda dele aparece cortada em linha reta bem no meio do gesto.
- * `z-index` só faz efeito com posicionamento, daí o `relative`.
- */
-.carrossel > li {
-  position: relative;
-  flex: none;
-  width: var(--poster);
-  scroll-snap-align: start;
-}
-
-.carrossel > li:hover {
-  z-index: 2;
 }
 
 .cartao {

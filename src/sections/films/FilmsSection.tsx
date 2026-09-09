@@ -6,6 +6,7 @@ import { useInclinacao } from '~/hooks/useInclinacao';
 import { useRemoto } from '~/hooks/useRemoto';
 import { useT } from '~/i18n/useLanguage';
 import { EstadoRemoto } from '../EstadoRemoto';
+import { Faixa } from '../Faixa';
 import { PerfilExterno } from '../PerfilExterno';
 import comum from '../section.module.css';
 import type { SectionProps } from '../types';
@@ -114,20 +115,15 @@ function Cartao({ filme, posicao }: { filme: Filme; posicao?: number }) {
 }
 
 /**
- * Uma faixa de filmes que rola de lado.
+ * Uma faixa de filmes.
  *
- * **Carrossel, e não grade**, porque agora são duas listas numa seção de uma
- * tela de altura: empilhadas em grade elas passariam do rodapé, e reduzir o
- * pôster até caber deixaria os dois blocos ilegíveis. Deitada, cada lista custa
- * uma linha, e o que não cabe na largura continua alcançável.
+ * A mecânica da rolagem toda mora em `sections/Faixa`, compartilhada com os
+ * recentes de Jogos: as duas seções são vizinhas no mesmo lado do site e
+ * mostram a mesma fileira de cartões, e mecânicas diferentes ali leem como
+ * descuido. O que sobra aqui é o que é de Filmes, que é o cartão.
  *
- * A rolagem é **nativa** — arrasto, roda e inércia vêm de graça, como no
- * carrossel de formações. A faixa entra na tabulação (`tabIndex`) porque uma
- * região rolável que não recebe foco é inalcançável por teclado, e o rótulo é o
- * mesmo título que está escrito ao lado dela.
- *
- * `--base` é o atraso de onde a entrada desta faixa começa: as duas listas
- * chegam uma depois da outra, e não ao mesmo tempo.
+ * `base` é o atraso de onde a entrada desta faixa começa: as duas listas chegam
+ * uma depois da outra, e não ao mesmo tempo.
  */
 function Carrossel({
   titulo,
@@ -142,21 +138,13 @@ function Carrossel({
   ranqueada?: boolean;
 }) {
   return (
-    <div className={styles.grupo}>
-      <p className={styles.tituloLista}>{titulo}</p>
-      <ul
-        className={styles.carrossel}
-        style={{ '--base': `${base}ms` } as React.CSSProperties}
-        tabIndex={0}
-        aria-label={titulo}
-      >
-        {filmes.map((f, i) => (
-          <li key={f.id} style={{ '--ordem': i } as React.CSSProperties}>
-            <Cartao filme={f} posicao={ranqueada ? i + 1 : undefined} />
-          </li>
-        ))}
-      </ul>
-    </div>
+    <Faixa titulo={titulo} base={base} total={filmes.length}>
+      {filmes.map((f, i) => (
+        <li key={f.id} style={{ '--ordem': i } as React.CSSProperties}>
+          <Cartao filme={f} posicao={ranqueada ? i + 1 : undefined} />
+        </li>
+      ))}
+    </Faixa>
   );
 }
 

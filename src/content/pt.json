@@ -309,6 +309,8 @@
     "experiencia": "Trajetória — use as setas para percorrer os anos",
     "canais": "Canais de contato",
     "retrato": "Retrato",
+    "faixaAntes": "Anterior em {lista}",
+    "faixaDepois": "Próximo em {lista}",
     "perfil": "Meu perfil no {rede}"
   }
 }

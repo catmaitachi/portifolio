@@ -1,0 +1,138 @@
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/**
+ * A linha do rótulo, com as setas fechando pela direita.
+ *
+ * É o arranjo do cabeçalho da seção, onde o título abre a régua pela esquerda e
+ * o ícone de perfil a fecha pela direita. O risco de 1px liga os dois, e é ele
+ * que dá à faixa uma borda superior mesmo quando as setas não existem.
+ */
+.linha {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
+}
+
+/* o mesmo rótulo de lista da seção de Música: todas são listas de dado de fora */
+.titulo {
+  margin: 0;
+  color: rgb(255 255 255 / 40%);
+  font-size: 8.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-align: left;
+  hyphens: manual;
+}
+
+.setas {
+  display: flex;
+  flex: none;
+  gap: 4px;
+  align-items: center;
+
+  /* as duas vagas ficam reservadas: uma seta que some não pode mexer no rótulo */
+  min-width: 44px;
+  justify-content: flex-end;
+}
+
+/**
+ * A seta é a mesma dos passos da Trajetória: 22px de área de toque, sem moldura,
+ * e o desenho é um canto de 1px girado. Nada de glifo — a fonte da página é
+ * monoespaçada e o caractere de seta dela tem peso de texto, não de traço.
+ */
+.seta {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: rgb(255 255 255 / 42%);
+  cursor: pointer;
+  transition: color 0.25s;
+}
+
+.seta:hover:not(:disabled) {
+  color: #fff;
+}
+
+/* na ponta o botão apaga em vez de sumir, como os passos da Trajetória */
+.seta:disabled {
+  opacity: 0.24;
+  cursor: default;
+}
+
+.ponta {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-top: 1px solid currentcolor;
+  border-right: 1px solid currentcolor;
+}
+
+.seta[data-lado='antes'] .ponta {
+  transform: rotate(-135deg) translate(-1px, -1px);
+}
+
+.seta[data-lado='depois'] .ponta {
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+
+/**
+ * A faixa **reserva folga em volta**, e devolve o espaço com margem negativa.
+ *
+ * `overflow-x: auto` obriga o eixo Y a computar `auto` junto, então tudo que
+ * passar da caixa é cortado pela própria faixa — e o cartão passa, porque ele
+ * cresce e inclina ao ser apontado (ver `useInclinacao`). O recuo dá a ele por
+ * onde crescer, e a margem negativa devolve ao layout o espaço que o recuo
+ * tomou, então nada em volta se mexeu.
+ */
+.faixa {
+  display: flex;
+  gap: clamp(10px, 1.8vmin, 20px);
+  margin: -14px -14px 0;
+  padding: 14px 14px 20px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-inline: contain;
+  list-style: none;
+  scrollbar-width: none;
+}
+
+.faixa::-webkit-scrollbar {
+  display: none;
+}
+
+/**
+ * O apontado passa a ser pintado por cima dos vizinhos.
+ *
+ * Um elemento com `transform` cria contexto de empilhamento mas continua sendo
+ * pintado na ordem do DOM: sem isso o cartão que cresce fica **por baixo** do
+ * seguinte, e a borda dele aparece cortada em linha reta bem no meio do gesto.
+ * `z-index` só faz efeito com posicionamento, daí o `relative`.
+ *
+ * A largura vem de `--faixa-item`, que cada seção define: é o único número que
+ * distingue uma faixa da outra, e é por isso que ele é o único que não mora
+ * aqui.
+ */
+.faixa > li {
+  position: relative;
+  flex: none;
+  width: var(--faixa-item, 104px);
+  scroll-snap-align: start;
+}
+
+.faixa > li:hover {
+  z-index: 2;
+}

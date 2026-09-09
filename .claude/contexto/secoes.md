@@ -399,58 +399,41 @@ reservado dos banners — o endereço da arte da Steam é perguntado a cada resp
 e pode não vir (ver `dados.md`), e sem a moldura sobraria o ícone de imagem quebrada do navegador, a
 única coisa fora da paleta na página inteira.
 
-**Os recentes de Jogos são uma pilha horizontal.** As capas se sobrepõem, cada uma cobrindo a maior
-parte da anterior, e o que sobra à vista de quem está embaixo é uma tira da própria capa; apontar uma
-traz ela para a frente inteira e mostra o nome e as horas. A ordem é a que a Steam devolve, do mais
-recente para o mais antigo, e é ela que decide quem fica por cima, então a ordem de pintura é a
-**inversa** da ordem do DOM. Uma pilha em que o topo não é o mais novo não é uma pilha.
+**Jogos e Filmes mostram a mesma faixa**, e ela mora num lugar só: `sections/Faixa`. Uma fileira de
+cartões que rola de lado com mecânicas diferentes em duas seções vizinhas do mesmo lado do site lê
+como descuido, e a faixa tem detalhes que não são opcionais e nem um deles é óbvio ao ler o CSS.
+Ficaram na peça comum a rolagem, o encaixe, o recuo com margem negativa, a tabulação, a ordem de
+pintura do apontado e as setas; ficou em cada seção só o cartão, e a largura dele, por `--faixa-item`.
 
-Era uma grade `auto-fill`, e a troca resolve duas coisas. A grade gastava uma linha inteira por três
-ou quatro jogos, e a seção vai passar a dividir o espaço com o League of Legends (ver
-`pendencias.md`): empilhadas, oito capas custam o que três custavam. E a capa passou a ser a **em pé**
-(600x900, a da biblioteca da Steam), porque numa pilha horizontal o que se vê de quem está embaixo é
-uma tira vertical, e a arte deitada da loja não tem altura para sobreviver a esse recorte. As duas
-chegam do contrato, e uma não é a outra recortada.
+**Os recentes de Jogos são essa faixa**, com a capa **em pé** (600x900, a da biblioteca da Steam), na
+mesma proporção 2:3 do pôster de Filmes, e é isso que faz as duas terem a mesma silhueta. Eram uma
+grade `auto-fill`, e a troca resolve duas coisas: a grade gastava uma linha inteira por três ou
+quatro jogos, e a seção vai passar a dividir o espaço com o League of Legends (ver `pendencias.md`).
 
-**Apontar a pilha a solta inteira, e apontar uma carta abre um vão onde o ponteiro está.** São dois
-movimentos, e eles resolvem coisas diferentes. Havia só o segundo, empurrando quem vinha depois, e
-ele era feio na ponta direita: a carta apontada subia para a frente de todas e passava por cima das
-que vinham antes dela, então apontar o fim da pilha cobria o começo. Empurrar só quem vem depois
-nunca ia consertar isso, porque o problema é o que fica **atrás** do ponteiro.
+**O cartão de Jogos é maior que o de Filmes, e menor que uma grade.** Filmes é pequeno porque tem
+duas faixas empilhadas numa seção de uma tela de altura; Jogos tem uma só, com o destaque acima dela,
+e ali sobra altura. Igualar os dois erraria pelos dois lados: no tamanho de Filmes a arte não
+aproveita o espaço que existe, e maior que isso as duas seções vizinhas deixam de se parecer.
 
-O afastamento geral é proporcional à posição, então a pilha se abre em leque assim que o ponteiro
-chega, e na hora de levantar uma carta quase não há mais o que cobrir. A abertura local é o resto,
-dividido em dois: quem vem antes recua meia abertura, quem vem depois avança a outra metade. A
-largura total cresce sempre a mesma coisa, não importa qual carta seja, e as duas pontas da faixa
-reservam esse crescimento, senão a seção ganha rolagem lateral no primeiro apontar.
+Duas versões ficaram pelo caminho antes desta, e vale saber por quê. Uma inclinava cada capa em 3D
+para imitar uma prateleira vista de esguelha: o ângulo que fazia a fileira parecer uma prateleira era
+o mesmo que deixava toda arte ilegível. A outra era uma pilha sobreposta que abria no ponto do
+ponteiro, e ela funcionava, mas era um comportamento que só existia ali, ao lado de uma seção que
+fazia a mesma coisa de outro jeito.
 
-Os dois deslocamentos viajam no **mesmo** `transform`, somados dentro de um `calc`: são translações
-no mesmo eixo do mesmo elemento, e em duas declarações a segunda apagaria a primeira. É a regra do
-`<g>` da curva da Trajetória vista pelo outro lado, onde a saída foi separar os elementos porque um
-dos dois vinha do JavaScript.
+**As faixas têm setas**, na linha do rótulo, à direita. A rolagem nativa continua sendo o caminho
+principal, mas ela só existe para quem já sabe que a fileira anda: um mouse sem roda horizontal, um
+trackpad em que o gesto lateral não é óbvio, e uma faixa que não diz que continua termina no primeiro
+cartão cortado. Elas ficam na linha do rótulo, e não sobre os cartões, porque sobrepostas cobririam a
+arte que a faixa existe para mostrar e precisariam de um fundo para serem legíveis por cima dela, que
+é uma caixa cheia numa página feita de linhas de 1px. Ali elas fecham pela direita a régua que o
+rótulo abre pela esquerda, que é o arranjo do ícone de perfil no cabeçalho da seção.
 
-`:has` é o que permite falar de quem vem **antes**, e não tem substituto aqui: o combinador de irmão
-só anda para a frente. A alternativa seria guardar no React qual carta está apontada, isto é, um
-render por movimento de ponteiro sobre uma fileira de imagens.
-
-**E as outras capas recuam em luz.** Com o leque aberto, todas as artes ficam à vista ao mesmo tempo,
-e oito imagens coloridas lado a lado não dizem qual está sendo apontada: os 8px de levantar sozinhos
-são pouco contra isso. É opacidade, e não `filter`: a arte é identidade de terceiro e não se
-repinta, então o que se mexe é o quanto dela chega, nunca a cor. É o mesmo recurso dos cartões
-laterais da órbita de Projetos.
-
-**Sem ponteiro não há pilha.** A carta empilhada depende de alguém poder apontá-la, e num aparelho de
-toque isso não existe: as capas ficariam cobertas para sempre. Em `(hover: none)` ela vira o que já
-resolve isso em Filmes, uma faixa que rola de lado com as capas separadas e a legenda à mostra. É a
-mesma decisão da frase do cabeçalho de modo.
-
-Uma primeira versão inclinava cada capa em 3D para imitar uma prateleira vista de esguelha, e a
-imitação não pegou: a sobreposição sozinha já diz o que precisava ser dito, e diz sem cobrar um
-ângulo em que nenhuma arte é legível.
-
-O contorno de foco mora na **capa**, e não na caixa do link: a capa cresce e sobe quando é apontada e
-o link continua na caixa de layout, então o contorno padrão desenharia um retângulo deslocado do que
-se vê. A única coisa pior que não ter indicador de foco é ter um apontando para o lugar errado.
+**Faixa que coube inteira não ganha seta nenhuma**, porque não há o que rolar; onde elas existem,
+**apagam** nas pontas e continuam no lugar, como os passos da Trajetória. Sumir na ponta jogaria o
+foco no `body` no meio do gesto de quem navega por teclado, porque a ponta muda durante a própria
+rolagem. E a faixa continua entrando na tabulação: as setas não substituem isso, elas são o caminho
+de quem usa o ponteiro.
 
 **Filmes tem duas faixas, e elas rolam de lado.** Os favoritos vêm antes dos recentes porque são uma
 escolha, e a escolha diz mais sobre quem escreveu a página do que o registro. Empilhadas em grade as

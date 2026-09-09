@@ -261,6 +261,13 @@ export interface Dictionary {
     experiencia: string;
     canais: string;
     retrato: string;
+    /**
+     * Os dois botões de rolagem das faixas, e o `{lista}` deles é o título da
+     * faixa em que estão: "anterior" sozinho não diz anterior do quê numa seção
+     * com duas faixas, e é justamente ali que a pergunta aparece.
+     */
+    faixaAntes: string;
+    faixaDepois: string;
     /** aceita `{rede}` — o nome do serviço vem de `perfis`, não do dicionário */
     perfil: string;
   };
