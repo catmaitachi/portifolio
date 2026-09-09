@@ -92,7 +92,7 @@ Contêiner `.rolagem` (fixo, `scroll-snap-type: y mandatory`, barra oculta) sobr
 seção tem `height: 100%` e `scroll-snap-align: start`. **Só ele rola** — o documento tem
 `overflow: hidden`. O canvas e o HUD ficam fixos atrás.
 
-Sobre, Projetos, Trajetória e Contato compartilham a mesma **composição aberta** (`section.module.css`,
+Sobre, Formação, Projetos, Trajetória e Contato compartilham a mesma **composição aberta** (`section.module.css`,
 puxada por `composes`): índice + risco, título grande, conteúdo sem moldura, bordas de 1px a 13% com
 raio de 2px. Entram por opacidade + 26px de deslocamento quando a seção é a ativa.
 
@@ -123,7 +123,7 @@ porque fora da seção o listener não existe.
 Corolário: os componentes de dentro (o palco da órbita, a curva do tempo) **não tratam ←/→**. Eles
 continuam focáveis e rotulados, mas um segundo handler local só criaria a chance de um passo duplo —
 foi assim que a órbita ficou dependente de foco. A exceção é o carrossel de formações, que trata a
-seta no próprio elemento porque a seção Sobre não reivindica ←/→ para si.
+seta no próprio elemento porque a seção Formação não reivindica ←/→ para si.
 
 `editandoTexto()` — a regra de "aqui a seta é do cursor" — mora junto do hook, e tanto a rolagem
 quanto as seções a usam. Duplicada, ela sairia de sincronia no dia em que um campo novo aparecesse.

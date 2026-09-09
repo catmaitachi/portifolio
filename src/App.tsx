@@ -17,6 +17,7 @@ import { NOVA_NIVEIS } from '~/scene/scenePlan';
 import { SpaceCanvas } from '~/scene/SpaceCanvas';
 import { AboutSection } from '~/sections/about/AboutSection';
 import { ContactSection } from '~/sections/contact/ContactSection';
+import { EducationSection } from '~/sections/education/EducationSection';
 import { FilmsSection } from '~/sections/films/FilmsSection';
 import { GamesSection } from '~/sections/games/GamesSection';
 import { HeroSection } from '~/sections/hero/HeroSection';
@@ -37,6 +38,7 @@ import styles from './App.module.css';
 const MONTAR: Record<SectionKey, (p: SectionProps) => React.ReactNode> = {
   inicio: (p) => <HeroSection {...p} />,
   sobre: (p) => <AboutSection {...p} />,
+  formacao: (p) => <EducationSection {...p} />,
   projetos: (p) => <ProjectsSection {...p} />,
   experiencia: (p) => <JourneySection {...p} />,
   musica: (p) => <MusicSection {...p} />,

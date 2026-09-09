@@ -42,6 +42,7 @@ const SLUG_MODO: Record<ModoKey, string> = {
 const SLUG_SECAO: Record<SectionKey, string> = {
   inicio: 'home',
   sobre: 'about',
+  formacao: 'education',
   projetos: 'projects',
   experiencia: 'journey',
   musica: 'music',

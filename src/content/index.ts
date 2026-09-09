@@ -88,6 +88,7 @@ export function format(template: string, vars: Record<string, string>): string {
 
 export type {
   Canal,
+  DadoPessoal,
   Dictionary,
   Experiencia,
   Formacao,

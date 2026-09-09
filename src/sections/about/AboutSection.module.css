@@ -21,6 +21,9 @@
   --txt: min(34vh, 320px);
   --pfs: clamp(12px, 1.6vmin, 16px);
   --plh: 1.95;
+  --fatos-gap: clamp(28px, 5vmin, 64px);
+  --fatos-pt: clamp(16px, 2.4vmin, 26px);
+  --fatos-fs: clamp(11px, 1.4vmin, 13px);
 }
 
 .bloco {
@@ -92,6 +95,72 @@
   background: rgb(255 255 255 / 28%);
 }
 
+/**
+ * Os dois fatos sob a bio, no lugar onde ficava o carrossel de formação.
+ *
+ * É uma linha de rótulo em cima e valor embaixo, com a mesma régua dos rótulos
+ * de lista das seções de dado remoto: 8,5px em versalete espaçado para o rótulo,
+ * e o valor no corpo do texto. Eles ficam separados do corpo por um risco de
+ * 1px, que é a única moldura da seção.
+ *
+ * `wrap` porque o rótulo em inglês é mais curto e o valor mais longo, e numa
+ * tela estreita os dois pares descem um sobre o outro em vez de espremerem.
+ */
+.fatos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px var(--fatos-gap);
+  margin: 0;
+  padding: var(--fatos-pt) 0 0;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+  list-style: none;
+}
+
+.fato {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+/**
+ * A entrada acompanha a decifragem da bio em vez de chegar junto com ela.
+ *
+ * O bloco inteiro já entra por opacidade e 26px (`comum.bloco`); o que estes
+ * atrasos fazem é deixar os fatos chegarem **depois** do texto começar a se
+ * resolver, que é a ordem em que a seção se lê. `backwards`, nunca `forwards`,
+ * pela regra de sempre.
+ */
+@keyframes fatoEntra {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.bloco[data-ativo] .fato {
+  animation: fatoEntra 0.5s ease-out backwards;
+  animation-delay: calc(360ms + var(--ordem, 0) * 110ms);
+}
+
+.fatoRotulo {
+  color: rgb(255 255 255 / 40%);
+  font-size: 8.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.fatoValor {
+  overflow: hidden;
+  color: rgb(255 255 255 / 78%);
+  font-size: var(--fatos-fs);
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
 .paragrafo {
   margin: 0;
   color: rgb(255 255 255 / 66%);
@@ -105,29 +174,23 @@
 /**
  * Mobile: empilhado e mais compacto.
  *
- * O Sobre é a seção mais alta das quatro, porque é a única que empilha retrato,
- * texto e formações um sobre o outro. O `zoom` do `.bloco` reduz tudo junto, mas
- * partindo de um conteúdo que já era o mais denso — os números aqui baixam o
- * ponto de partida, e é a soma dos dois que faz a seção caber.
+ * O Sobre empilha retrato, texto e os dois fatos um sobre o outro. O `zoom` do
+ * `.bloco` reduz tudo junto, mas partindo de um conteúdo denso: os números aqui
+ * baixam o ponto de partida, e é a soma dos dois que faz a seção caber.
  */
 @media (width <= 640px) {
   .secao {
     --cols: 1fr;
 
     /**
-     * Respiro entre as três peças empilhadas.
+     * Respiro entre as peças empilhadas.
      *
-     * `--corpo-gap` separa o retrato do texto; `--gap` (da `.secao`) separa o
-     * bloco do carrossel de formações, que é irmão dele e não filho. No desktop
-     * as três estão lado a lado ou têm largura de sobra, e um respiro curto
-     * basta; empilhadas numa coluna estreita elas encostam umas nas outras e a
-     * seção lê como um bloco só.
-     *
-     * Cabem porque o retrato e a coluna de texto encolheram: a folga que a
-     * redução abriu volta aqui como separação, em vez de sobrar no rodapé.
+     * `--corpo-gap` separa o retrato do texto. Empilhados numa coluna estreita
+     * eles encostam um no outro e a seção lê como um bloco só; cabe porque o
+     * retrato e a coluna de texto encolheram, e a folga que a redução abriu
+     * volta aqui como separação em vez de sobrar no rodapé.
      */
     --corpo-gap: 22px;
-    --gap: 24px;
 
     /* empilhado, o retrato está acima do texto e não tem base para respeitar */
     --coluna-max: none;
@@ -135,6 +198,8 @@
     --txt: min(26vh, 180px);
     --pfs: 11px;
     --plh: 1.7;
+    --fatos-gap: 24px;
+    --fatos-pt: 14px;
   }
 
   /* título e texto continuam sendo uma peça só, e não pedem o mesmo respiro */

@@ -2,7 +2,7 @@
 
 ## Requisitos Funcionais (RF)
 
-**RF01** — O sistema deve exibir dois modos, Pessoal e Profissional, cada um com a própria lista de seções navegáveis por scroll vertical com snap. O modo profissional traz Início, Sobre, Projetos, Trajetória e Contato; o pessoal traz Início, Sobre e Contato.
+**RF01** — O sistema deve exibir dois modos, Pessoal e Profissional, cada um com a própria lista de seções navegáveis por scroll vertical com snap. O modo profissional traz Início, Sobre, Formação, Projetos, Trajetória e Contato; o pessoal traz Início, Sobre, Música, Jogos, Filmes e Contato.
 
 **RF01a** — O sistema deve permitir alternar entre os modos por um cabeçalho no topo, que ao receber o ponteiro exibe as seções do modo apontado e anima a transição entre as duas listas.
 
@@ -29,7 +29,11 @@ nunca apresentando falha como ausência.
 
 **RF07** — A seção Início deve exibir etiqueta, nome e legenda, com entrada animada em cascata.
 
-**RF08** — A seção Sobre deve exibir retrato, biografia com rolagem própria e lista de formações em badges.
+**RF08** — A seção Sobre deve exibir retrato, biografia com rolagem própria e os dados de nascimento e residência.
+
+**RF08a** — A biografia deve mudar conforme o modo em vigor, com um texto por modo em cada idioma.
+
+**RF08b** — A seção Formação, exclusiva do modo profissional, deve exibir a lista de formações em badges.
 
 **RF09** — O sistema deve indicar o estado de cada formação (concluído, cursando, pretensão).
 

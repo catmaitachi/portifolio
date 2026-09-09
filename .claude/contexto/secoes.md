@@ -5,7 +5,7 @@
   centrada quando cabe e **rola** quando não cabe, sem cortar o topo. `justify-content: center`
   faria o conteúdo alto transbordar para fora do alcance da rolagem.
   **Toda seção rolável nova precisa de `.rolavel`.**
-- Filhos com `flex: none` — sem `flex-shrink`, que antes comprimia e clipava os badges.
+- Filhos com `flex: none`, sem `flex-shrink`, que antes comprimia e clipava o conteúdo.
 - Bloco de parágrafos com rolagem própria (`--txt`, barra de 3px, `overscroll-behavior: contain`):
   chegar ao fim da bio não pode encadear a rolagem para a seção.
 - **A coluna de texto não passa da base do retrato.** O texto rola dentro do que sobra depois do
@@ -27,6 +27,44 @@
   `style`** dentro de um rAF coalescido. Um `setState` por `pointermove` re-renderizaria a seção
   dezenas de vezes por segundo para mudar dois números de `transform`.
 
+### A bio muda de lado
+
+`sobre.paragrafos` é um `Record` **total por modo**: quem chega pelo lado pessoal não deve ler um
+parágrafo sobre práticas de Engenharia de Software, e quem chega pelo profissional não deve ler
+sobre o que eu ando jogando. O título fica, porque é o mesmo assunto, e a seção continua sendo uma
+só, e o que muda é qual lista o `useDecipher` recebe.
+
+Um lado novo do site **quebra o build** até ter o próprio texto, que é a regra de sempre para
+`Record` de modo (a etiqueta e a legenda do Início já eram assim).
+
+### Os dois fatos, no lugar da formação
+
+A formação **saiu daqui e virou seção** (ver adiante), e no lugar dela ficaram nascimento e
+residência: rótulo em versalete espaçado com o valor embaixo, separados do corpo por um risco de
+1px. São os dois fatos que o retrato não diz, e custam uma linha em vez do bloco mais denso da
+página.
+
+Eles ficam **dentro do bloco**, ao contrário do carrossel que ocupava este lugar: um irmão do
+`.bloco` só se justifica para algo que precise da largura inteira da seção. O valor mora no
+dicionário, e não em `shared.json`, apesar de ser dado: a cidade leva o país escrito no idioma de
+quem lê, e "MG" não diz nada a quem chegou em inglês.
+
+---
+
+## Seção "Formação"
+
+Os badges que ficavam no pé do Sobre, agora com seção própria, **só no modo profissional**. Ela não
+sabe disso: quem decide é a lista do modo em `shared.json`.
+
+Saíram de lá por duas razões que se somam. A primeira é de tamanho: o badge é a peça mais densa da
+página (ver `responsivo.md`), e era ele que obrigava o Sobre inteiro a encolher para caber num
+celular, e com ele fora ela volta ao teto da escala sozinha. A segunda é de leitura: formação
+tem estado, data e progresso, e no rodapé de uma biografia isso lia como legenda do retrato.
+
+O carrossel é filho **da seção**, não do bloco, como já era no Sobre: a entrada dele pende de
+`data-secao-ativa` no ancestral, e `useEscalaQueCabe` mede a seção inteira justamente para alcançar
+irmãos do bloco.
+
 ### Carrossel de formações
 
 Grade estática **enquanto os badges cabem**; vira carrossel só quando não cabem. Um `ResizeObserver`
@@ -42,8 +80,8 @@ segundo para um número que só muda quando o layout muda.
   um leitor de tela não deve encontrar a mesma formação duas vezes.
 - Rolagem **nativa** (swipe e inércia de graça) + deriva de ~34px/s num rAF com acumulador subpixel.
   Arraste, roda do mouse e ←/→ com foco pausam a deriva por 2,2s.
-- O rAF só corre com o carrossel **na tela** (`IntersectionObserver`). A página tem cinco seções e
-  uma está visível por vez: sem isso, o trilho continuaria escrevendo `scrollLeft` a cada quadro
+- O rAF só corre com o carrossel **na tela** (`IntersectionObserver`). A página mostra uma seção por
+  vez: sem isso, o trilho continuaria escrevendo `scrollLeft` a cada quadro
   enquanto o visitante lê Contato, disputando quadro com a cena em canvas por um movimento que
   ninguém vê.
 

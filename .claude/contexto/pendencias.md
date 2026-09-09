@@ -18,6 +18,13 @@
   lista no Letterboxd, deixá-la pública e colar o endereço dela no `.env.local` e nas variáveis da
   Vercel. A raspagem já está testada contra uma lista pública qualquer, e o bloco aparece sozinho
   assim que a variável tiver valor.
+- **Nascimento e residência estão por preencher.** `sobre.dados` foi ao ar com `0000.00` no
+  nascimento e a residência deduzida das três instituições, que são todas de Belo Horizonte. São
+  dados sobre a vida de alguém, como os das formações, e precisam vir de quem os conhece (`sobre.dados`,
+  nos dois dicionários).
+- **A bio do lado pessoal é rascunho.** Ela fala do que as três seções de dado remoto mostram, que é
+  o que dá para afirmar sem inventar biografia. Reescrever com o que ele quiser contar
+  (`sobre.paragrafos.pessoal`, nos dois dicionários).
 - **Conferir os dados das formações.** A `conclusao` do SENAC (`2022.12`) e o `progresso` da PUC
   (`4/8`) entraram como espaço reservado para a feature de hover — são dados reais sobre a vida de
   alguém e precisam ser corrigidos por quem os conhece (`formacoes.lista`, nos dois dicionários).

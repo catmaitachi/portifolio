@@ -42,6 +42,7 @@ const listas = [
   ['projetos.lista', (d) => d.projetos.lista, 'key'],
   ['experiencia.lista', (d) => d.experiencia.lista, 'key'],
   ['formacoes.lista', (d) => d.formacoes.lista, 'slot'],
+  ['sobre.dados', (d) => d.sobre.dados, 'key'],
 ];
 
 for (const [rotulo, pegar, id] of listas) {
@@ -73,11 +74,18 @@ for (const [rotulo, pegar, id] of listas) {
   }
 }
 
-/** `sobre.paragrafos` não tem chave; compara-se só a contagem. */
-if (pt.sobre.paragrafos.length !== en.sobre.paragrafos.length) {
-  problemas.push(
-    `sobre.paragrafos: ${pt.sobre.paragrafos.length} em pt, ${en.sobre.paragrafos.length} em en`,
-  );
+/**
+ * `sobre.paragrafos` não tem chave; compara-se só a contagem, agora por modo.
+ *
+ * O `caminhos()` acima já pega um modo presente em só um idioma (a lista vira
+ * `sobre.paragrafos.<modo>[]`), mas para numa lista e não conta os itens dela.
+ */
+for (const modo of Object.keys(pt.sobre?.paragrafos ?? {})) {
+  const a = pt.sobre.paragrafos[modo] ?? [];
+  const b = en.sobre.paragrafos[modo] ?? [];
+  if (a.length !== b.length) {
+    problemas.push(`sobre.paragrafos.${modo}: ${a.length} em pt, ${b.length} em en`);
+  }
 }
 
 /** Marcadores `{x}` precisam existir dos dois lados, ou a frase perde o valor. */

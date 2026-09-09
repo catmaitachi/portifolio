@@ -130,12 +130,25 @@ Uma entrada em `experiencia.lista` nos dois dicionários. A lista está em **ord
 `tipo` precisa existir em `experiencia.tipos` (`academico`, `extensao`, `estagio`, `freela`).
 `periodo` é **ano.mês** e é rótulo, não posição — o espaçamento na curva é sempre uniforme.
 
+### Os dois textos do Sobre
+
+`sobre.paragrafos` é um bloco por modo (`profissional` e `pessoal`), `Record` total nos dois
+dicionários: um lado novo do site quebra o build até ter o próprio texto. O título é o mesmo dos dois
+lados, porque o assunto é o mesmo.
+
+`sobre.dados` são os fatos sob a bio, hoje nascimento e residência. É lista com `key`, então
+`check:i18n` confere ordem e campos como já faz com projetos e formações, e um terceiro fato não
+pede nada no componente. O valor vai no dicionário apesar de ser dado, ao contrário da versão no
+rodapé: a cidade leva o país escrito no idioma de quem lê.
+
 ### Adicionar uma formação
 
 1. o logo em `src/assets/logos/` (branco sobre transparente, margens recortadas);
 2. uma linha em `LOGOS` (`assets.ts`);
 3. a escala óptica em `shared.json → logos`;
 4. uma entrada em `formacoes.lista` nos dois dicionários, com o mesmo `slot`.
+
+A lista alimenta a **seção Formação**, que existe só no modo profissional (`shared.json → modos`).
 
 ```json
 {

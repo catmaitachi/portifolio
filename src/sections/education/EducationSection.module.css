@@ -1,0 +1,7 @@
+/**
+ * A seção não tem token próprio: os badges trazem os deles
+ * (`EducationCarousel.module.css`) e o resto é a composição aberta de sempre.
+ */
+.bloco {
+  max-width: 960px;
+}

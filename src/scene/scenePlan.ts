@@ -10,7 +10,10 @@ import type { SectionKey } from '~/content';
  *
  * Com uma só, o **canto** passa a ser a identidade da seção, e os quatro estão
  * ocupados: Sobre no inferior direito, Projetos no superior direito, Trajetória
- * no superior esquerdo e Contato no inferior esquerdo. Repetir as coordenadas de
+ * no superior esquerdo e Contato no inferior esquerdo. Os dois modos têm cinco
+ * seções com céu cada um, então cada um tem também um lugar que não é canto
+ * (Formação à esquerda, Filmes à direita), e nos dois ele fica na altura de dois terços, abaixo do
+ * miolo onde o conteúdo mora. Repetir as coordenadas de
  * um `placement` entre seções faz a troca parecer que nada mudou, e agora que a
  * figura é única isso vale ainda mais. As figuras também não se repetem: o céu é
  * parte da identidade da seção.
@@ -28,6 +31,23 @@ export const CEUS: Partial<Record<SectionKey, Ceu>> = {
   sobre: {
     entrada: 1.2,
     placements: [{ key: 'cancer', x: 0.87, y: 0.85, size: 0.22, rotate: 12 }],
+  },
+  /**
+   * Formação fica na **esquerda a dois terços**, que não é canto.
+   *
+   * No lado profissional a sequência é Sobre (inferior direito), Formação,
+   * Projetos (superior direito), Trajetória (superior esquerdo) e Contato
+   * (inferior esquerdo): cinco seções com céu para quatro cantos, o mesmo aperto
+   * que Filmes resolveu do lado pessoal. Aqui a vaga do meio cai entre Sobre e
+   * Projetos, que estão os dois à direita, então a figura vai para a esquerda e
+   * as duas trocas atravessam a tela.
+   *
+   * `pegasus` era a única figura do catálogo sem uso, e o Grande Quadrado é
+   * grande o bastante para sustentar uma borda inteira sem canto para se apoiar.
+   */
+  formacao: {
+    entrada: 1.3,
+    placements: [{ key: 'pegasus', x: 0.12, y: 0.62, size: 0.22, rotate: -9 }],
   },
   projetos: {
     entrada: 1.4,

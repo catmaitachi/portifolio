@@ -2,6 +2,7 @@
   "nav": {
     "inicio": "Home",
     "sobre": "About",
+    "formacao": "Education",
     "projetos": "Projects",
     "experiencia": "Journey",
     "musica": "Music",
@@ -33,15 +34,26 @@
 
   "sobre": {
     "titulo": "About Me",
-    "paragrafos": [
-      "I'm a software designer in the age of AI. While generative models speed up coding, my role lies in what comes before it: envisioning, structuring, and planning solid systems, guided by Software Engineering best practices.",
-      "I believe every project is born from a human need that deserves to be explored, understood, and handled responsibly, since its impact reflects, in the long run, on both the individual and society.",
-      "As a developer, I'm committed to constantly evolving my solutions toward a more sustainable and humane future."  
+    "paragrafos": {
+      "profissional": [
+        "I'm a software designer in the age of AI. While generative models speed up coding, my role lies in what comes before it: envisioning, structuring, and planning solid systems, guided by Software Engineering best practices.",
+        "I believe every project is born from a human need that deserves to be explored, understood, and handled responsibly, since its impact reflects, in the long run, on both the individual and society.",
+        "As a developer, I'm committed to constantly evolving my solutions toward a more sustainable and humane future."
+      ],
+      "pessoal": [
+        "Away from work I'm still near a screen. Most of my free time goes to games, films and music, and all three show up in the sections beside this one, straight from the accounts I use every day.",
+        "This side of the site has no résumé: it's the record of what I've been listening to, playing and watching, and it updates on its own."
+      ]
+    },
+    "dados": [
+      { "key": "nascimento", "rotulo": "Birth", "valor": "0000.00" },
+      { "key": "residencia", "rotulo": "Lives in", "valor": "Belo Horizonte, Brazil" }
     ]
   },
 
   "formacoes": {
     "titulo": "Education",
+    "intro": "Where I studied, where I study, and where I plan to study.",
     "estados": {
       "concluido": "Completed",
       "cursando": "In progress",

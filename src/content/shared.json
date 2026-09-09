@@ -17,6 +17,7 @@
   "secoes": [
     { "key": "inicio" },
     { "key": "sobre" },
+    { "key": "formacao" },
     { "key": "projetos" },
     { "key": "experiencia" },
     { "key": "musica" },
@@ -33,7 +34,7 @@
     },
     {
       "key": "profissional",
-      "secoes": ["inicio", "sobre", "projetos", "experiencia", "contato"],
+      "secoes": ["inicio", "sobre", "formacao", "projetos", "experiencia", "contato"],
       "canais": ["github", "linkedin"]
     }
   ],

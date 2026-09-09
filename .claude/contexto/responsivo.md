@@ -6,7 +6,7 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | Onde | Tokens |
 |---|---|
 | `section.module.css` | `--pt --pb --px --gap` |
-| `AboutSection` | `--retrato-col --retrato-ar --cols --corpo-gap --retrato --coluna-max --txt --pfs --plh` |
+| `AboutSection` | `--retrato-col --retrato-ar --cols --corpo-gap --retrato --coluna-max --txt --pfs --plh --fatos-gap --fatos-pt --fatos-fs` |
 | `EducationCarousel` | `--bw --badge-pad --badge-gap --badge-corpo-gap --logo-w --logo-h --fs-inst --fs-nivel --fs-curso --detalhe-w --detalhe-ml` |
 | `ProjectsSection` | `--pcw --pch --pbh --ph --pr --pperspectiva --pcard` |
 | `JourneySection` | `--exph --exp-cargo --exp-per --exp-curva --exp-rail --exp-fantasma --exp-gap --exp-txt --exp-topo` |
@@ -87,11 +87,16 @@ conteúdo cresça, e o hook, medindo só o bloco, não via motivo para encolher 
 tamanho cheio enquanto as outras reduziam. Um teto que vale para todas resolve, porque não depende
 de o bloco estar transbordando.
 
-Mesmo com o teto ele continuou grande, e a razão é que **escala não conserta densidade**. O Sobre é a
-única seção que empilha três coisas (retrato, texto e formações), e o badge de formação é a peça mais
-densa da página: logo, três linhas e um medidor dentro de uma moldura com padding. Reduzir tudo por
-igual mantém a proporção do que já estava apertado, então os badges ganharam tokens próprios
+Mesmo com o teto ele continuou grande, e a razão é que **escala não conserta densidade**. O Sobre
+empilhava três coisas (retrato, texto e formações), e o badge de formação é a peça mais densa da
+página: logo, três linhas e um medidor dentro de uma moldura com padding. Reduzir tudo por igual
+mantém a proporção do que já estava apertado, então os badges ganharam tokens próprios
 (`--badge-pad`, `--logo-w`, `--fs-curso` e companhia).
+
+**A conclusão disso veio depois, e foi mudar o conteúdo de lugar.** A formação virou seção própria
+(ver `secoes.md`) e no Sobre ficaram duas linhas de texto no lugar dela: a seção mais densa da página
+deixou de empilhar três coisas, e volta ao teto da escala sozinha num iPhone SE. Os tokens do badge
+continuam valendo, agora dentro da seção Formação, que é onde ele é o único conteúdo.
 
 **E no badge a compensação é horizontal.** Estreitá-lo junto com o resto saiu pela culatra: em 208px
 sobravam 132px para o texto, e "Tecnologia da Informação" pede 138px mesmo a 9px de fonte. O curso

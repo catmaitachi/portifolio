@@ -15,6 +15,7 @@ export type Lang = 'pt' | 'en';
 export type SectionKey =
   | 'inicio'
   | 'sobre'
+  | 'formacao'
   | 'projetos'
   | 'experiencia'
   | 'musica'
@@ -60,6 +61,20 @@ export interface Formacao {
    * "em algum ponto do caminho" de antes.
    */
   progresso?: ProgressoFormacao;
+}
+
+/**
+ * Um fato de identificação, sob a bio: nascimento e residência.
+ *
+ * O valor vai no dicionário, e não em `shared.json`, apesar de ser dado: a
+ * cidade leva o país escrito no idioma de quem lê, e "MG" não diz nada a quem
+ * chegou em inglês. `key` existe para o `check:i18n` ligar os dois lados da
+ * lista, como faz com projetos e formações.
+ */
+export interface DadoPessoal {
+  key: string;
+  rotulo: string;
+  valor: string;
 }
 
 export interface Projeto {
@@ -122,9 +137,22 @@ export interface Dictionary {
    * Início — que é onde não existe seção para nomear.
    */
   documento: string;
-  sobre: { titulo: string; paragrafos: string[] };
+  /**
+   * A bio muda de lado, e os dois fatos embaixo dela não.
+   *
+   * `paragrafos` é `Record` **total** por modo: um lado novo do site quebra o
+   * build até ter o próprio texto, porque um Sobre que não fala do lado em que o
+   * visitante está é pior que um Sobre curto. `dados` são os fatos que ficaram
+   * no lugar do carrossel de formação, que virou seção (ver `secoes.md`).
+   */
+  sobre: {
+    titulo: string;
+    paragrafos: Record<ModoKey, string[]>;
+    dados: DadoPessoal[];
+  };
   formacoes: {
     titulo: string;
+    intro: string;
     estados: Record<EstadoFormacao, string>;
     lista: Formacao[];
   };

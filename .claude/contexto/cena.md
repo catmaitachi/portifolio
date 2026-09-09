@@ -16,10 +16,13 @@ próprio no build; nada da primeira pintura depende dele.
   inferior direito (`cancer`), Projetos no superior direito (`crux`), Trajetória no superior esquerdo
   (`ursaMajor`) e Contato no inferior esquerdo (`phoenix`);
 - **nunca repetir as coordenadas de um `placement` entre seções** — a troca fica invisível, e com uma
-  figura só isso pesa ainda mais. **No modo pessoal são cinco seções com céu para quatro cantos**
-  (Sobre, Música, Jogos, Filmes e Contato), então Filmes fica na direita a dois terços, que não é
-  canto: é o que mantém todas as trocas consecutivas atravessando a tela, porque o par mais próximo
-  seria justamente Filmes e Contato. Coordenadas se repetem **entre modos** sem problema: duas seções
+  figura só isso pesa ainda mais. **Os dois modos têm cinco seções com céu para quatro cantos**, e
+  cada um resolve isso com um lugar que não é canto. No pessoal (Sobre, Música, Jogos, Filmes e
+  Contato) é Filmes, na direita a dois terços, porque o par mais próximo seria justamente Filmes e
+  Contato. No profissional (Sobre, Formação, Projetos, Trajetória e Contato) é Formação, na esquerda
+  a dois terços: a vaga dela cai entre Sobre e Projetos, que estão os dois à direita, então a figura
+  vai para o outro lado e as duas trocas atravessam a tela. Nos dois modos a altura é a mesma, dois
+  terços, que é onde a figura passa por baixo do miolo em que o conteúdo mora. Coordenadas se repetem **entre modos** sem problema: duas seções
   que nunca aparecem no mesmo lado do site não têm troca entre si.
 
 `tween(obj, key, to, dur)` interpola qualquer propriedade num rAF próprio, cancelando o anterior na

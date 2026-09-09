@@ -2,6 +2,7 @@
   "nav": {
     "inicio": "Início",
     "sobre": "Sobre",
+    "formacao": "Formação",
     "projetos": "Projetos",
     "experiencia": "Trajetória",
     "musica": "Música",
@@ -33,15 +34,26 @@
 
   "sobre": {
     "titulo": "Sobre Mim",
-    "paragrafos": [
-      "Sou um projetista de software na era da IA. Enquanto os modelos generativos aceleram a codificação, meu papel é o que vem antes: idealizar, estruturar e planejar sistemas sólidos, guiados pelas melhores práticas de Engenharia de Software.",
-      "Acredito que todo projeto nasce de uma necessidade humana que merece ser explorada, compreendida e tratada com responsabilidade, pois os impactos refletem, a longo prazo, no indivíduo e na sociedade.",
-      "Como dev, me comprometo a evoluir constantemente minhas soluções em prol de um futuro mais sustentável e humanitário."
+    "paragrafos": {
+      "profissional": [
+        "Sou um projetista de software na era da IA. Enquanto os modelos generativos aceleram a codificação, meu papel é o que vem antes: idealizar, estruturar e planejar sistemas sólidos, guiados pelas melhores práticas de Engenharia de Software.",
+        "Acredito que todo projeto nasce de uma necessidade humana que merece ser explorada, compreendida e tratada com responsabilidade, pois os impactos refletem, a longo prazo, no indivíduo e na sociedade.",
+        "Como dev, me comprometo a evoluir constantemente minhas soluções em prol de um futuro mais sustentável e humanitário."
+      ],
+      "pessoal": [
+        "Fora do trabalho eu continuo por perto de uma tela. A maior parte do meu tempo livre está em jogo, em filme e em música, e as três coisas aparecem nas seções ao lado, direto das contas que eu uso todo dia.",
+        "Este lado do site não tem currículo: é o registro do que eu andei ouvindo, jogando e assistindo, e ele se atualiza sozinho."
+      ]
+    },
+    "dados": [
+      { "key": "nascimento", "rotulo": "Nascimento", "valor": "0000.00" },
+      { "key": "residencia", "rotulo": "Residência", "valor": "Belo Horizonte, MG" }
     ]
   },
 
   "formacoes": {
     "titulo": "Formação",
+    "intro": "Onde eu estudei, onde eu estudo e onde eu pretendo estudar.",
     "estados": {
       "concluido": "Concluído",
       "cursando": "Cursando",
