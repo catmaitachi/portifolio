@@ -7,7 +7,7 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 |---|---|
 | `section.module.css` | `--pt --pb --px --gap` |
 | `AboutSection` | `--retrato-col --retrato-ar --cols --corpo-gap --retrato --coluna-max --txt --pfs --plh --fatos-gap --fatos-pt --fatos-fs` |
-| `EducationSection` | `--dcw --dch --dpasso --dsaida --dh --dpad --dgap --dlogo-w --dlogo-h --dfs-inst --dfs-nivel --dfs-curso --dfs-selo --dfs-valor --drodape-gap --drodape-pt` |
+| `EducationSection` | `--dcw --dch --cpasso --dpad --dgap --dlogo-w --dlogo-h --dfs-inst --dfs-nivel --dfs-curso --dfs-selo --dfs-valor --drodape-gap --drodape-pt` |
 | `ProjectsSection` | `--pcw --pch --pbh --ph --pr --pperspectiva --pcard` |
 | `JourneySection` | `--exph --exp-cargo --exp-per --exp-curva --exp-rail --exp-fantasma --exp-gap --exp-txt --exp-topo` |
 | `MusicSection` | `--capa` |
@@ -97,12 +97,15 @@ mantém a proporção do que já estava apertado, então os badges ganharam toke
 (ver `secoes.md`) e no Sobre ficaram duas linhas de texto no lugar dela: a seção mais densa da página
 deixou de empilhar três coisas, e volta ao teto da escala sozinha num iPhone SE.
 
-Na seção nova o badge virou um diploma, e ali o eixo apertado se inverte: ele é o único conteúdo e o
-que falta é **altura**, porque são três empilhados. No mobile o cartão **vira retrato**: deitado, o logo
-dividia 300px com a instituição, o nível e o selo, e cada peça virava mancha. Essa é a única mudança
-de layout da seção que não cabe num token, e por isso mora no módulo do cartão, que é quem tem o
-`flex-direction`. O **passo da pilha** desce junto: mantido no valor de desktop, o que escapa de cada
-um de baixo seria quase um quinto do cartão.
+Na seção nova o badge virou um diploma, e ali o eixo apertado se inverte: ele é o único conteúdo, e
+o que falta é **largura**, porque os três ficam lado a lado num carrossel. No mobile o cartão **vira
+retrato**: deitado, o logo dividia 300px com a instituição, o nível e o selo, e cada peça virava
+mancha. Essa é a única mudança de layout da seção que não cabe num token, e por isso mora no módulo
+do cartão, que é quem tem o `flex-direction`.
+
+A largura dele é `min(560px, 62%)` no desktop e 78% no mobile, e a fração não é enfeite: ela é o que
+deixa sobrar palco dos dois lados para o vizinho aparecer. Escrita só em px, uma janela média punha o
+da frente ocupando a largura inteira, e o carrossel voltava a parecer um cartão só.
 
 **E no badge a compensação é horizontal.** Estreitá-lo junto com o resto saiu pela culatra: em 208px
 sobravam 132px para o texto, e "Tecnologia da Informação" pede 138px mesmo a 9px de fonte. O curso

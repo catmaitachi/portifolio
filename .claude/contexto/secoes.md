@@ -62,47 +62,61 @@ página (ver `responsivo.md`), e era ele que obrigava o Sobre inteiro a encolher
 celular, e com ele fora ela volta ao teto da escala sozinha. A segunda é de leitura: formação
 tem estado, data e progresso, e no rodapé de uma biografia isso lia como legenda do retrato.
 
-**Os diplomas ficam numa pilha, e pilha não é anel.** O da frente está por cima, os seguintes espiam
-por baixo dele, e avançar tira o de cima da mesa: ele sobe e se apaga, em vez de encolher junto com
-os de trás, porque saiu da pilha. Voltar o devolve por cima. Trazer para a frente o que estava
-embaixo é o que um anel faz, e é o que não se parece com papel empilhado.
+**Os diplomas ficam num carrossel horizontal, e ele anda sozinho.** A pilha que existia aqui antes
+falhava na única coisa que precisava fazer: os de trás apareciam como dois riscos embaixo do da
+frente, e nada ali dizia que eram cartões inteiros esperando a vez. Deitados lado a lado, cada
+vizinho aparece pela beirada, com o nome da instituição legível, e o que existe na seção fica
+evidente sem que ninguém precise tocar em nada.
 
-Daí decorre que **a navegação não é circular**: as pontas são pontas, como na curva da Trajetória. Do
-último não se avança para o primeiro, porque não há nada embaixo do último.
+**Ele é um anel, e a distância é circular.** Cada diploma sabe a própria distância ao da frente pelo
+caminho mais curto, e é dela que saem deslocamento, escala e opacidade. É o arranjo da órbita de
+Projetos, achatado. Um trilho transladando teria de dar um salto para voltar ao começo, e um
+carrossel automático dá essa volta a cada ciclo, então aqui a navegação **é** circular, ao contrário
+da pilha e ao contrário da curva da Trajetória.
 
-A profundidade vem de escala e opacidade, **sem `perspective`**: uma inclinação em `rotateX` devolvia
-a leitura de anel, que é o que esta pilha não é. E, como em Projetos, nada de rAF — `ativo` muda e as
-`transition` fazem o movimento.
+A profundidade vem de escala e opacidade, **sem `perspective`**: com ela os vizinhos ganhavam uma
+inclinação de anel, e um diploma é papel, não a face de um cilindro. E, como em Projetos, nada de
+rAF, `ativo` muda e as `transition` fazem o movimento.
 
-**A lista vai do mais recente para o mais antigo**, ao contrário da Trajetória: uma pilha se lê de
-cima para baixo, e o que está por cima é o que veio por último. **E ela abre no que está em curso**,
-não no primeiro: o que responde "onde ele está academicamente hoje" é o de agora, não a pretensão que
-abre a pilha. Sem nenhum `cursando`, o primeiro serve.
+**O automático é o motivo de a seção ter mudado de forma**, então ele tem de ser visível e
+previsível. Cada diploma fica 5,6s na frente, e o traço ativo carrega o relógio: um risco branco
+corre por dentro dele até o próximo passo. Sem isso a troca chega como um salto no meio da leitura.
 
-**O arraste é o mesmo de Projetos, e vale nos dois eixos.** Ele começa sobre o diploma da frente, é
-decidido no `pointerup` (curto é clique, longo é passo) e o `click` que vem depois dele é engolido,
-senão o gesto andaria a pilha **e** o clique cairia no cartão que estava ali. Arrastar para cima, ou
-para a esquerda, avança, que é tirar o de cima da mesa.
+**Quatro coisas param o relógio**, e cada uma por um motivo próprio: o ponteiro entrando no palco e o
+foco caindo dentro dele, porque quem está lendo um diploma não pode perdê-lo para um cronômetro; a
+seção deixar de ser a ativa e a aba sair de vista, porque um relógio que corre escondido gasta para
+mostrar o que ninguém vê, que é a mesma regra da recarga da supernova; e `prefers-reduced-motion`,
+porque movimento que ninguém pediu é justamente o que a preferência recusa. Parado, o risco do traço
+congela onde está em vez de sumir.
 
-Os dois eixos existem por causa do toque, e não por capricho. Subir o dedo é o gesto natural para uma
-pilha vertical, mas o eixo vertical do celular é o da rolagem da página, e tomá-lo exigiria
-`touch-action: none` sobre o maior elemento da seção: o visitante perderia a rolagem justamente onde
-o dedo cai primeiro. Com `touch-action: pan-y` no palco o dedo continua rolando a página, e é o gesto
-**horizontal** que anda a pilha, que é o de Projetos. No mouse os dois funcionam, e vale o eixo que
-andou mais.
+**O palco toma a largura do bloco e corta o que passa dela.** É esse corte que faz o vizinho entrar
+pela borda em vez de terminar numa aresta no meio do nada, e um `mask-image` apaga os últimos pontos
+de cada lado para amaciá-lo. Ele não alcança o diploma da frente, que ocupa o miolo.
 
-Além dele: clique num diploma de baixo, ←/→ enquanto a seção está ativa e os traços ao lado.
+Daí vem a largura do cartão ser `min(560px, 62%)`, com teto **e** fração. Só o teto deixava o da
+frente ocupando a largura inteira numa janela média, e o carrossel voltava a parecer um cartão só,
+que é o defeito da pilha que ele veio substituir. O passo entre um diploma e o vizinho é fração da
+largura **do cartão** (78%), e não do palco: é assim que um `translateX` percentual mede, e escrito
+sobre o palco ele mudaria de sentido entre o desktop, onde a largura vem em px, e o mobile, onde vem
+em porcentagem.
 
-**Os traços ficam em pé, ao lado da pilha.** Em Projetos eles são uma linha embaixo do palco porque a
-órbita anda de lado; um índice horizontal aqui apontaria para um eixo que não é o do movimento. Eles
-também são o único jeito de pular direto para um diploma que já saiu da pilha, já que voltar por cima
-é passo a passo. E o palco tem a largura do diploma, não a do bloco: com `flex: 1` ele esticava até a
-borda e levava os traços para o canto direito da seção, longe da pilha que eles indexam.
+**A lista vai do mais recente para o mais antigo**, ao contrário da Trajetória: é a ordem em que ele
+os conta, do que está fazendo agora para trás. **E o carrossel abre no que está em curso**, não no
+primeiro: o que responde "onde ele está academicamente hoje" é o de agora, não a pretensão que abre a
+lista. Sem nenhum `cursando`, o primeiro serve.
 
-**A altura do palco é derivada**, não escrita: é o cartão mais o passo de cada um que pode espiar por
-baixo dele. A seção passa esse número (`--atras`), porque é ela que sabe quantas formações existem, e
-o teto vem do hook (`VISIVEIS_ATRAS`). Com um número no CSS, três formações reservariam espaço para
-quatro.
+**O arraste é o de Projetos, e agora só no eixo X**, que é o do movimento. Ele começa sobre o diploma
+da frente, é decidido no `pointerup` (curto é clique, longo é passo) e o `click` que vem depois dele
+é engolido, senão o gesto andaria o carrossel **e** o clique cairia no cartão que estava ali.
+Arrastar para a esquerda traz o próximo. O eixo vertical fica com a rolagem da página
+(`touch-action: pan-y` no palco), como no palco de Projetos.
+
+Além dele: clique num diploma vizinho, ←/→ enquanto a seção está ativa, e os traços abaixo do palco.
+
+**Os traços deitaram junto com o carrossel.** Em pé eles apontavam para o eixo da pilha; agora o
+movimento é horizontal, e uma linha embaixo do palco é o índice do que se vê, como em Projetos. Eles
+continuam sendo o jeito de pular direto para um diploma, e o ativo virou também o relógio do
+automático.
 
 ### O diploma
 
@@ -116,7 +130,7 @@ tudo que o conteúdo tem, ao mesmo tempo.
 | alto, ao lado | instituição em versalete espaçado, e o nível abaixo dela |
 | alto, à direita | o **selo** com o estado |
 | miolo | o curso, na maior tipografia do cartão |
-| pé | a posição na pilha, o dado do estado com o rótulo dele, a barra e a fração em número |
+| pé | a posição na lista, o dado do estado com o rótulo dele, a barra e a fração em número |
 
 - **A moldura é dupla**, um risco de 1px correndo por dentro do outro, que é a gramática de um
   certificado. É o único ornamento do cartão, porque fita, brasão e serifa seriam formas que não
@@ -131,11 +145,15 @@ tudo que o conteúdo tem, ao mesmo tempo.
 - **O rótulo do dado é traduzido, o valor não.** "2022.12" e "4/8" são dados, idênticos nos dois
   idiomas, como a versão no rodapé; quem traduz é o "Conclusão" e o "Períodos" ao lado
   (`formacoes.rotulos`).
-- **O da frente é preto sólido**, e não os 92% do cartão de projeto: lá o vizinho fica quase todo
-  para fora, aqui ele está exatamente atrás, e 6% de transparência bastavam para o nome da outra
-  instituição fantasmar por cima do curso.
+- **O da frente é preto sólido**, e não os 92% do cartão de projeto: o passo é menor que a largura,
+  então ele cobre um pedaço de cada vizinho, e 6% de transparência bastavam para o nome da outra
+  instituição fantasmar por cima do curso. E o fundo **não faz transição**, só a borda: meio segundo
+  interpolando entre sólido e translúcido é meio segundo com os dois translúcidos ao mesmo tempo,
+  bem durante o passo, que é quando o olho está no cartão.
 
 **No mobile o diploma fica em pé**, e é a única mudança de layout da seção que não cabia num token.
+A largura dele vira porcentagem (78%) pela mesma razão do desktop: em 100% não sobraria borda de onde
+o vizinho espiar.
 Deitado num celular, o logo dividia 300px com a instituição, o nível e o selo, e sobrava mancha para
 cada um; em pé o cartão troca a largura que não tem pela altura que sobra, e cada peça ganha uma
 faixa inteira. O centro é consequência, não estética: numa coluna estreita, texto à esquerda sob um

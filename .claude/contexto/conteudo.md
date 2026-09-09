@@ -149,8 +149,9 @@ rodapé: a cidade leva o país escrito no idioma de quem lê.
 4. uma entrada em `formacoes.lista` nos dois dicionários, com o mesmo `slot`.
 
 A lista alimenta a **seção Formação**, que existe só no modo profissional (`shared.json → modos`), e
-a ordem dela é a da pilha, **do mais recente para o mais antigo** — o contrário da Trajetória, porque
-o que está por cima de uma pilha é o que veio por último.
+a ordem dela é **do mais recente para o mais antigo**, o contrário da Trajetória, porque é a ordem em
+que ele conta a própria formação, do que está fazendo agora para trás. O carrossel abre no que está
+`cursando`, não no primeiro da lista.
 
 ```json
 {

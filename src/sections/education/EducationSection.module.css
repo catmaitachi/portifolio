@@ -1,27 +1,45 @@
 /**
- * Tokens da pilha de diplomas.
+ * Tokens do carrossel de diplomas.
  *
- * A altura do palco é **derivada**: o cartão da frente mais o passo de cada um
- * dos que podem espiar por baixo dele. `--atras` vem da seção, que sabe quantas
- * formações existem e conhece o teto do hook (`VISIVEIS_ATRAS`) — com um número
- * escrito aqui, três formações reservariam espaço para quatro.
+ * O palco tem a altura de **um** cartão: aqui os diplomas ficam lado a lado, e
+ * não empilhados, então nada precisa ser reservado embaixo do da frente. Quem
+ * decide o quanto o vizinho aparece é `--cpasso`, que sai da largura do cartão
+ * para que os dois nunca saiam de sincronia.
  */
 .secao {
-  --dcw: 620px; /* largura do diploma */
-  --dch: 236px; /* altura do diploma */
-  --dpasso: 42px; /* o quanto cada um de baixo escapa do de cima */
-  --dsaida: 64px; /* o quanto o que já passou sobe antes de sumir */
-  --dh: calc(var(--dch) + var(--dpasso) * var(--atras, 3));
+  /**
+   * Largura do diploma, com teto e proporção.
+   *
+   * Ela é `min(px, %)` porque as duas pontas importam: o teto mantém o cartão
+   * legível numa tela larga, e a fração garante que **sobre palco dos dois
+   * lados** para os vizinhos aparecerem. Sem a fração, uma janela média deixava
+   * o da frente ocupando a largura inteira, e o carrossel voltava a parecer um
+   * cartão só — que é justamente o defeito da pilha que ele veio substituir.
+   */
+  --dcw: min(560px, 62%);
+  --dch: 246px; /* altura do diploma */
+  /**
+   * O passo do carrossel: a distância entre o centro de um diploma e o do
+   * vizinho. Menor que 100% de propósito — é o quanto de sobreposição existe
+   * que faz o vizinho aparecer *atrás* do da frente em vez de ao lado dele, e é
+   * o que dá profundidade sem nenhuma perspectiva.
+   *
+   * A unidade é **porcentagem da largura do cartão**, porque é assim que um
+   * `translateX` percentual mede: contra a própria caixa. Escrito como fração
+   * de `--dcw` ele mediria contra o palco quando a largura viesse em `%`, e o
+   * passo mudaria de sentido entre o desktop e o mobile.
+   */
+  --cpasso: 78%;
   --dpad: 26px;
   --dgap: 18px;
-  --dlogo-w: 110px;
-  --dlogo-h: 74px;
-  --dfs-inst: 19px;
+  --dlogo-w: 104px;
+  --dlogo-h: 70px;
+  --dfs-inst: 18px;
   --dfs-nivel: 10px;
-  --dfs-curso: 20px;
+  --dfs-curso: 19px;
   --dfs-selo: 8.5px;
   --dfs-valor: 11px;
-  --drodape-gap: 18px;
+  --drodape-gap: 16px;
   --drodape-pt: 14px;
 }
 
@@ -29,100 +47,132 @@
   max-width: 960px;
 }
 
-/* a pilha e o índice dela, lado a lado */
+/* o palco e o índice dele, um sobre o outro */
 .arena {
   display: flex;
-  gap: 18px;
+  flex-direction: column;
+  gap: 22px;
   align-items: center;
-  justify-content: center;
 }
 
 /**
- * O palco tem a largura do diploma, não a do bloco.
+ * O palco toma a largura inteira do bloco, e o que passa dela é cortado.
  *
- * Com `flex: 1` ele esticava até a borda e levava os traços para o canto
- * direito da seção, longe da pilha que eles indexam. Assim o par fica junto e a
- * arena centra os dois.
+ * O corte é a diferença entre um carrossel e três cartões soltos: o vizinho
+ * entra pela borda e sai por ela, e o `mask-image` apaga os últimos pontos de
+ * cada lado para que ele não termine numa aresta reta. A máscara não alcança o
+ * diploma da frente, que ocupa o miolo.
  *
- * **Sem `perspective`**: a pilha é papel sobre papel, e a profundidade vem da
- * escala e da opacidade. Com perspectiva os de baixo ganhavam uma inclinação que
- * lia como anel, que é justamente o que esta pilha não é.
+ * **Sem `perspective`**: a profundidade vem da escala e da opacidade. Com
+ * perspectiva os vizinhos ganhariam uma inclinação de anel, e um diploma é
+ * papel, não a face de um cilindro.
  *
- * `touch-action: pan-y` é o que divide o toque com a página: o dedo continua
- * rolando a seção para cima e para baixo, e sobra o eixo horizontal para andar a
- * pilha (ver `useDeck`). É a decisão espelhada da do palco de Projetos, que fica
- * com o eixo X e devolve o Y.
+ * `touch-action: pan-y` divide o toque com a página: o dedo continua rolando a
+ * seção para cima e para baixo, e sobra o eixo horizontal — que aqui é o do
+ * movimento — para andar o carrossel. É o mesmo do palco de Projetos.
  */
 .palco {
   position: relative;
-  flex: 0 1 var(--dcw);
-  min-width: 0;
-  max-width: var(--dcw);
-  height: var(--dh);
+  width: 100%;
+  height: var(--dch);
   outline: none;
+  mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
   touch-action: pan-y;
 }
 
 .tracos {
   display: flex;
-  flex: none;
-  flex-direction: column;
-  gap: 10px;
+  gap: 0;
   align-items: center;
   justify-content: center;
 }
 
+/**
+ * O traço-índice, deitado como o movimento.
+ *
+ * O padding é área de toque e fica **fora** do risco, que é o filho: com o
+ * `background-clip` de antes não haveria onde desenhar o relógio por dentro.
+ */
 .traco {
   display: block;
-  /**
-   * `content-box` é deliberado: o reset global usa `border-box`, e com ele o
-   * `width: 1px` absorveria o padding e zeraria a caixa de conteúdo, sem nada
-   * para o `background-clip` pintar. Aqui o padding é área de toque, fora do
-   * traço visível.
-   */
-  box-sizing: content-box;
-  width: 1px;
-  height: 12px;
-  margin: 0;
-  padding: 0 9px;
+  padding: 9px 7px;
   border: 0;
-  background: rgb(255 255 255 / 24%);
-  background-clip: content-box;
+  background: none;
   cursor: pointer;
+}
+
+.risco {
+  display: block;
+  position: relative;
+  width: 12px;
+  height: 1px;
+  background: rgb(255 255 255 / 24%);
   transition:
-    height 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    width 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
     background 0.45s;
 }
 
-.traco:hover {
+.traco:hover .risco {
   background: rgb(255 255 255 / 60%);
-  background-clip: content-box;
 }
 
-.traco[data-ativo] {
-  height: 30px;
-  background: #fff;
-  background-clip: content-box;
+.traco[data-ativo] .risco {
+  width: 34px;
+  background: rgb(255 255 255 / 26%);
 }
 
 /**
- * Mobile: o diploma fica **em pé**.
+ * O relógio do automático.
  *
- * Deitado ele tinha 360px de largura para acomodar logo, instituição, nível e
- * selo na mesma linha, e cada peça ficava com um punhado de pixels: o logo
- * encolhia até virar mancha, o curso cabia numa linha e meia e o rodapé
- * espremia três coisas onde cabiam duas. Em pé o cartão troca a largura que não
- * tem pela altura que sobra, e cada peça ganha uma faixa inteira para si.
+ * Um risco branco corre dentro do traço ativo pelo tempo que falta até o
+ * próximo diploma, e é ele que torna a troca previsível: sem isso o carrossel
+ * anda no meio de uma leitura sem ter avisado nada.
  *
- * A mudança de eixo mora no módulo do cartão, que é quem tem o `flex-direction`;
- * aqui ficam só os tokens, como sempre.
+ * Quem o reinicia é o próprio CSS — `data-ativo` aparece no traço seguinte, o
+ * `animation-name` sai de `none` e a animação começa do zero. Sem `key`, sem
+ * remontar nada; é a mesma mecânica dos nós da Trajetória. `--auto` vem do
+ * componente, que lê o mesmo número que o relógio do hook usa para cobrar.
+ */
+@keyframes tracoCorre {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.traco[data-ativo] .risco::after {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 50%;
+  animation: tracoCorre var(--auto, 5600ms) linear both;
+  background: #fff;
+  content: '';
+}
+
+/* o ponteiro em cima do palco para o relógio, e o risco congela onde estiver */
+.tracos[data-pausado] .risco::after {
+  animation-play-state: paused;
+}
+
+/**
+ * Mobile: o cartão estreita e os vizinhos aparecem só pela beirada.
+ *
+ * A largura vira **porcentagem** para que sobre borda dos dois lados: em 100%
+ * não haveria de onde o vizinho espiar, e o carrossel voltaria a parecer um
+ * cartão só. O passo acompanha a largura pela mesma conta do desktop, então o
+ * quanto se vê do vizinho é o mesmo dos dois tamanhos.
+ *
+ * O cartão em si vira **retrato**, e essa mudança mora no módulo dele, que é
+ * quem tem o `flex-direction`; aqui ficam só os tokens, como sempre.
  */
 @media (width <= 640px) {
   .secao {
-    --dcw: 100%;
+    --dcw: 78%;
     --dch: 302px;
-    --dpasso: 26px;
-    --dsaida: 52px;
+    --cpasso: 80%;
     --dpad: 18px;
     --dgap: 14px;
     --dlogo-w: 104px;
@@ -137,16 +187,23 @@
   }
 
   .arena {
-    gap: 6px;
+    gap: 14px;
+  }
+
+  .palco {
+    mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
   }
 }
 
 /* paisagem curta: sobra largura e falta altura, então o diploma se achata */
 @media (width > 640px) and (height <= 720px) {
   .secao {
-    --dch: 200px;
-    --dpasso: 30px;
+    --dch: 208px;
     --dpad: 20px;
     --dfs-curso: 17px;
+  }
+
+  .arena {
+    gap: 16px;
   }
 }

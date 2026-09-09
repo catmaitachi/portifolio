@@ -2,7 +2,7 @@ import { LOGO_ESCALAS, LOGOS, type Formacao } from '~/content';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
 import styles from './DiplomaCard.module.css';
-import type { GeometriaDeck } from './useDeck';
+import type { GeometriaCarrossel } from './useCarrossel';
 
 /**
  * Quanto da formação já aconteceu, em porcentagem.
@@ -24,21 +24,21 @@ interface DiplomaCardProps {
   /** posição na lista, para o `01 / 03` do rodapé */
   indice: number;
   total: number;
-  geo: GeometriaDeck;
+  geo: GeometriaCarrossel;
   /** seção ativa: dispara a entrada, escalonada por `geo.ordem` */
   ativo: boolean;
   onFocar: () => void;
 }
 
 /**
- * Um diploma da pilha.
+ * Um diploma do carrossel.
  *
  * O badge que existia aqui era uma etiqueta de 312px em que a data e a fração
  * ficavam **escondidas atrás da barra**, e só o hover as revelava. Num cartão
  * deste tamanho não há motivo para esconder nada, então tudo que o conteúdo tem
  * está na tela: instituição, nível, curso, o estado num selo, o dado que o
- * estado produz (a conclusão ou as etapas), a fração em número e a posição na
- * pilha.
+ * estado produz (a conclusão ou os períodos), a fração em número e a posição na
+ * lista.
  *
  * Duas coisas dão a leitura de diploma, e as duas são de régua, não de ornamento:
  * a **moldura dupla**, um risco de 1px correndo por dentro do outro, e o **selo**
@@ -46,7 +46,7 @@ interface DiplomaCardProps {
  * Selo de fita, brasão ou serifa seriam formas que não existem em nenhum outro
  * lugar da página.
  *
- * Como em Projetos, o `transform` da pilha mora no elemento **de fora** e a
+ * Como em Projetos, o `transform` do carrossel mora no elemento **de fora** e a
  * animação de entrada no de dentro: uma animação de `transform` no mesmo
  * elemento apagaria a posição escrita pelo JS enquanto roda.
  */
@@ -67,7 +67,7 @@ export function DiplomaCard({ formacao, indice, total, geo, ativo, onFocar }: Di
       className={styles.vaga}
       style={{
         zIndex: geo.camada,
-        transform: `translateY(${geo.deslocamento}) scale(${geo.escala})`,
+        transform: `translateX(${geo.deslocamento}) scale(${geo.escala})`,
         opacity: geo.opacidade,
       }}
       aria-hidden={!geo.visivel || undefined}
@@ -79,7 +79,7 @@ export function DiplomaCard({ formacao, indice, total, geo, ativo, onFocar }: Di
         data-frente={geo.naFrente || undefined}
         data-entrada={ativo || undefined}
         role="button"
-        // o que está fora da pilha sai da tabulação, como em toda a página
+        // o que está fora do carrossel sai da tabulação, como em toda a página
         tabIndex={geo.visivel ? 0 : -1}
         aria-current={geo.naFrente ? 'true' : undefined}
         aria-label={`${formacao.instituicao}, ${formacao.curso}`}

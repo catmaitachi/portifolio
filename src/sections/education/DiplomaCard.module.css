@@ -1,18 +1,24 @@
 /**
- * Entrada: o diploma sobe, o da frente primeiro.
+ * Entrada: os diplomas chegam da direita, o da frente primeiro.
+ *
+ * O curso é o do carrossel, e é isso que o distingue da entrada de Projetos, que
+ * sobe: aqui o movimento da seção é horizontal, e um diploma que entrasse por
+ * baixo faria uma promessa de eixo que o resto da seção não cumpre. Quem chega
+ * primeiro é o da frente, e os vizinhos vêm atrás dele, escalonados por
+ * `--ordem`, como se o carrossel estivesse assentando.
  *
  * A animação mora no `.diploma` e não na `.vaga`, pelo mesmo motivo do cartão de
- * projeto: a vaga carrega o `transform` da pilha, escrito pelo JS, e uma
+ * projeto: a vaga carrega o `transform` do carrossel, escrito pelo JS, e uma
  * animação de `transform` no mesmo elemento o apagaria enquanto roda. Aqui os
  * dois se compõem, o pai posiciona e o filho entra.
  *
  * **Sem quique**, e a opacidade chega antes do movimento: é a mesma gramática
  * dos cartões de projeto e dos canais de contato.
  */
-@keyframes diplomaSobe {
+@keyframes diplomaEntra {
   from {
     opacity: 0;
-    transform: translateY(56px) scale(0.95);
+    transform: translateX(72px) scale(0.96);
   }
 
   42% {
@@ -21,26 +27,31 @@
 
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateX(0) scale(1);
   }
 }
 
 /**
- * Posição na pilha. O `transform` completo vem do JS (`useDeck`).
+ * Posição no carrossel. O `transform` completo vem do JS (`useCarrossel`).
  *
- * A origem é o **topo**: os de trás encolhem em direção à borda de cima, que é a
- * que fica escondida atrás do da frente, e o que sobra deles aparece embaixo,
- * como folha empilhada. Com a origem no centro eles encolheriam para dentro dos
- * dois lados e a pilha viraria um leque.
+ * A origem é o **centro**: os vizinhos encolhem em direção ao próprio meio e
+ * ficam alinhados com o da frente pela linha de baixo e pela de cima, que é o
+ * que faz os três lerem como uma fileira. Com a origem no topo, que era o da
+ * pilha, eles pendurariam a partir da borda de cima e a fileira ficaria torta.
+ *
+ * A largura pode vir em **porcentagem** (é o que o mobile faz), e por isso o
+ * recuo é `calc(var(--dcw) / -2)` em vez de um `translateX(-50%)`: assim ela
+ * mede contra o palco, e não contra a própria caixa, e o `transform` continua
+ * livre para o JS escrever.
  */
 .vaga {
   position: absolute;
   top: 0;
   left: 50%;
-  width: var(--dcw, 620px);
-  height: var(--dch, 236px);
-  margin-left: calc(var(--dcw, 620px) / -2);
-  transform-origin: 50% 0;
+  width: var(--dcw, 560px);
+  height: var(--dch, 246px);
+  margin-left: calc(var(--dcw, 560px) / -2);
+  transform-origin: 50% 50%;
   transition:
     transform 0.75s cubic-bezier(0.22, 0.86, 0.2, 1),
     opacity 0.55s ease;
@@ -57,9 +68,16 @@
   border-radius: 2px;
   background: rgb(0 0 0 / 62%);
   cursor: pointer;
-  transition:
-    border-color 0.5s ease,
-    background 0.5s ease;
+  /**
+   * Só a borda faz transição, nunca o fundo.
+   *
+   * O fundo do da frente é sólido e o dos vizinhos não, e meio segundo
+   * interpolando entre os dois é meio segundo em que os dois são translúcidos ao
+   * mesmo tempo: o cartão que está chegando deixa o vizinho aparecer por baixo
+   * do curso justamente durante o passo, que é quando o olho está nele. Trocado
+   * de uma vez, o da frente já chega opaco.
+   */
+  transition: border-color 0.5s ease;
 }
 
 /**
@@ -94,14 +112,13 @@
 /**
  * O da frente é opaco e mais aceso.
  *
- * A pilha é fechada, então a caixa do de cima cobre quase tudo dos de baixo. Aqui
- * o preto é **sólido**, e não os 92% do cartão de projeto: lá o vizinho fica
- * quase todo para fora, aqui ele está exatamente atrás, e 6% de transparência
- * bastavam para o nome da outra instituição fantasmar por cima do curso. O que
- * se vê do de baixo passa a ser só o que escapa embaixo, que é o que responde ao
- * clique.
+ * O passo do carrossel é menor que a largura do cartão, então o da frente cobre
+ * um pedaço de cada vizinho. Aqui o preto é **sólido**, e não os 92% do cartão
+ * de projeto: 6% de transparência bastavam para o nome da outra instituição
+ * fantasmar por cima do curso. O que se vê do vizinho é exatamente o que escapa
+ * pelas bordas, que é também o que responde ao clique.
  */
-/* `grab` porque este diploma **é** a área de arraste da pilha (ver `useDeck`) */
+/* `grab` porque este diploma **é** a área de arraste (ver `useCarrossel`) */
 .diploma[data-frente] {
   border-color: rgb(255 255 255 / 32%);
   background: #000;
@@ -124,10 +141,10 @@
 /**
  * `backwards`, nunca `forwards`: o estado final já é o estado natural do
  * diploma, e o que precisa ser coberto é o **atraso**. `--ordem` vem de
- * `useDeck`, então acrescentar formações não pede nada aqui.
+ * `useCarrossel`, então acrescentar formações não pede nada aqui.
  */
 .diploma[data-entrada] {
-  animation: diplomaSobe 0.8s cubic-bezier(0.16, 0.84, 0.24, 1) calc(var(--ordem, 0) * 150ms)
+  animation: diplomaEntra 0.8s cubic-bezier(0.16, 0.84, 0.24, 1) calc(var(--ordem, 0) * 150ms)
     backwards;
 }
 
@@ -237,7 +254,7 @@
   min-width: 0;
 }
 
-/* a posição na pilha, na régua do índice das seções */
+/* a posição na lista, na régua do índice das seções */
 .ordinal {
   flex: none;
   color: rgb(255 255 255 / 26%);
