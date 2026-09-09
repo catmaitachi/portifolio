@@ -209,6 +209,34 @@
   transition: width 0.8s cubic-bezier(0.3, 0.7, 0.2, 1);
 }
 
+/**
+ * O brilho especular que acompanha o ponteiro (ver `hooks/useInclinacao`).
+ *
+ * Mora aqui, e não no módulo de cada cartão, porque quatro cópias do mesmo
+ * degradê sairiam de sincronia na primeira calibragem — é a mesma razão pela
+ * qual o rAF virou hook. O raio é token (`--brilho-r`) porque um clarão de
+ * 240px é reflexo num retrato de 270px e é uma lavagem chapada num pôster de
+ * 104px: quem usa ajusta o raio ao próprio tamanho.
+ *
+ * Quem escreve `--bx`, `--by` e a opacidade é o hook. O elemento precisa de um
+ * pai com `position: relative` e `overflow: hidden`, que é o que todo cartão
+ * com moldura já tem.
+ */
+.brilho {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: radial-gradient(
+    var(--brilho-r, 240px) circle at var(--bx, 50%) var(--by, 50%),
+    rgb(255 255 255 / 30%),
+    rgb(255 255 255 / 6%) 42%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  pointer-events: none;
+}
+
 .estado {
   color: rgb(255 255 255 / 50%);
   font-size: 8.5px;

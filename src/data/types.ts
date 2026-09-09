@@ -16,7 +16,15 @@
 export interface Faixa {
   id: string;
   titulo: string;
-  artista: string;
+  /**
+   * Quem assina a faixa, **cada um com o próprio endereço**.
+   *
+   * É uma lista, e não o nome já juntado, porque uma faixa de dois artistas tem
+   * dois perfis: com uma string só, o nome inteiro apontaria para o primeiro
+   * deles, o que é uma resposta errada disfarçada de link. Quem precisa da linha
+   * junta a lista na hora de desenhar; quem precisa do link tem um por nome.
+   */
+  artistas: { nome: string; url: string }[];
   album: string;
   /** capa do álbum; `null` quando o provedor não mandou nenhuma */
   capa: string | null;

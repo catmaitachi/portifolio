@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { format } from '~/content';
 import type { Filme, Filmes } from '~/data/types';
 import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
+import { useInclinacao } from '~/hooks/useInclinacao';
 import { useRemoto } from '~/hooks/useRemoto';
 import { useT } from '~/i18n/useLanguage';
 import { EstadoRemoto } from '../EstadoRemoto';
@@ -56,10 +57,22 @@ function Nota({ nota }: { nota: number }) {
  */
 function Cartao({ filme, posicao }: { filme: Filme; posicao?: number }) {
   const t = useT();
+  /**
+   * Quem inclina é o **pôster**, não o cartão inteiro: o nome e o rodapé ficam
+   * onde estão, legíveis, e a moldura da imagem já é o `position: relative` com
+   * `overflow: hidden` que o brilho pede. Os graus são discretos porque um
+   * pôster de 104px inclinado como um retrato de 270 vira um losango.
+   */
+  const { alvoRef, brilhoRef } = useInclinacao<HTMLSpanElement>({
+    grauX: 10,
+    grauY: 12,
+    escala: 1.05,
+    perspectiva: 600,
+  });
 
   return (
     <a className={styles.cartao} href={filme.url} target="_blank" rel="noreferrer">
-      <span className={styles.poster}>
+      <span ref={alvoRef} className={styles.poster}>
         {filme.poster ? (
           <img
             src={filme.poster}
@@ -75,6 +88,7 @@ function Cartao({ filme, posicao }: { filme: Filme; posicao?: number }) {
             {t.filmes.revisita}
           </span>
         )}
+        <span ref={brilhoRef} className={comum.brilho} aria-hidden="true" />
       </span>
 
       <span className={styles.nome}>{filme.titulo}</span>

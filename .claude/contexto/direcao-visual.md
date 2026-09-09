@@ -51,6 +51,38 @@ sublinhado de 1px, não uma caixa — não há canto para chanfrar; os marcadore
 `ProjectCard` (`.glifo`) são ornamento com raio e rotação próprios por índice; e tudo que é círculo
 (anéis do HUD, nós da linha do tempo, medidor da supernova).
 
+### A carta que inclina
+
+Toda imagem enquadrada da página **inclina seguindo o ponteiro**, com um brilho especular
+acompanhando o cursor: o retrato do Sobre, os crachás de formação, os pôsteres de Filmes, as artes de
+Jogos e a capa do que está tocando em Música. O efeito nasceu no retrato e virou
+`hooks/useInclinacao` quando passou a valer para os cinco, pela mesma razão que a gravidade e o
+desenho da estrela moram num módulo só no motor: cinco cópias do mesmo rAF sairiam de sincronia na
+primeira calibragem.
+
+Quatro coisas nele não são detalhe:
+
+- **a entrada é uma rampa.** Na primeira versão o primeiro `pointermove` já escrevia a inclinação
+  cheia e a escala cheia, e como só a sombra tinha transição o elemento saltava do repouso para o
+  máximo em um quadro. Hoje um fator vai de 0 a 1 em 320ms e multiplica os três valores, com curva
+  suave nas duas pontas. A rampa **precisa** viver no rAF: uma `transition` de `transform` também
+  suavizaria o retorno de cada micromovimento do cursor, e a inclinação deixaria de colar nele;
+- **os graus caem com o tamanho.** 15° num retrato de 270px lê como carta na mão; os mesmos 15° num
+  crachá de 348px de altura leem como página virando, e num pôster de 104px o cartão vira losango.
+  O raio do brilho segue a mesma régua, por `--brilho-r`;
+- **quem cresce precisa de por onde crescer.** Duas coisas cortam a borda de um cartão que se
+  levanta, e as duas já morderam: um ancestral com `overflow` (a faixa de Filmes, que rola de lado, e
+  o palco de Formação, que corta o que passa) e a **ordem de pintura** entre irmãos, porque um
+  elemento com `transform` cria contexto de empilhamento mas continua sendo pintado na ordem do DOM.
+  A primeira se resolve com recuo mais margem negativa, que abre folga sem mexer no layout; a
+  segunda com `position: relative` e `z-index` no item apontado. `z-index` sozinho não resolve a
+  primeira, e recuo sozinho não resolve a segunda;
+- **toque não inclina.** Sem `hover` não há de onde o efeito nascer, e o dedo que arrasta uma faixa
+  de pôsteres passaria por cima de vários cartões levantando cada um pelo caminho.
+
+A sombra é ligada **só no retrato**: ele tem tamanho para mostrá-la, e nos cartões pequenos, sobre
+preto, ela é um borrão que não se vê.
+
 ### Ícone da aba
 
 `public/favicon.svg` — a cena da página reduzida a 32px: horizonte de eventos preto com borda

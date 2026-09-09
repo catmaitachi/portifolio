@@ -1,0 +1,19 @@
+/**
+ * O canvas dos estalos.
+ *
+ * Ele **transborda** o elemento que o hospeda, em todas as direções, porque o
+ * cabeçalho tem a altura de uma linha de texto e o estalo nasce no meio dela e
+ * viaja para fora. Como não recebe ponteiro, esticá-lo não cobre nada: o clique
+ * continua chegando ao botão que está embaixo.
+ *
+ * A posição é `absolute` e o tamanho vem do JS, que mede o hospedeiro e soma a
+ * folga — escrito aqui, o número estaria em dois lugares.
+ */
+.faiscas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  translate: -50% -50%;
+  pointer-events: none;
+}

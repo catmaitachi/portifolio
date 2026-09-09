@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { MODOS, type ModoKey } from '~/content';
 import { useT } from '~/i18n/useLanguage';
+import { Faiscas } from './Faiscas';
 import styles from './ModeHeader.module.css';
+import { useConvite } from './useConvite';
 
 interface ModeHeaderProps {
   modo: ModoKey;
@@ -36,6 +38,13 @@ interface ModeHeaderProps {
  * No toque não existe hover, e a frase não aparece (`hover: none` no módulo): um
  * painel que abrisse no toque ficaria aberto cobrindo o topo da seção até o
  * toque seguinte. Ali o menu é a interação inteira.
+ *
+ * **E ele não parece clicável.** É texto, sem moldura e sem ícone, e quem não
+ * passa o ponteiro por cima não descobre que dali se troca o lado inteiro do
+ * site. Passados alguns segundos do carregamento, dois estalos de luz acendem
+ * no lugar onde o clique deveria acontecer (`useConvite` e `Faiscas`). Mexer no
+ * cabeçalho cala o convite antes da hora, porque quem descobriu não precisa
+ * dele.
  */
 export function ModeHeader({ modo, trocar }: ModeHeaderProps) {
   const t = useT();
@@ -44,6 +53,9 @@ export function ModeHeader({ modo, trocar }: ModeHeaderProps) {
   const [mostrando, setMostrando] = useState<ModoKey | null>(null);
   const grupoRef = useRef<HTMLElement>(null);
   const iMostrando = mostrando ? MODOS.findIndex((m) => m.key === mostrando) : -1;
+  /** mexeu aqui uma vez: o convite não tem mais o que apresentar */
+  const [descoberto, setDescoberto] = useState(false);
+  const convite = useConvite(descoberto);
 
   // menu aberto: Esc e o toque fora fecham, como em qualquer menu
   useEffect(() => {
@@ -75,6 +87,10 @@ export function ModeHeader({ modo, trocar }: ModeHeaderProps) {
         }
       }}
     >
+      {/* irmão do conteúdo, e não um embrulho: a caixa do `<nav>` é o que o HUD
+          posiciona, e um `<div>` a mais mudaria o que o topo reserva */}
+      <Faiscas disparo={convite} />
+
       <div className={styles.lista}>
         {MODOS.map((m) => {
           const escolhido = m.key === modo;
@@ -97,6 +113,7 @@ export function ModeHeader({ modo, trocar }: ModeHeaderProps) {
               onMouseEnter={() => setMostrando(m.key)}
               onFocus={() => setMostrando(m.key)}
               onClick={() => {
+                setDescoberto(true);
                 if (gatilho) {
                   setAberto(true);
                   return;

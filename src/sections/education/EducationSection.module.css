@@ -45,8 +45,19 @@
  * saindo, e um degradê nas bordas apagaria de leve o primeiro e o último crachá
  * sem ter o que amaciar.
  */
+/**
+ * O recuo é a folga por onde o crachá cresce ao ser apontado.
+ *
+ * O corte é do eixo X e não pode sair, mas `overflow: hidden` corta os dois, e
+ * o crachá que inclina passa da caixa por cima e por baixo. O recuo afasta a
+ * borda de corte e a margem negativa devolve o espaço ao layout, então nada em
+ * volta se mexeu. A máscara acompanha a caixa nova sozinha, porque o degradê é
+ * horizontal e o que muda aqui é a altura.
+ */
 .palco {
   width: 100%;
+  margin-block: -22px;
+  padding-block: 22px;
   overflow: hidden;
 }
 

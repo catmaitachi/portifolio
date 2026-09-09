@@ -23,9 +23,11 @@
 
   A proporção mora em `--retrato-ar` e o `PortraitCard` monta o `aspect-ratio` com ela
   (`1 / var(--retrato-ar)`), para a altura do retrato e o teto da coluna não saírem de sincronia.
-- Retrato (`PortraitCard`): inclina seguindo o ponteiro com brilho especular, escrito **direto no
-  `style`** dentro de um rAF coalescido. Um `setState` por `pointermove` re-renderizaria a seção
-  dezenas de vezes por segundo para mudar dois números de `transform`.
+- Retrato (`PortraitCard`): inclina seguindo o ponteiro com brilho especular. O efeito nasceu aqui e
+  hoje é `hooks/useInclinacao`, compartilhado com os crachás de formação, os pôsteres de Filmes, as
+  artes de Jogos e a capa de Música (ver `direcao-visual.md`). Ele escreve **direto no `style`**
+  dentro de um rAF coalescido: um `setState` por `pointermove` re-renderizaria a seção dezenas de
+  vezes por segundo para mudar dois números de `transform`.
 
 ### A bio muda de lado
 
@@ -329,6 +331,14 @@ seção, e tirá-la é a diferença mais visível que existe aqui sem escrever n
 errada: dobrava a altura do bloco justamente na tela onde ela é mais disputada, e o que está tocando
 deixava de ser reconhecível de relance por ter virado outro desenho. Ali quem cede é o texto, que já
 corta com reticências — cortar um título é mais barato que reorganizar o bloco.
+
+**A capa leva à faixa, e cada artista ao seu perfil.** A capa é a maior superfície do bloco e a
+primeira coisa que o olho encontra, e era a única parte dele que parecia clicável sem ser; hoje ela é
+um link para a mesma faixa que o nome ao lado, e inclina ao ser apontada como as outras artes da
+página. Os artistas são **um link cada**, e é por isso que a faixa carrega uma lista em vez do nome já
+juntado (`data/types.ts`): numa faixa de dois, o nome inteiro apontando para o primeiro seria uma
+resposta errada disfarçada de link. Quem só precisa da linha, como as duas listas do mês, junta a
+lista na hora de desenhar.
 
 **A barra do que está tocando anda sozinha, em CSS.** O que chega do Spotify é um instantâneo, e sem
 nada ela ficaria parada por vinte segundos e daria um salto a cada resposta. Uma animação linear do

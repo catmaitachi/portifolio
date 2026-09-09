@@ -33,6 +33,10 @@ perder um, fica sendo trabalho de uma função em vez de uma seção inteira.
 Tudo que é opcional ali é opcional de verdade: o Letterboxd tem filme sem nota, a Steam tem jogo sem
 arte, e o Spotify não está tocando nada na maior parte do tempo.
 
+E o contrato guarda a **lista** de artistas de uma faixa, com o endereço de cada um, em vez do nome já
+juntado que a interface mostra. Uma faixa de dois artistas tem dois perfis, e com uma string só o
+nome inteiro apontaria para o primeiro deles.
+
 ### As três decisões que valem para as três funções
 
 - **`req`/`res` do Node cru**, sem os atalhos da Vercel (`res.json`, `res.status`). Eles existem no

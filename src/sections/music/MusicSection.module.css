@@ -155,13 +155,51 @@
  * moldura de espaço reservado que o resto da página usa.
  */
 .capa {
+  /* âncora do brilho especular, que é `position: absolute` */
+  position: relative;
   display: block;
   flex: none;
   width: var(--capa);
   height: var(--capa);
-  object-fit: cover;
+  overflow: hidden;
   border: 1px solid rgb(255 255 255 / 10%);
   border-radius: 2px;
+
+  /* o clarão acompanha a capa, não os 240px do retrato */
+  --brilho-r: 150px;
+
+  /* a inclinação é escrita pelo JS (ver `useInclinacao`); daqui sai o retorno */
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.capa img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/**
+ * Cada artista é um link, e o sublinhado só aparece ao apontar.
+ *
+ * A linha do artista fica sob o nome da faixa, que é o texto grande do bloco:
+ * três sublinhados acesos ali o tempo todo tirariam dele a hierarquia. O que
+ * marca que há link é a cor subindo junto com o risco.
+ */
+.artistaLink {
+  border-bottom: 1px solid transparent;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    color 0.3s,
+    border-color 0.3s;
+}
+
+.artistaLink:hover {
+  border-bottom-color: rgb(255 255 255 / 40%);
+  color: rgb(255 255 255 / 85%);
 }
 
 .corpo {

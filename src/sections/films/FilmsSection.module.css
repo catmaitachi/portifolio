@@ -72,11 +72,20 @@
  * que precise assentar no lugar certo, e obrigar o encaixe tiraria de quem
  * arrasta a liberdade de parar onde quiser.
  */
+/**
+ * A faixa **reserva folga em volta**, e devolve o espaço com margem negativa.
+ *
+ * `overflow-x: auto` obriga o eixo Y a computar `auto` junto, então tudo que
+ * passar da caixa é cortado pela própria faixa — e o pôster passa, porque ele
+ * cresce e inclina ao ser apontado (ver `useInclinacao`). O recuo dá a ele por
+ * onde crescer, e a margem negativa devolve ao layout o espaço que o recuo
+ * tomou, então nada em volta se mexeu.
+ */
 .carrossel {
   display: flex;
   gap: clamp(10px, 1.8vmin, 20px);
-  margin: 0;
-  padding: 0 0 6px;
+  margin: -14px -14px 0;
+  padding: 14px 14px 20px;
   overflow-x: auto;
   scroll-snap-type: x proximity;
   overscroll-behavior-inline: contain;
@@ -88,10 +97,23 @@
   display: none;
 }
 
+/**
+ * O apontado passa a ser pintado por cima dos vizinhos.
+ *
+ * Um elemento com `transform` cria contexto de empilhamento mas continua sendo
+ * pintado na ordem do DOM: sem isso o pôster que cresce fica **por baixo** do
+ * seguinte, e a borda dele aparece cortada em linha reta bem no meio do gesto.
+ * `z-index` só faz efeito com posicionamento, daí o `relative`.
+ */
 .carrossel > li {
+  position: relative;
   flex: none;
   width: var(--poster);
   scroll-snap-align: start;
+}
+
+.carrossel > li:hover {
+  z-index: 2;
 }
 
 .cartao {
@@ -131,9 +153,17 @@
   border-radius: 2px;
   background: rgb(255 255 255 / 3%);
   opacity: 0.84;
+
+  /* o clarão acompanha a largura do pôster, não os 240px do retrato */
+  --brilho-r: 120px;
+
+  /* a inclinação é escrita pelo JS (ver `useInclinacao`); daqui sai o retorno */
+  transform-style: preserve-3d;
+  will-change: transform;
   transition:
     opacity 0.35s,
-    border-color 0.35s;
+    border-color 0.35s,
+    transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 @supports (corner-shape: bevel) {

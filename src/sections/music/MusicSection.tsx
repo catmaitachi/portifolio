@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { Musica } from '~/data/types';
 import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
+import { useInclinacao } from '~/hooks/useInclinacao';
 import { useRemoto } from '~/hooks/useRemoto';
 import { useT } from '~/i18n/useLanguage';
 import { EstadoRemoto } from '../EstadoRemoto';
@@ -94,6 +95,13 @@ function Lista({ titulo, itens }: { titulo: string; itens: Linha[] }) {
  */
 function Conteudo({ dados }: { dados: Musica }) {
   const t = useT();
+  // a capa inclina seguindo o ponteiro, como o retrato do Sobre e as outras artes
+  const { alvoRef: capaRef, brilhoRef } = useInclinacao<HTMLAnchorElement>({
+    grauX: 10,
+    grauY: 12,
+    escala: 1.05,
+    perspectiva: 600,
+  });
   // sem nada tocando, o destaque é a última que tocou
   const destaque = dados.tocando ?? dados.recentes[0] ?? null;
   const aoVivo = Boolean(dados.tocando);
@@ -109,7 +117,7 @@ function Conteudo({ dados }: { dados: Musica }) {
             id: f.id,
             nome: f.titulo,
             url: f.url,
-            secundario: f.artista,
+            secundario: f.artistas.map((a) => a.nome).join(', '),
           }))}
         />
         <Lista
@@ -119,11 +127,25 @@ function Conteudo({ dados }: { dados: Musica }) {
       </div>
 
       <div className={styles.destaque} data-vivo={aoVivo || undefined}>
-        {destaque.capa ? (
-          <img className={styles.capa} src={destaque.capa} alt="" loading="lazy" />
-        ) : (
-          <span className={styles.capa} aria-hidden="true" />
-        )}
+        {/**
+         * A capa **leva à faixa**, e é o mesmo destino do nome ao lado. Ela é a
+         * maior superfície do bloco e a primeira coisa que o olho encontra: era
+         * a única parte do destaque que parecia clicável e não era.
+         *
+         * Sem capa ela continua existindo, como moldura vazia, porque o link não
+         * depende da imagem ter chegado.
+         */}
+        <a
+          ref={capaRef}
+          className={styles.capa}
+          href={destaque.url}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={destaque.titulo}
+        >
+          {destaque.capa ? <img src={destaque.capa} alt="" loading="lazy" /> : null}
+          <span ref={brilhoRef} className={comum.brilho} aria-hidden="true" />
+        </a>
 
         <div className={styles.corpo}>
           <p className={styles.rotulo}>
@@ -133,7 +155,18 @@ function Conteudo({ dados }: { dados: Musica }) {
           <a className={styles.faixaNome} href={destaque.url} target="_blank" rel="noreferrer">
             {destaque.titulo}
           </a>
-          <p className={styles.artista}>{destaque.artista}</p>
+          {/* um link por artista: numa faixa de dois, o nome inteiro apontando
+              para o primeiro seria uma resposta errada disfarçada de link */}
+          <p className={styles.artista}>
+            {destaque.artistas.map((a, i) => (
+              <span key={a.url}>
+                {i > 0 ? ', ' : ''}
+                <a className={styles.artistaLink} href={a.url} target="_blank" rel="noreferrer">
+                  {a.nome}
+                </a>
+              </span>
+            ))}
+          </p>
 
           {aoVivo && destaque.duracaoMs ? (
             <span className={styles.medidor} aria-hidden="true">

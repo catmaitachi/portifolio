@@ -135,6 +135,38 @@ cima da animação de entrada, que vem antes na mesma lista. Pelo mesmo motivo o
 longo da recarga em vez de pulsar `infinite`: uma animação infinita continuaria rodando depois de o
 medidor apagar, e ele fica no DOM até um próximo disparo que pode nunca vir.
 
+### O convite do cabeçalho
+
+O nome do lado do site fica no topo, em texto, sem moldura e sem ícone, e **não parece clicável**:
+quem não passa o ponteiro por cima dele não descobre que dali se troca o site inteiro. Sete segundos
+depois do carregamento, dois estalos de luz acendem no lugar onde o clique deveria acontecer.
+
+`hud/Faiscas.tsx` desenha os estalos e `hud/useConvite.ts` decide quando. O componente é adaptado do
+`ClickSpark` do React Bits, e três coisas mudaram nele, nenhuma estética:
+
+- **o laço só corre enquanto há faísca viva.** O original mantém um `rAF` eterno limpando um canvas
+  vazio, e o contrato de desempenho aqui é que o que está desligado custe zero (ver `motor.md`);
+- **o canvas respeita o DPR**, com teto 2, como o palco da cena. Sem isso um risco de 1px vira meio
+  pixel borrado em tela retina, que é o contrário do que a página faz com todas as outras linhas;
+- **ele transborda o elemento** em 44px por lado, porque o cabeçalho tem a altura de uma linha de
+  texto e o estalo nasce no meio dela. O canvas não recebe ponteiro, então esticá-lo não cobre nada.
+
+Ele é irmão do conteúdo do `<nav>`, e não um embrulho em volta dele: um `<div>` a mais mudaria a
+caixa que o HUD posiciona e o que o topo reserva.
+
+**Os sete segundos são a mesma conta da dica que a página tinha e perdeu**: a abertura termina em
+6,2s, e um convite antes disso disputaria com o resto do HUD chegando. São **dois** estalos, com 1,1s
+entre eles: um se perde, três insistem.
+
+Três coisas o calam, e são as da dica antiga menos a persistência: mexer no cabeçalho (quem descobriu
+não precisa), `prefers-reduced-motion`, e a aba escondida — ali a espera nem **começa**, porque um
+cronômetro do navegador continua andando em segundo plano e o convite aconteceria inteiro para uma
+tela que ninguém está olhando.
+
+**Ele não contradiz a regra da seção seguinte.** Um estalo não cobre nada, não pede para ser
+dispensado e não escreve nada sobre o conteúdo: é um piscar no lugar certo, e quem não olhar naquele
+instante não perdeu texto nenhum. É a diferença entre apontar e interromper.
+
 ### O HUD não tem notificação, e a página não tem pop-up
 
 Existiu aqui um `Notice`, um painel no canto superior esquerdo que sugeria a supernova a quem ainda

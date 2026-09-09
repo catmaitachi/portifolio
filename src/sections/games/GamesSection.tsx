@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import type { Jogo, Jogos } from '~/data/types';
 import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
+import { useInclinacao } from '~/hooks/useInclinacao';
 import { useRemoto } from '~/hooks/useRemoto';
 import { useT } from '~/i18n/useLanguage';
 import { EstadoRemoto } from '../EstadoRemoto';
@@ -23,10 +24,21 @@ const horas = (minutos: number) => Math.round(minutos / 60);
  * fora da loja. `onError` esconde a imagem e deixa a moldura vazia de 1px, que é
  * o mesmo espaço reservado dos banners de projeto; sem isso sobraria o ícone de
  * imagem quebrada do navegador, a única coisa fora da paleta na página inteira.
+ *
+ * A moldura é também quem **inclina seguindo o ponteiro** (`useInclinacao`), com
+ * o brilho especular do retrato do Sobre. Ela vale para o destaque e para a
+ * grade, porque é a mesma peça nos dois.
  */
 function Arte({ capa }: { capa: string | null }) {
+  const { alvoRef, brilhoRef } = useInclinacao<HTMLSpanElement>({
+    grauX: 10,
+    grauY: 12,
+    escala: 1.04,
+    perspectiva: 700,
+  });
+
   return (
-    <span className={styles.arte}>
+    <span ref={alvoRef} className={styles.arte}>
       {capa ? (
         <img
           src={capa}
@@ -37,6 +49,7 @@ function Arte({ capa }: { capa: string | null }) {
           }}
         />
       ) : null}
+      <span ref={brilhoRef} className={comum.brilho} aria-hidden="true" />
     </span>
   );
 }

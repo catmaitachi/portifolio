@@ -57,6 +57,17 @@ Quatro decisões valem para todas, e são o que mantém isso barato e escalável
   animado e brigava com a régua de 1px do resto da página. O que dá caráter é a ordem das duas
   coisas — a opacidade chega antes do movimento, então o elemento se materializa e só depois assenta.
 
+**Uma entrada não pode correr junto com a do bloco, no mesmo sentido.** O `.bloco` inteiro sobe 26px
+em 0,9s (`section.module.css`), e é fácil escrever uma cascata que se some a ele em vez de vir depois
+dele: foi o que aconteceu em Jogos, onde as capas subiam 22px em 0,6s sem atraso nenhum. Os dois
+movimentos viravam um só, o menor terminava antes do maior, e a seção aparecia **sem entrada
+nenhuma** — não uma entrada discreta, uma entrada invisível. A cascata de lá hoje começa em 520ms, já
+com o bloco assentando, e as distâncias subiram para 40px no destaque e 28px na grade, pela regra
+acima de a distância acompanhar o tamanho.
+
+Quem escapa disso são as entradas que **não** transladam no eixo Y: os pôsteres de Filmes se acendem,
+e por isso leem por cima do movimento do bloco sem precisar esperá-lo.
+
 ### As duas ondas da Trajetória
 
 A curva tem um **par espelhado**: a mesma onda invertida no eixo, bem mais apagada

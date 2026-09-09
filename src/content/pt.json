@@ -47,7 +47,7 @@
     },
     "dados": [
       { "key": "residencia", "rotulo": "Residência", "valor": "Belo Horizonte, MG, Brasil" },
-      { "key": "aniversario", "rotulo": "Aniversário", "valor": "07/07/2005" }
+      { "key": "aniversario", "rotulo": "Aniversário", "valor": "7 Jul, 2005" }
     ]
   },
 

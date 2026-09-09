@@ -8,7 +8,7 @@
 @keyframes capaSobe {
   from {
     opacity: 0;
-    transform: translateY(22px);
+    transform: translateY(var(--sobe, 22px));
   }
 }
 
@@ -70,6 +70,8 @@
  * imagem quebrada do navegador, a única coisa fora da paleta na página.
  */
 .arte {
+  /* âncora do brilho especular, que é `position: absolute` */
+  position: relative;
   display: block;
   flex: none;
   width: var(--arte-w);
@@ -78,6 +80,14 @@
   border: 1px solid rgb(255 255 255 / 10%);
   border-radius: 2px;
   background: rgb(255 255 255 / 3%);
+
+  /* o clarão acompanha a largura da arte, não os 240px do retrato */
+  --brilho-r: 160px;
+
+  /* a inclinação é escrita pelo JS (ver `useInclinacao`); daqui sai o retorno */
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* arte de jogo é identidade de terceiro: fica colorida, como os banners */
@@ -174,6 +184,15 @@
  * na quinzena não deve ver quatro vagas vazias, e quem jogou oito não deve ver
  * duas linhas apertadas.
  */
+/* o apontado é pintado por cima dos vizinhos (ver a nota igual em Filmes) */
+.grade > li {
+  position: relative;
+}
+
+.grade > li:hover {
+  z-index: 2;
+}
+
 .grade {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -204,14 +223,29 @@
  * **O destaque sobe primeiro**, e a grade vem atrás dele: é ele que a seção
  * existe para mostrar, e a cascata que começa no que está aberto agora lê como
  * uma ordem, não como um monte de capas chegando junto.
+ *
+ * **A cascata começa depois de o bloco assentar**, e isso não é gosto: o
+ * `.bloco` inteiro entra subindo 26px em 0,9s (`section.module.css`), e as capas
+ * subiam 22px em 0,6s **ao mesmo tempo e no mesmo sentido**. Os dois movimentos
+ * se somavam num só, o menor terminava antes do maior, e o resultado era uma
+ * seção que aparecia sem entrada nenhuma. Com o atraso, o bloco chega, e só
+ * então as capas sobem, que é o que se lê como cascata.
+ *
+ * A distância também subiu, e pelo motivo de sempre: entrada acompanha o
+ * tamanho do elemento (ver `entradas.md`). O destaque é o bloco mais alto da
+ * seção, e 22px nele mal se percebem.
  */
 .bloco[data-ativo] .destaque {
-  animation: capaSobe 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  --sobe: 40px;
+
+  animation: capaSobe 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 520ms backwards;
 }
 
 .bloco[data-ativo] .cartao {
+  --sobe: 28px;
+
   animation: capaSobe 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
-  animation-delay: calc(180ms + var(--ordem, 0) * 70ms);
+  animation-delay: calc(820ms + var(--ordem, 0) * 90ms);
 }
 
 .cartao:hover {

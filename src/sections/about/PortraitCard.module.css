@@ -6,7 +6,6 @@
   /* a proporção é token da seção Sobre, que a usa para limitar a coluna do texto */
   aspect-ratio: 1 / var(--retrato-ar, 1.25);
   justify-self: center;
-  perspective: 900px;
 }
 
 .carta {
@@ -32,17 +31,5 @@
   }
 }
 
-/** Brilho especular: um halo que segue o cursor por --bx/--by. */
-.brilho {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    240px circle at var(--bx, 50%) var(--by, 50%),
-    rgb(255 255 255 / 30%),
-    rgb(255 255 255 / 6%) 42%,
-    transparent 70%
-  );
-  opacity: 0;
-  transition: opacity 0.45s ease;
-  pointer-events: none;
-}
+/* o brilho especular mora em `section.module.css`, compartilhado (ver `useInclinacao`) */
+

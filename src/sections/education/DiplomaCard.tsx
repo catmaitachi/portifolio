@@ -1,4 +1,5 @@
 import { LOGO_ESCALAS, LOGOS, type Formacao } from '~/content';
+import { useInclinacao } from '~/hooks/useInclinacao';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
 import styles from './DiplomaCard.module.css';
@@ -50,9 +51,15 @@ interface DiplomaCardProps {
  * Tudo o que o conteúdo tem continua na tela ao mesmo tempo: instituição, nível,
  * curso, o estado num selo, o dado que o estado produz, a fração em número e a
  * posição na lista. Nada aqui depende de ponteiro.
+ *
+ * O que o ponteiro faz é **inclinar o crachá** (`useInclinacao`), com o brilho
+ * especular do retrato do Sobre. Os graus são menores que os de lá: uma carta de
+ * 236 por 348 gira muito mais tela que um retrato, e o mesmo ângulo que ali lê
+ * como carta na mão aqui lê como página virando.
  */
 export function DiplomaCard({ formacao, indice, total, ordem, ativo, copia }: DiplomaCardProps) {
   const t = useT();
+  const { alvoRef, brilhoRef } = useInclinacao<HTMLElement>({ grauX: 9, grauY: 11, escala: 1.03 });
   const parte = fracao(formacao);
   const detalhe =
     formacao.estado === 'concluido'
@@ -65,6 +72,7 @@ export function DiplomaCard({ formacao, indice, total, ordem, ativo, copia }: Di
 
   return (
     <article
+      ref={alvoRef}
       className={styles.cracha}
       style={{ '--ordem': ordem } as React.CSSProperties}
       data-estado={formacao.estado}
@@ -72,6 +80,7 @@ export function DiplomaCard({ formacao, indice, total, ordem, ativo, copia }: Di
       // a cópia é a mesma formação de novo: o leitor de tela lê a lista uma vez
       aria-hidden={copia || undefined}
     >
+      <span ref={brilhoRef} className={comum.brilho} aria-hidden="true" />
       <span className={styles.furo} aria-hidden="true" />
 
       <span

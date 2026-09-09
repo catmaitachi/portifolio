@@ -37,6 +37,8 @@
  * onde a leitura fecha.
  */
 .cracha {
+  /* âncora do brilho especular, que é `position: absolute` */
+  position: relative;
   display: flex;
   flex: none;
   flex-direction: column;
@@ -48,7 +50,18 @@
   border: 1px solid rgb(255 255 255 / 22%);
   border-radius: 2px;
   background: rgb(0 0 0 / 74%);
+  overflow: hidden;
   text-align: center;
+
+  /* o clarão acompanha a largura do crachá, não os 240px do retrato */
+  --brilho-r: 150px;
+
+  /* a inclinação é escrita pelo JS; o retorno ao repouso é desta transição */
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition:
+    transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.55s ease;
 }
 
 /* chanfro dos dois cantos opostos — ver "Cantos chanfrados" no CLAUDE.md */

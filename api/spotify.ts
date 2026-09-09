@@ -24,7 +24,7 @@ interface FaixaSpotify {
   id: string | null;
   name: string;
   duration_ms: number;
-  artists: { name: string }[];
+  artists: { name: string; external_urls: { spotify: string } }[];
   album: { name: string; images: { url: string }[] };
   external_urls: { spotify: string };
 }
@@ -43,7 +43,7 @@ const menorImagem = (imagens: { url: string }[]): string | null =>
 const normalizarFaixa = (f: FaixaSpotify): Faixa => ({
   id: f.id ?? f.external_urls.spotify,
   titulo: f.name,
-  artista: f.artists.map((a) => a.name).join(', '),
+  artistas: f.artists.map((a) => ({ nome: a.name, url: a.external_urls.spotify })),
   album: f.album.name,
   capa: f.album.images[0]?.url ?? null,
   url: f.external_urls.spotify,
