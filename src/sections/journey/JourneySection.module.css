@@ -44,8 +44,9 @@
   border-radius: 2px;
   background: rgb(255 255 255 / 6%);
   color: rgb(255 255 255 / 94%);
-  font-size: 17px;
-  line-height: 1;
+
+  /* a ponta é desenhada (ver `.ponta` em `section.module.css`), não escrita */
+  --ponta: 9px;
   cursor: pointer;
   appearance: none;
   transition:

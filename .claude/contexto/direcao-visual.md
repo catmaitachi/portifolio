@@ -74,6 +74,33 @@ A pergunta é feita pelo próprio elemento, com `:has(img:not([hidden]))`. O est
 imagem chegou", e ele não existe no React: quem o produz é o `onError` da `<img>`, escrevendo
 `hidden` no nó.
 
+### Seta é desenho, nunca caractere
+
+Toda ponta de seta da página é um quadrado com borda em dois lados adjacentes, girado
+(`.ponta`, em `sections/section.module.css`, com o tamanho por `--ponta`). Nenhuma delas é um glifo,
+e isso não é gosto: **o subconjunto de IBM Plex Mono que o Google Fonts serve não traz `U+2190` nem
+`U+2192`**, as setas para a esquerda e para a direita. Traz `U+2191` e `U+2193`, as verticais, o que
+torna a falta especialmente fácil de não notar.
+
+O que acontece com o que falta é substituição por fonte de sistema, e ela é **por caractere**: as
+duas setas do mesmo par podem nem vir da mesma fonte, e qual fonte é isso muda de aparelho para
+aparelho. O sintoma que apareceu foi a seta da esquerda da Trajetória saindo com outra espessura em
+alguns celulares e não em outros.
+
+Desenhada, ela é traço de 1px, que é a régua do resto da página, e fica idêntica em todo lugar.
+Também deixa de ter peso de texto, que é o que um glifo tem por definição.
+
+**Só a rotação, nunca uma translação junto.** Composta depois do `rotate`, a translação vale no eixo
+**local** do canto, que é oposto entre as duas pontas: o mesmo deslocamento sobe uma e desce a outra.
+Foi assim que as setas das faixas nasceram desencontradas na vertical.
+
+Onde a seta também se move, como a do botão de enviar do Contato, **são dois elementos**: o de fora
+leva o avanço do `:hover` e o de dentro, a rotação. Dois `transform` no mesmo elemento se apagam, que
+é a regra do `<g>` da curva da Trajetória.
+
+Os três lugares que a usam hoje são os passos da Trajetória (9px, num botão de 38px), as setas das
+faixas de Jogos e Filmes (6px) e o botão de enviar do Contato (6px).
+
 ### A carta que inclina
 
 Toda imagem enquadrada da página **inclina seguindo o ponteiro**, com um brilho especular

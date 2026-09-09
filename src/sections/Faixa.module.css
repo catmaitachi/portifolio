@@ -44,9 +44,11 @@
 }
 
 /**
- * A seta é a mesma dos passos da Trajetória: 22px de área de toque, sem moldura,
- * e o desenho é um canto de 1px girado. Nada de glifo — a fonte da página é
- * monoespaçada e o caractere de seta dela tem peso de texto, não de traço.
+ * A seta é a mesma dos passos da Trajetória, com outra escala: 22px de área de
+ * toque e sem moldura. O desenho vem de `.ponta` (`section.module.css`), que os
+ * dois compartilham — e é desenho, não glifo, porque `←` e `→` não estão no
+ * subconjunto de IBM Plex Mono que o Google Fonts serve e caíam numa fonte de
+ * sistema diferente em cada aparelho.
  */
 .seta {
   display: flex;
@@ -59,6 +61,7 @@
   border: 0;
   background: none;
   color: rgb(255 255 255 / 42%);
+  --ponta: 6px;
   cursor: pointer;
   transition: color 0.25s;
 }
@@ -79,23 +82,6 @@
   height: 6px;
   border-top: 1px solid currentcolor;
   border-right: 1px solid currentcolor;
-}
-
-/**
- * **Só rotação, nunca uma translação junto.**
- *
- * A translação vinha depois do `rotate` e por isso valia no eixo **local** do
- * canto, que é oposto entre as duas setas: o mesmo `translate(-1px, -1px)` subia
- * uma e descia a outra, e as duas ficavam ~2,8px desencontradas na vertical.
- * Girando em torno do centro elas ficam alinhadas por construção, e o desvio
- * óptico que sobra é espelhado entre as duas, que é o que o olho lê como par.
- */
-.seta[data-lado='antes'] .ponta {
-  transform: rotate(-135deg);
-}
-
-.seta[data-lado='depois'] .ponta {
-  transform: rotate(45deg);
 }
 
 /**

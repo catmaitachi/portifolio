@@ -55,6 +55,9 @@ export function JourneySection({ ativo, indice }: SectionProps) {
 
         <TimelineCurve lista={lista} linha={linha} ativo={ativo} />
 
+        {/* a ponta é desenhada, e não escrita: `←` e `→` não estão no subconjunto
+            de IBM Plex Mono que o Google Fonts serve, então caíam numa fonte de
+            sistema diferente em cada celular (ver `.ponta` em `section.module.css`) */}
         <div className={styles.controles}>
           <button
             type="button"
@@ -63,7 +66,7 @@ export function JourneySection({ ativo, indice }: SectionProps) {
             disabled={linha.noInicio}
             onClick={() => linha.mudar(-1)}
           >
-            &#8592;
+            <span className={comum.ponta} data-lado="antes" aria-hidden="true" />
           </button>
           <button
             type="button"
@@ -72,7 +75,7 @@ export function JourneySection({ ativo, indice }: SectionProps) {
             disabled={linha.noFim}
             onClick={() => linha.mudar(1)}
           >
-            &#8594;
+            <span className={comum.ponta} data-lado="depois" aria-hidden="true" />
           </button>
         </div>
       </div>

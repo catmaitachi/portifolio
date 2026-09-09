@@ -283,6 +283,46 @@
 }
 
 /**
+ * A ponta de seta, **desenhada**.
+ *
+ * Ela era o caractere `←` e o `→`, e isso quebrava em celular: o subconjunto de
+ * IBM Plex Mono que o Google Fonts serve traz `U+2191` e `U+2193` (as setas para
+ * cima e para baixo) e **não** traz `U+2190` nem `U+2192`. Os dois caíam numa
+ * fonte de sistema, e qual fonte é isso muda de aparelho para aparelho — a
+ * substituição é por caractere, então as duas setas do mesmo botão podiam nem
+ * vir da mesma fonte. O sintoma era uma delas sair com outra espessura, outra
+ * largura ou fora da linha de base, em alguns telefones e não em outros.
+ *
+ * Um quadrado com borda em dois lados adjacentes, girado, resolve isso sem
+ * depender de fonte nenhuma: é traço de 1px, que é a régua do resto da página, e
+ * fica idêntico em todo lugar. Também não deixa a seta ter peso de texto, que é
+ * o que um glifo tem.
+ *
+ * **Só a rotação, nunca uma translação junto.** Composta depois do `rotate`, ela
+ * valeria no eixo **local** do canto, que é oposto entre as duas pontas: o mesmo
+ * deslocamento sobe uma e desce a outra, e as duas ficam desencontradas na
+ * vertical. Girando em torno do centro elas se alinham por construção.
+ *
+ * O tamanho vem de `--ponta`, porque os dois lugares que a usam são de escalas
+ * diferentes: o botão de 38px da Trajetória e a seta de 22px das faixas.
+ */
+.ponta {
+  display: block;
+  width: var(--ponta, 6px);
+  height: var(--ponta, 6px);
+  border-top: 1px solid currentcolor;
+  border-right: 1px solid currentcolor;
+}
+
+.ponta[data-lado='antes'] {
+  transform: rotate(-135deg);
+}
+
+.ponta[data-lado='depois'] {
+  transform: rotate(45deg);
+}
+
+/**
  * Telas baixas: sobra menos altura, então os respiros encolhem.
  *
  * **A faixa exige `width > 640px`**, e isso não é detalhe de escrita. A regra

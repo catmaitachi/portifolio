@@ -3,6 +3,7 @@ import { format } from '~/content';
 import { useRolagemLateral } from '~/hooks/useRolagemLateral';
 import { useT } from '~/i18n/useLanguage';
 import styles from './Faixa.module.css';
+import comum from './section.module.css';
 
 interface FaixaProps {
   /** o rótulo da lista, que é também o nome da região rolável */
@@ -84,7 +85,7 @@ export function Faixa({ titulo, base = 0, total, children }: FaixaProps) {
                 })}
                 onClick={() => rolar(lado === 'antes' ? -1 : 1)}
               >
-                <span className={styles.ponta} aria-hidden="true" />
+                <span className={comum.ponta} data-lado={lado} aria-hidden="true" />
               </button>
             ))}
           </div>

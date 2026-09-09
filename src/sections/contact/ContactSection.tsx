@@ -89,8 +89,10 @@ export function ContactSection({ ativo, indice, modo }: SectionProps) {
 
           <button type="submit" className={styles.enviar}>
             <span>{t.contato.enviar}</span>
+            {/* dois elementos porque são dois `transform`: o de fora leva o avanço
+                do hover e o de dentro, a rotação da ponta (ver `section.module.css`) */}
             <span className={styles.seta} aria-hidden="true">
-              &#8594;
+              <span className={comum.ponta} data-lado="depois" />
             </span>
           </button>
         </form>
