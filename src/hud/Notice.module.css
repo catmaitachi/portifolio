@@ -148,10 +148,15 @@
   color: #fff;
 }
 
-/* mobile: sem hover não há frase sob o cabeçalho, e o aviso pode subir junto */
+/**
+ * Mobile: o topo tem duas linhas (idioma e cabeçalho), então o aviso desce mais.
+ *
+ * Não há frase de hover aqui, mas há o menu aberto, que é o que a conta precisa
+ * limpar: base, a linha do idioma, o respiro e as duas opções do cabeçalho.
+ */
 @media (width <= 640px) {
   .aviso {
-    --aviso-top: max(8.6vh, 72px);
+    --aviso-top: max(12.4vh, 100px);
     --aviso-left: 20px;
   }
 }

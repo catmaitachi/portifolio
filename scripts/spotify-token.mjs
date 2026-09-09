@@ -55,6 +55,33 @@ function gravarRefresh(token) {
   writeFileSync(ENV, novo);
 }
 
+/**
+ * Abre a URL no navegador padrão sem deixar o shell comer o endereço.
+ *
+ * No Windows, `cmd /c start <url>` **corta a URL no primeiro `&`**: para o cmd
+ * ele é separador de comandos, não caractere. A autorização chegava ao Spotify
+ * sem `response_type`, sem `redirect_uri` e sem `scope`, e a página só dizia que
+ * a requisição era inválida. Foi assim que a primeira versão deste script
+ * falhou. O PowerShell com o argumento nu quebra do mesmo jeito.
+ *
+ * A saída são aspas simples **explícitas** dentro do comando do PowerShell: o
+ * Node só põe aspas sozinho em argumento que tenha espaço, e uma URL não tem
+ * nenhum.
+ */
+function abrirNoNavegador(url) {
+  const [programa, args] =
+    process.platform === 'win32'
+      ? ['powershell', ['-NoProfile', '-Command', `Start-Process '${url}'`]]
+      : process.platform === 'darwin'
+        ? ['open', [url]]
+        : ['xdg-open', [url]];
+  try {
+    spawn(programa, args, { stdio: 'ignore', detached: true }).unref();
+  } catch {
+    /* sem navegador para abrir: o endereço já está impresso acima */
+  }
+}
+
 const { vars } = lerEnv();
 const id = vars.SPOTIFY_CLIENT_ID;
 const segredo = vars.SPOTIFY_CLIENT_SECRET;
@@ -70,11 +97,11 @@ const autorizar = `https://accounts.spotify.com/authorize?${new URLSearchParams(
   redirect_uri: REDIRECT,
   scope: ESCOPOS,
   state: estado,
-  // sempre pergunta, para dar para trocar de conta sem limpar sessão do navegador
+  // sempre pergunta, para dar para trocar de conta sem limpar a sessão do navegador
   show_dialog: 'true',
 })}`;
 
-const servidor = createServer(async (req, res) => {
+const servidor = createServer((req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1:8888');
   if (url.pathname !== '/callback') {
     res.writeHead(404).end();
@@ -85,60 +112,69 @@ const servidor = createServer(async (req, res) => {
     res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' }).end(texto);
   };
 
-  if (url.searchParams.get('state') !== estado) {
-    responder('Estado não confere. Rode o script de novo.');
-    console.error('\nO `state` voltou diferente do enviado. Autorização descartada.');
+  const desistir = (mensagem, detalhe) => {
+    responder(mensagem);
+    console.error(`\n${mensagem}`);
+    if (detalhe) console.error(detalhe);
     servidor.close();
     process.exitCode = 1;
+  };
+
+  if (url.searchParams.get('state') !== estado) {
+    desistir('O `state` voltou diferente do enviado. Autorização descartada.');
     return;
   }
 
   const erro = url.searchParams.get('error');
   if (erro) {
-    responder(`Autorização negada: ${erro}`);
-    console.error(`\nAutorização negada: ${erro}`);
-    servidor.close();
-    process.exitCode = 1;
+    desistir(`Autorização negada: ${erro}`);
     return;
   }
 
-  const resposta = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/x-www-form-urlencoded',
-      authorization: `Basic ${Buffer.from(`${id}:${segredo}`).toString('base64')}`,
-    },
-    body: new URLSearchParams({
-      grant_type: 'authorization_code',
-      code: url.searchParams.get('code'),
-      redirect_uri: REDIRECT,
-    }),
-  });
+  void (async () => {
+    try {
+      const resposta = await fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          authorization: `Basic ${Buffer.from(`${id}:${segredo}`).toString('base64')}`,
+        },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          code: url.searchParams.get('code'),
+          redirect_uri: REDIRECT,
+        }),
+      });
 
-  const dados = await resposta.json();
-  if (!resposta.ok || !dados.refresh_token) {
-    responder('Deu ruim. Veja o terminal.');
-    console.error('\nO Spotify recusou a troca:', dados);
-    servidor.close();
-    process.exitCode = 1;
-    return;
-  }
+      const dados = await resposta.json();
+      if (!resposta.ok || !dados.refresh_token) {
+        desistir('O Spotify recusou a troca do código por tokens.', dados);
+        return;
+      }
 
-  gravarRefresh(dados.refresh_token);
-  responder('Pronto. Pode fechar esta aba e voltar ao terminal.');
-  console.log('\nRefresh token gravado em .env.local.');
-  console.log('Ponha o mesmo valor em SPOTIFY_REFRESH_TOKEN nas variáveis da Vercel.');
-  servidor.close();
+      gravarRefresh(dados.refresh_token);
+      responder('Pronto. Pode fechar esta aba e voltar ao terminal.');
+      console.log('\nRefresh token gravado em .env.local.');
+      console.log('Ponha o mesmo valor em SPOTIFY_REFRESH_TOKEN nas variáveis da Vercel.');
+      servidor.close();
+    } catch (e) {
+      desistir('Falhou ao falar com o Spotify.', e);
+    }
+  })();
+});
+
+servidor.on('error', (e) => {
+  console.error(
+    e.code === 'EADDRINUSE'
+      ? '\nA porta 8888 está ocupada. Feche o que estiver nela e rode de novo.'
+      : `\nNão consegui subir o servidor local: ${e.message}`,
+  );
+  process.exit(1);
 });
 
 servidor.listen(8888, '127.0.0.1', () => {
-  console.log('Abrindo a autorização do Spotify no navegador.');
-  console.log(`Se ele não abrir, cole este endereço:\n\n${autorizar}\n`);
-  const abrir =
-    process.platform === 'win32'
-      ? ['cmd', ['/c', 'start', '', autorizar]]
-      : process.platform === 'darwin'
-        ? ['open', [autorizar]]
-        : ['xdg-open', [autorizar]];
-  spawn(abrir[0], abrir[1], { stdio: 'ignore', detached: true }).unref();
+  console.log('\nSe o navegador não abrir sozinho, cole este endereço nele:\n');
+  console.log(autorizar);
+  console.log('\nEsperando a autorização...');
+  abrirNoNavegador(autorizar);
 });

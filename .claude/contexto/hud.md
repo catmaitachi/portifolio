@@ -23,9 +23,19 @@ Tudo em `transform` e `clip-path` = compositor da GPU, zero custo de CPU.
 
 ### Cabeçalho de modo
 
-`ModeHeader` fica no **canto superior esquerdo**, e é um **menu**: recolhido mostra só o lado em
-vigor, um clique abre o outro, o seguinte escolhe. Quem manda no que ele faz está em `navegacao.md`;
-aqui ficam as decisões de HUD.
+`ModeHeader` fica **centrado no topo**, e é um **menu**: recolhido mostra só o lado em vigor, um
+clique abre o outro, o seguinte escolhe. Quem manda no que ele faz está em `navegacao.md`; aqui
+ficam as decisões de HUD.
+
+**No mobile ele desce uma linha e fica sob o seletor de idioma**, ainda centrado. O idioma ocupa o
+centro da primeira linha desde antes de o cabeçalho existir, e os dois não cabem lado a lado: só os
+nomes já medem 218px numa tela de 375, e o seletor come outros 68. Empilhados, os dois leem como um
+bloco de cabeçalho.
+
+**O topo tem tokens, como o rodapé.** `--hud-topo-linha` é a altura de uma linha, `--hud-topo-entre`
+o respiro entre duas, e `--hud-topo-altura` é uma linha no desktop e duas no mobile. O deslocamento
+do cabeçalho e o respiro que as seções reservam saem da **mesma** conta: um número solto de um dos
+lados sairia de sincronia com o outro, que é exatamente o defeito que o rodapé já teve.
 
 **Só o lado em vigor aparece**, e isso não é economia de espaço. Os dois nomes lado a lado o tempo
 todo seriam duas afirmações onde só uma é verdade, e no canto onde o olho cai primeiro isso disputa
@@ -141,9 +151,11 @@ estrela, um meteoro ou uma onda de choque passando por trás de um texto de 11px
 de painel — o aviso é a única coisa do HUD que existe para ser lida, e por isso é a única que não
 deixa a cena atravessar.
 
-O canto superior esquerdo é o único que o HUD deixou vago (idioma no topo à direita, menu à direita,
-versão embaixo à direita, medidor embaixo à esquerda). No mobile o aviso **desce** para
-`max(7.4vh, 62px)`, porque lá o seletor de idioma passa a ocupar o centro do topo.
+O canto superior esquerdo é o que sobra ao aviso (cabeçalho no centro do topo, idioma no topo à
+direita, menu à direita, versão embaixo à direita, medidor embaixo à esquerda). Mesmo ali ele
+**desce**, e o recuo é medido contra o cabeçalho **aberto**: o painel é preto sólido, e medido pelo
+cabeçalho recolhido ele cobriria a frase do hover no instante em que ela existe para ser lida. No
+mobile desce mais, porque lá o topo tem duas linhas em vez de uma.
 
 O painel **fica montado durante a animação de saída** e sai do DOM no `animationend` — checando
 `e.target === e.currentTarget`, porque o evento borbulha e o risco lateral também é animado.
