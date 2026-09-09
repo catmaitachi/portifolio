@@ -203,6 +203,14 @@ export interface Dictionary {
     /** o rótulo da lista escolhida a dedo; sem lista configurada, o bloco some */
     favoritos: string;
     recentes: string;
+    /**
+     * A posição na lista de favoritos, com `{n}`.
+     *
+     * O número aparece desenhado num selo, e é só um número: quem usa leitor de
+     * tela precisa da frase em volta dele para saber que "03" é um lugar numa
+     * lista, e não um ano ou uma nota.
+     */
+    posicao: string;
     semNota: string;
     revisita: string;
   };

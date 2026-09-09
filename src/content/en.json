@@ -47,13 +47,13 @@
     },
     "dados": [
       { "key": "residencia", "rotulo": "Lives in", "valor": "Belo Horizonte, MG, Brazil" },
-      { "key": "nascimento", "rotulo": "Born", "valor": "07/07/2005" }
+      { "key": "aniversario", "rotulo": "Birthday", "valor": "July 7, 2005" }
     ]
   },
 
   "formacoes": {
     "titulo": "Education",
-    "intro": "Where I studied, where I study, and where I plan to study.",
+    "intro": "My academic path.",
     "rotulos": {
       "conclusao": "Completion",
       "periodos": "Terms"
@@ -161,6 +161,7 @@
     "intro": "My cinephile era.",
     "favoritos": "Favourites",
     "recentes": "Watched recently",
+    "posicao": "#{n} on the list",
     "semNota": "no rating",
     "revisita": "rewatch"
   },
@@ -304,7 +305,7 @@
     "modos": "Switch between the personal site and the professional portfolio",
     "modosAbrir": "Choose which side of the site",
     "idioma": "Switch language between Portuguese and English",
-    "projetos": "Projects — open a card to read the description",
+    "projetos": "Projects — use the arrow keys to move through the cards",
     "experiencia": "Journey — use the arrow keys to move through the years",
     "canais": "Contact channels",
     "retrato": "Portrait",

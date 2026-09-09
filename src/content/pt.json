@@ -47,13 +47,13 @@
     },
     "dados": [
       { "key": "residencia", "rotulo": "Residência", "valor": "Belo Horizonte, MG, Brasil" },
-      { "key": "nascimento", "rotulo": "Nascimento", "valor": "07/07/2005" }
+      { "key": "aniversario", "rotulo": "Aniversário", "valor": "07/07/2005" }
     ]
   },
 
   "formacoes": {
     "titulo": "Formação",
-    "intro": "Onde eu estudei, onde eu estudo e onde eu pretendo estudar.",
+    "intro": "Minha trajetória acadêmica.",
     "rotulos": {
       "conclusao": "Conclusão",
       "periodos": "Períodos"
@@ -161,6 +161,7 @@
     "intro": "Meu momento cinéfilo.",
     "favoritos": "Favoritos",
     "recentes": "Vistos por último",
+    "posicao": "{n}º na lista",
     "semNota": "sem nota",
     "revisita": "revisita"
   },
@@ -304,7 +305,7 @@
     "modos": "Alternar entre o site pessoal e o portfólio profissional",
     "modosAbrir": "Escolher o lado do site",
     "idioma": "Alternar idioma entre português e inglês",
-    "projetos": "Projetos — abra um cartão para ler a descrição",
+    "projetos": "Projetos — use as setas para percorrer os cartões",
     "experiencia": "Trajetória — use as setas para percorrer os anos",
     "canais": "Canais de contato",
     "retrato": "Retrato",

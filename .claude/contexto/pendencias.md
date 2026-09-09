@@ -13,10 +13,8 @@
 - **Dois projetos são vagas** (`vaga-02`, `vaga-03`, estado `definir`): giram na órbita e não abrem
   descrição. Preencher quando houver projeto.
 - TikTok está sem `url` em `shared.json`, então aparece como "em breve".
-- **`LETTERBOXD_LIST` está vazia**, então a seção Filmes mostra só os vistos por último. Criar a
-  lista no Letterboxd, deixá-la pública e colar o endereço dela no `.env.local` e nas variáveis da
-  Vercel. A raspagem já está testada contra uma lista pública qualquer, e o bloco aparece sozinho
-  assim que a variável tiver valor.
+- **`LETTERBOXD_LIST` está no `.env.local` e falta nas variáveis da Vercel.** Sem ela lá, o bloco de
+  favoritos simplesmente não aparece em produção, e a seção mostra só os vistos por último.
 - **A bio do lado pessoal é rascunho.** Ela fala do que as três seções de dado remoto mostram, que é
   o que dá para afirmar sem inventar biografia. Reescrever com o que ele quiser contar
   (`sobre.paragrafos.pessoal`, nos dois dicionários).

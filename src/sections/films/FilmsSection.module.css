@@ -201,6 +201,35 @@
 }
 
 /**
+ * O lugar na lista de favoritos, no lugar onde os recentes mostram a nota.
+ *
+ * Numa lista de favoritos a nota é sempre cinco, e cinco marcas cheias em doze
+ * cartões seriam a mesma informação repetida doze vezes. O que a lista afirma é
+ * a **ordem**, e é ela que aparece aqui.
+ *
+ * É um selo, e não um número solto: dois algarismos ao lado do ano, na mesma
+ * linha, leriam como parte da data. A moldura é o que separa um do outro, e o
+ * chanfro é o de sempre, num raio proporcional a uma caixa deste tamanho.
+ */
+.posto {
+  flex: none;
+  padding: 3px 6px;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: 2px;
+  color: rgb(255 255 255 / 82%);
+  font-size: 8.5px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.12em;
+}
+
+@supports (corner-shape: bevel) {
+  .posto {
+    corner-shape: bevel;
+    border-radius: 6px 2px;
+  }
+}
+
+/**
  * A nota: cinco marcas de 1px, preenchidas pela fração.
  *
  * Cada marca é uma trilha vazia com um preenchimento de largura `--cheio`, então

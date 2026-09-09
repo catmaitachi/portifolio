@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { format } from '~/content';
 import type { Filme, Filmes } from '~/data/types';
 import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
 import { useRemoto } from '~/hooks/useRemoto';
@@ -41,8 +42,19 @@ function Nota({ nota }: { nota: number }) {
   );
 }
 
-/** Um filme: pôster, nome, ano e nota. É o mesmo cartão nos dois carrosséis. */
-function Cartao({ filme }: { filme: Filme }) {
+/**
+ * Um filme: pôster, nome, ano e, no pé, a nota ou o lugar na lista.
+ *
+ * É o mesmo cartão nos dois carrosséis, e a única diferença é essa última peça.
+ * Nos **favoritos** a nota não diz nada: uma lista de favoritos é feita de
+ * cincos, e cinco marcas cheias em todos os cartões seriam a mesma informação
+ * repetida doze vezes. O que distingue um favorito do outro ali é a **posição**,
+ * que é a única coisa que a lista afirma, então é ela que aparece.
+ *
+ * Nos **vistos por último** é o contrário: a ordem é cronológica e não é
+ * julgamento nenhum, e o que distingue um do outro é a nota.
+ */
+function Cartao({ filme, posicao }: { filme: Filme; posicao?: number }) {
   const t = useT();
 
   return (
@@ -68,9 +80,16 @@ function Cartao({ filme }: { filme: Filme }) {
       <span className={styles.nome}>{filme.titulo}</span>
       <span className={styles.rodape}>
         <span className={styles.ano}>{filme.ano}</span>
-        {/* sem nota é diferente de nota zero: cinco marcas vazias afirmariam um
-            julgamento que ninguém fez */}
-        {filme.nota === null ? (
+        {posicao !== undefined ? (
+          <span
+            className={styles.posto}
+            aria-label={format(t.filmes.posicao, { n: String(posicao) })}
+          >
+            {String(posicao).padStart(2, '0')}
+          </span>
+        ) : filme.nota === null ? (
+          /* sem nota é diferente de nota zero: cinco marcas vazias afirmariam um
+             julgamento que ninguém fez */
           <span className={styles.semNota}>{t.filmes.semNota}</span>
         ) : (
           <Nota nota={filme.nota} />
@@ -96,7 +115,18 @@ function Cartao({ filme }: { filme: Filme }) {
  * `--base` é o atraso de onde a entrada desta faixa começa: as duas listas
  * chegam uma depois da outra, e não ao mesmo tempo.
  */
-function Carrossel({ titulo, filmes, base }: { titulo: string; filmes: Filme[]; base: number }) {
+function Carrossel({
+  titulo,
+  filmes,
+  base,
+  ranqueada,
+}: {
+  titulo: string;
+  filmes: Filme[];
+  base: number;
+  /** a ordem da lista **é** o ranking, e cada cartão mostra o próprio lugar */
+  ranqueada?: boolean;
+}) {
   return (
     <div className={styles.grupo}>
       <p className={styles.tituloLista}>{titulo}</p>
@@ -108,7 +138,7 @@ function Carrossel({ titulo, filmes, base }: { titulo: string; filmes: Filme[]; 
       >
         {filmes.map((f, i) => (
           <li key={f.id} style={{ '--ordem': i } as React.CSSProperties}>
-            <Cartao filme={f} />
+            <Cartao filme={f} posicao={ranqueada ? i + 1 : undefined} />
           </li>
         ))}
       </ul>
@@ -165,7 +195,7 @@ export function FilmsSection({ ativo, indice }: SectionProps) {
         ) : (
           <>
             {favoritos.length > 0 && (
-              <Carrossel titulo={t.filmes.favoritos} filmes={favoritos} base={0} />
+              <Carrossel titulo={t.filmes.favoritos} filmes={favoritos} base={0} ranqueada />
             )}
             {recentes.length > 0 && (
               <Carrossel

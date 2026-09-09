@@ -135,10 +135,11 @@ Uma entrada em `experiencia.lista` nos dois dicionários. A lista está em **ord
 dicionários: um lado novo do site quebra o build até ter o próprio texto. O título é o mesmo dos dois
 lados, porque o assunto é o mesmo.
 
-`sobre.dados` são os fatos sob a bio, hoje nascimento e residência. É lista com `key`, então
+`sobre.dados` são os fatos sob a bio, hoje aniversário e residência. É lista com `key`, então
 `check:i18n` confere ordem e campos como já faz com projetos e formações, e um terceiro fato não
 pede nada no componente. O valor vai no dicionário apesar de ser dado, ao contrário da versão no
-rodapé: a cidade leva o país escrito no idioma de quem lê.
+rodapé: a cidade leva o país escrito no idioma de quem lê, e a data leva o formato — `07/07/2005` em
+português, `July 7, 2005` em inglês.
 
 ### Adicionar uma formação
 

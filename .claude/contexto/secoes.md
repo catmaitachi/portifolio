@@ -39,7 +39,7 @@ Um lado novo do site **quebra o build** até ter o próprio texto, que é a regr
 
 ### Os dois fatos, no lugar da formação
 
-A formação **saiu daqui e virou seção** (ver adiante), e no lugar dela ficaram nascimento e
+A formação **saiu daqui e virou seção** (ver adiante), e no lugar dela ficaram aniversário e
 residência: rótulo em versalete espaçado com o valor embaixo, separados do corpo por um risco de
 1px, **um em cada extremo do bloco**. Encostados um no outro eles leem como uma legenda só; nas
 pontas, cada um é um dado, e o risco liga os dois. São os dois fatos que o retrato não diz, e custam uma linha em vez do bloco mais denso da
@@ -48,7 +48,10 @@ página.
 Eles ficam **dentro do bloco**, ao contrário do carrossel que ocupava este lugar: um irmão do
 `.bloco` só se justifica para algo que precise da largura inteira da seção. O valor mora no
 dicionário, e não em `shared.json`, apesar de ser dado: a cidade leva o país escrito no idioma de
-quem lê, e "MG" não diz nada a quem chegou em inglês.
+quem lê, e "MG" não diz nada a quem chegou em inglês. **A data segue o mesmo caminho**: `07/07/2005`
+em português e `July 7, 2005` em inglês, escritos um em cada dicionário. Não há formatador nenhum
+envolvido, e não deveria haver: é um valor só, e um `Intl.DateTimeFormat` carregaria uma data de
+verdade para produzir a mesma string que já cabe no JSON.
 
 ---
 
@@ -360,6 +363,15 @@ outro lugar aqui, e a meia estrela fica **exata** em vez de arredondada. É a me
 medidor das formações. Quem usa leitor de tela recebe o número no `aria-label`: a marca é desenho.
 **Sem nota é diferente de nota zero**, e quem marcou como visto sem avaliar recebe o rótulo, não
 cinco marcas vazias, que afirmariam um julgamento que ninguém fez.
+
+**Mas ela só vale nos vistos por último.** Nos favoritos a nota não diz nada: uma lista de favoritos
+é feita de cincos, e cinco marcas cheias em doze cartões seriam a mesma informação repetida doze
+vezes. Ali o que distingue um do outro é a **posição**, que é a única coisa que a lista afirma, e é
+ela que aparece, num selo com o número. A ordem vem pronta da raspagem, na ordem em que a lista foi
+montada, então não há ranking a inventar nem campo a pedir ao Letterboxd.
+
+O selo tem moldura, e não é enfeite: dois algarismos soltos ao lado do ano, na mesma linha, leriam
+como parte da data.
 
 **Capas, artes e pôsteres ficam coloridos.** É identidade de terceiro, como os banners de projeto e o
 vermelho da UFMG: não se repinta. A moldura de 1px existe mesmo sem a imagem, e é o mesmo espaço

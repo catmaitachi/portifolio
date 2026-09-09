@@ -24,7 +24,9 @@ opostos dá direção ao bloco; nos quatro, a caixa vira um losango achatado e s
 | `ProjectCard → .cartao` | 18px |
 | `PortraitCard → .carta` | 14px |
 | `ChannelCard → .canal` | 14px |
-| `DiplomaCard → .diploma` | 20px (14px na moldura de dentro) |
+| `DiplomaCard → .cracha` | 18px |
+| `DiplomaCard → .selo` | 7px |
+| `FilmsSection → .posto` | 6px |
 | `JourneySection → .seta` | 9px |
 | `JourneyEntry → .chip` | 6px |
 
