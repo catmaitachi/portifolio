@@ -62,26 +62,45 @@ página (ver `responsivo.md`), e era ele que obrigava o Sobre inteiro a encolher
 celular, e com ele fora ela volta ao teto da escala sozinha. A segunda é de leitura: formação
 tem estado, data e progresso, e no rodapé de uma biografia isso lia como legenda do retrato.
 
-**A faixa anda sempre, e não tem passo.** Ela já foi uma pilha e já foi um carrossel que parava em
-cada formação por alguns segundos, e as duas falhavam pelo mesmo motivo, por caminhos diferentes: na
+**A faixa só anda quando não cabe.** Numa tela larga os três crachás ficam parados e centrados, à
+vista de uma vez, que é o melhor estado possível: nada se move, nada passa, e tudo está lido. Andar
+ali seria movimento sem motivo. Onde a largura não dá para os três, e não dá em celular nenhum sem
+encolher o texto até o ilegível, a faixa desliza devagar e passa cada um pelo meio.
+
+**Quem responde isso é uma medida do DOM**, não uma media query: a largura do crachá muda por faixa
+responsiva e o bloco inteiro ainda passa pelo `zoom` do `useEscalaQueCabe`, então qualquer largura
+escrita num `@media` erraria na primeira dessas mudanças. `useCabeNaFaixa` compara a extensão da
+primeira volta com a largura do palco, medindo os dois com `getBoundingClientRect` — o que também
+resolve o `zoom` de graça, porque ele entra nas duas pontas da comparação. É a mesma decisão do
+`useEscalaQueCabe`: **medida, não estimada**.
+
+**Andando, ela não tem passo.** Esta seção já foi uma pilha e já foi um carrossel que parava em cada
+formação por alguns segundos, e as duas falhavam pelo mesmo motivo, por caminhos diferentes: na
 pilha, o que estava atrás aparecia como dois riscos e ninguém adivinhava que eram cartões; no
 carrossel com espera, a parada era comprida demais para quem já leu e curta demais para quem estava
-lendo, e a troca chegava como um salto. Hoje a faixa desliza devagar o tempo todo, os crachás estão
-todos na tela ao mesmo tempo, e o que muda é qual deles está passando pelo meio.
+lendo, e a troca chegava como um salto. Sem parada, o que muda é só qual crachá está passando pelo
+meio.
 
 Três coisas decorrem disso, e nenhuma é detalhe:
 
 - **A lista aparece duas vezes no DOM**, e é o que fecha o laço. A faixa translada exatamente uma
   volta da lista, e no instante em que a animação reinicia a cópia está ocupando o lugar da
   original. Sem ela haveria um salto a cada volta, e nenhuma duração o esconderia. A segunda passada
-  é `aria-hidden`, porque é a mesma formação de novo.
+  é `aria-hidden`, porque é a mesma formação de novo, e **só existe enquanto a faixa anda**: parada,
+  ela não teria função nenhuma.
 - **A duração é por crachá, não por volta.** `--cvolta` é o tempo de um passo e a animação dura isso
   vezes o número de formações. Com uma duração fixa de volta, acrescentar uma formação aceleraria a
   faixa, e velocidade é justamente o que se percebe aqui.
-- **Não há estado nenhum**: nem cartão ativo, nem índice, nem relógio em JavaScript. Foi embora com
-  eles o arraste, as setas ←/→ e os traços-índice, porque nada disso tem sentido sem um passo para
-  onde ir. A faixa é uma animação de CSS, o que a põe no compositor da GPU e a deixa parar sozinha
-  sob `prefers-reduced-motion`, onde ela não anda em vez de andar em duração zero.
+- **Não há estado nenhum além dessa medida**: nem cartão ativo, nem índice, nem relógio em
+  JavaScript. Foi embora com eles o arraste, as setas ←/→ e os traços-índice, porque nada disso tem
+  sentido sem um passo para onde ir. O movimento é uma animação de CSS, o que o põe no compositor da
+  GPU.
+- **Há um terceiro estado, para quem pediu menos movimento.** Ali a faixa não pode andar, mas o que
+  não cabe também não pode ficar inalcançável, e é o que aconteceria com o `overflow: hidden` do
+  palco. Sob `prefers-reduced-motion` ele vira uma **região que rola de lado**, com encaixe por
+  proximidade, foco de teclado e rótulo próprios — o mesmo arranjo das faixas de pôsteres de Filmes,
+  e pela mesma razão. A resposta vem do `useReducedMotion`, porque a decisão é de renderização e não
+  de estilo.
 
 **Apontar a faixa a segura**, e `:focus-within` faz o mesmo pelo teclado. Não é conveniência: com o
 texto andando, ler um crachá inteiro depende de ele ficar parado, e o ponteiro em cima dele é
@@ -89,7 +108,8 @@ exatamente o sinal de que alguém está lendo.
 
 **O palco corta o que passa da largura do bloco**, e um `mask-image` curto amacia as duas bordas. Ele
 é curto de propósito: o que a seção existe para mostrar são os crachás inteiros, e um degradê longo
-devolveria como sombra justamente isso.
+devolveria como sombra justamente isso. A máscara existe **só enquanto a faixa anda**: parada, não há
+nada entrando nem saindo, e ela apagaria de leve o primeiro e o último sem ter o que amaciar.
 
 ### O crachá
 
@@ -120,8 +140,9 @@ inteiro onde antes cabia um.
   "ainda não começou".
 
 **No mobile os três não cabem ao mesmo tempo**, e nenhum ajuste de largura resolve isso sem deixar o
-texto ilegível: três crachás legíveis pedem mais de 600px. É justamente o que a faixa cobre, porque
-cada um passa pelo meio sozinho.
+texto ilegível: três crachás legíveis pedem mais de 600px. É justamente essa falta que o movimento
+cobre, porque cada um passa pelo meio sozinho — e é ela que a medida encontra, sem que ninguém
+escreva "no mobile ela anda" em lugar nenhum.
 
 ---
 

@@ -33,7 +33,7 @@ nunca apresentando falha como ausência.
 
 **RF08a** — A biografia deve mudar conforme o modo em vigor, com um texto por modo em cada idioma.
 
-**RF08b** — A seção Formação, exclusiva do modo profissional, deve exibir as formações como crachás verticais numa faixa horizontal em movimento contínuo, sem paradas e sem cartão selecionado, com todas as informações de cada formação visíveis ao mesmo tempo. A faixa deve pausar enquanto o ponteiro ou o foco estiverem sobre ela e não deve se mover sob `prefers-reduced-motion`.
+**RF08b** — A seção Formação, exclusiva do modo profissional, deve exibir as formações como crachás verticais com todas as informações visíveis ao mesmo tempo, dispostos numa faixa horizontal. A faixa deve permanecer parada e centrada quando todos os crachás couberem na largura disponível, e apenas nesse caso deve entrar em movimento contínuo, sem paradas e sem cartão selecionado. O movimento deve pausar enquanto o ponteiro ou o foco estiverem sobre a faixa, e sob `prefers-reduced-motion` deve ser substituído por rolagem horizontal navegável por teclado.
 
 **RF09** — O sistema deve indicar o estado de cada formação (concluído, cursando, pretensão).
 

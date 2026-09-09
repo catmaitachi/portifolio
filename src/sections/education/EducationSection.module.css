@@ -40,15 +40,43 @@
  * lado para amaciá-lo. A máscara é curta de propósito: o que importa aqui é ver
  * os crachás inteiros, e um degradê longo devolveria como sombra o que a seção
  * existe para mostrar.
+ *
+ * Ela só existe **enquanto a faixa anda**. Parada, não há nada entrando nem
+ * saindo, e um degradê nas bordas apagaria de leve o primeiro e o último crachá
+ * sem ter o que amaciar.
  */
 .palco {
   width: 100%;
   overflow: hidden;
+}
+
+.palco[data-modo='desfilando'] {
   mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
 }
 
 /**
- * A faixa, andando sempre.
+ * O terceiro estado: não cabe, e não pode andar.
+ *
+ * Sob `prefers-reduced-motion` a faixa fica parada, e o que passa da largura
+ * ficaria fora da tela para sempre se o palco continuasse com `overflow:
+ * hidden`. Aqui ele rola de lado, com o encaixe por proximidade e a rolagem
+ * nativa que traz arrasto, roda e inércia de graça — é o mesmo arranjo das
+ * faixas de pôsteres de Filmes, e pela mesma razão.
+ */
+.palco[data-modo='rolavel'] {
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 22%) transparent;
+}
+
+/* o crachá vem de outro módulo, então o encaixe é pedido pelo filho da faixa */
+.faixa[data-modo='rolavel'] > * {
+  scroll-snap-align: center;
+}
+
+/**
+ * Uma volta.
  *
  * O deslocamento é exatamente **uma volta da lista** (`--n` crachás mais os
  * respiros entre eles), e é por isso que a lista aparece duas vezes no DOM: no
@@ -57,10 +85,6 @@
  *
  * `linear` e nada mais: qualquer aceleração viraria um pulso, e a faixa deixaria
  * de ser um movimento de fundo para virar um gesto que pede atenção.
- *
- * `width: max-content` porque os crachás não podem se comprimir para caber —
- * comprimidos, a conta da volta deixaria de bater com a largura real e a faixa
- * saltaria a cada ciclo.
  */
 @keyframes desfilar {
   to {
@@ -68,10 +92,29 @@
   }
 }
 
+/**
+ * Parada, a faixa é uma fileira centrada; andando, ela é larga como o conteúdo.
+ *
+ * `width: max-content` é o que impede os crachás de se comprimirem para caber,
+ * e comprimidos a conta da volta deixaria de bater com a largura real, então a
+ * faixa saltaria a cada ciclo. Quando ela cabe, a largura passa a ser a do
+ * palco justamente para haver folga que o `justify-content` possa dividir: em
+ * `max-content` não sobra espaço nenhum, e centrar não teria efeito.
+ */
 .faixa {
   display: flex;
   gap: var(--cgap);
+  justify-content: center;
+  width: 100%;
+}
+
+.faixa[data-modo='desfilando'],
+.faixa[data-modo='rolavel'] {
+  justify-content: flex-start;
   width: max-content;
+}
+
+.faixa[data-modo='desfilando'] {
   animation: desfilar calc(var(--n, 3) * var(--cvolta)) linear infinite;
 }
 
@@ -88,26 +131,13 @@
 }
 
 /**
- * Sem movimento, a faixa **para**, e não anda mais devagar.
+ * Mobile: o crachá encolhe, e é aqui que a faixa passa a andar.
  *
- * O `reset.css` zera durações globalmente, e uma duração zero numa animação
- * infinita é um caso degenerado. Aqui ela sai de cena de vez, e os crachás
- * ficam onde estão: são três, cabem na largura, e a seção continua inteira sem
- * nunca ter se mexido.
- */
-@media (prefers-reduced-motion: reduce) {
-  .faixa {
-    animation: none;
-  }
-}
-
-/**
- * Mobile: o crachá encolhe, e a faixa continua a mesma.
- *
- * Aqui os três não cabem na tela ao mesmo tempo, e nenhum ajuste de largura
+ * Os três não cabem na tela ao mesmo tempo, e nenhum ajuste de largura
  * resolveria isso sem deixar o texto ilegível: três crachás legíveis pedem mais
- * de 600px. O que a faixa faz é justamente cobrir essa falta, porque cada um
- * passa pelo meio sozinho.
+ * de 600px. É essa falta que o movimento cobre, porque cada um passa pelo meio
+ * sozinho. Ninguém escreve isso em lugar nenhum: quem decide é a medida do DOM
+ * (`useCabeNaFaixa`), e estes números só a alimentam.
  */
 @media (width <= 640px) {
   .secao {
