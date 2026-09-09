@@ -71,7 +71,13 @@ nome inteiro apontaria para o primeiro deles.
   hash. O `appdetails` da loja também teria a URL e **não** serve: com mais de um id ele responde
   `null`, e traz a página inteira do jogo para entregar uma linha.
 
-  Ela **nunca derruba a resposta**, e tem três degraus: a URL resolvida, a convenção antiga (que
+  A mesma consulta traz as **duas artes** do jogo, e o contrato guarda as duas: a deitada (460x215)
+  do destaque e a em pé (600x900, a da biblioteca) da pilha de recentes. Elas não são uma o recorte
+  da outra, são dois desenhos que a Steam faz separadamente, e é por isso que a em pé não tem
+  convenção de reserva: sem ela sobra a moldura vazia, que é melhor resposta que uma arte deitada
+  espremida num retângulo alto.
+
+  A resolução **nunca derruba a resposta**, e tem três degraus: a URL resolvida, a convenção antiga (que
   ainda acerta a maior parte do catálogo) e, quando as duas erram, a moldura vazia que a seção já
   desenha. É o arranjo da lista do Letterboxd, e pela mesma razão: o conteúdo daqui são os jogos.
 - **Letterboxd**: é um feed, não um contrato. A forma pode mudar sem aviso e sem versão, e no dia em

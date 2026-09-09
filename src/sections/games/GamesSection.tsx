@@ -17,17 +17,18 @@ const REPETIR = 60_000;
 const horas = (minutos: number) => Math.round(minutos / 60);
 
 /**
- * A arte da capa, com a moldura que sobrevive à falta dela.
+ * A arte deitada do destaque, com a moldura que sobrevive à falta dela.
  *
- * A URL é montada a partir do `appid` no CDN da Steam **por convenção**, não por
- * um endpoint que a devolva, então ela pode simplesmente não existir para um app
- * fora da loja. `onError` esconde a imagem e deixa a moldura vazia de 1px, que é
- * o mesmo espaço reservado dos banners de projeto; sem isso sobraria o ícone de
- * imagem quebrada do navegador, a única coisa fora da paleta na página inteira.
+ * O endereço é resolvido a cada resposta (ver `api/steam.ts`) e pode não vir.
+ * `onError` esconde a imagem e deixa a moldura vazia de 1px, que é o mesmo
+ * espaço reservado dos banners de projeto; sem isso sobraria o ícone de imagem
+ * quebrada do navegador, a única coisa fora da paleta na página inteira.
  *
  * A moldura é também quem **inclina seguindo o ponteiro** (`useInclinacao`), com
- * o brilho especular do retrato do Sobre. Ela vale para o destaque e para a
- * grade, porque é a mesma peça nos dois.
+ * o brilho especular do retrato do Sobre. Ela vale **só para o destaque**: na
+ * pilha, apontar já é o que traz a carta para a frente, e uma inclinação por
+ * cima disso seriam duas respostas para o mesmo gesto, escritas em dois
+ * `transform` que se apagariam no mesmo elemento.
  */
 function Arte({ capa }: { capa: string | null }) {
   const { alvoRef, brilhoRef } = useInclinacao<HTMLSpanElement>({
@@ -105,15 +106,33 @@ function Conteudo({ dados }: { dados: Jogos }) {
       {resto.length > 0 && (
         <div className={styles.grupo}>
           <p className={styles.tituloLista}>{t.jogos.recentes}</p>
-          <ul className={styles.grade}>
+          <ul className={styles.pilha}>
             {resto.map((g, i) => (
-              <li key={g.id} style={{ '--ordem': i } as React.CSSProperties}>
-                <a className={styles.cartao} href={g.url} target="_blank" rel="noreferrer">
-                  <Arte capa={g.capa} />
-                  <span className={styles.nomePequeno}>{g.nome}</span>
-                  <span className={styles.horasPequenas}>
-                    {horas(g.minutosRecentes)}
-                    {t.jogos.horas} {t.jogos.duasSemanas}
+              <li
+                key={g.id}
+                className={styles.carta}
+                style={{ '--ordem': i, '--fundo': resto.length - i } as React.CSSProperties}
+              >
+                <a className={styles.link} href={g.url} target="_blank" rel="noreferrer">
+                  <span className={styles.capa}>
+                    {g.capaAlta ? (
+                      <img
+                        src={g.capaAlta}
+                        alt=""
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.hidden = true;
+                        }}
+                      />
+                    ) : null}
+                  </span>
+
+                  <span className={styles.legenda}>
+                    <span className={styles.nomePequeno}>{g.nome}</span>
+                    <span className={styles.horasPequenas}>
+                      {horas(g.minutosRecentes)}
+                      {t.jogos.horas} {t.jogos.duasSemanas}
+                    </span>
                   </span>
                 </a>
               </li>

@@ -23,3 +23,42 @@
   alguém e precisam ser corrigidos por quem os conhece (`formacoes.lista`, nos dois dicionários).
 - **Banners de `vaga-02` e `vaga-03`** não existem — as molduras seguem como espaço reservado até
   haver projeto.
+
+---
+
+## Direção de longo prazo
+
+Ideias já decididas, ainda não implementadas. Estão aqui e não em `secoes.md` porque descrevem o que
+as seções **vão ser**, e aquele arquivo descreve o que elas são.
+
+### Projetos e Trajetória trocam de assunto
+
+Hoje as duas dividem mal o mesmo tema: Projetos mostra tudo que foi feito, e Trajetória mostra onde
+foi feito. A divisão passa a ser por **de quem é a coisa**:
+
+- **Projetos vira o catálogo do que é dele.** Só projeto pessoal, as coisinhas, sem cliente e sem
+  empregador. Isso muda o que a órbita mostra, não como ela funciona.
+- **Trajetória passa a guardar o profissional inteiro**: empregos, freelas e projetos externos, que
+  hoje não têm lugar nenhum quando não são emprego.
+
+A ficha de cada ponto da curva ganha **título, subtítulo, texto, stack e uma imagem na lateral**. A
+imagem é a decisão em aberto, e são duas leituras diferentes: um **logo** diz de quem era o trabalho e
+cabe na régua monocromática dos logos de formação; uma **foto** diz como o trabalho era e traz cor de
+terceiro, como os banners de projeto. Os dois cabem na página, mas não ao mesmo tempo, porque um
+trilho com logo em metade das fichas e foto na outra metade não lê como uma coluna só.
+
+O texto é conteúdo novo nos dois dicionários, e a `bullets` de hoje provavelmente vira ele. A imagem
+segue o caminho de `BANNERS` e `LOGOS` em `assets.ts`: chave no dicionário, arquivo importado no
+registro.
+
+### Jogos divide a seção com o LoL
+
+A Riot volta ao plano, com as últimas partidas do League of Legends ao lado da Steam. O que fez ela
+sair continua valendo e precisa de resposta antes de começar (ver a nota do LoL acima): a chave
+pessoal da API expira a cada 24 horas, então isso pede uma chave de produção aprovada pela Riot, e
+não um contorno.
+
+A seção passa a ser **dividida entre os dois serviços**, e é por isso que a Steam se compacta na
+estante: ela precisava caber em metade do espaço sem perder as capas.
+
+O `PerfilExterno` de hoje é um por seção, e uma seção com dois serviços quebra essa premissa.

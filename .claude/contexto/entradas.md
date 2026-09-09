@@ -34,9 +34,9 @@ Nelas a ordem também é conteúdo, e não decoração:
 
 - em **Música** o destaque entra depois das listas, porque é ele que fica no pé da seção: subir é
   entrar por onde ele está, e a seção se monta de cima para baixo;
-- em **Jogos** o destaque entra **antes** da grade, pelo motivo oposto: é ele que a seção existe para
-  mostrar, e uma cascata que começa no que está aberto agora lê como ordem em vez de um monte de
-  capas chegando junto;
+- em **Jogos** o destaque entra **antes** da pilha de recentes, pelo motivo oposto: é ele que a seção
+  existe para mostrar, e uma cascata que começa no que está aberto agora lê como ordem em vez de um
+  monte de capas chegando junto;
 - em **Filmes** a segunda faixa começa depois da primeira (`--base`), então o olho segue a leitura em
   vez de escolher por onde começar.
 
@@ -62,7 +62,7 @@ em 0,9s (`section.module.css`), e é fácil escrever uma cascata que se some a e
 dele: foi o que aconteceu em Jogos, onde as capas subiam 22px em 0,6s sem atraso nenhum. Os dois
 movimentos viravam um só, o menor terminava antes do maior, e a seção aparecia **sem entrada
 nenhuma** — não uma entrada discreta, uma entrada invisível. A cascata de lá hoje começa em 520ms, já
-com o bloco assentando, e as distâncias subiram para 40px no destaque e 28px na grade, pela regra
+com o bloco assentando, e as distâncias subiram para 40px no destaque e 28px nas capas, pela regra
 acima de a distância acompanhar o tamanho.
 
 Quem escapa disso são as entradas que **não** transladam no eixo Y: os pôsteres de Filmes se acendem,

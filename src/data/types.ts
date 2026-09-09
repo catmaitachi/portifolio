@@ -55,8 +55,17 @@ export interface Musica {
 export interface Jogo {
   id: string;
   nome: string;
-  /** a arte de capa da loja; `null` para o que não tem página */
+  /** a arte deitada da loja (460x215); `null` para o que não tem página */
   capa: string | null;
+  /**
+   * A arte **em pé** (600x900), que é a da biblioteca da Steam.
+   *
+   * As duas existem porque a seção usa as duas: o destaque é um bloco deitado e
+   * a estante é uma fileira de livros, e um livro deitado não é um livro. Ela é
+   * separada, e não uma troca, porque as duas artes têm recortes diferentes do
+   * mesmo jogo, e nenhuma delas é a outra cortada.
+   */
+  capaAlta: string | null;
   url: string;
   /** minutos jogados nas últimas duas semanas */
   minutosRecentes: number;

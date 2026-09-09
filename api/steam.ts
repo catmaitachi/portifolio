@@ -37,6 +37,18 @@ interface JogoSteam {
  * exista é melhor resposta que nenhuma, porque quem decide o que fazer com ela
  * é o `onError` da seção.
  */
+/**
+ * As duas artes do mesmo jogo: a deitada do destaque e a em pé da estante.
+ *
+ * Uma não é a outra recortada — a Steam desenha as duas separadamente, e é por
+ * isso que a em pé não tem convenção de reserva: sem ela o livro fica com a
+ * moldura vazia, que é melhor que uma arte deitada espremida num retângulo alto.
+ */
+interface Arte {
+  deitada: string | null;
+  emPe: string | null;
+}
+
 const capaPorConvencao = (appid: number) =>
   `https://shared.steamstatic.com/store_item_assets/steam/apps/${appid}/header.jpg`;
 
@@ -55,6 +67,8 @@ interface ItemLoja {
     asset_url_format?: string;
     /** o nome do arquivo, que hoje vem prefixado por um hash de conteúdo */
     header?: string;
+    /** a arte em pé da biblioteca, 600x900 */
+    library_capsule?: string;
   };
 }
 
@@ -83,8 +97,8 @@ interface ItemLoja {
  * deles. É o mesmo arranjo da lista do Letterboxd, e pela mesma razão: o que a
  * seção existe para mostrar são os jogos.
  */
-async function capas(appids: number[]): Promise<Map<number, string>> {
-  const mapa = new Map<number, string>();
+async function capas(appids: number[]): Promise<Map<number, Arte>> {
+  const mapa = new Map<number, Arte>();
   if (!appids.length) return mapa;
 
   const entrada = {
@@ -105,9 +119,10 @@ async function capas(appids: number[]): Promise<Map<number, string>> {
     const corpo = (await r.json()) as { response?: { store_items?: ItemLoja[] } };
     for (const item of corpo.response?.store_items ?? []) {
       const formato = item.assets?.asset_url_format;
-      const arquivo = item.assets?.header;
-      if (item.id === undefined || !formato || !arquivo) continue;
-      mapa.set(item.id, ASSETS + formato.replace('${FILENAME}', arquivo));
+      if (item.id === undefined || !formato) continue;
+      const url = (arquivo?: string) =>
+        arquivo ? ASSETS + formato.replace('${FILENAME}', arquivo) : null;
+      mapa.set(item.id, { deitada: url(item.assets?.header), emPe: url(item.assets?.library_capsule) });
     }
   } catch {
     // resolver a arte é enfeite; devolver os jogos, não
@@ -115,10 +130,11 @@ async function capas(appids: number[]): Promise<Map<number, string>> {
   return mapa;
 }
 
-const normalizar = (j: JogoSteam, capas: Map<number, string>): Jogo => ({
+const normalizar = (j: JogoSteam, capas: Map<number, Arte>): Jogo => ({
   id: String(j.appid),
   nome: j.name ?? '',
-  capa: capas.get(j.appid) ?? capaPorConvencao(j.appid),
+  capa: capas.get(j.appid)?.deitada ?? capaPorConvencao(j.appid),
+  capaAlta: capas.get(j.appid)?.emPe ?? null,
   url: lojaDe(j.appid),
   minutosRecentes: j.playtime_2weeks ?? 0,
   minutosTotais: j.playtime_forever ?? 0,

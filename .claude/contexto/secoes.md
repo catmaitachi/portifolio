@@ -399,8 +399,35 @@ reservado dos banners — o endereço da arte da Steam é perguntado a cada resp
 e pode não vir (ver `dados.md`), e sem a moldura sobraria o ícone de imagem quebrada do navegador, a
 única coisa fora da paleta na página inteira.
 
-**A grade de Jogos é `auto-fill` com um mínimo**, nunca um número fixo de colunas: quem jogou um só
-na quinzena não deve ver três vagas vazias, que leem como conteúdo que faltou carregar.
+**Os recentes de Jogos são uma pilha horizontal.** As capas se sobrepõem, cada uma cobrindo a maior
+parte da anterior, e o que sobra à vista de quem está embaixo é uma tira da própria capa; apontar uma
+traz ela para a frente inteira e mostra o nome e as horas. A ordem é a que a Steam devolve, do mais
+recente para o mais antigo, e é ela que decide quem fica por cima, então a ordem de pintura é a
+**inversa** da ordem do DOM. Uma pilha em que o topo não é o mais novo não é uma pilha.
+
+Era uma grade `auto-fill`, e a troca resolve duas coisas. A grade gastava uma linha inteira por três
+ou quatro jogos, e a seção vai passar a dividir o espaço com o League of Legends (ver
+`pendencias.md`): empilhadas, oito capas custam o que três custavam. E a capa passou a ser a **em pé**
+(600x900, a da biblioteca da Steam), porque numa pilha horizontal o que se vê de quem está embaixo é
+uma tira vertical, e a arte deitada da loja não tem altura para sobreviver a esse recorte. As duas
+chegam do contrato, e uma não é a outra recortada.
+
+**Levantar uma carta empurra as seguintes**, em vez de abrir por cima delas: sem isso, numa quinzena
+de três jogos, apontar uma apagava as outras. O irmão geral (`~`) resolve sozinho, sem estado no
+React, porque a pilha abre sempre para o mesmo lado.
+
+**Sem ponteiro não há pilha.** A carta empilhada depende de alguém poder apontá-la, e num aparelho de
+toque isso não existe: as capas ficariam cobertas para sempre. Em `(hover: none)` ela vira o que já
+resolve isso em Filmes, uma faixa que rola de lado com as capas separadas e a legenda à mostra. É a
+mesma decisão da frase do cabeçalho de modo.
+
+Uma primeira versão inclinava cada capa em 3D para imitar uma prateleira vista de esguelha, e a
+imitação não pegou: a sobreposição sozinha já diz o que precisava ser dito, e diz sem cobrar um
+ângulo em que nenhuma arte é legível.
+
+O contorno de foco mora na **capa**, e não na caixa do link: a capa cresce e sobe quando é apontada e
+o link continua na caixa de layout, então o contorno padrão desenharia um retângulo deslocado do que
+se vê. A única coisa pior que não ter indicador de foco é ter um apontando para o lugar errado.
 
 **Filmes tem duas faixas, e elas rolam de lado.** Os favoritos vêm antes dos recentes porque são uma
 escolha, e a escolha diz mais sobre quem escreveu a página do que o registro. Empilhadas em grade as

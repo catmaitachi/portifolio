@@ -29,6 +29,23 @@
   --arte-w: clamp(150px, 24vmin, 232px);
   /* a proporção do header.jpg da Steam é 460x215 */
   --arte-ar: 0.467;
+
+  /* a pilha: largura da carta, o quanto sobra à vista, e o lugar da legenda */
+  --carta-w: clamp(104px, 14vmin, 140px);
+
+  /**
+   * A fração da largura que cada carta deixa à mostra, **sem unidade**.
+   *
+   * Escrita como porcentagem ela entra numa multiplicação por um comprimento e
+   * numa subtração de 1, e `calc` recusa as duas: a declaração inteira é
+   * descartada, sem erro no console, e a pilha volta a ser uma fila de cartões
+   * separados. Foi o que aconteceu na primeira versão.
+   */
+  --carta-visivel: 0.42;
+  --carta-legenda: 42px;
+
+  /* o quanto a pilha abre para a carta apontada caber inteira */
+  --carta-abre: calc(var(--carta-w) * (1.04 - var(--carta-visivel)));
 }
 
 .bloco {
@@ -178,82 +195,186 @@
 }
 
 /**
- * A grade se adapta ao número de jogos.
+ * A pilha.
  *
- * `auto-fill` com um mínimo, e não um número fixo de colunas: quem jogou um só
- * na quinzena não deve ver quatro vagas vazias, e quem jogou oito não deve ver
- * duas linhas apertadas.
+ * Os jogos recentes deixaram de ser uma grade e viraram uma **pilha horizontal**:
+ * as capas se sobrepõem, cada uma cobrindo a maior parte da anterior, e o que
+ * sobra à vista de quem está embaixo é uma fatia da própria capa. Apontar uma
+ * traz ela para a frente inteira.
+ *
+ * A troca resolve duas coisas. A grade gastava uma linha inteira por três ou
+ * quatro jogos, e a seção vai passar a dividir o espaço com o League of Legends
+ * (ver `pendencias.md`) — empilhadas, oito capas custam o que três custavam. E a
+ * capa passou a ser a **em pé** (600x900, a da biblioteca da Steam): numa pilha
+ * horizontal o que se vê de quem está embaixo é uma tira vertical, e a arte
+ * deitada da loja não tem altura para sobreviver a esse recorte.
+ *
+ * **A ordem é a que a Steam devolve**, do mais recente para o mais antigo, e é
+ * ela que decide quem fica por cima. Uma pilha em que o topo não é o mais novo
+ * não é uma pilha, é um monte.
+ *
+ * Não há giro nem perspectiva aqui, e houve: a primeira versão inclinava cada
+ * capa em 3D para imitar uma prateleira vista de esguelha, e a imitação não
+ * pegou. A sobreposição sozinha já diz o que precisava ser dito, e diz sem
+ * cobrar um ângulo em que nenhuma arte é legível.
  */
-/* o apontado é pintado por cima dos vizinhos (ver a nota igual em Filmes) */
-.grade > li {
-  position: relative;
-}
-
-.grade > li:hover {
-  z-index: 2;
-}
-
-.grade {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: clamp(10px, 1.6vmin, 18px);
+.pilha {
+  display: flex;
+  align-items: flex-end;
   margin: 0;
-  padding: 0;
+
+  /* a folga é onde a carta apontada cresce, e onde a legenda dela aparece */
+  padding: 4px 0 var(--carta-legenda);
+
+  /* o empurrão da última carta precisa caber, senão a seção ganha rolagem lateral */
+  padding-inline-end: var(--carta-abre);
   list-style: none;
 }
 
-.cartao {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  color: inherit;
-  text-decoration: none;
-  opacity: 0.78;
-  transition: opacity 0.35s;
+/**
+ * Cada carta mostra só uma fatia, e a de cima cobre o resto.
+ *
+ * A sobreposição é margem negativa, não `gap`, porque é ela que faz a pilha ser
+ * pilha: o que se vê de cada uma é `--carta-visivel` da largura dela.
+ */
+.carta {
+  position: relative;
+  flex: none;
+  width: var(--carta-w);
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.carta + .carta {
+  margin-inline-start: calc(var(--carta-w) * (var(--carta-visivel) - 1));
 }
 
 /**
- * As entradas ficam **penduradas em `data-ativo`**, não no mount.
+ * A ordem de pintura é a **inversa** da ordem do DOM.
  *
- * O atributo aparece quando a seção vira a ativa e some quando ela sai, e é isso
- * que tira o `animation-name` de `none` e recomeça a cascata — o mesmo mecanismo
- * dos nós da Trajetória. Presas ao mount, elas rodavam uma vez só, no instante em
- * que a resposta da Steam chegava, e voltar para a seção encontrava tudo parado.
- *
- * **O destaque sobe primeiro**, e a grade vem atrás dele: é ele que a seção
- * existe para mostrar, e a cascata que começa no que está aberto agora lê como
- * uma ordem, não como um monte de capas chegando junto.
- *
- * **A cascata começa depois de o bloco assentar**, e isso não é gosto: o
- * `.bloco` inteiro entra subindo 26px em 0,9s (`section.module.css`), e as capas
- * subiam 22px em 0,6s **ao mesmo tempo e no mesmo sentido**. Os dois movimentos
- * se somavam num só, o menor terminava antes do maior, e o resultado era uma
- * seção que aparecia sem entrada nenhuma. Com o atraso, o bloco chega, e só
- * então as capas sobem, que é o que se lê como cascata.
- *
- * A distância também subiu, e pelo motivo de sempre: entrada acompanha o
- * tamanho do elemento (ver `entradas.md`). O destaque é o bloco mais alto da
- * seção, e 22px nele mal se percebem.
+ * A pilha cresce para a direita e o topo dela é a primeira carta, que é a mais
+ * recente; sem `--fundo`, a vizinha da direita cobriria justamente quem deveria
+ * estar por cima, e a leitura da ordem se inverteria. Apontada, a carta sobe
+ * para a frente de todas.
  */
-.bloco[data-ativo] .destaque {
-  --sobe: 40px;
-
-  animation: capaSobe 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 520ms backwards;
+.carta {
+  z-index: var(--fundo, 1);
 }
 
-.bloco[data-ativo] .cartao {
-  --sobe: 28px;
-
-  animation: capaSobe 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
-  animation-delay: calc(820ms + var(--ordem, 0) * 90ms);
+.carta:hover,
+.carta:focus-within {
+  z-index: 99;
 }
 
-.cartao:hover {
+/**
+ * Levantar uma carta **empurra as seguintes**, em vez de abrir por cima delas.
+ *
+ * Sem isso a carta apontada cobre a vizinha inteira, e numa quinzena de três
+ * jogos isso é a pilha toda: apontar uma apagava as outras. O irmão geral (`~`)
+ * resolve sozinho, sem `:has` e sem estado no React, porque a pilha abre sempre
+ * para o mesmo lado — quem está antes fica onde está.
+ */
+.carta:hover ~ .carta,
+.carta:focus-within ~ .carta {
+  transform: translateX(var(--carta-abre));
+}
+
+.link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.capa {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 2px;
+  background: rgb(255 255 255 / 3%);
+
+  /**
+   * A sombra sai pela **esquerda**, que é o lado por onde a carta cobre a de
+   * baixo. É ela que separa uma capa da outra: sem sombra, oito artes coloridas
+   * encostadas leem como uma faixa só, e a moldura de 1px some dentro delas.
+   */
+  box-shadow: -10px 0 16px rgb(0 0 0 / 62%);
+  transition:
+    border-color 0.45s,
+    transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@supports (corner-shape: bevel) {
+  .capa {
+    border-radius: 10px 2px;
+    corner-shape: bevel;
+  }
+}
+
+/* arte de jogo é identidade de terceiro: fica colorida, como os banners */
+.capa img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/**
+ * A legenda mora fora da capa, e o lugar dela é reservado o tempo todo.
+ *
+ * Ocupando espaço só quando aparece, ela empurraria a seção inteira a cada
+ * apontar, que é justamente o degrau que faz a escala que cabe oscilar (ver
+ * `useEscalaQueCabe`).
+ */
+.legenda {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: max-content;
+  max-width: calc(var(--carta-w) * 2.2);
+  padding-top: 8px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/**
+ * Apontar levanta a carta, e o teclado faz o mesmo pelo `:focus-within`.
+ *
+ * Uma pilha que só se abre para o ponteiro deixaria os jogos ilegíveis para quem
+ * navega por tabulação, e ali o foco é exatamente o mesmo sinal do hover: alguém
+ * está olhando para esta.
+ */
+.carta:hover .capa,
+.carta:focus-within .capa {
+  border-color: rgb(255 255 255 / 32%);
+  transform: translateY(-6px) scale(1.04);
+}
+
+.carta:hover .legenda,
+.carta:focus-within .legenda {
   opacity: 1;
 }
 
-.cartao .arte {
-  width: 100%;
+/**
+ * O contorno de foco acompanha a capa, não a caixa do link.
+ *
+ * A capa cresce e sobe quando é apontada, e o link continua na caixa de layout:
+ * o contorno padrão desenharia um retângulo deslocado do que se vê, e a única
+ * coisa pior que não ter indicador de foco é ter um apontando para o lugar
+ * errado. Mudar de elemento é tudo que ele precisa — espessura, cor e
+ * afastamento continuam sendo os do `reset.css`.
+ */
+.link:focus-visible {
+  outline: none;
+}
+
+.link:focus-visible .capa {
+  outline: 1px solid rgb(255 255 255 / 55%);
+  outline-offset: 3px;
 }
 
 .nomePequeno {
@@ -286,7 +407,44 @@
     width: 100%;
   }
 
-  .grade {
-    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  .secao {
+    --carta-w: clamp(92px, 28vw, 116px);
+  }
+}
+
+/**
+ * **Sem ponteiro não há pilha.** A carta empilhada depende de alguém poder
+ * apontá-la para vir à frente, e num aparelho de toque isso não existe: as capas
+ * ficariam cobertas para sempre, com nome e horas invisíveis.
+ *
+ * Ali ela vira o que já resolve isso em Filmes: uma faixa que rola de lado, com
+ * as capas separadas e a legenda à mostra. É a mesma decisão da frase do
+ * cabeçalho de modo, e pela mesma razão.
+ */
+@media (hover: none) {
+  .pilha {
+    gap: 12px;
+    padding: 4px 0 0;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    overscroll-behavior-x: contain;
+  }
+
+  .carta + .carta {
+    margin-inline-start: 0;
+  }
+
+  .carta {
+    scroll-snap-align: start;
+  }
+
+  .capa {
+    box-shadow: none;
+  }
+
+  .legenda {
+    position: static;
+    max-width: 100%;
+    opacity: 1;
   }
 }

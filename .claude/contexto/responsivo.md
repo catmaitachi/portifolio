@@ -11,7 +11,7 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | `ProjectsSection` | `--pcw --pch --pbh --ph --pr --pperspectiva --pcard` |
 | `JourneySection` | `--exph --exp-cargo --exp-per --exp-curva --exp-rail --exp-fantasma --exp-gap --exp-txt --exp-topo` |
 | `MusicSection` | `--capa` |
-| `GamesSection` | `--arte-w --arte-ar` |
+| `GamesSection` | `--arte-w --arte-ar --carta-w --carta-visivel --carta-legenda --carta-abre` |
 | `FilmsSection` | `--poster` |
 | `ContactSection` | `--form-cols --enviar-just` |
 | `NavMenu` | `--nav-top --nav-bottom --nav-left --nav-right --nav-tx --nav-ty --nav-dir --nav-align --nav-gap --nav-risco --nav-risco-ativo --nav-risco-w --nav-risco-esc --nav-risco-rot` |
