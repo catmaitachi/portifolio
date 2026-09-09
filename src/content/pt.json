@@ -124,7 +124,7 @@
 
   "musica": {
     "titulo": "Música",
-    "intro": "O que anda tocando por aqui, direto do Spotify.",
+    "intro": "O que anda tocando no meu Spotify.",
     "tocando": "Tocando agora",
     "silencio": "Nada tocando agora",
     "faixas": "Mais tocadas no mês",
@@ -134,7 +134,7 @@
 
   "jogos": {
     "titulo": "Jogos",
-    "intro": "O que tenho jogado nas últimas semanas, direto da Steam.",
+    "intro": "O que eu andei jogando nos últimos tempos.",
     "jogando": "Jogando agora",
     "ultimo": "Jogado por último",
     "recentes": "Duas últimas semanas",
@@ -145,7 +145,7 @@
 
   "filmes": {
     "titulo": "Filmes",
-    "intro": "Os últimos que assisti, com a nota que dei, direto do Letterboxd.",
+    "intro": "Meu momento cinéfilo.",
     "favoritos": "Favoritos",
     "recentes": "Vistos por último",
     "semNota": "sem nota",
@@ -302,6 +302,7 @@
     "projetos": "Projetos — abra um cartão para ler a descrição",
     "experiencia": "Trajetória — use as setas para percorrer os anos",
     "canais": "Canais de contato",
-    "retrato": "Retrato"
+    "retrato": "Retrato",
+    "perfil": "Meu perfil no {rede}"
   }
 }

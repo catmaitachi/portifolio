@@ -124,7 +124,7 @@
 
   "musica": {
     "titulo": "Music",
-    "intro": "What has been playing around here, straight from Spotify.",
+    "intro": "What has been playing on my Spotify.",
     "tocando": "Playing now",
     "silencio": "Nothing playing right now",
     "faixas": "Most played this month",
@@ -134,7 +134,7 @@
 
   "jogos": {
     "titulo": "Games",
-    "intro": "What I have been playing lately, straight from Steam.",
+    "intro": "What I have been playing lately.",
     "jogando": "Playing now",
     "ultimo": "Played last",
     "recentes": "Last two weeks",
@@ -145,7 +145,7 @@
 
   "filmes": {
     "titulo": "Films",
-    "intro": "The last ones I watched, with my rating, straight from Letterboxd.",
+    "intro": "My cinephile era.",
     "favoritos": "Favourites",
     "recentes": "Watched recently",
     "semNota": "no rating",
@@ -302,6 +302,7 @@
     "projetos": "Projects — open a card to read the description",
     "experiencia": "Journey — use the arrow keys to move through the years",
     "canais": "Contact channels",
-    "retrato": "Portrait"
+    "retrato": "Portrait",
+    "perfil": "My {rede} profile"
   }
 }

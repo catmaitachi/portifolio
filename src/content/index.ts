@@ -27,6 +27,7 @@ const shared = sharedJson as unknown as Shared;
  */
 export const SECOES = shared.secoes;
 export const MODOS = shared.modos;
+export const PERFIS = shared.perfis;
 export const CANAIS = shared.canais;
 export const LOGO_ESCALAS = shared.logos;
 
@@ -93,6 +94,7 @@ export type {
   Lang,
   Modo,
   ModoKey,
+  Perfil,
   Projeto,
   SectionKey,
   Shared,

@@ -221,6 +221,27 @@ ponto atual até o fim, durando o que falta da faixa, mostra o tempo passando se
 JavaScript; a `key` do elemento carrega o progresso, e é assim que cada resposta a reinicia em vez de
 continuar a anterior.
 
+Três coisas em volta dela, e cada uma resolve um problema diferente:
+
+- **a cabeça.** Uma linha de 1px crescendo devagar é quase imperceptível de relance: o que se lê num
+  medidor é a **borda**, não a área preenchida. Um traço curto e aceso encostado à direita do
+  preenchimento viaja de graça com a mesma animação de largura;
+- **o brilho do nome passa por ela.** É o mesmo degradê e o mesmo ciclo de 8,4s da abertura, e o
+  keyframe é **copiado** para o módulo de Música, porque CSS Modules escopa os dois lados do nome de
+  uma animação (ver `hud.md`). O que se compartilha são os números, não a declaração;
+- **o tempo decorrido é o único JavaScript ali.** Escrito uma vez, o número ficaria vinte segundos
+  parado ao lado de uma barra que anda, o que é pior que não ter número. Um `setInterval` de 1s
+  escreve direto em `textContent`, como a decifragem da bio: um `setState` por segundo
+  re-renderizaria a seção inteira para trocar quatro caracteres. O relógio parte do progresso que
+  veio e a resposta seguinte o recoloca no lugar, então a deriva nunca passa de uma repetição.
+
+**O ícone do serviço fica na linha do título, à direita, e leva ao perfil.** Quem lê "o que anda
+tocando no meu Spotify" quer o perfil em seguida, e sem o link a seção é uma vitrine sem porta. Ele
+é sobre a seção inteira, não sobre nenhum item dela, e por isso não desce para o conteúdo: ali ele
+fecha a linha horizontal que o título abre. O componente é um só (`sections/PerfilExterno.tsx`), a
+marca vive em `shared.json → perfis` porque nome próprio não se traduz, e seção sem perfil não
+desenha nada.
+
 **A nota do Letterboxd é desenhada, não escrita.** Cinco marcas de 1px preenchidas pela fração cabem
 na régua da página melhor que um glifo de estrela, que traria uma forma que não existe em nenhum
 outro lugar aqui, e a meia estrela fica **exata** em vez de arredondada. É a mesma gramática do

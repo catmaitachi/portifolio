@@ -4,6 +4,7 @@ import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
 import { useRemoto } from '~/hooks/useRemoto';
 import { useT } from '~/i18n/useLanguage';
 import { EstadoRemoto } from '../EstadoRemoto';
+import { PerfilExterno } from '../PerfilExterno';
 import comum from '../section.module.css';
 import type { SectionProps } from '../types';
 import styles from './GamesSection.module.css';
@@ -137,7 +138,10 @@ export function GamesSection({ ativo, indice }: SectionProps) {
         </p>
 
         <div className={comum.cabecalho}>
-          <h2 className={comum.titulo}>{t.jogos.titulo}</h2>
+          <div className={comum.linhaTitulo}>
+            <h2 className={comum.titulo}>{t.jogos.titulo}</h2>
+            <PerfilExterno secao="jogos" />
+          </div>
           <p className={comum.intro}>{t.jogos.intro}</p>
         </div>
 

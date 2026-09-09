@@ -205,7 +205,9 @@ simplesmente não roda, sem erro de build e sem aviso no console.
 Foi assim que a abertura inteira ficou morta por um tempo (anéis parados, mira sem pulso, crédito
 descentralizado). `animation: :global(nome)` **não** é saída: o parser do PostCSS recusa o `:` no
 valor. A saída é declarar o keyframe no próprio módulo — `fina` está duplicado em três (Hero,
-NavMenu, LanguageToggle), e quatro linhas repetidas custam menos que uma animação que não roda.
+NavMenu, LanguageToggle), e o brilho do nome está copiado em Música, onde a barra do que está
+tocando usa a mesma varredura. Quatro linhas repetidas custam menos que uma animação que não roda,
+e o que se compartilha nesses casos são os **números**, não a declaração.
 
 Corolário: **layout não pode morar só no estado final de uma animação.** O crédito é centrado por um
 `transform: translateX(-50%)` na própria regra, e os riscos já nascem com `width: 34px` — `creditIn`

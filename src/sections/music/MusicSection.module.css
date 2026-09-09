@@ -27,6 +27,30 @@
 }
 
 /**
+ * O mesmo brilho que passa pelo nome na abertura, agora na barra.
+ *
+ * O keyframe é **copiado** de `HeroSection.module.css`, e isso é obrigatório, não
+ * preguiça: CSS Modules escopa os dois lados — o nome no `@keyframes` e o nome
+ * escrito em `animation` —, então um keyframe de outro módulo simplesmente não
+ * casa, sem erro de build e sem aviso no console (ver `hud.md`). O que se
+ * compartilha aqui são os números, e eles são os mesmos: varredura em 8,4s, com
+ * a passagem clara consumindo o primeiro terço.
+ */
+@keyframes brilhoBarra {
+  0% {
+    background-position: 150% center;
+  }
+
+  33.3% {
+    background-position: -50% center;
+  }
+
+  100% {
+    background-position: -50% center;
+  }
+}
+
+/**
  * A barra do que está tocando anda sozinha, do ponto atual até o fim.
  *
  * O que chega do Spotify é um instantâneo, e a duração da animação é o que falta
@@ -207,28 +231,67 @@
  * componente de player emprestado de outro lugar.
  */
 /**
- * **`flex: none` e altura explícita**, e as duas são obrigatórias aqui.
+ * O medidor: tempo, trilha e duração, numa linha só.
  *
- * A trilha compartilhada nasceu no medidor das formações, que é uma **linha**:
- * lá o `flex: 1` é o que a faz ocupar o espaço que sobra, e a altura de 1px vem
- * da regra. Dentro do corpo do destaque o eixo é o outro — é uma coluna —, e ali
- * `flex: 1` vira `flex-basis: 0` na **altura**: a barra existia, com a animação
- * correndo, e media zero pixel. Um medidor que não se vê é pior que um medidor
- * que não existe, porque ninguém vai procurá-lo.
+ * A linha existe também por um motivo de layout, e não só de leitura. A trilha
+ * compartilhada nasceu no medidor das formações, que é uma **linha**: lá o
+ * `flex: 1` é o que a faz ocupar o espaço que sobra. Solta dentro do corpo do
+ * destaque, que é uma **coluna**, o mesmo `flex: 1` virava `flex-basis: 0` na
+ * altura — a barra existia, com a animação correndo, e media zero pixel. Dentro
+ * de uma linha ela volta a se comportar como foi escrita.
  */
+.medidor {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+
 .trilha {
-  flex: none;
-  height: 1px;
-  margin-top: 8px;
   background: rgb(255 255 255 / 10%);
 }
 
+/**
+ * Os dois números são a mesma peça: o decorrido anda, a duração está parada.
+ *
+ * `tabular-nums` porque o decorrido é reescrito a cada segundo, e sem ele a
+ * largura do bloco mudaria a cada troca de algarismo, empurrando a barra de um
+ * lado para o outro.
+ */
+.tempo {
+  flex: none;
+  min-width: 4ch;
+  color: rgb(255 255 255 / 38%);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+/**
+ * Duas animações no mesmo elemento, e elas não disputam nada.
+ *
+ * `correFaixa` mexe na **largura** e dura o que falta da faixa; `brilhoBarra`
+ * mexe na **posição do fundo** e repete no ciclo do nome. O degradê é o mesmo do
+ * título — base em `#a6a6a6` com um platô branco no meio —, e o platô não é
+ * detalhe: uma parada única no meio tem espessura zero e nunca chega à tela.
+ */
 .progresso {
   position: absolute;
   inset: 0 auto 0 0;
   width: var(--de, 0%);
-  background: rgb(255 255 255 / 55%);
-  animation: correFaixa var(--resta, 0ms) linear both;
+  background-image: linear-gradient(
+    120deg,
+    #a6a6a6 0%,
+    #a6a6a6 40%,
+    #fff 47%,
+    #fff 53%,
+    #a6a6a6 60%,
+    #a6a6a6 100%
+  );
+  background-size: 200% auto;
+  animation:
+    correFaixa var(--resta, 0ms) linear both,
+    brilhoBarra 8.4s linear infinite;
 }
 
 /**
@@ -243,7 +306,7 @@
   position: absolute;
   inset: 0 0 0 auto;
   width: 14px;
-  background: linear-gradient(90deg, transparent, #fff);
+  background-image: linear-gradient(90deg, transparent, #fff);
   content: '';
 }
 
@@ -321,6 +384,20 @@
   text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/**
+ * Menos movimento devolve o branco chapado, em vez de congelar o degradê.
+ *
+ * O `reset.css` zera a duração de toda animação, e sem esta regra a barra ficaria
+ * parada na cor **base** do degradê, mais apagada do que era antes de existir
+ * brilho nenhum. É a mesma regra que o nome tem, pela mesma razão.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .progresso {
+    background-image: none;
+    background-color: rgb(255 255 255 / 72%);
+  }
 }
 
 /**

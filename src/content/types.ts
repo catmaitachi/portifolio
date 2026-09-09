@@ -230,7 +230,23 @@ export interface Dictionary {
     experiencia: string;
     canais: string;
     retrato: string;
+    /** aceita `{rede}` — o nome do serviço vem de `perfis`, não do dicionário */
+    perfil: string;
   };
+}
+
+/**
+ * O perfil de onde vem o dado de uma seção.
+ *
+ * O nome do serviço é **marca**, não texto: fica em `shared.json` e não nos
+ * dicionários, como o `rotulo` dos canais de contato. Quem traduz é a frase em
+ * volta dele (`a11y.perfil`).
+ */
+export interface Perfil {
+  /** casa com uma chave de ICONES (assets.ts) */
+  icone: string;
+  rotulo: string;
+  url: string;
 }
 
 export interface Canal {
@@ -265,6 +281,8 @@ export interface Modo {
 export interface Shared {
   secoes: Secao[];
   modos: Modo[];
+  /** só as seções que leem dado de fora têm perfil; as outras não têm de onde */
+  perfis: Partial<Record<SectionKey, Perfil>>;
   canais: Canal[];
   logos: Record<string, { escala: number }>;
 }

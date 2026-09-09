@@ -125,6 +125,45 @@
   gap: clamp(12px, 1.8vmin, 18px);
 }
 
+/**
+ * A linha do título, com o perfil da seção encostado na outra ponta.
+ *
+ * `space-between` e não uma margem: o título muda de tamanho com a tela e com o
+ * idioma, e prender o ícone à direita da caixa é o único jeito de ele não
+ * depender de nenhuma das duas coisas. Seção sem perfil não tem segundo filho e
+ * a linha continua sendo só o título.
+ */
+.linhaTitulo {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* a área de toque é maior que o glifo: 22px de ícone num alvo de 40px */
+.perfil {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-right: -9px;
+  opacity: 0.5;
+  transition: opacity 0.35s;
+}
+
+.perfil:hover {
+  opacity: 1;
+}
+
+.perfil img {
+  display: block;
+  width: clamp(18px, 2.4vmin, 24px);
+  height: clamp(18px, 2.4vmin, 24px);
+  object-fit: contain;
+}
+
 .titulo {
   margin: 0;
   color: #fff;

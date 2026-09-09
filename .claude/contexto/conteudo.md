@@ -66,6 +66,20 @@ mesma frase.
 `documento` é o título da aba, com `{parte}` e `{nome}` (ver `navegacao.md`). Ele fica no dicionário
 como todo texto visível — e o título da aba é texto visível, ainda que fora da página.
 
+### O perfil de uma seção
+
+`shared.json → perfis` liga uma seção ao serviço de onde o dado dela vem:
+
+```json
+"musica": { "icone": "spotify", "rotulo": "Spotify", "url": "https://open.spotify.com/user/..." }
+```
+
+- a chave é a da **seção**, e o registro é parcial: Sobre e Contato não têm de onde vir;
+- `icone` casa com uma chave de `ICONES` (`assets.ts`), com o arquivo em `src/assets/icons/` — glifo
+  branco local, nunca CDN, pela mesma razão dos ícones de contato;
+- `rotulo` é **marca**, e por isso não está nos dicionários: quem traduz é a frase em volta dele,
+  `a11y.perfil`, que aceita `{rede}`.
+
 ### Adicionar um projeto
 
 Uma entrada em `projetos.lista` nos **dois** dicionários, com a mesma `key` e na mesma posição:
