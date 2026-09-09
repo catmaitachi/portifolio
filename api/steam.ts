@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import type { Jogo, Jogos } from '../src/data/types';
-import { ambiente, falha, json, metodoInvalido } from './_resposta';
+import type { Jogo, Jogos } from '../src/data/types.js';
+import { ambiente, falha, json, metodoInvalido } from './_resposta.js';
 
 /**
  * O que estou jogando, e o que joguei nas últimas duas semanas.

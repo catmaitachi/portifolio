@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import type { Filme, Filmes } from '../src/data/types';
-import { ambiente, falha, json, metodoInvalido } from './_resposta';
+import type { Filme, Filmes } from '../src/data/types.js';
+import { ambiente, falha, json, metodoInvalido } from './_resposta.js';
 
 /**
  * Os últimos filmes assistidos, com a nota que eu dei.

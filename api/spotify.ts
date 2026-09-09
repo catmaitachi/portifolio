@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import type { Artista, Faixa, Musica } from '../src/data/types';
-import { ambiente, falha, json, metodoInvalido } from './_resposta';
+import type { Artista, Faixa, Musica } from '../src/data/types.js';
+import { ambiente, falha, json, metodoInvalido } from './_resposta.js';
 
 /**
  * O que estou ouvindo agora, e o que mais ouvi no último mês.

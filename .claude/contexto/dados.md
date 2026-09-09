@@ -42,6 +42,15 @@ nome inteiro apontaria para o primeiro deles.
 - **`req`/`res` do Node cru**, sem os atalhos da Vercel (`res.json`, `res.status`). Eles existem no
   runtime dela e **não** no servidor de desenvolvimento do Vite, e a mesma função precisa rodar nos
   dois. É isso, e não purismo, que decide.
+- **Import relativo daqui leva a extensão `.js`**, e não é enfeite. O `tsc -b` do projeto confere
+  `api/` com `moduleResolution: bundler`, onde a extensão é opcional; a Vercel compila **cada função
+  separadamente**, com `nodenext`, onde ela é obrigatória (`TS2835`). O resultado é o pior tipo de
+  divergência: `npm run lint` verde aqui e o build vermelho lá, e só no deploy. Escrita, ela vale nas
+  duas resoluções, porque as duas mapeiam `./x.js` para `./x.ts`. Vale também para o `import type`,
+  que o `verbatimModuleSyntax` continua resolvendo.
+
+  Para conferir antes de publicar, sem esperar o deploy:
+  `npx tsc --noEmit --module nodenext --moduleResolution nodenext --target ES2023 --lib ES2023 --strict --types node api/*.ts`.
 - **Cache de borda, nunca de navegador**: `s-maxage` com `max-age=0`. Uma segunda visita não pode
   mostrar o que estava tocando ontem, mas cem visitantes no mesmo minuto devem custar uma chamada só
   ao provedor. `stale-while-revalidate` deixa a borda servir o valor velho enquanto busca o novo.
