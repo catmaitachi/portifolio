@@ -19,11 +19,15 @@ interface NoticeProps {
  * ele diz. A primeira feature a usá-lo é a dica da supernova (`useNovaHint`),
  * mas nada aqui sabe disso.
  *
- * O canto superior esquerdo é o único que o HUD deixou vago: o cabeçalho de modo
- * está no centro do topo, o seletor de idioma no topo à direita, o menu à
- * direita, a versão embaixo à direita e o medidor da supernova embaixo à
- * esquerda. No mobile o aviso desce, porque lá o painel tem quase a largura da
- * tela e passaria por baixo do cabeçalho.
+ * O aviso mora no canto superior esquerdo, **abaixo do cabeçalho de modo**, que
+ * é o outro morador do canto. Os demais cantos estão tomados: seletor de idioma
+ * no topo à direita, menu à direita, versão embaixo à direita e medidor da
+ * supernova embaixo à esquerda.
+ *
+ * O recuo é medido contra o cabeçalho **aberto**, não recolhido. Ele é um menu
+ * de uma linha que vira duas ao ser acionado, e ainda revela uma frase embaixo;
+ * medido pelo estado recolhido, o painel preto cobriria exatamente essa frase no
+ * instante em que ela existe para ser lida.
  *
  * **Fica montado durante a animação de saída.** Desmontar no mesmo quadro em que
  * `aberto` vira `false` faria o painel sumir de uma vez, e um aviso que pisca e

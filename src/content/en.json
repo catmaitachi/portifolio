@@ -10,11 +10,13 @@
   "modos": {
     "pessoal": {
       "rotulo": "Personal",
-      "etiqueta": "Personal",
-      "legenda": "Music, games and films"
+      "descricao": "Music, games and films, off the clock",
+      "etiqueta": "Lifestyle",
+      "legenda": "Software Developer"
     },
     "profissional": {
       "rotulo": "Professional",
+      "descricao": "Projects, journey and education",
       "etiqueta": "Portfolio",
       "legenda": "Software Developer"
     }
@@ -226,7 +228,7 @@
   "contato": {
     "titulo": "Let us talk",
     "intro": "Open to opportunities and collaborations.",
-    "email": "lukasspiazzi@outlook.com",
+    "email": "lukasspiazzi@gmail.com",
     "ou": "or find me at",
     "enviar": "send",
     "enviando": "opening mail…",
@@ -254,6 +256,7 @@
   "a11y": {
     "secoes": "Sections",
     "modos": "Switch between the personal site and the professional portfolio",
+    "modosAbrir": "Choose which side of the site",
     "idioma": "Switch language between Portuguese and English",
     "projetos": "Projects — open a card to read the description",
     "experiencia": "Journey — use the arrow keys to move through the years",

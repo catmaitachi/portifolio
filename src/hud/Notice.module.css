@@ -39,8 +39,16 @@
   }
 }
 
+/**
+ * O recuo do topo é medido contra o cabeçalho de modo **aberto**.
+ *
+ * Ele divide este canto com o aviso, e é um menu: uma linha recolhido, duas
+ * aberto, mais a frase que aparece ao apontar um dos nomes. Medido pelo estado
+ * recolhido, este painel — que é preto sólido — cobriria a frase no exato
+ * instante em que ela existe para ser lida.
+ */
 .aviso {
-  --aviso-top: max(2.4vh, 20px);
+  --aviso-top: max(9.6vh, 92px);
   --aviso-left: max(3.2vw, 26px);
   --aviso-w: 306px;
 
@@ -140,13 +148,10 @@
   color: #fff;
 }
 
-/**
- * Mobile: o painel tem quase a largura da tela e o cabeçalho de modo ocupa o
- * centro do topo, então o aviso desce para não passar por baixo dele.
- */
+/* mobile: sem hover não há frase sob o cabeçalho, e o aviso pode subir junto */
 @media (width <= 640px) {
   .aviso {
-    --aviso-top: max(7.4vh, 62px);
+    --aviso-top: max(8.6vh, 72px);
     --aviso-left: 20px;
   }
 }

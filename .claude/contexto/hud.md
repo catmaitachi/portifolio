@@ -23,9 +23,26 @@ Tudo em `transform` e `clip-path` = compositor da GPU, zero custo de CPU.
 
 ### Cabeçalho de modo
 
-`ModeHeader` fica no **centro do topo**, o único canto que o HUD tinha deixado vago. Dois nomes,
-Pessoal e Profissional, e uma prévia que abre ao passar o ponteiro. Quem manda no que ele faz está em
-`navegacao.md`; aqui ficam as decisões de HUD.
+`ModeHeader` fica no **canto superior esquerdo**, e é um **menu**: recolhido mostra só o lado em
+vigor, um clique abre o outro, o seguinte escolhe. Quem manda no que ele faz está em `navegacao.md`;
+aqui ficam as decisões de HUD.
+
+**Só o lado em vigor aparece**, e isso não é economia de espaço. Os dois nomes lado a lado o tempo
+todo seriam duas afirmações onde só uma é verdade, e no canto onde o olho cai primeiro isso disputa
+com o nome da pessoa. Recolhido, o cabeçalho responde "você está no profissional"; aberto, pergunta.
+O mesmo botão troca de papel conforme `aberto`, e o rótulo de acessibilidade troca com ele:
+`aria-expanded` enquanto é gatilho, `aria-current` enquanto é opção.
+
+**O lado em vigor fica sempre em cima**, por `order`. Sem isso o nome recolhido apareceria na posição
+que a chave dele ocupa em `MODOS`, e ao abrir saltaria de lugar — que é exatamente o quadro em que o
+olho está olhando para ele. O que está recolhido tem **altura zero**, não `display: none`: o menu abre
+animado, e um elemento fora da árvore não tem de onde crescer.
+
+**Apontar um nome revela uma linha sobre aquele lado.** Ali havia a lista de seções daquele modo, e
+ela saiu: é informação que o menu de seções dá assim que a troca acontece, e repeti-la cobrava do
+visitante ler cinco palavras para decidir uma coisa só. A frase responde a pergunta que ele de fato
+tem, que é o que existe desse lado. Ela é o `aria-describedby` do botão, então quem não vê o hover
+recebe a mesma informação ao chegar no nome.
 
 **O topo ganhou um contrato, como o rodapé já tinha.** `--hud-topo-base`, `--hud-topo-altura` e
 `--hud-topo` moram em `:root` (`reset.css`), e o `--pt` das seções é `max(--pt-livre, --hud-topo +
@@ -33,26 +50,31 @@ respiro)`. As media queries redefinem só `--pt-livre`: quem mexer na altura do 
 número só, e as seções acompanham. Foi exatamente esse número solto em dois lugares que deixou o
 conteúdo correr por baixo da barra do rodapé uma vez.
 
-**As duas prévias ficam montadas**, empilhadas numa célula de grade só. É isso que permite animar a
-troca: uma lista que só existisse enquanto o seu modo estivesse apontado não teria de onde sair. A
-célula tem a largura da lista mais longa, então nada salta na troca, e a mais curta se centra nela.
+**As duas frases ficam montadas**, empilhadas numa célula de grade só. É isso que permite animar a
+troca: uma frase que só existisse enquanto o seu nome estivesse apontado não teria de onde sair. A
+célula tem a largura da mais longa, então nada salta.
 
 **O lado de onde cada uma entra sai da posição em `MODOS`**, por `--lado`: a mostrada fica em zero e
 as outras se deslocam pela diferença de índice. Ninguém escreve "direita" em lugar nenhum, e um
 terceiro modo não pediria conta nova.
 
-**Sem ponteiro não há prévia** (`@media (hover: none)`): num aparelho de toque, tocar o nome do modo
-é a troca inteira, e um painel que abrisse no toque ficaria aberto cobrindo o topo da seção até o
-toque seguinte. A prévia fechada também sai da tabulação, pela regra de sempre.
+**Sem ponteiro não há frase** (`@media (hover: none)`): num aparelho de toque o menu é a interação
+inteira, e um painel que abrisse no toque ficaria aberto cobrindo o topo da seção até o toque
+seguinte. O que está recolhido também sai da tabulação, pela regra de sempre.
 
-**O painel é `position: absolute`** para que a caixa do `<nav>` continue sendo só a linha dos nomes.
-O cabeçalho não é o canvas nem uma `<section>`, então pressioná-lo não acende supernova — e uma zona
-morta do tamanho do painel, no meio do topo, seria zona morta o tempo todo, não só no hover.
+**O painel é `position: absolute`** para que a caixa do `<nav>` continue sendo só o menu. O cabeçalho
+não é o canvas nem uma `<section>`, então pressioná-lo não acende supernova, e uma zona morta do
+tamanho da frase, no canto onde o olho cai primeiro, seria zona morta o tempo todo. Ele fica em
+`top: 100%` e **desce junto** quando o menu abre, porque quem cresceu foi a caixa do menu: a frase é
+sobre o nome apontado e precisa continuar embaixo dele.
 
-**No mobile ele encosta na esquerda.** "Pessoal | Profissional" mede 218px numa tela de 375, e o
-seletor de idioma ocupa os 68px da direita: centrado, um passava por cima do outro. Por isso o
-seletor **deixou de ir para o centro no mobile** e ficou onde já estava, à direita: entre duas letras
-e a navegação que decide o lado do site, quem cede o centro é o seletor.
+**Ele divide o canto com o aviso**, que desceu para debaixo dele. O recuo do aviso é medido contra o
+cabeçalho **aberto**, não recolhido: medido pelo estado recolhido, o painel preto do aviso cobriria a
+frase no exato instante em que ela existe para ser lida. É por isso que o `--aviso-top` parece
+generoso demais para uma linha de 21px.
+
+O menu aberto e a frase **não entram** em `--hud-topo-altura`: os dois são transitórios e passam por
+cima do conteúdo, como qualquer menu. O que as seções reservam é a linha recolhida.
 
 ### Versão
 

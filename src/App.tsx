@@ -116,21 +116,6 @@ export function App() {
     [modo, chaveAtiva],
   );
 
-  /** Um item da prévia do cabeçalho: pode ser do modo em vigor ou do outro. */
-  const irParaSecao = useCallback(
-    (alvo: ModoKey, secao: SectionKey) => {
-      if (alvo === modo) {
-        // dentro do mesmo modo é um trajeto de verdade, e a rolagem é suave
-        const i = secoes.indexOf(secao);
-        if (i >= 0) irPara(i);
-        return;
-      }
-      destinoRef.current = secao;
-      setModo(alvo);
-    },
-    [modo, secoes, irPara],
-  );
-
   const rota = useMemo<Rota>(() => ({ modo, secao: chaveAtiva }), [modo, chaveAtiva]);
   const aoNavegar = useCallback(
     (r: Rota) => {
@@ -157,7 +142,7 @@ export function App() {
     <div className={styles.palco}>
       <SpaceCanvas secao={chaveAtiva} onNova={aoAcender} />
       <Hud ativo={chaveAtiva === 'inicio'} />
-      <ModeHeader modo={modo} trocar={trocarModo} irParaSecao={irParaSecao} />
+      <ModeHeader modo={modo} trocar={trocarModo} />
       <LanguageToggle />
 
       <div ref={ref} className={styles.rolagem}>

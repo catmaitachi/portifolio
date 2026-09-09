@@ -14,7 +14,7 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | `NavMenu` | `--nav-top --nav-bottom --nav-left --nav-right --nav-tx --nav-ty --nav-dir --nav-align --nav-gap --nav-risco --nav-risco-ativo --nav-risco-w --nav-risco-esc --nav-risco-rot` |
 | `LanguageToggle` | `--lang-left --lang-right --lang-tx` |
 | `Version` | `--ver-bottom --ver-left --ver-right --ver-tx` |
-| `ModeHeader` | `--cab-left --cab-tx --cab-fs` |
+| `ModeHeader` | `--cab-left --cab-fs --cab-item` |
 | `NovaGauge` | `--nova-bottom --nova-left --nova-size` |
 | `Notice` | `--aviso-top --aviso-left --aviso-w` |
 | `Credit` | `--credito-vis` |

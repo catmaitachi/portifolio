@@ -11,23 +11,27 @@
 }
 
 /**
- * O cabeçalho fica no centro do topo, nos dois tamanhos.
+ * O cabeçalho fica no canto superior esquerdo.
  *
- * Era o único lugar livre ali: o seletor de idioma ocupa a direita e o aviso a
- * esquerda. No mobile o idioma vinha para o centro justamente por não haver nada
- * lá, e voltou para a direita quando o cabeçalho passou a existir.
+ * Ele é um menu recolhido, de uma linha, então cabe onde um painel não caberia.
+ * O aviso do HUD, que ocupava esse canto, desceu para debaixo dele (ver
+ * `Notice.module.css`): entre um aviso que aparece uma vez e a navegação que
+ * decide o lado do site, quem cede o topo é o aviso.
  *
  * A altura declarada aqui é a mesma que `--hud-topo-altura` promete em
  * `reset.css`, e as seções derivam o respiro do topo dela. Mexer numa das duas
- * pede mexer na outra, e é por isso que o número mora lá e não aqui.
+ * pede mexer na outra, e é por isso que o número mora lá e não aqui. **O menu
+ * aberto e a frase não entram nessa conta**: os dois são transitórios e passam
+ * por cima do conteúdo, como qualquer menu.
  *
  * Entra em 5s, entre o menu de seções (4.9s) e o crédito (5.2s): é navegação, e
  * chega junto com a outra.
  */
 .cabecalho {
-  --cab-left: 50%;
-  --cab-tx: -50%;
+  --cab-left: max(3.2vw, 26px);
   --cab-fs: 10px;
+  /* a altura de uma opção; é ela que a expansão anima, de zero até aqui */
+  --cab-item: 21px;
 
   position: absolute;
   z-index: 4;
@@ -35,39 +39,49 @@
   left: var(--cab-left);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  transform: translateX(var(--cab-tx));
+  align-items: flex-start;
   animation: fina 1s ease-out 5s both;
 }
 
-.linha {
+.lista {
   display: flex;
-  gap: 14px;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
-.celula {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-}
-
+/**
+ * O lado em vigor fica **sempre em cima**, por `order`.
+ *
+ * Sem isso, o nome recolhido apareceria na posição que a chave dele ocupa em
+ * `MODOS` — o segundo, com um vazio acima — e ao abrir o menu ele saltaria de
+ * lugar, que é exatamente o quadro em que o olho está olhando para ele.
+ */
 .modo {
+  display: flex;
+  order: 1;
+  align-items: center;
+  height: var(--cab-item);
   margin: 0;
-  padding: 4px 2px;
+  padding: 0 2px;
+  overflow: hidden;
   border: 0;
   background: none;
-  color: rgb(255 255 255 / 34%);
+  color: rgb(255 255 255 / 40%);
   font: inherit;
   font-size: var(--cab-fs);
   letter-spacing: 0.28em;
   text-transform: uppercase;
+  white-space: nowrap;
   cursor: pointer;
-  transition: color 0.35s;
-  appearance: none;
+  transition:
+    height 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.26s ease,
+    transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+    color 0.35s;
 }
 
-.modo[data-ativo] {
+.modo[data-escolhido] {
+  order: 0;
   color: #fff;
 }
 
@@ -75,89 +89,75 @@
   color: rgb(255 255 255 / 72%);
 }
 
-.modo[data-ativo]:hover {
-  color: #fff;
-}
-
-.separador {
-  color: rgb(255 255 255 / 20%);
-  font-size: var(--cab-fs);
-}
-
 /**
- * O painel das prévias.
+ * Recolhido, o que não está em vigor tem altura zero.
  *
- * `position: absolute` para que a caixa do `<nav>` continue sendo só a linha dos
- * modos. O cabeçalho não é o canvas nem uma `<section>`, então pressioná-lo não
- * acende supernova (ver o filtro em `SpaceCanvas`) — e uma zona morta do tamanho
- * do painel, no meio do topo, seria zona morta o tempo todo, não só no hover.
- *
- * `display: grid` com as duas listas na **mesma célula** (`grid-area: 1 / 1`) é o
- * que as empilha sem tirá-las do fluxo: o painel mede a mais larga, e a troca de
- * uma pela outra não muda largura nenhuma.
- *
- * `pointer-events: none` no painel e `auto` só na lista visível: sem isso a lista
- * apagada continuaria interceptando o ponteiro em cima da outra.
+ * Altura, e não `display: none`: o menu abre e fecha animado, e um elemento que
+ * sai da árvore não tem de onde crescer. O `overflow: hidden` do `.modo` é o que
+ * mantém o texto dentro da caixa de altura zero.
  */
-.painel {
-  position: absolute;
-  top: calc(100% + 7px);
-  left: 50%;
-  display: grid;
-  transform: translateX(-50%);
+.modo[data-oculto] {
+  height: 0;
+  opacity: 0;
+  transform: translateY(-5px);
   pointer-events: none;
 }
 
-.previa {
-  display: flex;
+/**
+ * A frase sobre o lado apontado.
+ *
+ * `position: absolute` para que a caixa do `<nav>` continue sendo só o menu. O
+ * cabeçalho não é o canvas nem uma `<section>`, então pressioná-lo não acende
+ * supernova (ver o filtro em `SpaceCanvas`), e uma zona morta do tamanho da
+ * frase, no canto onde o olho cai primeiro, seria zona morta o tempo todo e não
+ * só enquanto ela está à mostra.
+ *
+ * `top: 100%` a coloca sob o menu, e ela **desce junto** quando ele abre, porque
+ * quem cresceu foi a caixa do menu. É a leitura certa: a frase é sobre o nome que
+ * está sendo apontado, e precisa continuar embaixo dele.
+ *
+ * `display: grid` com as duas frases na **mesma célula** (`grid-area: 1 / 1`) é o
+ * que as empilha sem tirá-las do fluxo: o painel mede a mais larga, e trocar uma
+ * pela outra não muda largura nenhuma.
+ */
+.painel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  display: grid;
+  padding-top: 6px;
+  pointer-events: none;
+}
+
+.descricao {
   grid-area: 1 / 1;
-  gap: 13px;
-  align-items: center;
-  /* a célula tem a largura da lista mais longa; a mais curta se centra nela, em
-     vez de encostar na esquerda e sair de baixo do cabeçalho */
-  justify-content: center;
   margin: 0;
-  padding: 0;
-  list-style: none;
+  color: rgb(255 255 255 / 38%);
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  /* é rótulo, não texto corrido: não se justifica nem se parte ao meio */
+  text-align: left;
   white-space: nowrap;
+  hyphens: manual;
   opacity: 0;
-  /* `--lado` é a distância em índices até a lista mostrada: 0 nela, ±1 nas vizinhas */
-  transform: translateX(calc(var(--lado, 0) * 15px));
+  /* `--lado` é a distância em índices até a frase mostrada: 0 nela, ±1 nas vizinhas */
+  transform: translateX(calc(var(--lado, 0) * 12px));
   transition:
     opacity 0.28s ease,
     transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.previa[data-visivel] {
+.descricao[data-visivel] {
   opacity: 1;
-  pointer-events: auto;
-}
-
-.secao {
-  margin: 0;
-  padding: 2px 0;
-  border: 0;
-  background: none;
-  color: rgb(255 255 255 / 40%);
-  font: inherit;
-  font-size: 8.5px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: color 0.3s;
-  appearance: none;
-}
-
-.secao:hover {
-  color: #fff;
 }
 
 /**
- * Sem ponteiro não há prévia.
+ * Sem ponteiro não há frase.
  *
- * Ela abre no hover, e num aparelho de toque um toque no nome do modo é a troca
- * de modo inteira. Deixá-la no DOM sem `display: none` faria a lista abrir e
- * ficar aberta depois do toque, cobrindo o topo da seção até o toque seguinte.
+ * Ela aparece no hover, e num aparelho de toque o menu é a interação inteira.
+ * Deixá-la no DOM sem `display: none` faria a frase abrir no toque e ficar
+ * aberta cobrindo o topo da seção até o toque seguinte.
  */
 @media (hover: none) {
   .painel {
@@ -165,24 +165,10 @@
   }
 }
 
-/**
- * No mobile o cabeçalho sai do centro e encosta na esquerda.
- *
- * "Pessoal | Profissional" mede 218px numa tela de 375, e o seletor de idioma
- * ocupa os 68px da direita: centrado, um passava por cima do outro. Alinhado à
- * esquerda os dois cabem na mesma linha com folga, e um nav encostado na margem
- * é leitura corrente de cabeçalho — o centro era conveniência de tela larga, não
- * requisito.
- *
- * A fonte também cai um degrau, porque aqui o cabeçalho divide a linha em vez de
- * tê-la inteira.
- */
+/* no mobile o HUD encosta nas bordas, e o cabeçalho acompanha */
 @media (width <= 640px) {
   .cabecalho {
     --cab-left: 20px;
-    --cab-tx: 0;
     --cab-fs: 9px;
-
-    align-items: flex-start;
   }
 }

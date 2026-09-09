@@ -95,7 +95,17 @@ export interface Dictionary {
    * Rótulo de cada modo no cabeçalho, mais a etiqueta e a legenda que ele dá ao
    * Início. `Record` total: um modo novo quebra o build nos dois dicionários.
    */
-  modos: Record<ModoKey, { rotulo: string; etiqueta: string; legenda: string }>;
+  modos: Record<
+    ModoKey,
+    {
+      /** o nome no cabeçalho */
+      rotulo: string;
+      /** uma linha sobre o que tem daquele lado, revelada ao apontar o nome */
+      descricao: string;
+      etiqueta: string;
+      legenda: string;
+    }
+  >;
   hero: { nome: string };
   sobre: { titulo: string; paragrafos: string[] };
   formacoes: {
@@ -150,6 +160,7 @@ export interface Dictionary {
   a11y: {
     secoes: string;
     modos: string;
+    modosAbrir: string;
     idioma: string;
     projetos: string;
     experiencia: string;

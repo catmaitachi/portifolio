@@ -10,11 +10,13 @@
   "modos": {
     "pessoal": {
       "rotulo": "Pessoal",
-      "etiqueta": "Pessoal",
-      "legenda": "Música, jogos e filmes"
+      "descricao": "Música, jogos e filmes, fora do horário",
+      "etiqueta": "Diário de Bordo",
+      "legenda": "Desenvolvedor de Software"
     },
     "profissional": {
       "rotulo": "Profissional",
+      "descricao": "Projetos, trajetória e formação",
       "etiqueta": "Portfólio",
       "legenda": "Desenvolvedor de Software"
     }
@@ -226,7 +228,7 @@
   "contato": {
     "titulo": "Vamos conversar",
     "intro": "Aberto a oportunidades e colaborações.",
-    "email": "lukasspiazzi@outlook.com",
+    "email": "lukasspiazzi@gmail.com",
     "ou": "ou me encontre em",
     "enviar": "enviar",
     "enviando": "abrindo e-mail…",
@@ -254,6 +256,7 @@
   "a11y": {
     "secoes": "Seções",
     "modos": "Alternar entre o site pessoal e o portfólio profissional",
+    "modosAbrir": "Escolher o lado do site",
     "idioma": "Alternar idioma entre português e inglês",
     "projetos": "Projetos — abra um cartão para ler a descrição",
     "experiencia": "Trajetória — use as setas para percorrer os anos",

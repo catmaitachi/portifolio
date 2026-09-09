@@ -2,10 +2,12 @@
 
 ### São dois eixos, e eles não se misturam
 
-O site tem **dois lados**, pessoal e profissional, e o cabeçalho no centro do topo é quem os
+O site tem **dois lados**, pessoal e profissional, e o cabeçalho no canto superior esquerdo é quem os
 alterna. Ele **não substitui** o menu de seções: o cabeçalho decide o lado, o menu continua sendo as
-seções daquele lado. A lista que aparece ao passar o ponteiro sobre um modo é uma **prévia**, não o
-controle, e responde "o que tem desse lado?" antes de custar uma troca de modo para descobrir.
+seções daquele lado.
+
+Ele é um **menu recolhido** — mostra só o lado em vigor, um clique abre o outro — e apontar um nome
+revela uma linha sobre o que existe daquele lado. Os detalhes de por que assim estão em `hud.md`.
 
 O modo é dado, não `if`: `shared.json → modos` traz, para cada um, as seções que ele tem e os canais
 de contato que ele mostra. `secoesDoModo` e `canaisDoModo` (`content/index.ts`) são as duas portas, e
