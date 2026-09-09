@@ -104,6 +104,26 @@
 }
 
 /**
+ * O trilho do arraste.
+ *
+ * Ele existe só para carregar um `transform`: o do dedo. A animação mora na
+ * faixa, que é filha dele, e no mesmo elemento os dois se apagariam — é a mesma
+ * separação do `<g>` da curva da Trajetória e da entrada do cartão de projeto.
+ *
+ * A largura acompanha a da faixa: em `max-content` quando ela desfila, para o
+ * conteúdo não se comprimir, e no palco inteiro quando ela cabe, para haver
+ * folga que o `justify-content` da faixa possa dividir.
+ */
+.trilho {
+  width: 100%;
+}
+
+.trilho[data-modo='desfilando'],
+.trilho[data-modo='rolavel'] {
+  width: max-content;
+}
+
+/**
  * Parada, a faixa é uma fileira centrada; andando, ela é larga como o conteúdo.
  *
  * `width: max-content` é o que impede os crachás de se comprimirem para caber,
@@ -127,6 +147,23 @@
 
 .faixa[data-modo='desfilando'] {
   animation: desfilar calc(var(--n, 3) * var(--cvolta)) linear infinite;
+}
+
+/**
+ * Enquanto ela desfila, o palco é uma superfície de arraste.
+ *
+ * O `touch-action: pan-y` divide o toque com a página, como o palco de Projetos:
+ * o dedo continua rolando a seção para cima e para baixo, e sobra o eixo
+ * horizontal, que é o do movimento. No mouse a faixa já está parada sob o
+ * ponteiro, então arrastar move o que está à vista.
+ */
+.palco[data-modo='desfilando'] {
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.palco[data-modo='desfilando']:active {
+  cursor: grabbing;
 }
 
 /**

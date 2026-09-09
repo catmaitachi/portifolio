@@ -7,6 +7,7 @@ import comum from '../section.module.css';
 import type { SectionProps } from '../types';
 import { DiplomaCard } from './DiplomaCard';
 import styles from './EducationSection.module.css';
+import { useArrastarFaixa } from './useArrastarFaixa';
 import { useCabeNaFaixa } from './useCabeNaFaixa';
 
 /**
@@ -83,7 +84,8 @@ export function EducationSection({ ativo, indice }: SectionProps) {
     [t],
   );
   const palcoRef = useRef<HTMLDivElement>(null);
-  const cabe = useCabeNaFaixa(palcoRef, lista.length);
+  const faixaRef = useRef<HTMLDivElement>(null);
+  const cabe = useCabeNaFaixa(palcoRef, faixaRef, lista.length);
   const semMovimento = useReducedMotion();
 
   /**
@@ -93,11 +95,19 @@ export function EducationSection({ ativo, indice }: SectionProps) {
    */
   const modo = cabe ? 'parada' : semMovimento ? 'rolavel' : 'desfilando';
 
-  /** A lista, e a cópia que fecha o laço, que só o desfile precisa. */
+  const trilhoRef = useArrastarFaixa(palcoRef, lista.length, modo === 'desfilando');
+
+  /**
+   * A lista, e as cópias que fecham o laço, que só o desfile precisa.
+   *
+   * São **três** voltas, e não duas: o deslocamento da animação e o do arraste se
+   * somam, e cada um pode valer até uma volta inteira. Com duas cópias a faixa
+   * acabava no meio do gesto e sobrava vazio na borda.
+   */
   const faixa = useMemo(
     () =>
       modo === 'desfilando'
-        ? [...lista.map((f) => ({ f, copia: false })), ...lista.map((f) => ({ f, copia: true }))]
+        ? [0, 1, 2].flatMap((volta) => lista.map((f) => ({ f, copia: volta > 0 })))
         : lista.map((f) => ({ f, copia: false })),
     [lista, modo],
   );
@@ -127,24 +137,29 @@ export function EducationSection({ ativo, indice }: SectionProps) {
           tabIndex={modo === 'rolavel' ? 0 : undefined}
           aria-label={modo === 'rolavel' ? t.formacoes.titulo : undefined}
         >
-          <div
-            className={styles.faixa}
-            // quantas formações a volta tem: é a distância que a faixa percorre
-            style={{ '--n': String(lista.length) } as React.CSSProperties}
-            data-modo={modo}
-          >
-            {faixa.map(({ f, copia }, i) => (
-              <DiplomaCard
-                key={`${f.slot}-${copia ? 'b' : 'a'}`}
-                formacao={f}
-                indice={i % lista.length}
-                total={lista.length}
-                // a entrada corre da esquerda para a direita, e para na primeira volta
-                ordem={Math.min(i, lista.length)}
-                ativo={ativo}
-                copia={copia}
-              />
-            ))}
+          {/* o trilho carrega o arraste e a faixa carrega a animação: no mesmo
+              elemento os dois `transform` se apagariam */}
+          <div ref={trilhoRef} className={styles.trilho} data-modo={modo}>
+            <div
+              ref={faixaRef}
+              className={styles.faixa}
+              // quantas formações a volta tem: é a distância que a faixa percorre
+              style={{ '--n': String(lista.length) } as React.CSSProperties}
+              data-modo={modo}
+            >
+              {faixa.map(({ f, copia }, i) => (
+                <DiplomaCard
+                  key={`${f.slot}-${Math.floor(i / lista.length)}`}
+                  formacao={f}
+                  indice={i % lista.length}
+                  total={lista.length}
+                  // a entrada corre da esquerda para a direita, e para na primeira volta
+                  ordem={Math.min(i, lista.length)}
+                  ativo={ativo}
+                  copia={copia}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>

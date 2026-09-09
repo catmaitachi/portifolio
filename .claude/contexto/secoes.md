@@ -99,11 +99,21 @@ meio.
 
 Três coisas decorrem disso, e nenhuma é detalhe:
 
-- **A lista aparece duas vezes no DOM**, e é o que fecha o laço. A faixa translada exatamente uma
-  volta da lista, e no instante em que a animação reinicia a cópia está ocupando o lugar da
-  original. Sem ela haveria um salto a cada volta, e nenhuma duração o esconderia. A segunda passada
-  é `aria-hidden`, porque é a mesma formação de novo, e **só existe enquanto a faixa anda**: parada,
-  ela não teria função nenhuma.
+- **A lista aparece três vezes no DOM**, e é o que fecha o laço. A faixa translada exatamente uma
+  volta, e no instante em que a animação reinicia a cópia está ocupando o lugar da original. Sem ela
+  haveria um salto a cada volta, e nenhuma duração o esconderia. Foram **duas** cópias até o arraste
+  existir: o deslocamento do dedo e o da animação se somam, cada um vale até uma volta, e com duas a
+  faixa acabava no meio do gesto e sobrava vazio na borda. As passadas extras são `aria-hidden`,
+  porque são a mesma formação de novo, e **só existem enquanto a faixa anda**.
+- **Ela é arrastável enquanto anda**, e o dedo mora num elemento próprio: o trilho carrega o
+  `transform` do arraste e a faixa carrega o da animação, porque no mesmo elemento os dois se
+  apagariam — é a separação do `<g>` da curva da Trajetória e da entrada do cartão de projeto. O
+  deslocamento **dá a volta**, reduzido ao resto da divisão por uma volta medida no DOM
+  (`offsetLeft`, que é layout e não acompanha os `transform` em cima dela), e o salto de uma volta
+  inteira é invisível porque a faixa é periódica. `touch-action: pan-y` divide o toque com a página,
+  como em Projetos. **Sem inércia**: a faixa já está em movimento por conta própria, e um empurrão
+  com desaceleração se somaria a ele — o gesto deixaria de ser "eu movo isto" para virar "eu chuto
+  isto".
 - **A duração é por crachá, não por volta.** `--cvolta` é o tempo de um passo e a animação dura isso
   vezes o número de formações. Com uma duração fixa de volta, acrescentar uma formação aceleraria a
   faixa, e velocidade é justamente o que se percebe aqui.

@@ -148,6 +148,12 @@ depois do carregamento, dois estalos de luz acendem no lugar onde o clique dever
   vazio, e o contrato de desempenho aqui é que o que está desligado custe zero (ver `motor.md`);
 - **o canvas respeita o DPR**, com teto 2, como o palco da cena. Sem isso um risco de 1px vira meio
   pixel borrado em tela retina, que é o contrário do que a página faz com todas as outras linhas;
+- **o risco fica aceso quase até o fim.** No original a opacidade cai junto com a curva de saída, que
+  sobe rápido no começo, então o estalo nasce a meio brilho justamente quando o risco é maior. Aqui
+  ele vive em branco cheio e só se apaga no último terço;
+- **o clique não acende nada.** O estalo é um convite; repeti-lo a cada clique o transformaria em
+  retorno de gesto, um efeito que acompanha o dedo no canto onde o olho cai primeiro e que não estaria
+  dizendo mais nada depois da primeira vez;
 - **ele transborda o elemento** em 44px por lado, porque o cabeçalho tem a altura de uma linha de
   texto e o estalo nasce no meio dela. O canvas não recebe ponteiro, então esticá-lo não cobre nada.
 
@@ -155,13 +161,30 @@ Ele é irmão do conteúdo do `<nav>`, e não um embrulho em volta dele: um `<di
 caixa que o HUD posiciona e o que o topo reserva.
 
 **Os sete segundos são a mesma conta da dica que a página tinha e perdeu**: a abertura termina em
-6,2s, e um convite antes disso disputaria com o resto do HUD chegando. São **dois** estalos, com 1,1s
-entre eles: um se perde, três insistem.
+6,2s, e um convite antes disso disputaria com o resto do HUD chegando.
+
+**E ele insiste**: dois estalos com 0,7s entre eles, 1,5s de silêncio, e de novo, em laço, até o
+primeiro clique no cabeçalho. Um convite que acontece uma vez só depende de o visitante estar olhando
+para aquele canto naquele segundo, o que não se pode supor de quem acabou de chegar numa página cheia
+de coisas se acendendo. Dois por ciclo porque um se perde e três viram pisca-pisca.
+
+**Nada disso fica gravado**, e é decisão explícita: a descoberta vale para a visita, não para sempre.
+Quem volta semanas depois encontra o convite de novo, porque a pergunta que ele responde continua
+sendo a mesma. É o contrário do que a dica da supernova fazia com o `localStorage`.
+
+**O estalo é pequeno, e ficou menor quando passou a repetir**: o que se vê uma vez precisa ser grande
+para ser visto, e o que volta a cada dois segundos precisa ser pequeno para não cansar.
+
+**Os riscos saem da borda de baixo do nome, num meio leque para baixo.** Em volta do ponto, metade
+deles passaria por cima do texto, que é justamente o que se quer que seja lido; para baixo há o
+respiro entre o cabeçalho e o conteúdo, e o gesto continua apontando para o lugar certo porque sai de
+dentro dele.
 
 Três coisas o calam, e são as da dica antiga menos a persistência: mexer no cabeçalho (quem descobriu
-não precisa), `prefers-reduced-motion`, e a aba escondida — ali a espera nem **começa**, porque um
-cronômetro do navegador continua andando em segundo plano e o convite aconteceria inteiro para uma
-tela que ninguém está olhando.
+não precisa), `prefers-reduced-motion`, e a aba escondida — ali o laço **para** e retoma quando ela
+volta, sem repetir a espera inicial. `setTimeout` continua andando em segundo plano e o `rAF` que
+desenha não, então o convite piscaria para uma tela que ninguém está olhando e ainda empilharia
+faíscas para o quadro do retorno.
 
 **Ele não contradiz a regra da seção seguinte.** Um estalo não cobre nada, não pede para ser
 dispensado e não escreve nada sobre o conteúdo: é um piscar no lugar certo, e quem não olhar naquele

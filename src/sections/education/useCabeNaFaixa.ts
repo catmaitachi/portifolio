@@ -24,16 +24,21 @@ import { useLayoutEffect, useState } from 'react';
  * `useLayoutEffect` para que a correção aconteça antes da pintura: o primeiro
  * render assume que não cabe, e sem isso haveria um quadro com a faixa desfilando
  * numa tela em que ela nunca deveria ter se mexido.
+ *
+ * A faixa entra por `ref`, e não por `firstElementChild` do palco: entre os dois
+ * existe o trilho do arraste, e um caminho escrito em termos de "o primeiro
+ * filho" quebraria em silêncio na próxima camada que aparecesse ali.
  */
 export function useCabeNaFaixa(
   palcoRef: React.RefObject<HTMLDivElement | null>,
+  faixaRef: React.RefObject<HTMLDivElement | null>,
   total: number,
 ): boolean {
   const [cabe, setCabe] = useState(false);
 
   useLayoutEffect(() => {
     const palco = palcoRef.current;
-    const faixa = palco?.firstElementChild;
+    const faixa = faixaRef.current;
     if (!palco || !faixa) return;
 
     const medir = () => {
@@ -56,7 +61,7 @@ export function useCabeNaFaixa(
     observador.observe(palco);
     if (faixa.firstElementChild) observador.observe(faixa.firstElementChild);
     return () => observador.disconnect();
-  }, [palcoRef, total]);
+  }, [palcoRef, faixaRef, total]);
 
   return cabe;
 }

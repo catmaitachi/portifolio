@@ -1,17 +1,29 @@
 import { useCallback, useEffect, useRef } from 'react';
 import styles from './Faiscas.module.css';
 
-/** Quantos riscos saem de cada estalo, igualmente espaçados em volta do ponto. */
-const QUANTAS = 8;
+/**
+ * Quantos riscos saem de cada estalo.
+ *
+ * O estalo é **discreto de propósito**, e ficou menor quando passou a repetir em
+ * laço: o que se vê uma vez precisa ser grande para ser visto, e o que volta a
+ * cada dois segundos precisa ser pequeno para não cansar.
+ *
+ * Eles se espalham num **meio leque para baixo**, e não em volta do ponto: o
+ * estalo nasce na borda de baixo do nome, então metade dos riscos passaria por
+ * cima do texto, que é justamente o que se quer que seja lido. Para baixo há o
+ * respiro entre o cabeçalho e o conteúdo, e o gesto ainda aponta para o lugar
+ * certo, porque sai de dentro dele.
+ */
+const QUANTAS = 9;
 
 /** Comprimento inicial de cada risco, em px. Ele encurta enquanto se afasta. */
-const TAMANHO = 9;
+const TAMANHO = 12;
 
 /** Até onde os riscos viajam a partir do centro do estalo, em px. */
-const RAIO = 17;
+const RAIO = 24;
 
 /** Quanto dura um estalo, em ms. */
-const DURACAO = 480;
+const DURACAO = 620;
 
 /**
  * O quanto o canvas passa de cada borda do elemento que o hospeda, em px.
@@ -19,8 +31,11 @@ const DURACAO = 480;
  * Sem essa folga os riscos seriam cortados na caixa do cabeçalho, que tem a
  * altura de uma linha de texto: o estalo nasce no meio dela e viaja para fora.
  * O canvas não recebe ponteiro, então esticá-lo não cobre nada.
+ *
+ * O número acompanha `RAIO + TAMANHO`, com sobra: é até ali que a ponta mais
+ * distante de um risco chega.
  */
-const FOLGA = 44;
+const FOLGA = 52;
 
 interface Faisca {
   x: number;
@@ -31,8 +46,8 @@ interface Faisca {
 
 interface FaiscasProps {
   /**
-   * Um contador: cada valor novo acende um estalo no **centro** do elemento,
-   * sem clique nenhum. É por aqui que o convite chama a atenção para o cabeçalho.
+   * Um contador: cada valor novo acende um estalo sob o elemento, sem clique
+   * nenhum. É por aqui que o convite chama a atenção para o cabeçalho.
    */
   disparo?: number;
 }
@@ -40,10 +55,15 @@ interface FaiscasProps {
 /**
  * Estalos de luz sobre o elemento que hospeda este canvas.
  *
- * Adaptado do `ClickSpark` do React Bits. Ele desenha alguns riscos de 1px
- * saindo do ponto clicado e encurtando enquanto se afastam, o que cabe na régua
- * da página sem trazer forma nova nenhuma: é a mesma gramática de linha fina do
- * HUD e do medidor.
+ * Adaptado do `ClickSpark` do React Bits, e o nome do original já não descreve o
+ * que ele faz aqui: **o clique não acende nada**. O estalo é um convite, e
+ * repeti-lo em cada clique o transformaria em retorno de gesto — um efeito que
+ * acompanha o dedo do visitante o tempo todo, no canto onde o olho cai primeiro,
+ * e que não estaria dizendo mais nada depois da primeira vez.
+ *
+ * Ele desenha riscos de 1px saindo de um ponto e encurtando enquanto se afastam,
+ * o que cabe na régua da página sem trazer forma nova nenhuma: é a mesma
+ * gramática de linha fina do HUD e do medidor.
  *
  * Ele existe por causa de um problema real: **o nome do modo no topo não parece
  * clicável**. É texto, sem moldura e sem ícone, e quem não passa o ponteiro por
@@ -61,7 +81,11 @@ interface FaiscasProps {
  *   risco de 1px vira um borrão de meio pixel em tela retina, que é o oposto do
  *   que a página faz com todas as outras linhas;
  * - **ele transborda o elemento** (`FOLGA`), porque o cabeçalho tem a altura de
- *   uma linha e o estalo nasce no meio dela.
+ *   uma linha e o estalo nasce no meio dela;
+ * - **o risco fica aceso quase até o fim.** No original a opacidade cai junto
+ *   com a curva de saída, que sobe rápido no começo, então o estalo nasce a meio
+ *   brilho justamente quando o risco é maior. Aqui ele vive em branco cheio e só
+ *   se apaga no último terço.
  *
  * O canvas é irmão do conteúdo, e não um embrulho em volta dele: um `<div>` a
  * mais mudaria a caixa do `<nav>` que o hospeda, e é essa caixa que o HUD
@@ -73,17 +97,27 @@ export function Faiscas({ disparo = 0 }: FaiscasProps) {
   const vivasRef = useRef<Faisca[]>([]);
   const lacoRef = useRef(0);
 
-  /** Acende um estalo em coordenadas do canvas. */
-  const acender = useCallback((x: number, y: number) => {
+  /**
+   * Acende um estalo na borda de baixo do elemento, espalhado para baixo.
+   *
+   * O ponto não é o centro do canvas: o canvas é maior que o hospedeiro nos
+   * quatro lados, e o que interessa é a linha onde o texto termina.
+   */
+  const acender = useCallback(() => {
+    const canvas = canvasRef.current;
+    const hospedeiro = canvas?.parentElement;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !hospedeiro || !ctx) return;
+
+    const x = canvas.clientWidth / 2;
+    const y = FOLGA + hospedeiro.clientHeight;
     const agora = performance.now();
     for (let i = 0; i < QUANTAS; i++) {
-      vivasRef.current.push({ x, y, angulo: (2 * Math.PI * i) / QUANTAS, nascida: agora });
+      // meio leque, de uma ponta à outra da horizontal, passando pelo que desce
+      const angulo = (Math.PI * (i + 0.5)) / QUANTAS;
+      vivasRef.current.push({ x, y, angulo, nascida: agora });
     }
     if (lacoRef.current) return;
-
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx) return;
 
     const quadro = (agora: number) => {
       // em pixels de CSS, que é o sistema em que a matriz do DPR deixou o laço
@@ -97,11 +131,19 @@ export function Faiscas({ disparo = 0 }: FaiscasProps) {
         // `ease-out`: o risco salta e desacelera, que é como uma faísca apaga
         const e = p * (2 - p);
         const distancia = e * RAIO;
-        const comprimento = TAMANHO * (1 - e);
+        const comprimento = TAMANHO * (1 - e * 0.72);
         const cos = Math.cos(f.angulo);
         const sen = Math.sin(f.angulo);
 
-        ctx.globalAlpha = 1 - e;
+        /**
+         * O risco fica **aceso quase até o fim** e apaga no último terço.
+         *
+         * Com a opacidade caindo junto com a curva de saída, o estalo já nascia
+         * a meio brilho: `e` sobe rápido no começo, que é justamente quando o
+         * risco é maior e deveria ser mais visível. Aqui ele vive em branco
+         * cheio e só se apaga quando já está longe e curto.
+         */
+        ctx.globalAlpha = Math.min(1, 3 * (1 - p));
         ctx.beginPath();
         ctx.moveTo(f.x + distancia * cos, f.y + distancia * sen);
         ctx.lineTo(f.x + (distancia + comprimento) * cos, f.y + (distancia + comprimento) * sen);
@@ -149,27 +191,10 @@ export function Faiscas({ disparo = 0 }: FaiscasProps) {
     return () => observador.disconnect();
   }, []);
 
-  /** Clique no elemento hospedeiro: o estalo nasce onde o ponteiro estava. */
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const hospedeiro = canvas?.parentElement;
-    if (!canvas || !hospedeiro) return;
-
-    const aoClicar = (e: MouseEvent) => {
-      const r = canvas.getBoundingClientRect();
-      acender(e.clientX - r.left, e.clientY - r.top);
-    };
-
-    hospedeiro.addEventListener('click', aoClicar);
-    return () => hospedeiro.removeEventListener('click', aoClicar);
-  }, [acender]);
-
-  /** O convite: um estalo no centro, sem ninguém ter clicado. */
+  /** O convite: um estalo sob o nome, sem ninguém ter clicado. */
   useEffect(() => {
     if (!disparo) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    acender(canvas.clientWidth / 2, canvas.clientHeight / 2);
+    acender();
   }, [disparo, acender]);
 
   // o laço vive fora do React: sem esta limpeza ele sobreviveria à desmontagem
