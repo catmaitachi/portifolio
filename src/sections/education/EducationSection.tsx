@@ -1,4 +1,5 @@
 import { useMemo, useRef } from 'react';
+import type { EstadoFormacao } from '~/content';
 import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
 import { useT } from '~/i18n/useLanguage';
@@ -7,6 +8,24 @@ import type { SectionProps } from '../types';
 import { DiplomaCard } from './DiplomaCard';
 import styles from './EducationSection.module.css';
 import { useCabeNaFaixa } from './useCabeNaFaixa';
+
+/**
+ * Em que ordem as formações aparecem, pelo estado de cada uma.
+ *
+ * **O que está em curso vem primeiro**, porque é o que responde "onde ele está
+ * academicamente hoje"; depois o que já foi concluído, que é o que ele tem; e
+ * por último a pretensão, que ainda não é nem uma coisa nem outra. Cronologia
+ * não serviria aqui: ela poria a intenção no meio do caminho ou no começo,
+ * conforme a data, e é justamente a menos afirmativa das três.
+ *
+ * Dentro do mesmo estado vale a ordem do dicionário, e é de graça: `sort` é
+ * estável, então dois `concluido` chegam na ordem em que foram escritos.
+ */
+const ORDEM_ESTADO: Record<EstadoFormacao, number> = {
+  cursando: 0,
+  concluido: 1,
+  pretensao: 2,
+};
 
 /**
  * Formação: uma faixa de crachás, que anda quando não cabe parada.
@@ -19,6 +38,9 @@ import { useCabeNaFaixa } from './useCabeNaFaixa';
  *
  * Ela **só existe no modo profissional** (`shared.json → modos`), e não precisa
  * saber disso: quem decide é a lista do modo.
+ *
+ * **A ordem é a dos estados**, não a do dicionário: em curso, concluído e por
+ * fim a pretensão (ver `ORDEM_ESTADO`).
  *
  * **Ela só anda quando não cabe.** Numa tela larga os três crachás ficam parados
  * e centrados, à vista de uma vez, que é o melhor estado possível: nada se move,
@@ -55,7 +77,11 @@ export function EducationSection({ ativo, indice }: SectionProps) {
   const secaoRef = useRef<HTMLElement>(null);
   // o conteúdo encolhe até caber na altura que a tela tem
   useEscalaQueCabe(secaoRef);
-  const lista = t.formacoes.lista;
+  const lista = useMemo(
+    // `slice` porque `sort` ordena no lugar, e o alvo aqui é o dicionário
+    () => t.formacoes.lista.slice().sort((a, b) => ORDEM_ESTADO[a.estado] - ORDEM_ESTADO[b.estado]),
+    [t],
+  );
   const palcoRef = useRef<HTMLDivElement>(null);
   const cabe = useCabeNaFaixa(palcoRef, lista.length);
   const semMovimento = useReducedMotion();

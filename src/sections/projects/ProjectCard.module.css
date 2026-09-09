@@ -235,9 +235,24 @@
   text-wrap: pretty;
 }
 
-/* a barra de estado cola no rodapé do cartão, qualquer que seja o texto acima */
+/**
+ * O pé do cartão: a barra, e embaixo dela o estado e o link nas duas pontas.
+ *
+ * `margin-top: auto` cola o bloco no fundo do cartão qualquer que seja o texto
+ * acima, e é o que mantém os três cartões com o pé alinhado enquanto giram.
+ */
 .rodape {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
   margin-top: auto;
+}
+
+.linhaFim {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
 }
 
 /**
@@ -251,7 +266,6 @@
  */
 .aoVivo {
   flex: none;
-  align-self: flex-start;
   padding-bottom: 3px;
   border-bottom: 1px solid rgb(255 255 255 / 26%);
   color: rgb(255 255 255 / 74%);

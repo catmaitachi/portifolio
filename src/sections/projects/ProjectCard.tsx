@@ -104,31 +104,44 @@ export function ProjectCard({ projeto, indice, geo, ativo, onFocar }: ProjectCar
           <span className={styles.stack}>{projeto.stack.join('  ·  ')}</span>
 
           {/**
-           * O link fica na frente do cartão, que é o único lugar onde ele pode
-           * ficar depois que o painel saiu.
+           * O pé do cartão: a barra por cima, e a linha que fecha a leitura
+           * embaixo, com o estado numa ponta e o link na outra.
+           *
+           * O link está ali porque é o fim da leitura, e não o começo: quem
+           * chega a ele já passou por nome, resumo, ano, papel e stack, e a
+           * pergunta que sobra é onde ver aquilo funcionando. Nas extremidades
+           * opostas, cada um é uma coisa; encostados, os dois leriam como uma
+           * legenda só, que é o mesmo motivo dos dois fatos do Sobre.
            *
            * Ele é desenhado nos três cartões para que a altura do corpo seja a
            * mesma em todos — renderizado só no da frente, o cartão mudaria de
            * geometria no meio do giro. Fora da frente ele sai da tabulação e do
            * ponteiro, e é o clique do cartão lateral que responde ali.
            */}
-          {aoVivo ? (
-            <a
-              className={styles.aoVivo}
-              href={aoVivo}
-              target="_blank"
-              rel="noreferrer"
-              tabIndex={geo.naFrente ? 0 : -1}
-            >
-              {t.projetos.aoVivo}
-            </a>
-          ) : null}
-
-          <div className={`${comum.medidor} ${styles.rodape}`}>
-            <span className={comum.trilha}>
-              <span className={comum.preenchimento} style={{ width: preenchido ? '100%' : '0%' }} />
+          <div className={styles.rodape}>
+            <span className={comum.medidor}>
+              <span className={comum.trilha}>
+                <span
+                  className={comum.preenchimento}
+                  style={{ width: preenchido ? '100%' : '0%' }}
+                />
+              </span>
             </span>
-            <span className={comum.estado}>{t.projetos.estados[projeto.estado]}</span>
+
+            <div className={styles.linhaFim}>
+              <span className={comum.estado}>{t.projetos.estados[projeto.estado]}</span>
+              {aoVivo ? (
+                <a
+                  className={styles.aoVivo}
+                  href={aoVivo}
+                  target="_blank"
+                  rel="noreferrer"
+                  tabIndex={geo.naFrente ? 0 : -1}
+                >
+                  {t.projetos.aoVivo}
+                </a>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>

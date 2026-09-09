@@ -62,6 +62,17 @@ página (ver `responsivo.md`), e era ele que obrigava o Sobre inteiro a encolher
 celular, e com ele fora ela volta ao teto da escala sozinha. A segunda é de leitura: formação
 tem estado, data e progresso, e no rodapé de uma biografia isso lia como legenda do retrato.
 
+**A ordem é a dos estados, não a do dicionário**: primeiro o que está **em curso**, porque é o que
+responde "onde ele está academicamente hoje"; depois o que foi **concluído**, que é o que ele tem; e
+por último a **pretensão**, que ainda não é nem uma coisa nem outra. Cronologia não serviria: ela
+poria a intenção no meio do caminho, ou no começo, conforme a data, e é justamente a menos afirmativa
+das três.
+
+A regra vive no componente (`ORDEM_ESTADO`), e não na ordem em que as formações estão escritas: assim
+ela vale sozinha quando uma formação nova entrar, e continua valendo no dia em que um `cursando`
+virar `concluido`. Dentro do mesmo estado manda a ordem do dicionário, de graça, porque `sort` é
+estável. O `01 / 03` do pé segue a ordem que se vê, que é a única que o visitante tem.
+
 **A faixa só anda quando não cabe.** Numa tela larga os três crachás ficam parados e centrados, à
 vista de uma vez, que é o melhor estado possível: nada se move, nada passa, e tudo está lido. Andar
 ali seria movimento sem motivo. Onde a largura não dá para os três, e não dá em celular nenhum sem
@@ -194,9 +205,15 @@ trabalho do projeto, não do portfólio.
 Três coisas saíram junto com o painel, e nenhuma faz falta: o fechamento ao deixar a seção, a tecla
 Esc e a regra de tabulação que tirava os outros cartões do caminho enquanto um estava aberto.
 
-**O link fica no corpo do cartão, e só o da frente responde.** Ele é desenhado nos três para que
-todos tenham a mesma altura de corpo, senão o cartão mudaria de geometria no meio do giro; fora da
-frente ele sai da tabulação e do ponteiro, porque ali o clique é do cartão, que gira a órbita.
+**O link fecha o pé do cartão, na ponta oposta ao estado.** Ele é o fim da leitura e não o começo:
+quem chega até ele já passou por nome, resumo, ano, papel e stack, e a pergunta que sobra é onde ver
+aquilo funcionando. Nas extremidades opostas, o estado e o link são duas coisas; encostados, leriam
+como uma legenda só, que é o mesmo motivo dos dois fatos do Sobre. A barra do medidor fica na linha
+de cima, inteira.
+
+**E só o da frente responde.** O link é desenhado nos três para que todos tenham a mesma altura de
+corpo, senão o cartão mudaria de geometria no meio do giro; fora da frente ele sai da tabulação e do
+ponteiro, porque ali o clique é do cartão, que gira a órbita.
 
 E isso resolveu o defeito de acessibilidade que estava anotado em `pendencias.md`: o cartão era
 `role="button"` com um link dentro, o que ARIA não permite, e o aninhamento existia só para o painel

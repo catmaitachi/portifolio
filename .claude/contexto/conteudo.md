@@ -148,9 +148,10 @@ rodapé: a cidade leva o país escrito no idioma de quem lê.
 4. uma entrada em `formacoes.lista` nos dois dicionários, com o mesmo `slot`.
 
 A lista alimenta a **seção Formação**, que existe só no modo profissional (`shared.json → modos`), e
-a ordem dela é **do mais recente para o mais antigo**, o contrário da Trajetória, porque é a ordem em
-que ele conta a própria formação, do que está fazendo agora para trás. O carrossel abre no que está
-`cursando`, não no primeiro da lista.
+a **ordem em que elas aparecem não é a desta lista**: a seção agrupa por estado, primeiro o que está
+`cursando`, depois `concluido` e por fim `pretensao` (ver `secoes.md`). A ordem escrita aqui só
+desempata dentro do mesmo estado, então acrescentar uma formação é escrevê-la onde fizer sentido para
+quem lê o JSON, sem pensar em posição de tela.
 
 ```json
 {

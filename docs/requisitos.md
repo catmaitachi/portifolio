@@ -33,7 +33,7 @@ nunca apresentando falha como ausência.
 
 **RF08a** — A biografia deve mudar conforme o modo em vigor, com um texto por modo em cada idioma.
 
-**RF08b** — A seção Formação, exclusiva do modo profissional, deve exibir as formações como crachás verticais com todas as informações visíveis ao mesmo tempo, dispostos numa faixa horizontal. A faixa deve permanecer parada e centrada quando todos os crachás couberem na largura disponível, e apenas nesse caso deve entrar em movimento contínuo, sem paradas e sem cartão selecionado. O movimento deve pausar enquanto o ponteiro ou o foco estiverem sobre a faixa, e sob `prefers-reduced-motion` deve ser substituído por rolagem horizontal navegável por teclado.
+**RF08b** — A seção Formação, exclusiva do modo profissional, deve exibir as formações como crachás verticais com todas as informações visíveis ao mesmo tempo, dispostos numa faixa horizontal e agrupados por estado, na ordem em curso, concluído e pretensão. A faixa deve permanecer parada e centrada quando todos os crachás couberem na largura disponível, e apenas nesse caso deve entrar em movimento contínuo, sem paradas e sem cartão selecionado. O movimento deve pausar enquanto o ponteiro ou o foco estiverem sobre a faixa, e sob `prefers-reduced-motion` deve ser substituído por rolagem horizontal navegável por teclado.
 
 **RF09** — O sistema deve indicar o estado de cada formação (concluído, cursando, pretensão).
 
@@ -41,7 +41,7 @@ nunca apresentando falha como ausência.
 
 **RF11** — A seção Projetos deve exibir os projetos em um carrossel em órbita 3D, navegável por clique, arraste e teclado.
 
-**RF12** — Cada cartão de projeto deve exibir banner, índice, nome, linha de resumo, ano, papel, stack tecnológica, estado e o link "ver ao vivo" quando houver, tudo na frente do cartão.
+**RF12** — Cada cartão de projeto deve exibir banner, índice, nome, linha de resumo, ano, papel, stack tecnológica, estado e o link "ver ao vivo" quando houver, tudo na frente do cartão, com o estado e o link nas extremidades opostas do rodapé.
 
 **RF13** — O sistema não deve manter conteúdo oculto atrás de interação: não há painel de descrição, e o link "ver ao vivo" responde apenas no cartão que está na frente da órbita.
 

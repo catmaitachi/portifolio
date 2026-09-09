@@ -90,6 +90,7 @@ export type {
   Canal,
   DadoPessoal,
   Dictionary,
+  EstadoFormacao,
   Experiencia,
   Formacao,
   Lang,
