@@ -69,14 +69,26 @@ export interface Filme {
   nota: number | null;
   poster: string | null;
   url: string;
-  /** ISO 8601 (só a data) */
-  assistidoEm: string;
-  /** revisita: já tinha visto antes */
-  revisita: boolean;
+  /**
+   * ISO 8601 (só a data). Ausente nos favoritos: uma lista não é um diário, e
+   * ali não existe a sessão que teria data.
+   */
+  assistidoEm?: string;
+  /** revisita: já tinha visto antes. Ausente pela mesma razão. */
+  revisita?: boolean;
 }
 
 export interface Filmes {
   recentes: Filme[];
+  /**
+   * Uma lista escolhida a dedo no Letterboxd, e não o que ele chama de
+   * favoritos no perfil.
+   *
+   * Ela vem de um lugar diferente do resto: o feed traz o diário, e lista
+   * nenhuma tem RSS. Vem vazia quando não há lista configurada, e isso é
+   * estado normal, não falha — o resto da seção continua de pé sozinho.
+   */
+  favoritos: Filme[];
 }
 
 /** O que uma função de `api/` devolve quando não consegue responder. */

@@ -36,9 +36,18 @@ limitado.
 
 ### O endereço
 
-`#pessoal/musica`, lido e escrito por `navigation/useHashRoute.ts`. É hash e não caminho porque o
+`#personal/music`, lido e escrito por `navigation/useHashRoute.ts`. É hash e não caminho porque o
 site é estático: um caminho de verdade exigiria o servidor devolvendo `index.html` para qualquer
 rota, e o `base: './'` deixaria de valer.
+
+**Os nomes no endereço são em inglês, e as chaves do projeto continuam em português.** As chaves são
+a língua em que o código é escrito, e o conteúdo é bilíngue por dicionário; o endereço não é chave,
+é a única parte da página que alguém lê **fora** do site — num link colado numa mensagem ou numa
+candidatura —, e ali o inglês alcança os dois idiomas. Traduzir o slug por idioma seria pior: o mesmo
+lugar teria dois endereços, e um link mudaria de sentido conforme a preferência de quem o abriu.
+
+A tradução mora em `SLUG_MODO` e `SLUG_SECAO`, dois `Record` **totais** — uma seção ou um modo novo
+quebra o build até ganhar nome no endereço.
 
 - **modo entra por `pushState`, seção por `replaceState`.** Trocar de lado é navegação e o botão
   voltar deve desfazê-la; rolar não pode encher o histórico, senão voltar do Contato ao Início
@@ -58,7 +67,24 @@ rota, e o `base: './'` deixaria de valer.
   trouxer altura.
 
 O modo também vai para o `localStorage` (`portfolio.modo`), como o idioma, mas **o hash ganha dele**:
-um link recebido agora diz mais sobre a intenção de quem clicou do que a última visita.
+um link recebido agora diz mais sobre a intenção de quem clicou do que a última visita. Ali a chave
+é a de sempre (`pessoal`), não o slug: o armazenamento é interno, e traduzi-lo só criaria um segundo
+vocabulário para manter em sincronia.
+
+### O título da aba segue o endereço
+
+`navigation/useDocumentTitle.ts`. A página é uma só e nunca recarrega, então sem ele a aba diria a
+mesma coisa do começo ao fim, e quem abrisse dois lugares do site em duas abas não teria como
+distingui-las. O histórico tem o mesmo problema: ele guarda o título de cada entrada, e são as trocas
+de modo que viram entrada.
+
+**No Início a parte é a etiqueta do modo, não o nome da seção.** "Início" não diz em que lado do site
+alguém está, e é exatamente ali que os dois lados mostram a mesma seção com textos diferentes.
+
+O texto sai do dicionário (`documento`), com marcador em vez de concatenação, e a parte vem **na
+frente** porque a aba corta o fim: o que distingue uma aba da outra precisa sobrar. O `<title>` do
+`index.html` existe só até o React assumir, e traz o mesmo formato para o modo padrão — assim não há
+um pisca de título na abertura.
 
 ### A rolagem
 

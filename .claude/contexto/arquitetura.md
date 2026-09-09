@@ -8,7 +8,7 @@
 | `src/content/` | Dicionários JSON, tipos e registro de imagens. | nada |
 | `src/i18n/` | Idioma corrente, detecção e persistência. | `content` |
 | `src/scene/` | Ponte React ↔ motor e a cena de cada seção. | `engine`, `content` |
-| `src/navigation/` | Rolagem por seções, teclado e menu. | `content`, `i18n` |
+| `src/navigation/` | Rolagem por seções, teclado, menu, endereço e título da aba. | `content`, `i18n` |
 | `src/hud/` | Anéis, mira, seletor de idioma, crédito, versão, notificações. | `i18n` |
 | `src/sections/` | Uma pasta por seção, mais o `SectionProps` que todas recebem. | `content`, `i18n`, componentes |
 | `src/components/` | Peças genéricas (`Figure`). | nada |

@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import type { Filmes } from '~/data/types';
+import type { Filme, Filmes } from '~/data/types';
 import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
 import { useRemoto } from '~/hooks/useRemoto';
 import { useT } from '~/i18n/useLanguage';
@@ -12,21 +12,121 @@ import styles from './FilmsSection.module.css';
 const MARCAS = 5;
 
 /**
- * Filmes: os últimos assistidos, com a nota que eu dei.
+ * A nota, desenhada.
+ *
+ * Cinco marcas de 1px preenchidas pela fração cabem na régua da página melhor
+ * que um glifo de estrela, que traria uma forma que não existe em nenhum outro
+ * lugar aqui; e a meia estrela do Letterboxd fica exata, em vez de arredondada
+ * para o glifo mais próximo. Quem usa leitor de tela recebe o número no
+ * `aria-label` — a marca é desenho.
+ */
+function Nota({ nota }: { nota: number }) {
+  return (
+    <span className={styles.nota} aria-label={`${nota}/${MARCAS}`}>
+      {Array.from({ length: MARCAS }, (_, m) => (
+        <span
+          key={m}
+          className={styles.marca}
+          aria-hidden="true"
+          style={
+            {
+              // a fração desta marca: cheia, vazia, ou metade
+              '--cheio': `${Math.min(1, Math.max(0, nota - m)) * 100}%`,
+            } as React.CSSProperties
+          }
+        />
+      ))}
+    </span>
+  );
+}
+
+/** Um filme: pôster, nome, ano e nota. É o mesmo cartão nos dois carrosséis. */
+function Cartao({ filme }: { filme: Filme }) {
+  const t = useT();
+
+  return (
+    <a className={styles.cartao} href={filme.url} target="_blank" rel="noreferrer">
+      <span className={styles.poster}>
+        {filme.poster ? (
+          <img
+            src={filme.poster}
+            alt=""
+            loading="lazy"
+            onError={(e) => {
+              e.currentTarget.hidden = true;
+            }}
+          />
+        ) : null}
+        {filme.revisita && (
+          <span className={styles.revisita} title={t.filmes.revisita}>
+            {t.filmes.revisita}
+          </span>
+        )}
+      </span>
+
+      <span className={styles.nome}>{filme.titulo}</span>
+      <span className={styles.rodape}>
+        <span className={styles.ano}>{filme.ano}</span>
+        {/* sem nota é diferente de nota zero: cinco marcas vazias afirmariam um
+            julgamento que ninguém fez */}
+        {filme.nota === null ? (
+          <span className={styles.semNota}>{t.filmes.semNota}</span>
+        ) : (
+          <Nota nota={filme.nota} />
+        )}
+      </span>
+    </a>
+  );
+}
+
+/**
+ * Uma faixa de filmes que rola de lado.
+ *
+ * **Carrossel, e não grade**, porque agora são duas listas numa seção de uma
+ * tela de altura: empilhadas em grade elas passariam do rodapé, e reduzir o
+ * pôster até caber deixaria os dois blocos ilegíveis. Deitada, cada lista custa
+ * uma linha, e o que não cabe na largura continua alcançável.
+ *
+ * A rolagem é **nativa** — arrasto, roda e inércia vêm de graça, como no
+ * carrossel de formações. A faixa entra na tabulação (`tabIndex`) porque uma
+ * região rolável que não recebe foco é inalcançável por teclado, e o rótulo é o
+ * mesmo título que está escrito ao lado dela.
+ *
+ * `--base` é o atraso de onde a entrada desta faixa começa: as duas listas
+ * chegam uma depois da outra, e não ao mesmo tempo.
+ */
+function Carrossel({ titulo, filmes, base }: { titulo: string; filmes: Filme[]; base: number }) {
+  return (
+    <div className={styles.grupo}>
+      <p className={styles.tituloLista}>{titulo}</p>
+      <ul
+        className={styles.carrossel}
+        style={{ '--base': `${base}ms` } as React.CSSProperties}
+        tabIndex={0}
+        aria-label={titulo}
+      >
+        {filmes.map((f, i) => (
+          <li key={f.id} style={{ '--ordem': i } as React.CSSProperties}>
+            <Cartao filme={f} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/**
+ * Filmes: uma lista escolhida a dedo, e os últimos assistidos.
  *
  * O dado vem de `api/letterboxd`, e **não se repete**: um feed de filmes vistos
  * não muda enquanto alguém olha para ele, e repetir a busca gastaria requisição
  * para redesenhar o mesmo.
  *
- * **A nota é desenhada, não escrita.** Cinco marcas de 1px preenchidas pela
- * fração cabem na régua da página melhor que um glifo de estrela, que traria uma
- * forma que não existe em nenhum outro lugar aqui; e a meia estrela do
- * Letterboxd fica exata, em vez de arredondada para o glifo mais próximo. Quem
- * usa leitor de tela recebe o número, no `aria-label` — a marca é desenho.
- *
- * **Sem nota é diferente de nota zero.** Quem marcou como visto e não avaliou
- * recebe o rótulo, e não cinco marcas vazias, que afirmariam um julgamento que
- * ninguém fez.
+ * **Os favoritos vêm antes, e podem não vir.** Eles são uma escolha, e os
+ * recentes são um registro — a escolha diz mais sobre quem escreveu a página, e
+ * por isso abre a seção. Mas eles saem do HTML de uma lista do Letterboxd, que
+ * não tem RSS, então a função os devolve vazios sem chamar isso de falha (ver
+ * `dados.md`): sem lista, a seção é só o segundo bloco, e continua inteira.
  */
 export function FilmsSection({ ativo, indice }: SectionProps) {
   const t = useT();
@@ -34,7 +134,8 @@ export function FilmsSection({ ativo, indice }: SectionProps) {
   useEscalaQueCabe(secaoRef);
   const filmes = useRemoto<Filmes>('api/letterboxd', ativo);
 
-  const lista = filmes.dados?.recentes ?? [];
+  const favoritos = filmes.dados?.favoritos ?? [];
+  const recentes = filmes.dados?.recentes ?? [];
 
   return (
     <section
@@ -55,58 +156,21 @@ export function FilmsSection({ ativo, indice }: SectionProps) {
 
         {filmes.estado !== 'pronto' ? (
           <EstadoRemoto estado={filmes.estado} />
-        ) : lista.length === 0 ? (
+        ) : recentes.length === 0 && favoritos.length === 0 ? (
           <EstadoRemoto estado="vazio" />
         ) : (
-          <ul className={styles.grade}>
-            {lista.map((f, i) => (
-              <li key={f.id} style={{ '--ordem': i } as React.CSSProperties}>
-                <a className={styles.cartao} href={f.url} target="_blank" rel="noreferrer">
-                  <span className={styles.poster}>
-                    {f.poster ? (
-                      <img
-                        src={f.poster}
-                        alt=""
-                        loading="lazy"
-                        onError={(e) => {
-                          e.currentTarget.hidden = true;
-                        }}
-                      />
-                    ) : null}
-                    {f.revisita && (
-                      <span className={styles.revisita} title={t.filmes.revisita}>
-                        {t.filmes.revisita}
-                      </span>
-                    )}
-                  </span>
-
-                  <span className={styles.nome}>{f.titulo}</span>
-                  <span className={styles.rodape}>
-                    <span className={styles.ano}>{f.ano}</span>
-                    {f.nota === null ? (
-                      <span className={styles.semNota}>{t.filmes.semNota}</span>
-                    ) : (
-                      <span className={styles.nota} aria-label={`${f.nota}/${MARCAS}`}>
-                        {Array.from({ length: MARCAS }, (_, m) => (
-                          <span
-                            key={m}
-                            className={styles.marca}
-                            aria-hidden="true"
-                            style={
-                              {
-                                // a fração desta marca: cheia, vazia, ou metade
-                                '--cheio': `${Math.min(1, Math.max(0, (f.nota ?? 0) - m)) * 100}%`,
-                              } as React.CSSProperties
-                            }
-                          />
-                        ))}
-                      </span>
-                    )}
-                  </span>
-                </a>
-              </li>
-            ))}
-          </ul>
+          <>
+            {favoritos.length > 0 && (
+              <Carrossel titulo={t.filmes.favoritos} filmes={favoritos} base={0} />
+            )}
+            {recentes.length > 0 && (
+              <Carrossel
+                titulo={t.filmes.recentes}
+                filmes={recentes}
+                base={favoritos.length > 0 ? 220 : 0}
+              />
+            )}
+          </>
         )}
       </div>
     </section>

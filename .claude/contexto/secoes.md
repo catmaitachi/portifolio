@@ -199,7 +199,21 @@ o que separa um estado do outro.
 |---|---|---|
 | Música | o que está tocando: capa, faixa, artista e a barra de progresso | mais tocadas e mais ouvidos do mês, em duas listas de 1px |
 | Jogos | jogando agora, ou o último jogado: arte, nome e horas | os das duas últimas semanas, em grade |
-| Filmes | não tem: todo filme é passado | os últimos assistidos, em grade de pôsteres |
+| Filmes | não tem: todo filme é passado | uma lista escolhida a dedo e os últimos assistidos, em duas faixas de pôsteres |
+
+**Em Música o destaque fica no pé**, e é a única das três em que ele não abre a seção. Ele é o único
+bloco que muda enquanto alguém está olhando, e no alto empurrava para baixo o que a seção tem de
+conteúdo — as duas listas, que são o mês inteiro. Embaixo, ele é o rodapé vivo de um bloco parado, e
+é para lá que o olho volta.
+
+**Calado, ele se apaga e a capa perde a cor.** A seção é sobre o que está tocando *agora*, e um
+bloco em cor cheia afirmaria isso mesmo com o rótulo dizendo o contrário. A capa é a única cor da
+seção, e tirá-la é a diferença mais visível que existe aqui sem escrever nada.
+
+**E no mobile ele não muda de forma.** Empilhar a capa sobre o texto foi a primeira versão e estava
+errada: dobrava a altura do bloco justamente na tela onde ela é mais disputada, e o que está tocando
+deixava de ser reconhecível de relance por ter virado outro desenho. Ali quem cede é o texto, que já
+corta com reticências — cortar um título é mais barato que reorganizar o bloco.
 
 **A barra do que está tocando anda sozinha, em CSS.** O que chega do Spotify é um instantâneo, e sem
 nada ela ficaria parada por vinte segundos e daria um salto a cada resposta. Uma animação linear do
@@ -220,12 +234,24 @@ reservado dos banners — a arte da Steam é montada a partir do `appid` por con
 existir, e sem a moldura sobraria o ícone de imagem quebrada do navegador, a única coisa fora da
 paleta na página inteira.
 
-**As grades são `auto-fill` com um mínimo**, nunca um número fixo de colunas: quem jogou um só na
-quinzena não deve ver três vagas vazias, que leem como conteúdo que faltou carregar.
+**A grade de Jogos é `auto-fill` com um mínimo**, nunca um número fixo de colunas: quem jogou um só
+na quinzena não deve ver três vagas vazias, que leem como conteúdo que faltou carregar.
 
-O pôster é pequeno de propósito (118px no máximo). São doze filmes numa seção de uma tela de altura,
-e 2:3 é a proporção mais alta da página: com 132px cada linha passava de 240px, duas linhas não
-cabiam e a grade corria por baixo do crédito no rodapé.
+**Filmes tem duas faixas, e elas rolam de lado.** Os favoritos vêm antes dos recentes porque são uma
+escolha, e a escolha diz mais sobre quem escreveu a página do que o registro. Empilhadas em grade as
+duas passariam do rodapé, e reduzir o pôster até caber deixaria as duas ilegíveis; deitadas, cada
+uma custa uma linha e o que não cabe na largura continua alcançável. A rolagem é **nativa** — arrasto,
+roda e inércia de graça —, o encaixe é `proximity` e não `mandatory` (não há item ativo que precise
+assentar), e a faixa entra na tabulação, porque uma região rolável que não recebe foco é inalcançável
+por teclado.
+
+O pôster é pequeno de propósito (104px no máximo). 2:3 é a proporção mais alta da página, e com duas
+faixas cada uma custa a largura vezes 1,5 mais o nome e o rodapé: com 118px elas corriam por baixo do
+crédito.
+
+**O bloco de favoritos pode simplesmente não existir**, e a seção continua inteira sem ele. Ele sai
+da raspagem de uma lista do Letterboxd, que não tem RSS, e a função devolve lista vazia em vez de
+falha quando não há lista configurada ou quando o HTML mudou de forma (ver `dados.md`).
 
 ---
 

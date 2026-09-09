@@ -20,16 +20,54 @@ export interface Rota {
 
 export const CHAVE_ARMAZENAMENTO = 'portfolio.modo';
 
-/** `#pessoal/filmes` → `{ modo: 'pessoal', secao: 'filmes' }`, validando as duas partes. */
+/**
+ * O que o endereço mostra, em inglês.
+ *
+ * As chaves do projeto são em português — é a língua em que ele é escrito, e o
+ * conteúdo é bilíngue por dicionário, não por chave. **O endereço não é chave**:
+ * ele é a única parte da página que um estrangeiro lê fora do site, num link
+ * colado numa mensagem ou numa candidatura, e ali o inglês alcança os dois
+ * idiomas. Trocar o slug por idioma seria pior: o mesmo lugar teria dois
+ * endereços, e um link mudaria de sentido conforme a preferência de quem o
+ * abriu.
+ *
+ * Os dois são `Record` totais, então uma seção ou um modo novo **quebra o
+ * build** até ganhar nome no endereço.
+ */
+const SLUG_MODO: Record<ModoKey, string> = {
+  pessoal: 'personal',
+  profissional: 'professional',
+};
+
+const SLUG_SECAO: Record<SectionKey, string> = {
+  inicio: 'home',
+  sobre: 'about',
+  projetos: 'projects',
+  experiencia: 'journey',
+  musica: 'music',
+  jogos: 'games',
+  filmes: 'films',
+  contato: 'contact',
+};
+
+/** `#personal/films`, que é o que o visitante copia da barra. */
+export const enderecoDe = (r: Rota): string => `#${SLUG_MODO[r.modo]}/${SLUG_SECAO[r.secao]}`;
+
+/** O modo cujo slug é este. Oito comparações, uma vez por navegação. */
+function modoDoSlug(slug: string | undefined): ModoKey | undefined {
+  return (Object.keys(SLUG_MODO) as ModoKey[]).find((k) => SLUG_MODO[k] === slug);
+}
+
+/** `#personal/films` → `{ modo: 'pessoal', secao: 'filmes' }`, validando as duas partes. */
 export function rotaDoHash(): Partial<Rota> {
   const cru = typeof location === 'undefined' ? '' : location.hash.replace(/^#\/?/, '');
   if (!cru) return {};
   const [m, s] = cru.split('/');
-  if (!isModo(m)) return {};
-  const secoes = secoesDoModo(m);
+  const modo = modoDoSlug(m);
+  if (!modo) return {};
   // seção que não existe naquele modo não é erro: o modo vale, o resto cai no começo
-  const secao = secoes.find((k) => k === s);
-  return secao ? { modo: m, secao } : { modo: m };
+  const secao = secoesDoModo(modo).find((k) => SLUG_SECAO[k] === s);
+  return secao ? { modo, secao } : { modo };
 }
 
 /**
@@ -110,7 +148,7 @@ export function useHashRoute(rota: Rota, aoNavegar: (r: Rota) => void): void {
   });
 
   useEffect(() => {
-    const alvo = `#${rota.modo}/${rota.secao}`;
+    const alvo = enderecoDe(rota);
     if (location.hash === alvo) {
       modoRef.current = rota.modo;
       return;
@@ -119,7 +157,15 @@ export function useHashRoute(rota: Rota, aoNavegar: (r: Rota) => void): void {
     modoRef.current = rota.modo;
     if (trocouDeModo) history.pushState(null, '', alvo);
     else history.replaceState(null, '', alvo);
-  }, [rota.modo, rota.secao]);
+    /**
+     * `rota` inteira nas dependências, e não os dois campos.
+     *
+     * O objeto vem de um `useMemo` sobre exatamente esses dois campos, então as
+     * duas listas disparam nas mesmas trocas. A diferença é que esta é a que o
+     * verificador consegue conferir, agora que o endereço é montado por
+     * `enderecoDe(rota)` em vez de interpolado aqui dentro.
+     */
+  }, [rota]);
 
   useEffect(() => {
     const aoVoltar = () => {

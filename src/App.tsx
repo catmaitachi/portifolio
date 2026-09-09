@@ -10,6 +10,7 @@ import { useNovaHint } from '~/hud/useNovaHint';
 import { Version } from '~/hud/Version';
 import { useT } from '~/i18n/useLanguage';
 import { NavMenu } from '~/navigation/NavMenu';
+import { useDocumentTitle } from '~/navigation/useDocumentTitle';
 import { rotaInicial, salvarModo, useHashRoute, type Rota } from '~/navigation/useHashRoute';
 import { useSectionScroll } from '~/navigation/useSectionScroll';
 import { NOVA_NIVEIS } from '~/scene/scenePlan';
@@ -136,6 +137,7 @@ export function App() {
     [modo, secoes, irPara],
   );
   useHashRoute(rota, aoNavegar);
+  useDocumentTitle(modo, chaveAtiva);
 
   const [nova, setNova] = useState({ disparo: 0, recarga: NOVA_NIVEIS[0].recarga });
   const aoAcender = useCallback((nivel: number) => {

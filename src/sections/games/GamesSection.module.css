@@ -182,8 +182,27 @@
   text-decoration: none;
   opacity: 0.78;
   transition: opacity 0.35s;
+}
+
+/**
+ * As entradas ficam **penduradas em `data-ativo`**, não no mount.
+ *
+ * O atributo aparece quando a seção vira a ativa e some quando ela sai, e é isso
+ * que tira o `animation-name` de `none` e recomeça a cascata — o mesmo mecanismo
+ * dos nós da Trajetória. Presas ao mount, elas rodavam uma vez só, no instante em
+ * que a resposta da Steam chegava, e voltar para a seção encontrava tudo parado.
+ *
+ * **O destaque sobe primeiro**, e a grade vem atrás dele: é ele que a seção
+ * existe para mostrar, e a cascata que começa no que está aberto agora lê como
+ * uma ordem, não como um monte de capas chegando junto.
+ */
+.bloco[data-ativo] .destaque {
   animation: capaSobe 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
-  animation-delay: calc(var(--ordem, 0) * 70ms);
+}
+
+.bloco[data-ativo] .cartao {
+  animation: capaSobe 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation-delay: calc(180ms + var(--ordem, 0) * 70ms);
 }
 
 .cartao:hover {

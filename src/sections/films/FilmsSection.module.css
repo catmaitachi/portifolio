@@ -1,9 +1,11 @@
 /**
  * Entrada: os pôsteres se acendem, um depois do outro.
  *
- * Só opacidade e uma escala mínima, sem deslocamento: são doze elementos numa
- * grade, e doze coisas deslizando ao mesmo tempo viram agitação. `backwards`,
- * nunca `forwards`, pela regra de sempre.
+ * Só opacidade e uma escala mínima, sem deslocamento: são duas faixas cheias de
+ * pôsteres, e trinta coisas deslizando ao mesmo tempo viram agitação. Elas
+ * acendem em cascata dentro de cada faixa, e a segunda faixa começa depois da
+ * primeira (`--base`): o olho segue a leitura em vez de escolher por onde
+ * começar. `backwards`, nunca `forwards`, pela regra de sempre.
  */
 @keyframes posterAcende {
   from {
@@ -15,34 +17,81 @@
 /**
  * O pôster é pequeno de propósito.
  *
- * São doze filmes numa seção que tem uma tela de altura, e a proporção 2:3 é a
- * mais alta da página: com 132px de largura cada linha passava de 240px, duas
- * linhas não cabiam e a grade corria por baixo do crédito no rodapé. Com 108px
- * cabem mais colunas, as linhas encurtam, e `useEscalaQueCabe` volta a ter folga
- * para trabalhar em vez de bater no piso dele.
+ * A seção tem uma tela de altura e agora tem **duas** faixas, e 2:3 é a
+ * proporção mais alta da página: cada linha custa a largura do pôster vezes 1,5,
+ * mais o nome e o rodapé. Com 118px as duas faixas passavam do crédito no
+ * rodapé; com 104 elas cabem e `useEscalaQueCabe` volta a ter folga para
+ * trabalhar em vez de bater no piso dele.
  */
 .secao {
-  --poster-min: clamp(84px, 11vmin, 118px);
+  --poster: clamp(76px, 9.5vmin, 104px);
 }
 
 .bloco {
   max-width: 1000px;
 }
 
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* o mesmo rótulo de lista da seção de Música: as duas são listas de dado de fora */
+.tituloLista {
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
+  color: rgb(255 255 255 / 40%);
+  font-size: 8.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-align: left;
+  hyphens: manual;
+}
+
 /**
- * `auto-fill` com um mínimo, e não um número fixo de colunas.
+ * A faixa que rola de lado.
  *
- * O feed devolve até doze filmes, mas devolve menos quando a pessoa assistiu
- * menos, e uma grade de seis fixa deixaria vagas vazias que leem como conteúdo
- * que faltou carregar.
+ * A rolagem é **nativa**: arrasto, roda e inércia vêm de graça, e não há um
+ * quadro de JavaScript envolvido. É a mesma escolha do carrossel de formações e
+ * da faixa de seções do mobile.
+ *
+ * Três coisas aqui não são opcionais, e as três já morderam este projeto em
+ * outro lugar:
+ *
+ * - **`flex: none` nos itens.** Sem ele os pôsteres se comprimem para caber, a
+ *   faixa nunca transborda e a rolagem não tem o que rolar;
+ * - **`overscroll-behavior-inline: contain`**, senão chegar ao fim da faixa
+ *   encadeia o gesto para fora dela;
+ * - **`padding-bottom`**, porque `overflow-x` obriga o eixo Y a computar `auto`
+ *   junto, e o que passar da caixa é cortado pela própria faixa.
+ *
+ * O `scroll-snap` é `proximity`, não `mandatory`: aqui não há um item "ativo"
+ * que precise assentar no lugar certo, e obrigar o encaixe tiraria de quem
+ * arrasta a liberdade de parar onde quiser.
  */
-.grade {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(var(--poster-min), 1fr));
+.carrossel {
+  display: flex;
   gap: clamp(10px, 1.8vmin, 20px);
   margin: 0;
-  padding: 0;
+  padding: 0 0 6px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-inline: contain;
   list-style: none;
+  scrollbar-width: none;
+}
+
+.carrossel::-webkit-scrollbar {
+  display: none;
+}
+
+.carrossel > li {
+  flex: none;
+  width: var(--poster);
+  scroll-snap-align: start;
 }
 
 .cartao {
@@ -51,8 +100,19 @@
   gap: 7px;
   color: inherit;
   text-decoration: none;
+}
+
+/**
+ * A entrada fica **pendurada em `data-ativo`**, não no mount.
+ *
+ * O atributo aparece quando a seção vira a ativa e some quando ela sai, e é isso
+ * que tira o `animation-name` de `none` e recomeça a cascata — o mesmo mecanismo
+ * dos nós da Trajetória. Presa ao mount, ela rodava uma vez só, no instante em
+ * que o feed chegava.
+ */
+.bloco[data-ativo] .cartao {
   animation: posterAcende 0.5s ease-out backwards;
-  animation-delay: calc(var(--ordem, 0) * 45ms);
+  animation-delay: calc(var(--base, 0ms) + var(--ordem, 0) * 45ms);
 }
 
 /**

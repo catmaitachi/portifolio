@@ -1,8 +1,10 @@
 ## Pendências
 
-- **O lado pessoal ainda é só Início, Sobre e Contato.** As seções de Música (Spotify), Jogos (Steam)
-  e Filmes (Letterboxd) dependem de um back-end para guardar os segredos, porque nenhuma das quatro
-  APIs pode ser chamada do navegador. O plano é Vercel, com uma função por provedor em `/api`.
+- **Nada disto está publicado.** Música, Jogos e Filmes leem `api/`, e `api/` só existe de verdade na
+  Vercel: falta ligar o repositório, cadastrar as variáveis de `.env.example` e apontar o
+  `luuspz.dev` para lá. Em desenvolvimento o plugin do Vite cobre isso (ver `dados.md`).
+- **Girar os segredos depois de publicar.** A client secret do Spotify e a chave da Steam passaram
+  por um canal de chat, então valem como comprometidas por precaução.
 - **O LoL ficou de fora, e não por falta de tentativa.** Não existe API de terceiro legítima para
   histórico de partidas: todo rastreador usa a chave própria dele na API da Riot, e a chave pessoal
   expira a cada 24 horas.
@@ -12,6 +14,10 @@
 - **Dois projetos são vagas** (`vaga-02`, `vaga-03`, estado `definir`): giram na órbita e não abrem
   descrição. Preencher quando houver projeto.
 - TikTok está sem `url` em `shared.json`, então aparece como "em breve".
+- **`LETTERBOXD_LIST` está vazia**, então a seção Filmes mostra só os vistos por último. Criar a
+  lista no Letterboxd, deixá-la pública e colar o endereço dela no `.env.local` e nas variáveis da
+  Vercel. A raspagem já está testada contra uma lista pública qualquer, e o bloco aparece sozinho
+  assim que a variável tiver valor.
 - **Conferir os dados das formações.** A `conclusao` do SENAC (`2022.12`) e o `progresso` da PUC
   (`4/8`) entraram como espaço reservado para a feature de hover — são dados reais sobre a vida de
   alguém e precisam ser corrigidos por quem os conhece (`formacoes.lista`, nos dois dicionários).

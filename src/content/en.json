@@ -13,13 +13,13 @@
   "modos": {
     "pessoal": {
       "rotulo": "Personal",
-      "descricao": "Music, games and films, off the clock",
+      "descricao": "Get to know a bit about my hobbies and interests",
       "etiqueta": "Lifestyle",
       "legenda": "Software Developer"
     },
     "profissional": {
       "rotulo": "Professional",
-      "descricao": "Projects, journey and education",
+      "descricao": "See my projects and professional experiences",
       "etiqueta": "Portfolio",
       "legenda": "Software Developer"
     }
@@ -28,6 +28,8 @@
   "hero": {
     "nome": "Lucas Spiazzi"
   },
+
+  "documento": "{parte} — {nome}",
 
   "sobre": {
     "titulo": "About Me",
@@ -144,6 +146,7 @@
   "filmes": {
     "titulo": "Films",
     "intro": "The last ones I watched, with my rating, straight from Letterboxd.",
+    "favoritos": "Favourites",
     "recentes": "Watched recently",
     "semNota": "no rating",
     "revisita": "rewatch"

@@ -64,6 +64,22 @@ function Conteudo({ dados }: { dados: Musica }) {
 
   return (
     <>
+      <div className={styles.colunas}>
+        <Lista
+          titulo={t.musica.faixas}
+          itens={dados.faixas.map((f) => ({
+            id: f.id,
+            nome: f.titulo,
+            url: f.url,
+            secundario: f.artista,
+          }))}
+        />
+        <Lista
+          titulo={t.musica.artistas}
+          itens={dados.artistas.map((a) => ({ id: a.id, nome: a.nome, url: a.url }))}
+        />
+      </div>
+
       <div className={styles.destaque} data-vivo={aoVivo || undefined}>
         {destaque.capa ? (
           <img className={styles.capa} src={destaque.capa} alt="" loading="lazy" />
@@ -99,22 +115,6 @@ function Conteudo({ dados }: { dados: Musica }) {
           ) : null}
         </div>
       </div>
-
-      <div className={styles.colunas}>
-        <Lista
-          titulo={t.musica.faixas}
-          itens={dados.faixas.map((f) => ({
-            id: f.id,
-            nome: f.titulo,
-            url: f.url,
-            secundario: f.artista,
-          }))}
-        />
-        <Lista
-          titulo={t.musica.artistas}
-          itens={dados.artistas.map((a) => ({ id: a.id, nome: a.nome, url: a.url }))}
-        />
-      </div>
     </>
   );
 }
@@ -127,11 +127,16 @@ function Conteudo({ dados }: { dados: Musica }) {
  * repete a cada 20s enquanto ela estiver na tela e a aba visível (ver
  * `useRemoto`).
  *
+ * **O que está tocando fica no pé da seção**, depois das duas listas. Ele é o
+ * único bloco que muda enquanto alguém está olhando, e no alto ele empurrava
+ * para baixo o que a seção tem de conteúdo — as listas, que são o mês inteiro.
+ * Embaixo, ele é o rodapé vivo de um bloco parado, e é para lá que o olho volta.
+ *
  * **O silêncio é o estado normal, não uma falha.** Ninguém escuta música o dia
  * inteiro, e a seção precisa continuar fazendo sentido calada: sem nada tocando,
  * o lugar do destaque passa a ser a última faixa ouvida, com o rótulo dizendo que
- * ela é passado. Uma seção que só funciona enquanto o dono está de fone é uma
- * seção quebrada na maior parte do dia.
+ * ela é passado, o bloco apagado e a capa sem cor. Uma seção que só funciona
+ * enquanto o dono está de fone é uma seção quebrada na maior parte do dia.
  *
  * **A barra de progresso anda sozinha, em CSS.** O que chega é um instantâneo, e
  * sem nada ela ficaria parada por vinte segundos e daria um salto. Uma animação

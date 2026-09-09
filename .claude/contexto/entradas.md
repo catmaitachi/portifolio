@@ -13,14 +13,31 @@ entra com um gesto próprio**. `inicio` já tinha o seu: o zoom da câmera saind
 | Sobre | a bio chega cifrada e se decifra da esquerda para a direita, um parágrafo depois do outro | `hooks/useDecipher.ts` |
 | Projetos | os cartões sobem, o do meio primeiro | `ProjectCard.module.css` |
 | Trajetória | duas ondas opostas giram e param; os nós acendem atrás delas | `TimelineCurve.module.css` |
-| Música | as linhas das duas listas chegam da esquerda, uma depois da outra | `MusicSection.module.css` |
-| Jogos | as capas sobem, a primeira antes das outras | `GamesSection.module.css` |
-| Filmes | os pôsteres se acendem, sem deslocamento | `FilmsSection.module.css` |
+| Música | as linhas das duas listas chegam da esquerda, e o que está tocando sobe por último | `MusicSection.module.css` |
+| Jogos | as capas sobem, a do destaque antes das outras | `GamesSection.module.css` |
+| Filmes | os pôsteres se acendem, faixa por faixa | `FilmsSection.module.css` |
 | Contato | os canais chegam das laterais, o do meio primeiro | `ChannelCard.module.css` |
 
 Projetos sobe e Contato vem de lado — o curso é diferente, a gramática é a mesma. O cartão de
 projeto anda **120px** contra os 46 do canal, e não é exagero: ele tem 436px de altura, e um pulo de
 40px nele mal se lê. Distância de entrada acompanha o tamanho do elemento.
+
+**As três seções de dado remoto penduram a entrada em `data-ativo`, não no mount.** É o mesmo
+mecanismo dos nós da Trajetória: o atributo aparece quando a seção vira a ativa, o `animation-name`
+sai de `none` e a animação recomeça do zero, sem `key` e sem remontar nada. Presas ao mount, elas
+rodavam **uma vez só** — no instante em que a resposta do provedor chegava — e voltar para a seção
+encontrava tudo já montado, que é justamente a diferença entre uma entrada e um efeito de
+carregamento.
+
+Nelas a ordem também é conteúdo, e não decoração:
+
+- em **Música** o destaque entra depois das listas, porque é ele que fica no pé da seção: subir é
+  entrar por onde ele está, e a seção se monta de cima para baixo;
+- em **Jogos** o destaque entra **antes** da grade, pelo motivo oposto: é ele que a seção existe para
+  mostrar, e uma cascata que começa no que está aberto agora lê como ordem em vez de um monte de
+  capas chegando junto;
+- em **Filmes** a segunda faixa começa depois da primeira (`--base`), então o olho segue a leitura em
+  vez de escolher por onde começar.
 
 Quatro decisões valem para todas, e são o que mantém isso barato e escalável:
 

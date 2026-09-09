@@ -17,7 +17,7 @@ projeto que roda fora do navegador.
 |---|---|---|---|
 | `api/spotify.ts` | `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REFRESH_TOKEN` | 30s | tocando agora, mais tocadas, mais ouvidos, recentes |
 | `api/steam.ts` | `STEAM_API_KEY`, `STEAM_ID` | 60s | jogando agora e os das duas últimas semanas |
-| `api/letterboxd.ts` | `LETTERBOXD_USER` | 30min | últimos assistidos, com a nota |
+| `api/letterboxd.ts` | `LETTERBOXD_USER`, `LETTERBOXD_LIST` (opcional) | 30min | últimos assistidos com a nota, e uma lista escolhida a dedo |
 
 **O League of Legends ficou de fora, e não por falta de tentativa.** Não existe API de terceiro
 legítima para histórico de partidas: todo rastreador usa a chave própria dele na API da Riot, e a
@@ -63,6 +63,34 @@ arte, e o Spotify não está tocando nada na maior parte do tempo.
   se distinguem por não terem `filmTitle`), e escreve apóstrofo como `&#039;` — as entidades
   numéricas são decodificadas por faixa de dígitos, não caso a caso, porque um caso a menos vira um
   título errado na tela. Nota ausente é diferente de nota zero.
+
+### A lista de favoritos é a parte mais frágil da parte mais frágil
+
+O bloco de favoritos da seção Filmes **não sai do feed**: lista nenhuma do Letterboxd tem RSS — o
+feed é só o diário —, e a alternativa era não ter o bloco. Ele sai de duas raspagens:
+
+1. o HTML da página da lista, de onde vêm `data-item-slug`, `data-item-name` (que traz o ano entre
+   parênteses) e `data-owner-rating` (de 1 a 10, metade da régua de 0 a 5 da tela);
+2. o HTML da página de **cada filme**, uma requisição por título, de onde sai o pôster no `image` do
+   JSON-LD.
+
+A segunda existe porque a página da lista **não tem pôster nenhum**: as imagens entram por
+JavaScript depois, e o que está no HTML é um espaço reservado. O `og:image` da página do filme
+também não serve — é um recorte largo, e um pôster fora de 2:3 estraga a faixa inteira.
+
+Três decisões seguram o custo e o risco disso:
+
+- **teto de 12 filmes**, que é também o que uma lista precisa ter para continuar sendo uma escolha;
+- **`AbortSignal.timeout` cobrindo o conjunto**: uma lista lenta não pode segurar os recentes, que
+  são o conteúdo da seção;
+- **ela nunca derruba a resposta.** Sem `LETTERBOXD_LIST`, com a página fora do ar ou com o HTML
+  mudado de forma, o retorno é uma lista vazia e a seção mostra só os vistos por último. É a única
+  exceção à regra de que falha não é lista vazia, e ela é deliberada: aqui a lista vazia é o estado
+  normal de quem não configurou nada, e a variável é **opcional** justamente por isso — ela não passa
+  por `ambiente()`, que responde 500 com o nome do que faltou.
+
+`LETTERBOXD_LIST` aceita o endereço inteiro copiado da barra do navegador ou só o miolo
+(`fulano/list/favoritos`).
 
 ### Como o front lê
 

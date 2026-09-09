@@ -63,6 +63,9 @@ pode ser literal no componente.
 são de nenhuma seção em particular, e repeti-los em três blocos seria três lugares para traduzir a
 mesma frase.
 
+`documento` é o título da aba, com `{parte}` e `{nome}` (ver `navegacao.md`). Ele fica no dicionário
+como todo texto visível — e o título da aba é texto visível, ainda que fora da página.
+
 ### Adicionar um projeto
 
 Uma entrada em `projetos.lista` nos **dois** dicionários, com a mesma `key` e na mesma posição:
