@@ -1,0 +1,230 @@
+/**
+ * Entrada: as capas sobem, a primeira antes das outras.
+ *
+ * Sobem, como os cartões de projeto, porque o elemento é uma imagem larga e
+ * baixa: um deslocamento lateral nela lê como deslize, um vertical lê como
+ * assentamento. `backwards`, nunca `forwards`, pela regra de sempre.
+ */
+@keyframes capaSobe {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+}
+
+@keyframes pulsaVivo {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.75);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.secao {
+  --arte-w: clamp(150px, 24vmin, 232px);
+  /* a proporção do header.jpg da Steam é 460x215 */
+  --arte-ar: 0.467;
+}
+
+.bloco {
+  max-width: 940px;
+}
+
+.destaque {
+  display: flex;
+  gap: clamp(14px, 2.4vmin, 26px);
+  align-items: center;
+  padding: clamp(12px, 1.8vmin, 18px);
+  border: 1px solid rgb(255 255 255 / 13%);
+  border-radius: 2px;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.35s,
+    background 0.35s;
+}
+
+.destaque:hover {
+  border-color: rgb(255 255 255 / 26%);
+  background: rgb(255 255 255 / 3%);
+}
+
+@supports (corner-shape: bevel) {
+  .destaque {
+    border-radius: 16px 2px;
+    corner-shape: bevel;
+  }
+}
+
+/**
+ * A moldura da arte existe mesmo sem arte.
+ *
+ * A capa é montada a partir do `appid` por convenção, não vem de um endpoint, e
+ * pode não existir. Com a moldura, o que falta é um retângulo vazio de 1px, que
+ * é o mesmo espaço reservado dos banners de projeto; sem ela seria o ícone de
+ * imagem quebrada do navegador, a única coisa fora da paleta na página.
+ */
+.arte {
+  display: block;
+  flex: none;
+  width: var(--arte-w);
+  aspect-ratio: 1 / var(--arte-ar);
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 2px;
+  background: rgb(255 255 255 / 3%);
+}
+
+/* arte de jogo é identidade de terceiro: fica colorida, como os banners */
+.arte img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.corpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.rotulo {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: rgb(255 255 255 / 42%);
+  font-size: 8.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.pulso {
+  display: block;
+  flex: none;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fff;
+  animation: pulsaVivo 2.2s ease-in-out infinite;
+}
+
+.nome {
+  overflow: hidden;
+  color: #fff;
+  font-size: clamp(15px, 2.4vmin, 24px);
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tempos {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  color: rgb(255 255 255 / 50%);
+  font-size: clamp(9px, 1.2vmin, 11px);
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+}
+
+.total {
+  color: rgb(255 255 255 / 30%);
+}
+
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tituloLista {
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
+  color: rgb(255 255 255 / 40%);
+  font-size: 8.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-align: left;
+  hyphens: manual;
+}
+
+/**
+ * A grade se adapta ao número de jogos.
+ *
+ * `auto-fill` com um mínimo, e não um número fixo de colunas: quem jogou um só
+ * na quinzena não deve ver quatro vagas vazias, e quem jogou oito não deve ver
+ * duas linhas apertadas.
+ */
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: clamp(10px, 1.6vmin, 18px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.78;
+  transition: opacity 0.35s;
+  animation: capaSobe 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation-delay: calc(var(--ordem, 0) * 70ms);
+}
+
+.cartao:hover {
+  opacity: 1;
+}
+
+.cartao .arte {
+  width: 100%;
+}
+
+.nomePequeno {
+  overflow: hidden;
+  color: rgb(255 255 255 / 82%);
+  font-size: clamp(10px, 1.3vmin, 12px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.horasPequenas {
+  color: rgb(255 255 255 / 34%);
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (width <= 640px) {
+  .destaque {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .destaque .arte {
+    width: 100%;
+  }
+
+  .corpo {
+    width: 100%;
+  }
+
+  .grade {
+    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  }
+}

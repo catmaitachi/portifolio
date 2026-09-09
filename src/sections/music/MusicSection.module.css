@@ -1,0 +1,256 @@
+/**
+ * Entrada da seção: as linhas chegam da esquerda, uma depois da outra.
+ *
+ * `--ordem` é a posição na lista, e é a mesma gramática dos cartões de projeto e
+ * dos canais de contato. `backwards`, nunca `forwards`: o estado final já é o
+ * estado natural do elemento, e o que precisa ser coberto é o atraso.
+ */
+@keyframes linhaEntra {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+}
+
+/**
+ * A barra do que está tocando anda sozinha, do ponto atual até o fim.
+ *
+ * O que chega do Spotify é um instantâneo, e a duração da animação é o que falta
+ * da faixa. Sem isso a barra ficaria parada entre uma busca e a seguinte.
+ */
+@keyframes correFaixa {
+  from {
+    width: var(--de, 0%);
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+/* o ponto que diz que o dado é ao vivo, e não um retrato de dez minutos atrás */
+@keyframes pulsaVivo {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.75);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.secao {
+  --capa: clamp(78px, 11vmin, 116px);
+}
+
+.bloco {
+  max-width: 940px;
+}
+
+/**
+ * O destaque: capa à esquerda, o resto à direita.
+ *
+ * Chanfro nos dois cantos opostos, como todo retângulo de conteúdo com borda
+ * (ver `direcao-visual.md`). Os 14px acompanham o tamanho da caixa, entre o
+ * cartão de canal e o de projeto.
+ */
+.destaque {
+  display: flex;
+  gap: clamp(14px, 2vmin, 22px);
+  align-items: center;
+  padding: clamp(12px, 1.8vmin, 18px);
+  border: 1px solid rgb(255 255 255 / 13%);
+  border-radius: 2px;
+}
+
+@supports (corner-shape: bevel) {
+  .destaque {
+    border-radius: 14px 2px;
+    corner-shape: bevel;
+  }
+}
+
+/**
+ * A capa é a única cor da seção, e fica colorida.
+ *
+ * É identidade de terceiro, como os banners de projeto e o vermelho da UFMG:
+ * capa de álbum não se repinta. Sem capa, o quadrado vazio de 1px é a mesma
+ * moldura de espaço reservado que o resto da página usa.
+ */
+.capa {
+  display: block;
+  flex: none;
+  width: var(--capa);
+  height: var(--capa);
+  object-fit: cover;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 2px;
+}
+
+.corpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.rotulo {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+  color: rgb(255 255 255 / 42%);
+  font-size: 8.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-align: left;
+  hyphens: manual;
+}
+
+.pulso {
+  display: block;
+  flex: none;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fff;
+  animation: pulsaVivo 2.2s ease-in-out infinite;
+}
+
+.faixaNome {
+  overflow: hidden;
+  color: #fff;
+  font-size: clamp(15px, 2.4vmin, 24px);
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 0.3s;
+}
+
+.faixaNome:hover {
+  opacity: 0.7;
+}
+
+.artista {
+  margin: 0;
+  overflow: hidden;
+  color: rgb(255 255 255 / 50%);
+  font-size: clamp(10px, 1.4vmin, 13px);
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  text-overflow: ellipsis;
+  text-align: left;
+  white-space: nowrap;
+  hyphens: manual;
+}
+
+.trilha {
+  margin-top: 6px;
+}
+
+.progresso {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--de, 0%);
+  background: rgb(255 255 255 / 75%);
+  animation: correFaixa var(--resta, 0ms) linear both;
+}
+
+.colunas {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: clamp(20px, 4vmin, 54px);
+}
+
+.coluna {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tituloLista {
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
+  color: rgb(255 255 255 / 40%);
+  font-size: 8.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-align: left;
+  hyphens: manual;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  min-width: 0;
+  animation: linhaEntra 0.5s ease-out backwards;
+  animation-delay: calc(var(--ordem, 0) * 55ms);
+}
+
+.numero {
+  flex: none;
+  color: rgb(255 255 255 / 24%);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+}
+
+.link {
+  overflow: hidden;
+  color: rgb(255 255 255 / 82%);
+  font-size: clamp(10px, 1.4vmin, 13px);
+  text-overflow: ellipsis;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.3s;
+}
+
+.link:hover {
+  color: #fff;
+}
+
+/* o artista da faixa cede espaço primeiro: o nome dela é o que se procura */
+.secundario {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: rgb(255 255 255 / 34%);
+  font-size: 9.5px;
+  font-weight: 300;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* mobile: as duas listas empilham, e o destaque vira coluna */
+@media (width <= 640px) {
+  .colunas {
+    grid-template-columns: 1fr;
+  }
+
+  .destaque {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .corpo {
+    width: 100%;
+  }
+}

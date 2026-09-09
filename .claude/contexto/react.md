@@ -86,6 +86,18 @@ Isso é mais forte que remover um a um, não mais fraco: o sinal já abortado fa
 construção, em vez de depender do argumento de que o trecho pós-`await` é todo síncrono. O `stage`,
 que aloca canvas e rAF, continua guardado numa variável e desfeito no mesmo cleanup.
 
+### O outro falso positivo aceito: `useRemoto`
+
+`react-doctor/no-set-state-after-await-in-effect` aponta `hooks/useRemoto.ts`. As duas escritas
+depois do `await` estão exatamente na forma que a receita canônica prescreve
+(`if (!controle.signal.aborted) setRemoto(...)`), e o cleanup chama `abort()`: uma re-execução do
+efeito aborta a anterior antes de a nova começar, então não há escrita fora de ordem. O detector não
+enxerga a guarda através da função nomeada que o `setTimeout` reagenda.
+
+Vale a mesma regra do `SpaceCanvas`: **não deformar o código para calar a regra**, e não trocar o
+`AbortController` por um sinalizador solto, que cobriria menos — ele não cancelaria a requisição em
+voo, só ignoraria a resposta.
+
 `react-doctor/effect-needs-cleanup` **continua apontando este efeito**, porque procura
 `removeEventListener` literal no cleanup e não reconhece o `signal`. É falso positivo conhecido: não
 mexer aqui para calar a regra, e não trocar o `AbortController` por remoção manual, que reintroduz o

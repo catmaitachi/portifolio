@@ -120,11 +120,25 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const artistas = artistasR.ok
       ? ((await artistasR.json()) as { items: ArtistaSpotify[] }).items.map(normalizarArtista)
       : [];
-    const recentes = recentesR.ok
-      ? ((await recentesR.json()) as { items: { track: FaixaSpotify; played_at: string }[] }).items
-          .map((i) => ({ ...normalizarFaixa(i.track), tocadaEm: i.played_at }))
-          .filter((f, i, todas) => todas.findIndex((o) => o.id === f.id) === i)
-      : [];
+    /**
+     * As recentes vêm com repetição: quem ouve a mesma faixa duas vezes seguidas
+     * aparece duas vezes. A deduplicação acontece **no mesmo passo** da
+     * normalização, com um conjunto de ids já vistos, em vez de um `filter` com
+     * `findIndex` por item, que percorre a lista inteira a cada elemento.
+     */
+    const recentes: Faixa[] = [];
+    if (recentesR.ok) {
+      const { items } = (await recentesR.json()) as {
+        items: { track: FaixaSpotify; played_at: string }[];
+      };
+      const vistas = new Set<string>();
+      for (const i of items) {
+        const faixa = { ...normalizarFaixa(i.track), tocadaEm: i.played_at };
+        if (vistas.has(faixa.id)) continue;
+        vistas.add(faixa.id);
+        recentes.push(faixa);
+      }
+    }
 
     /**
      * Se as quatro falharem ao mesmo tempo, é a conta e não o silêncio. Devolver

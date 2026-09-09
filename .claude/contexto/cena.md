@@ -16,7 +16,11 @@ próprio no build; nada da primeira pintura depende dele.
   inferior direito (`cancer`), Projetos no superior direito (`crux`), Trajetória no superior esquerdo
   (`ursaMajor`) e Contato no inferior esquerdo (`phoenix`);
 - **nunca repetir as coordenadas de um `placement` entre seções** — a troca fica invisível, e com uma
-  figura só isso pesa ainda mais.
+  figura só isso pesa ainda mais. **No modo pessoal são cinco seções com céu para quatro cantos**
+  (Sobre, Música, Jogos, Filmes e Contato), então Filmes fica na direita a dois terços, que não é
+  canto: é o que mantém todas as trocas consecutivas atravessando a tela, porque o par mais próximo
+  seria justamente Filmes e Contato. Coordenadas se repetem **entre modos** sem problema: duas seções
+  que nunca aparecem no mesmo lado do site não têm troca entre si.
 
 `tween(obj, key, to, dur)` interpola qualquer propriedade num rAF próprio, cancelando o anterior na
 mesma propriedade.

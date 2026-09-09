@@ -13,6 +13,9 @@ entra com um gesto próprio**. `inicio` já tinha o seu: o zoom da câmera saind
 | Sobre | a bio chega cifrada e se decifra da esquerda para a direita, um parágrafo depois do outro | `hooks/useDecipher.ts` |
 | Projetos | os cartões sobem, o do meio primeiro | `ProjectCard.module.css` |
 | Trajetória | duas ondas opostas giram e param; os nós acendem atrás delas | `TimelineCurve.module.css` |
+| Música | as linhas das duas listas chegam da esquerda, uma depois da outra | `MusicSection.module.css` |
+| Jogos | as capas sobem, a primeira antes das outras | `GamesSection.module.css` |
+| Filmes | os pôsteres se acendem, sem deslocamento | `FilmsSection.module.css` |
 | Contato | os canais chegam das laterais, o do meio primeiro | `ChannelCard.module.css` |
 
 Projetos sobe e Contato vem de lado — o curso é diferente, a gramática é a mesma. O cartão de

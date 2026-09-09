@@ -10,6 +10,9 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | `EducationCarousel` | `--bw --badge-pad --badge-gap --badge-corpo-gap --logo-w --logo-h --fs-inst --fs-nivel --fs-curso --detalhe-w --detalhe-ml` |
 | `ProjectsSection` | `--pcw --pch --pbh --ph --pr --pperspectiva --pcard` |
 | `JourneySection` | `--exph --exp-cargo --exp-per --exp-curva --exp-rail --exp-fantasma --exp-gap --exp-txt --exp-topo` |
+| `MusicSection` | `--capa` |
+| `GamesSection` | `--arte-w --arte-ar` |
+| `FilmsSection` | `--poster-min` |
 | `ContactSection` | `--form-cols --enviar-just` |
 | `NavMenu` | `--nav-top --nav-bottom --nav-left --nav-right --nav-tx --nav-ty --nav-dir --nav-align --nav-gap --nav-risco --nav-risco-ativo --nav-risco-w --nav-risco-esc --nav-risco-rot` |
 | `LanguageToggle` | `--lang-left --lang-right --lang-tx` |

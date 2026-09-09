@@ -17,13 +17,16 @@
     { "key": "sobre" },
     { "key": "projetos" },
     { "key": "experiencia" },
+    { "key": "musica" },
+    { "key": "jogos" },
+    { "key": "filmes" },
     { "key": "contato" }
   ],
 
   "modos": [
     {
       "key": "pessoal",
-      "secoes": ["inicio", "sobre", "contato"],
+      "secoes": ["inicio", "sobre", "musica", "jogos", "filmes", "contato"],
       "canais": ["instagram", "tiktok"]
     },
     {

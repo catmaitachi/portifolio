@@ -4,6 +4,9 @@
     "sobre": "About",
     "projetos": "Projects",
     "experiencia": "Journey",
+    "musica": "Music",
+    "jogos": "Games",
+    "filmes": "Films",
     "contato": "Contact"
   },
 
@@ -115,6 +118,41 @@
         "url": ""
       }
     ]
+  },
+
+  "musica": {
+    "titulo": "Music",
+    "intro": "What has been playing around here, straight from Spotify.",
+    "tocando": "Playing now",
+    "silencio": "Nothing playing right now",
+    "faixas": "Most played this month",
+    "artistas": "Most listened this month",
+    "recentes": "Played recently"
+  },
+
+  "jogos": {
+    "titulo": "Games",
+    "intro": "What I have been playing lately, straight from Steam.",
+    "jogando": "Playing now",
+    "ultimo": "Played last",
+    "recentes": "Last two weeks",
+    "horas": "h",
+    "duasSemanas": "in 2 weeks",
+    "total": "total"
+  },
+
+  "filmes": {
+    "titulo": "Films",
+    "intro": "The last ones I watched, with my rating, straight from Letterboxd.",
+    "recentes": "Watched recently",
+    "semNota": "no rating",
+    "revisita": "rewatch"
+  },
+
+  "remoto": {
+    "carregando": "Fetching…",
+    "erro": "Could not fetch this right now.",
+    "vazio": "Nothing here yet."
   },
 
   "experiencia": {

@@ -4,6 +4,9 @@
     "sobre": "Sobre",
     "projetos": "Projetos",
     "experiencia": "Trajetória",
+    "musica": "Música",
+    "jogos": "Jogos",
+    "filmes": "Filmes",
     "contato": "Contato"
   },
 
@@ -115,6 +118,41 @@
         "url": ""
       }
     ]
+  },
+
+  "musica": {
+    "titulo": "Música",
+    "intro": "O que anda tocando por aqui, direto do Spotify.",
+    "tocando": "Tocando agora",
+    "silencio": "Nada tocando agora",
+    "faixas": "Mais tocadas no mês",
+    "artistas": "Mais ouvidos no mês",
+    "recentes": "Ouvidas há pouco"
+  },
+
+  "jogos": {
+    "titulo": "Jogos",
+    "intro": "O que tenho jogado nas últimas semanas, direto da Steam.",
+    "jogando": "Jogando agora",
+    "ultimo": "Jogado por último",
+    "recentes": "Duas últimas semanas",
+    "horas": "h",
+    "duasSemanas": "nas 2 semanas",
+    "total": "no total"
+  },
+
+  "filmes": {
+    "titulo": "Filmes",
+    "intro": "Os últimos que assisti, com a nota que dei, direto do Letterboxd.",
+    "recentes": "Vistos por último",
+    "semNota": "sem nota",
+    "revisita": "revisita"
+  },
+
+  "remoto": {
+    "carregando": "Buscando…",
+    "erro": "Não consegui buscar isso agora.",
+    "vazio": "Nada por aqui ainda."
   },
 
   "experiencia": {

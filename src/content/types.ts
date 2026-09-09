@@ -12,7 +12,15 @@
 
 export type Lang = 'pt' | 'en';
 
-export type SectionKey = 'inicio' | 'sobre' | 'projetos' | 'experiencia' | 'contato';
+export type SectionKey =
+  | 'inicio'
+  | 'sobre'
+  | 'projetos'
+  | 'experiencia'
+  | 'musica'
+  | 'jogos'
+  | 'filmes'
+  | 'contato';
 
 /**
  * Os dois lados do site.
@@ -120,6 +128,53 @@ export interface Dictionary {
     aoVivo: string;
     estados: Record<EstadoProjeto, string>;
     lista: Projeto[];
+  };
+  /**
+   * As três seções que leem dado remoto (`src/data/`).
+   *
+   * Elas não trazem lista nenhuma: o conteúdo vem do Spotify, da Steam e do
+   * Letterboxd em tempo de execução. O que mora aqui são os **rótulos** e os
+   * estados que a interface precisa nomear, que é justamente o que não pode ser
+   * literal no componente.
+   */
+  musica: {
+    titulo: string;
+    intro: string;
+    tocando: string;
+    /** o estado mais comum: não há nada tocando */
+    silencio: string;
+    faixas: string;
+    artistas: string;
+    recentes: string;
+  };
+  jogos: {
+    titulo: string;
+    intro: string;
+    jogando: string;
+    ultimo: string;
+    recentes: string;
+    /** sufixo de hora, colado no número */
+    horas: string;
+    duasSemanas: string;
+    total: string;
+  };
+  filmes: {
+    titulo: string;
+    intro: string;
+    recentes: string;
+    semNota: string;
+    revisita: string;
+  };
+  /**
+   * Os três estados de qualquer busca remota, num lugar só.
+   *
+   * Eles não são de nenhuma das seções em particular, e repeti-los em três
+   * blocos seria três lugares para traduzir a mesma frase.
+   */
+  remoto: {
+    carregando: string;
+    erro: string;
+    vazio: string;
   };
   experiencia: {
     titulo: string;

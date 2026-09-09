@@ -52,6 +52,17 @@ que ele mostra:
 **O número da seção não está no dicionário.** Ele é a posição na ordem do modo em vigor, entregue por
 prop. Escrito como texto, um lado com menos seções leria 02, 05, 03.
 
+### As três seções que não têm lista
+
+Música, Jogos e Filmes não guardam conteúdo nos dicionários: o que aparece nelas vem do Spotify, da
+Steam e do Letterboxd em tempo de execução (ver `dados.md`). O que mora em `musica`, `jogos` e
+`filmes` nos dois idiomas são só os **rótulos** e os nomes dos estados, que é justamente o que não
+pode ser literal no componente.
+
+`remoto` guarda os três estados de qualquer busca (esperando, falhou, vazio) num lugar só: eles não
+são de nenhuma seção em particular, e repeti-los em três blocos seria três lugares para traduzir a
+mesma frase.
+
 ### Adicionar um projeto
 
 Uma entrada em `projetos.lista` nos **dois** dicionários, com a mesma `key` e na mesma posição:

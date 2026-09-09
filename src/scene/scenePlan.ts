@@ -37,6 +37,27 @@ export const CEUS: Partial<Record<SectionKey, Ceu>> = {
     entrada: 1.3,
     placements: [{ key: 'ursaMajor', x: 0.14, y: 0.14, size: 0.32, rotate: -8 }],
   },
+  /**
+   * As três do lado pessoal.
+   *
+   * No modo pessoal a sequência é Sobre (inferior direito), Música, Jogos,
+   * Filmes e Contato (inferior esquerdo): cinco seções com céu para quatro
+   * cantos. Filmes fica na **direita a dois terços**, que não é canto e é o que
+   * mantém todas as trocas consecutivas atravessando a tela — o par mais próximo
+   * seria Filmes e Contato, e assim eles ficam em lados opostos.
+   */
+  musica: {
+    entrada: 1.35,
+    placements: [{ key: 'cygnus', x: 0.83, y: 0.24, size: 0.24, rotate: -6 }],
+  },
+  jogos: {
+    entrada: 1.5,
+    placements: [{ key: 'orion', x: 0.15, y: 0.23, size: 0.3, rotate: 7 }],
+  },
+  filmes: {
+    entrada: 1.25,
+    placements: [{ key: 'cassiopeia', x: 0.86, y: 0.66, size: 0.2, rotate: -11 }],
+  },
   contato: {
     entrada: 1.6,
     placements: [{ key: 'phoenix', x: 0.15, y: 0.8, size: 0.26, rotate: 9 }],

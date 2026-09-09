@@ -2,6 +2,8 @@
 
 | Pasta | Papel | Conhece |
 |---|---|---|
+| `api/` | Funções sem servidor (Vercel). O único código que roda fora do navegador. | `src/data/` (só o tipo) |
+| `src/data/` | A forma dos dados de fora, do jeito que a interface os consome. | nada |
 | `src/engine/` | Motor de cena em canvas 2D. Uma camada por elemento visual. | nada do projeto |
 | `src/content/` | Dicionários JSON, tipos e registro de imagens. | nada |
 | `src/i18n/` | Idioma corrente, detecção e persistência. | `content` |

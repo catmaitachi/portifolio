@@ -10,6 +10,13 @@
 
 **RF01c** — A seção Contato deve exibir os canais do modo em vigor.
 
+**RF01d** — O modo Pessoal deve exibir a música que está tocando e as mais ouvidas do mês, o jogo em
+execução e os jogados nas últimas duas semanas, e os últimos filmes assistidos com a nota atribuída,
+buscando esses dados de Spotify, Steam e Letterboxd.
+
+**RF01e** — O sistema deve distinguir na tela os estados de espera, de falha e de ausência de dado,
+nunca apresentando falha como ausência.
+
 **RF02** — O sistema deve permitir navegação entre seções via menu lateral, clique e teclado (↑/↓, PageUp/Down, Home/End), e no mobile também pela rolagem da faixa de seções, que deve mover a página e o destaque de forma contínua durante o gesto.
 
 **RF03** — O sistema deve destacar visualmente a seção ativa no menu de navegação.

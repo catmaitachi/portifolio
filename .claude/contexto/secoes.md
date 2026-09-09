@@ -180,6 +180,55 @@ A navegação **não é circular**: as pontas são pontas.
 
 ---
 
+## Seções "Música", "Jogos" e "Filmes"
+
+As três do lado pessoal, e as únicas da página que mostram dado que não é do projeto. De onde ele
+vem, e por que precisa de uma função sem servidor, está em `dados.md`; aqui está o que se vê.
+
+**As três têm a mesma espinha**: um destaque grande em cima e o resto embaixo. Não é economia de
+desenho, é o que o dado pede — em Música e Jogos existe um item que é *agora*, e o resto é histórico;
+misturá-los numa lista só apagaria a diferença que a seção existe para mostrar.
+
+**E as três precisam funcionar caladas.** Ninguém escuta música o dia inteiro nem está sempre numa
+partida, então o destaque tem dois estados e o segundo é o comum: sem nada tocando, o lugar passa a
+ser a última faixa ouvida, com o rótulo dizendo que ela é passado. Uma seção que só funciona enquanto
+o dono está de fone é uma seção quebrada na maior parte do dia. O ponto que pulsa ao lado do rótulo é
+o que separa um estado do outro.
+
+| | Destaque | Resto |
+|---|---|---|
+| Música | o que está tocando: capa, faixa, artista e a barra de progresso | mais tocadas e mais ouvidos do mês, em duas listas de 1px |
+| Jogos | jogando agora, ou o último jogado: arte, nome e horas | os das duas últimas semanas, em grade |
+| Filmes | não tem: todo filme é passado | os últimos assistidos, em grade de pôsteres |
+
+**A barra do que está tocando anda sozinha, em CSS.** O que chega do Spotify é um instantâneo, e sem
+nada ela ficaria parada por vinte segundos e daria um salto a cada resposta. Uma animação linear do
+ponto atual até o fim, durando o que falta da faixa, mostra o tempo passando sem custar um quadro de
+JavaScript; a `key` do elemento carrega o progresso, e é assim que cada resposta a reinicia em vez de
+continuar a anterior.
+
+**A nota do Letterboxd é desenhada, não escrita.** Cinco marcas de 1px preenchidas pela fração cabem
+na régua da página melhor que um glifo de estrela, que traria uma forma que não existe em nenhum
+outro lugar aqui, e a meia estrela fica **exata** em vez de arredondada. É a mesma gramática do
+medidor das formações. Quem usa leitor de tela recebe o número no `aria-label`: a marca é desenho.
+**Sem nota é diferente de nota zero**, e quem marcou como visto sem avaliar recebe o rótulo, não
+cinco marcas vazias, que afirmariam um julgamento que ninguém fez.
+
+**Capas, artes e pôsteres ficam coloridos.** É identidade de terceiro, como os banners de projeto e o
+vermelho da UFMG: não se repinta. A moldura de 1px existe mesmo sem a imagem, e é o mesmo espaço
+reservado dos banners — a arte da Steam é montada a partir do `appid` por convenção e pode não
+existir, e sem a moldura sobraria o ícone de imagem quebrada do navegador, a única coisa fora da
+paleta na página inteira.
+
+**As grades são `auto-fill` com um mínimo**, nunca um número fixo de colunas: quem jogou um só na
+quinzena não deve ver três vagas vazias, que leem como conteúdo que faltou carregar.
+
+O pôster é pequeno de propósito (118px no máximo). São doze filmes numa seção de uma tela de altura,
+e 2:3 é a proporção mais alta da página: com 132px cada linha passava de 240px, duas linhas não
+cabiam e a grade corria por baixo do crédito no rodapé.
+
+---
+
 ## Seção "Contato"
 
 Composição aberta de 840px. Sem moldura: índice + título, intro, o **e-mail como link gigante**

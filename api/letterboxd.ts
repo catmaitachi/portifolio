@@ -30,20 +30,27 @@ function campo(bloco: string, tag: string): string {
 }
 
 /**
- * Entidades XML, as cinco que um título de filme realmente encontra.
+ * Entidades XML: as cinco nomeadas, mais qualquer numérica.
  *
- * Uma tabela de tudo seria uma dependência disfarçada; um título com aspas,
- * apóstrofo ou `&` é o que de fato aparece ("Marley & Me", "Uncle Boonmee").
+ * Uma tabela com as centenas de entidades nomeadas do HTML seria uma dependência
+ * disfarçada, e o XML define só estas cinco. As **numéricas** não são luxo: o
+ * Letterboxd escreve apóstrofo como `&#039;`, com zero à esquerda, e uma lista
+ * de casos literais deixava "Kiki's Delivery Service" na tela como
+ * `Kiki&#039;s`. Uma faixa de dígitos cobre a família inteira em vez de mais um
+ * caso por vez.
  */
-const ENTIDADES: Record<string, string> = {
-  '&amp;': '&',
-  '&lt;': '<',
-  '&gt;': '>',
-  '&quot;': '"',
-  '&#39;': "'",
-  '&apos;': "'",
+const NOMEADAS: Record<string, string> = {
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: "'",
 };
-const texto = (s: string) => s.replace(/&(?:amp|lt|gt|quot|#39|apos);/g, (e) => ENTIDADES[e] ?? e);
+const texto = (s: string) =>
+  s.replace(/&(?:([a-z]+)|#(\d+)|#x([0-9a-f]+));/gi, (bruto, nome, dec, hex) => {
+    if (nome) return NOMEADAS[String(nome).toLowerCase()] ?? bruto;
+    return String.fromCodePoint(parseInt(dec ?? hex, dec ? 10 : 16));
+  });
 
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
   if (metodoInvalido(req, res)) return;

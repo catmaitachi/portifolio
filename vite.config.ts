@@ -32,18 +32,25 @@ const VERSAO = `v${version.split('.').slice(0, 2).join('.')}`;
  * Os segredos vêm de `.env.local` para o `process.env`, porque é de lá que as
  * funções os leem — na Vercel elas encontram as variáveis do painel no mesmo
  * lugar, e o código não precisa saber em qual dos dois está.
+ *
+ * **A leitura é por requisição, não na subida.** Um segredo acrescentado com o
+ * servidor no ar não fazia efeito, e o sintoma era a função respondendo que a
+ * variável faltava enquanto ela estava no arquivo, à vista. São dois `readFile`
+ * numa rota que já vai atravessar a rede; a confusão custava mais.
  */
 function apiEmDesenvolvimento(): Plugin {
+  let modo = 'development';
   return {
     name: 'api-local',
     apply: 'serve',
     configResolved(config) {
-      Object.assign(process.env, loadEnv(config.mode, process.cwd(), ''));
+      modo = config.mode;
     },
     configureServer(servidor) {
       servidor.middlewares.use(async (req, res, proximo) => {
         const rota = /^\/api\/([a-z0-9-]+)(?:\?|$)/.exec(req.url ?? '');
         if (!rota) return proximo();
+        Object.assign(process.env, loadEnv(modo, process.cwd(), ''));
         // rota que não existe é 404, e não o 500 do módulo que falhou ao carregar
         if (!existsSync(fileURLToPath(new URL(`./api/${rota[1]}.ts`, import.meta.url)))) {
           res.statusCode = 404;
