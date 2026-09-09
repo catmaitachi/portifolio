@@ -51,6 +51,29 @@ sublinhado de 1px, não uma caixa — não há canto para chanfrar; os marcadore
 `ProjectCard` (`.glifo`) são ornamento com raio e rotação próprios por índice; e tudo que é círculo
 (anéis do HUD, nós da linha do tempo, medidor da supernova).
 
+### A moldura da imagem é espaço reservado, não enfeite
+
+Toda imagem enquadrada da página mora dentro de uma caixa com borda de 1px, e **a borda só tem cor
+quando a imagem não veio**. Ela existe para o caso em que não vem: o endereço da arte da Steam é
+perguntado a cada resposta, o Letterboxd tem filme sem pôster, e sem a moldura o que sobraria é o
+ícone de imagem quebrada do navegador, a única coisa fora da paleta na página inteira.
+
+Sobre a arte, ela não estava reservando nada. Era um fio branco em volta de toda imagem da página, e
+num conjunto de capas coloridas isso lê como recorte mal feito, não como moldura.
+
+Três coisas na implementação, e nenhuma é detalhe:
+
+- **a borda continua declarada e só perde a cor**, então a caixa não muda de tamanho e nada em volta
+  se mexe quando a imagem chega;
+- **o fundo sai junto.** Com `background-clip: border-box`, que é o padrão, ele pintaria a faixa de
+  1px que a borda transparente deixou ver, e o fio voltaria mais fraco;
+- **o `:hover` não pode reacender a borda.** Onde ele fazia isso, o que sobrou foi a opacidade, que é
+  o que já distinguia o cartão apontado.
+
+A pergunta é feita pelo próprio elemento, com `:has(img:not([hidden]))`. O estado que interessa é "a
+imagem chegou", e ele não existe no React: quem o produz é o `onError` da `<img>`, escrevendo
+`hidden` no nó.
+
 ### A carta que inclina
 
 Toda imagem enquadrada da página **inclina seguindo o ponteiro**, com um brilho especular

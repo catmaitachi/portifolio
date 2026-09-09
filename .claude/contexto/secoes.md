@@ -394,10 +394,11 @@ O selo tem moldura, e não é enfeite: dois algarismos soltos ao lado do ano, na
 como parte da data.
 
 **Capas, artes e pôsteres ficam coloridos.** É identidade de terceiro, como os banners de projeto e o
-vermelho da UFMG: não se repinta. A moldura de 1px existe mesmo sem a imagem, e é o mesmo espaço
-reservado dos banners — o endereço da arte da Steam é perguntado a cada resposta
-e pode não vir (ver `dados.md`), e sem a moldura sobraria o ícone de imagem quebrada do navegador, a
-única coisa fora da paleta na página inteira.
+vermelho da UFMG: não se repinta. **A moldura de 1px só aparece quando a imagem não veio**, e é o
+espaço reservado dos banners: o endereço da arte da Steam é perguntado a cada resposta e pode não vir
+(ver `dados.md`), e sem a moldura sobraria o ícone de imagem quebrada do navegador, a única coisa
+fora da paleta na página inteira. Sobre a arte ela não reservava nada, e por isso saiu (ver
+`direcao-visual.md`).
 
 **Jogos e Filmes mostram a mesma faixa**, e ela mora num lugar só: `sections/Faixa`. Uma fileira de
 cartões que rola de lado com mecânicas diferentes em duas seções vizinhas do mesmo lado do site lê
@@ -443,9 +444,13 @@ roda e inércia de graça —, o encaixe é `proximity` e não `mandatory` (não
 assentar), e a faixa entra na tabulação, porque uma região rolável que não recebe foco é inalcançável
 por teclado.
 
-O pôster é pequeno de propósito (104px no máximo). 2:3 é a proporção mais alta da página, e com duas
-faixas cada uma custa a largura vezes 1,5 mais o nome e o rodapé: com 118px elas corriam por baixo do
-crédito.
+**O pôster tem o tamanho do cartão de Jogos**, e já foi menor. O motivo de ser pequeno era altura:
+2:3 é a proporção mais alta da página, e com duas faixas cada uma custa a largura vezes 1,5 mais o
+nome e o rodapé, então com 118px elas corriam por baixo do crédito. O que mudou foi haver uma seção
+vizinha com a mesma faixa: duas fileiras de cartões no mesmo lado do site, em tamanhos diferentes,
+leem como dois desenhos e não como um. Quem cobre a diferença de altura é o `useEscalaQueCabe`, que é
+medida e não estimativa, e foi para isso que ele existe; um número escolhido a dedo aqui erra na
+primeira tradução mais longa.
 
 **O bloco de favoritos pode simplesmente não existir**, e a seção continua inteira sem ele. Ele sai
 da raspagem de uma lista do Letterboxd, que não tem RSS, e a função devolve lista vazia em vez de

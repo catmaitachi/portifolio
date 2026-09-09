@@ -15,19 +15,23 @@
 }
 
 /**
- * O pôster é pequeno de propósito.
+ * O pôster tem o mesmo tamanho do cartão de Jogos.
  *
- * A seção tem uma tela de altura e agora tem **duas** faixas, e 2:3 é a
- * proporção mais alta da página: cada linha custa a largura do pôster vezes 1,5,
- * mais o nome e o rodapé. Com 118px as duas faixas passavam do crédito no
- * rodapé; com 104 elas cabem e `useEscalaQueCabe` volta a ter folga para
- * trabalhar em vez de bater no piso dele.
+ * Ele já foi menor, e o motivo era altura: esta seção tem **duas** faixas
+ * empilhadas numa tela, 2:3 é a proporção mais alta da página, e cada linha
+ * custa a largura vezes 1,5 mais o nome e o rodapé. Com 118px as duas passavam
+ * do crédito no rodapé.
+ *
+ * O que mudou foi haver uma seção vizinha com a mesma faixa: duas fileiras de
+ * cartões lado a lado no mesmo lado do site, em tamanhos diferentes, leem como
+ * dois desenhos e não como um. Quem cobre a diferença de altura é o
+ * `useEscalaQueCabe`, que é medida e não estimativa — foi justamente para isso
+ * que ele existe, e um número escolhido a dedo aqui erra na primeira tradução
+ * mais longa.
  */
 .secao {
-  --poster: clamp(76px, 9.5vmin, 104px);
-
   /* a largura do item da faixa comum (ver `sections/Faixa.module.css`) */
-  --faixa-item: var(--poster);
+  --faixa-item: clamp(88px, 11.5vmin, 124px);
 }
 
 .bloco {
@@ -92,7 +96,6 @@
 }
 
 .cartao:hover .poster {
-  border-color: rgb(255 255 255 / 28%);
   opacity: 1;
 }
 
@@ -206,4 +209,27 @@
   width: var(--cheio, 0%);
   background: rgb(255 255 255 / 82%);
   content: '';
+}
+
+/**
+ * **A moldura só existe quando não há imagem.**
+ *
+ * Ela nasceu como espaço reservado: sem arte, o que sobra é um retângulo de 1px
+ * na proporção certa, e sem ele sobraria o ícone de imagem quebrada do
+ * navegador, a única coisa fora da paleta na página inteira. Sobre a arte, ela
+ * não estava reservando nada — era um fio branco em volta de toda imagem da
+ * página, e num conjunto de artes coloridas isso lê como recorte mal feito.
+ *
+ * A borda continua declarada e só perde a cor, então a caixa não muda de tamanho
+ * e nada em volta se mexe. O fundo sai junto: com `background-clip: border-box`,
+ * que é o padrão, ele pintaria a faixa de 1px que a borda transparente deixou
+ * ver, e o fio voltaria mais fraco.
+ *
+ * `:has` é o que permite perguntar isso ao próprio elemento. O estado que
+ * interessa é "a imagem chegou", e ele não existe no React: quem o produz é o
+ * `onError` da `<img>`, escrevendo `hidden` no nó.
+ */
+.poster:has(img:not([hidden])) {
+  border-color: transparent;
+  background: none;
 }

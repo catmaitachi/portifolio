@@ -12,7 +12,7 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | `JourneySection` | `--exph --exp-cargo --exp-per --exp-curva --exp-rail --exp-fantasma --exp-gap --exp-txt --exp-topo` |
 | `MusicSection` | `--capa` |
 | `GamesSection` | `--arte-w --arte-ar --faixa-item` |
-| `FilmsSection` | `--poster --faixa-item` |
+| `FilmsSection` | `--faixa-item` |
 | `ContactSection` | `--form-cols --enviar-just` |
 | `NavMenu` | `--nav-top --nav-bottom --nav-left --nav-right --nav-tx --nav-ty --nav-dir --nav-align --nav-gap --nav-risco --nav-risco-ativo --nav-risco-w --nav-risco-esc --nav-risco-rot` |
 | `LanguageToggle` | `--lang-left --lang-right --lang-tx` |
