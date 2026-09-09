@@ -39,7 +39,7 @@
   left: var(--cab-left);
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   animation: fina 1s ease-out 5s both;
 }
 
