@@ -33,11 +33,11 @@ nunca apresentando falha como ausência.
 
 **RF08a** — A biografia deve mudar conforme o modo em vigor, com um texto por modo em cada idioma.
 
-**RF08b** — A seção Formação, exclusiva do modo profissional, deve exibir a lista de formações em badges.
+**RF08b** — A seção Formação, exclusiva do modo profissional, deve exibir as formações como uma pilha vertical de diplomas, navegável por clique, setas e índice.
 
 **RF09** — O sistema deve indicar o estado de cada formação (concluído, cursando, pretensão).
 
-**RF10** — O sistema deve converter a lista de formações em carrossel automático quando os badges não couberem na tela.
+**RF10** — Cada diploma deve exibir a data de conclusão ou a fração de etapas cumpridas junto da barra de estado.
 
 **RF11** — A seção Projetos deve exibir os projetos em um carrossel em órbita 3D, navegável por clique, arraste e teclado.
 

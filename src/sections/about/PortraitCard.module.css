@@ -1,4 +1,12 @@
+/**
+ * `container-type: size` existe para o raio-x: a grade de ASCII se dimensiona em
+ * `cqw`/`cqh` desta caixa, e é assim que ela cobre a moldura exatamente em
+ * qualquer tela, sem um número de layout duplicado no JavaScript. A caixa tem
+ * largura de token e `aspect-ratio`, então o tamanho dela não depende do
+ * conteúdo e a contenção é segura.
+ */
 .caixa {
+  container-type: size;
   /* --retrato é redefinido pela seção Sobre nas faixas responsivas */
   width: var(--retrato, 100%);
   max-width: 100%;
@@ -31,6 +39,42 @@
   }
 }
 
+/**
+ * O raio-x: o mesmo retrato, desenhado em caracteres.
+ *
+ * A fonte é a da página, que é monoespaçada e tem avanço de 0,6em — daí o
+ * `0.6` na conta da largura. Com a entrelinha em `cqh`, a grade de
+ * `--colunas × --linhas` cobre a moldura inteira sem sobra, e os dois números
+ * vêm do componente, que é quem os usa para montar a arte.
+ *
+ * O preto é **translúcido**: a foto fantasma atrás dos glifos, e é isso que faz
+ * a camada ler como raio-x em vez de uma segunda imagem. Ela também não recebe
+ * ponteiro, senão seria ela, e não a moldura, a responder ao `pointermove` que
+ * inclina a carta.
+ */
+.raio {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  margin: 0;
+  overflow: hidden;
+  background: rgb(0 0 0 / 86%);
+  color: rgb(255 255 255 / 88%);
+  font-family: inherit;
+  font-size: calc(100cqw / var(--colunas, 58) / 0.6);
+  font-weight: 400;
+  line-height: calc(100cqh / var(--linhas, 44));
+  letter-spacing: 0;
+  white-space: pre;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.carta:hover .raio {
+  opacity: 1;
+}
+
 /** Brilho especular: um halo que segue o cursor por --bx/--by. */
 .brilho {
   position: absolute;
@@ -41,6 +85,7 @@
     rgb(255 255 255 / 6%) 42%,
     transparent 70%
   );
+  z-index: 2;
   opacity: 0;
   transition: opacity 0.45s ease;
   pointer-events: none;

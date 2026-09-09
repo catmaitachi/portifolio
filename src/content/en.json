@@ -46,8 +46,8 @@
       ]
     },
     "dados": [
-      { "key": "nascimento", "rotulo": "Birth", "valor": "0000.00" },
-      { "key": "residencia", "rotulo": "Lives in", "valor": "Belo Horizonte, Brazil" }
+      { "key": "residencia", "rotulo": "Lives in", "valor": "Belo Horizonte, MG, Brazil" },
+      { "key": "nascimento", "rotulo": "Born", "valor": "07/07/2005" }
     ]
   },
 

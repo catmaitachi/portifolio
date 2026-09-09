@@ -103,12 +103,20 @@
  * e o valor no corpo do texto. Eles ficam separados do corpo por um risco de
  * 1px, que é a única moldura da seção.
  *
+ * **Eles se alinham nos extremos do bloco**, o primeiro à esquerda e o último à
+ * direita, com o risco de 1px ligando os dois. Encostados um no outro eles leem
+ * como uma legenda só; nas pontas, cada um é um dado.
+ *
  * `wrap` porque o rótulo em inglês é mais curto e o valor mais longo, e numa
- * tela estreita os dois pares descem um sobre o outro em vez de espremerem.
+ * tela estreita os dois pares descem um sobre o outro em vez de espremerem. É
+ * ele que faz o alinhamento à direita ser do **último** filho e não do segundo:
+ * quebrado em duas linhas, quem fecha a linha de baixo é que precisa fechar a
+ * borda.
  */
 .fatos {
   display: flex;
   flex-wrap: wrap;
+  justify-content: space-between;
   gap: 10px var(--fatos-gap);
   margin: 0;
   padding: var(--fatos-pt) 0 0;
@@ -121,6 +129,11 @@
   flex-direction: column;
   gap: 5px;
   min-width: 0;
+}
+
+.fato:last-child {
+  align-items: flex-end;
+  text-align: right;
 }
 
 /**

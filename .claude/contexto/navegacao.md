@@ -122,8 +122,8 @@ porque fora da seção o listener não existe.
 
 Corolário: os componentes de dentro (o palco da órbita, a curva do tempo) **não tratam ←/→**. Eles
 continuam focáveis e rotulados, mas um segundo handler local só criaria a chance de um passo duplo —
-foi assim que a órbita ficou dependente de foco. A exceção é o carrossel de formações, que trata a
-seta no próprio elemento porque a seção Formação não reivindica ←/→ para si.
+foi assim que a órbita ficou dependente de foco. As três seções que reivindicam ←/→ hoje são
+Projetos, Trajetória e Formação, e nenhuma delas duplica o listener por dentro.
 
 `editandoTexto()` — a regra de "aqui a seta é do cursor" — mora junto do hook, e tanto a rolagem
 quanto as seções a usam. Duplicada, ela sairia de sincronia no dia em que um campo novo aparecesse.

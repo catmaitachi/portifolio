@@ -27,6 +27,25 @@
   `style`** dentro de um rAF coalescido. Um `setState` por `pointermove` re-renderizaria a seção
   dezenas de vezes por segundo para mudar dois números de `transform`.
 
+### O raio-x
+
+**O ponteiro revela o retrato desenhado em ASCII.** A arte é calculada **uma vez**, quando a imagem
+carrega (`useAsciiArt`): um canvas de 58 por 44 pixels recebe a foto com o mesmo recorte do
+`object-fit: cover` da moldura, e cada célula vira um glifo de uma rampa de dez degraus. O hover
+depois é opacidade em CSS, e nada é recalculado enquanto o cursor anda.
+
+- **O preto por baixo dos glifos é translúcido**, então a foto fantasma atrás deles. É isso que
+  separa um raio-x de uma troca de imagem.
+- **A rampa é ASCII puro**, pela mesma razão do alfabeto da decifragem da bio: um glifo que a fonte
+  não tem vira caixa vazia, e aqui isso é pior, porque o desenho é feito de densidade e a caixa vazia
+  é o glifo mais denso de todos.
+- **A grade cobre a moldura exatamente**, sem número de layout duplicado no JavaScript: a `.caixa` é
+  um `container-type: size` e o `<pre>` se dimensiona nela, com a fonte em `100cqw / colunas / 0,6`
+  (0,6 é o avanço do monoespaçado) e a entrelinha em `100cqh / linhas`.
+- **Sem ponteiro não há raio-x**, e é aceito: quem está no celular vê o retrato, que é o conteúdo. Um
+  gesto de toque para revelá-lo disputaria com a rolagem da seção, e a camada não carrega nenhuma
+  informação que a foto não carregue. Ela é `aria-hidden` pelo mesmo motivo.
+
 ### A bio muda de lado
 
 `sobre.paragrafos` é um `Record` **total por modo**: quem chega pelo lado pessoal não deve ler um
@@ -41,7 +60,8 @@ Um lado novo do site **quebra o build** até ter o próprio texto, que é a regr
 
 A formação **saiu daqui e virou seção** (ver adiante), e no lugar dela ficaram nascimento e
 residência: rótulo em versalete espaçado com o valor embaixo, separados do corpo por um risco de
-1px. São os dois fatos que o retrato não diz, e custam uma linha em vez do bloco mais denso da
+1px, **um em cada extremo do bloco**. Encostados um no outro eles leem como uma legenda só; nas
+pontas, cada um é um dado, e o risco liga os dois. São os dois fatos que o retrato não diz, e custam uma linha em vez do bloco mais denso da
 página.
 
 Eles ficam **dentro do bloco**, ao contrário do carrossel que ocupava este lugar: um irmão do
@@ -61,44 +81,41 @@ página (ver `responsivo.md`), e era ele que obrigava o Sobre inteiro a encolher
 celular, e com ele fora ela volta ao teto da escala sozinha. A segunda é de leitura: formação
 tem estado, data e progresso, e no rodapé de uma biografia isso lia como legenda do retrato.
 
-O carrossel é filho **da seção**, não do bloco, como já era no Sobre: a entrada dele pende de
-`data-secao-ativa` no ancestral, e `useEscalaQueCabe` mede a seção inteira justamente para alcançar
-irmãos do bloco.
+**Os diplomas ficam numa pilha vertical**, e ela é a órbita de Projetos deitada: `ang = (i −
+ativo)·2π/n` dá o seno, que agora é o deslocamento em **Y**, e o cosseno, que continua sendo a
+profundidade; dela saem escala, opacidade e `z-index`. O de cima e o de baixo se inclinam para
+dentro por `rotateX`, então os três leem como um anel visto de lado, e não como três cartões soltos.
+Nada de rAF: `ativo` muda e as `transition` fazem a volta, como lá.
 
-### Carrossel de formações
+**Não há arraste, e a ausência é a decisão.** Em Projetos o gesto é horizontal e não disputa nada;
+aqui ele seria vertical, que é o eixo em que a página rola com `scroll-snap`. Segurá-lo para a pilha
+exigiria `touch-action: none` sobre o maior elemento da seção, e o visitante perderia a rolagem
+justamente onde o dedo cai primeiro. Sobram o clique num diploma de trás, as setas ←/→ enquanto a
+seção está ativa e os traços ao lado.
 
-Grade estática **enquanto os badges cabem**; vira carrossel só quando não cabem. Um `ResizeObserver`
-compara `clientWidth` com `n·(bw+gap) − gap`, e **`bw`/`gap` são lidos do DOM**
-(`children[0].offsetWidth`, `columnGap`) — nenhum número de layout duplicado no JS, então mexer no
-CSS não exige mexer no hook. A leitura acontece **no `ResizeObserver`**, não por quadro: o gap é
-`getComputedStyle`, e chamá-lo dentro do rAF obrigava o navegador a recalcular estilo 60 vezes por
-segundo para um número que só muda quando o layout muda.
+**Os traços ficam em pé, ao lado da pilha.** Em Projetos eles são uma linha embaixo do palco porque a
+órbita anda de lado; um índice horizontal aqui apontaria para um eixo que não é o do movimento. E o
+palco tem a largura do diploma, não a do bloco: com `flex: 1` ele esticava até a borda e levava os
+traços para o canto direito da seção, longe da pilha que eles indexam.
 
-- Badge de 312px (`--bw`; 246px no mobile): 3 × 312 + 2 × 12 = os 960px do bloco acima.
-- Modo carrossel: trilho com **duas cópias** da lista; o laço reposiciona `(scrollWidth+gap)/2`, que
-  é exatamente uma cópia mais o seu gap (a emenda é imperceptível). A segunda cópia é `aria-hidden`:
-  um leitor de tela não deve encontrar a mesma formação duas vezes.
-- Rolagem **nativa** (swipe e inércia de graça) + deriva de ~34px/s num rAF com acumulador subpixel.
-  Arraste, roda do mouse e ←/→ com foco pausam a deriva por 2,2s.
-- O rAF só corre com o carrossel **na tela** (`IntersectionObserver`). A página mostra uma seção por
-  vez: sem isso, o trilho continuaria escrevendo `scrollLeft` a cada quadro
-  enquanto o visitante lê Contato, disputando quadro com a cena em canvas por um movimento que
-  ninguém vê.
+### O diploma
 
-### O que o hover revela
+O badge de 312px virou um cartão de carta: logo grande à esquerda, instituição e nível no alto,
+curso em corpo de leitura e o medidor no pé.
 
-O badge acende (borda e fundo) e a **barra encolhe para a esquerda**, abrindo espaço para o detalhe:
-a data em `concluido`, a fração `feito/total` em `cursando`. Em `cursando` a barra é a fração real o
-tempo todo — o hover só põe o número ao lado do que a barra já estava dizendo.
-
-- Quem não tem detalhe **não acende**: um realce que não revela nada promete informação que não
-  existe. É por isso que o gatilho é `[data-detalhe]`, e não o badge inteiro.
-- O espaço sai da `.trilha` (`flex: 1`), então nada mais na linha se mexe. A margem negativa do
-  detalhe cancela o `gap` do medidor enquanto ele está fechado — senão sobrariam 8px de respiro para
-  um elemento de largura zero.
-- Fecha por **largura**, não por `display`/`visibility`: o texto continua na árvore de
-  acessibilidade, então a data e a fração existem para quem nunca vai passar um ponteiro por cima.
-  E em `(hover: none)` ele já nasce aberto, senão seria inalcançável no celular.
+- **A moldura é dupla**, um risco de 1px correndo por dentro do outro, que é a gramática de um
+  certificado. É o único ornamento que o cartão tem, porque selo, fita e serifa seriam formas que não
+  existem em nenhum outro lugar da página. O risco de dentro acompanha o chanfro com um raio menor,
+  senão os dois cantos cortados brigariam.
+- **O detalhe fica sempre visível**: a data em `concluido`, a fração `feito/total` em `cursando`. No
+  badge ele era largura zero e abria no hover, porque ali não havia linha para ele; nesta largura a
+  `.trilha` (`flex: 1`) cede o espaço sem apertar nada, e esconder atrás de um ponteiro o que já cabe
+  seria negá-lo a quem está no celular.
+- **Em `cursando` a barra é a fração real o tempo todo**, não um meio-termo decorativo, e a
+  `pretensao` mantém a moldura tracejada de sempre.
+- **O da frente é opaco**, contra os 52% dos outros, pelo mesmo motivo do cartão de projeto: a pilha
+  é fechada e a caixa dele cobre um pedaço dos vizinhos, que apareceriam através dele sem responder
+  ao clique.
 
 ---
 

@@ -2,7 +2,8 @@
 
 - **Nada disto está publicado.** Música, Jogos e Filmes leem `api/`, e `api/` só existe de verdade na
   Vercel: falta ligar o repositório, cadastrar as variáveis de `.env.example` e apontar o
-  `luuspz.dev` para lá. Em desenvolvimento o plugin do Vite cobre isso (ver `dados.md`).
+  `luuspz.dev` para lá. O link do topo do `README` já aponta para lá, e só passa a
+  resolver quando isso acontecer. Em desenvolvimento o plugin do Vite cobre isso (ver `dados.md`).
 - **Girar os segredos depois de publicar.** A client secret do Spotify e a chave da Steam passaram
   por um canal de chat, então valem como comprometidas por precaução.
 - **O LoL ficou de fora, e não por falta de tentativa.** Não existe API de terceiro legítima para
@@ -18,10 +19,6 @@
   lista no Letterboxd, deixá-la pública e colar o endereço dela no `.env.local` e nas variáveis da
   Vercel. A raspagem já está testada contra uma lista pública qualquer, e o bloco aparece sozinho
   assim que a variável tiver valor.
-- **Nascimento e residência estão por preencher.** `sobre.dados` foi ao ar com `0000.00` no
-  nascimento e a residência deduzida das três instituições, que são todas de Belo Horizonte. São
-  dados sobre a vida de alguém, como os das formações, e precisam vir de quem os conhece (`sobre.dados`,
-  nos dois dicionários).
 - **A bio do lado pessoal é rascunho.** Ela fala do que as três seções de dado remoto mostram, que é
   o que dá para afirmar sem inventar biografia. Reescrever com o que ele quiser contar
   (`sobre.paragrafos.pessoal`, nos dois dicionários).

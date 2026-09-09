@@ -7,7 +7,7 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 |---|---|
 | `section.module.css` | `--pt --pb --px --gap` |
 | `AboutSection` | `--retrato-col --retrato-ar --cols --corpo-gap --retrato --coluna-max --txt --pfs --plh --fatos-gap --fatos-pt --fatos-fs` |
-| `EducationCarousel` | `--bw --badge-pad --badge-gap --badge-corpo-gap --logo-w --logo-h --fs-inst --fs-nivel --fs-curso --detalhe-w --detalhe-ml` |
+| `EducationSection` | `--dcw --dch --dr --dh --dperspectiva --dpad --dgap --dlogo-w --dlogo-h --dcorpo-gap --dfs-inst --dfs-nivel --dfs-curso` |
 | `ProjectsSection` | `--pcw --pch --pbh --ph --pr --pperspectiva --pcard` |
 | `JourneySection` | `--exph --exp-cargo --exp-per --exp-curva --exp-rail --exp-fantasma --exp-gap --exp-txt --exp-topo` |
 | `MusicSection` | `--capa` |
@@ -95,8 +95,12 @@ mantém a proporção do que já estava apertado, então os badges ganharam toke
 
 **A conclusão disso veio depois, e foi mudar o conteúdo de lugar.** A formação virou seção própria
 (ver `secoes.md`) e no Sobre ficaram duas linhas de texto no lugar dela: a seção mais densa da página
-deixou de empilhar três coisas, e volta ao teto da escala sozinha num iPhone SE. Os tokens do badge
-continuam valendo, agora dentro da seção Formação, que é onde ele é o único conteúdo.
+deixou de empilhar três coisas, e volta ao teto da escala sozinha num iPhone SE.
+
+Na seção nova o badge virou um diploma, e ali o eixo apertado se inverte: ele é o único conteúdo, tem
+a largura do bloco de sobra e o que falta é **altura**, porque são três empilhados. Por isso os
+tokens do mobile encolhem a altura do cartão e o raio da pilha, e mexem no corpo do texto só o
+necessário para o medidor não encostar no curso.
 
 **E no badge a compensação é horizontal.** Estreitá-lo junto com o resto saiu pela culatra: em 208px
 sobravam 132px para o texto, e "Tecnologia da Informação" pede 138px mesmo a 9px de fonte. O curso

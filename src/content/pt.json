@@ -46,8 +46,8 @@
       ]
     },
     "dados": [
-      { "key": "nascimento", "rotulo": "Nascimento", "valor": "0000.00" },
-      { "key": "residencia", "rotulo": "Residência", "valor": "Belo Horizonte, MG" }
+      { "key": "residencia", "rotulo": "Residência", "valor": "Belo Horizonte, MG, Brasil" },
+      { "key": "nascimento", "rotulo": "Nascimento", "valor": "07/07/2005" }
     ]
   },
 

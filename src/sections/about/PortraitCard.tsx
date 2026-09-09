@@ -4,6 +4,23 @@ import { RETRATO } from '~/content';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
 import { useT } from '~/i18n/useLanguage';
 import styles from './PortraitCard.module.css';
+import { useAsciiArt } from './useAsciiArt';
+
+/**
+ * A grade do raio-x.
+ *
+ * As colunas são o que decide a nitidez, e 58 é onde o rosto ainda se reconhece
+ * sem o texto virar ruído. As linhas saem da geometria: a moldura tem a
+ * proporção `--retrato-ar` (1,25 de altura por 1 de largura) e a célula de um
+ * monoespaçado é 0,6 de largura por 1 de altura, então `58 × 1,25 × 0,6` dá 44.
+ *
+ * Os dois números aparecem de novo no CSS, que dimensiona a fonte por
+ * `100cqw / colunas / 0,6` e a entrelinha por `100cqh / linhas` — é isso que faz
+ * a grade cobrir a moldura **exatamente**, em vez de sobrar ou faltar um pedaço
+ * conforme o tamanho da tela.
+ */
+const COLUNAS = 58;
+const LINHAS = 44;
 
 /**
  * Retrato como carta: inclina seguindo o ponteiro, cresce um pouco e um brilho
@@ -12,12 +29,23 @@ import styles from './PortraitCard.module.css';
  * Escreve **direto no `style`**, dentro de um rAF coalescido — um `setState` por
  * `pointermove` re-renderizaria a seção inteira dezenas de vezes por segundo
  * para mudar dois números de `transform`.
+ *
+ * **O ponteiro também revela o retrato em ASCII**, como um raio-x. A arte é
+ * calculada uma vez, quando a imagem carrega (`useAsciiArt`), e o hover é
+ * opacidade em CSS: nada é recalculado enquanto o cursor anda. O preto por
+ * baixo dos glifos é translúcido, então a foto continua fantasmando atrás
+ * deles, que é o que separa um raio-x de uma troca de imagem.
+ *
+ * Sem ponteiro não há raio-x, e é aceito: quem está no celular vê o retrato, que
+ * é o conteúdo. Um gesto de toque para revelá-lo disputaria com a rolagem da
+ * seção, e a camada não carrega informação nenhuma que a foto não carregue.
  */
 export function PortraitCard() {
   const t = useT();
   const caixaRef = useRef<HTMLDivElement>(null);
   const cartaRef = useRef<HTMLDivElement>(null);
   const semMovimento = useReducedMotion();
+  const ascii = useAsciiArt(RETRATO, COLUNAS, LINHAS);
 
   useEffect(() => {
     const caixa = caixaRef.current;
@@ -81,6 +109,16 @@ export function PortraitCard() {
     <div ref={caixaRef} className={styles.caixa}>
       <div ref={cartaRef} className={styles.carta}>
         <Figure src={RETRATO} alt={t.a11y.retrato} placeholder={t.a11y.retrato} fit="cover" />
+        {/* `aria-hidden`: é o mesmo retrato, desenhado com outra tinta */}
+        {ascii && (
+          <pre
+            className={styles.raio}
+            style={{ '--colunas': COLUNAS, '--linhas': LINHAS } as React.CSSProperties}
+            aria-hidden="true"
+          >
+            {ascii}
+          </pre>
+        )}
         <span className={styles.brilho} aria-hidden="true" />
       </div>
     </div>

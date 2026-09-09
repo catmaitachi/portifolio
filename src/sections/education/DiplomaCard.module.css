@@ -1,0 +1,189 @@
+/**
+ * Entrada: o diploma sobe, o da frente primeiro.
+ *
+ * A animação mora no `.diploma` e não na `.vaga`, pelo mesmo motivo do cartão de
+ * projeto: a vaga carrega o `transform` da pilha, escrito pelo JS, e uma
+ * animação de `transform` no mesmo elemento o apagaria enquanto roda. Aqui os
+ * dois se compõem, o pai posiciona e o filho entra.
+ *
+ * **Sem quique**, e a opacidade chega antes do movimento: é a mesma gramática
+ * dos cartões de projeto e dos canais de contato.
+ */
+@keyframes diplomaSobe {
+  from {
+    opacity: 0;
+    transform: translateY(52px) scale(0.95);
+  }
+
+  42% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/** Posição na pilha. O `transform` completo vem do JS (`useDeck`). */
+.vaga {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--dcw, 520px);
+  height: var(--dch, 168px);
+  margin-top: calc(var(--dch, 168px) / -2);
+  margin-left: calc(var(--dcw, 520px) / -2);
+  transition:
+    transform 0.9s cubic-bezier(0.22, 0.86, 0.2, 1),
+    opacity 0.75s ease;
+}
+
+.diploma {
+  position: relative;
+  display: flex;
+  gap: var(--dgap, 22px);
+  align-items: center;
+  height: 100%;
+  padding: var(--dpad, 24px);
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 2px;
+  background: rgb(0 0 0 / 52%);
+  cursor: pointer;
+  transition:
+    border-color 0.5s ease,
+    background 0.5s ease;
+}
+
+/**
+ * A moldura de dentro é o que faz um diploma.
+ *
+ * Um risco de 1px correndo por dentro do outro é a gramática de um certificado,
+ * e é o único ornamento que este cartão tem — nada de selo, fita ou serifa, que
+ * seriam formas que não existem em nenhum outro lugar da página. Ele acompanha o
+ * chanfro com um raio menor, senão os dois cantos cortados brigariam.
+ */
+.diploma::before {
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgb(255 255 255 / 7%);
+  border-radius: 2px;
+  content: '';
+  pointer-events: none;
+}
+
+/* chanfro dos dois cantos opostos — ver "Cantos chanfrados" no CLAUDE.md */
+@supports (corner-shape: bevel) {
+  .diploma {
+    corner-shape: bevel;
+    border-radius: 20px 2px;
+  }
+
+  .diploma::before {
+    corner-shape: bevel;
+    border-radius: 14px 2px;
+  }
+}
+
+/**
+ * O da frente é opaco e mais aceso.
+ *
+ * A pilha é fechada, então a caixa do diploma da frente cobre um pedaço dos
+ * outros dois; com o preto translúcido, o de trás aparecia através dele e não
+ * respondia ao clique, porque ali o clique é do da frente. É a mesma decisão do
+ * cartão de projeto: o que se vê do de trás é exatamente o que responde.
+ */
+.diploma[data-frente] {
+  border-color: rgb(255 255 255 / 30%);
+  background: rgb(0 0 0 / 92%);
+  cursor: default;
+}
+
+.diploma:hover {
+  border-color: rgb(255 255 255 / 40%);
+}
+
+/* pretensão: ainda não aconteceu, então a moldura é tracejada */
+.diploma[data-estado='pretensao'] {
+  border-style: dashed;
+}
+
+/**
+ * `backwards`, nunca `forwards`: o estado final já é o estado natural do
+ * diploma, e o que precisa ser coberto é o **atraso**. `--ordem` vem de
+ * `useDeck`, então acrescentar formações não pede nada aqui.
+ */
+.diploma[data-entrada] {
+  animation: diplomaSobe 0.8s cubic-bezier(0.16, 0.84, 0.24, 1) calc(var(--ordem, 0) * 150ms)
+    backwards;
+}
+
+.logo {
+  flex: none;
+  width: var(--dlogo-w, 96px);
+  height: var(--dlogo-h, 66px);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.corpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--dcorpo-gap, 12px);
+  min-width: 0;
+}
+
+.linhaTopo {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.instituicao {
+  color: #fff;
+  font-size: var(--dfs-inst, 15px);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.nivel {
+  overflow: hidden;
+  color: rgb(255 255 255 / 50%);
+  font-size: var(--dfs-nivel, 9.5px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.curso {
+  overflow: hidden;
+  color: rgb(255 255 255 / 62%);
+  font-size: var(--dfs-curso, 13px);
+  font-weight: 300;
+  line-height: 1.45;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/**
+ * O detalhe fica **sempre visível**.
+ *
+ * No badge ele era largura zero e abria no hover, porque ali não havia linha
+ * para ele; num cartão desta largura a barra cede o espaço sem apertar nada, e
+ * esconder atrás de um ponteiro o que já cabe seria negá-lo a quem está no
+ * celular. O espaço sai da `.trilha`, que é `flex: 1`.
+ */
+.detalhe {
+  flex: none;
+  color: rgb(255 255 255 / 82%);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.22em;
+  white-space: nowrap;
+}

@@ -6,7 +6,7 @@ são esses elementos em toda a página, então a regra vale para o que existe ho
 escrito depois — não há uma lista de classes para manter em sincronia.
 
 O motivo é interação, não estética: metade da página é **superfície de arraste** (órbita de Projetos,
-curva da Trajetória, carrossel de formações). Arrastar um controle não pode pintar meia tela de azul,
+curva da Trajetória). Arrastar um controle não pode pintar meia tela de azul,
 e uma seleção acidental engole o `pointerup` que decide se houve clique ou arrasto.
 
 `input`/`textarea` **não são opcionais** na lista de exceções: no Safari, um `user-select: none`

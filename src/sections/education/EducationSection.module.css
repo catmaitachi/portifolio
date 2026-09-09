@@ -1,7 +1,128 @@
-/**
- * A seção não tem token próprio: os badges trazem os deles
- * (`EducationCarousel.module.css`) e o resto é a composição aberta de sempre.
- */
+/** Tokens da pilha de diplomas. */
+.secao {
+  --dcw: 520px; /* largura do diploma */
+  --dch: 168px; /* altura do diploma */
+  --dr: 138px; /* raio da pilha */
+  --dh: 404px; /* altura do palco */
+  --dperspectiva: 1400px;
+  --dpad: 24px;
+  --dgap: 22px;
+  --dlogo-w: 96px;
+  --dlogo-h: 66px;
+  --dcorpo-gap: 12px;
+  --dfs-inst: 15px;
+  --dfs-nivel: 9.5px;
+  --dfs-curso: 13px;
+}
+
 .bloco {
   max-width: 960px;
+}
+
+/* a pilha e o índice dela, lado a lado */
+.arena {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: center;
+}
+
+/**
+ * O palco tem a largura do diploma, não a do bloco.
+ *
+ * Com `flex: 1` ele esticava até a borda e levava os traços para o canto
+ * direito da seção, longe da pilha que eles indexam. Assim o par fica junto e a
+ * arena centra os dois.
+ */
+.palco {
+  position: relative;
+  flex: 0 1 var(--dcw);
+  max-width: var(--dcw);
+  height: var(--dh);
+  /* origem à frente e um pouco acima: a pilha é vista levemente de cima */
+  perspective: var(--dperspectiva);
+  perspective-origin: 50% 44%;
+  transform-style: preserve-3d;
+  outline: none;
+  min-width: 0;
+}
+
+.tracos {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.traco {
+  display: block;
+  /**
+   * `content-box` é deliberado: o reset global usa `border-box`, e com ele o
+   * `width: 1px` absorveria o padding e zeraria a caixa de conteúdo, sem nada
+   * para o `background-clip` pintar. Aqui o padding é área de toque, fora do
+   * traço visível.
+   */
+  box-sizing: content-box;
+  width: 1px;
+  height: 12px;
+  margin: 0;
+  padding: 0 9px;
+  border: 0;
+  background: rgb(255 255 255 / 24%);
+  background-clip: content-box;
+  cursor: pointer;
+  transition:
+    height 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background 0.45s;
+}
+
+.traco:hover {
+  background: rgb(255 255 255 / 60%);
+  background-clip: content-box;
+}
+
+.traco[data-ativo] {
+  height: 30px;
+  background: #fff;
+  background-clip: content-box;
+}
+
+/**
+ * Mobile: o diploma perde largura antes de perder altura.
+ *
+ * A largura é o eixo que a tela estreita cobra, e o cartão é uma linha de logo
+ * mais três de texto: encolher a altura junto espremeria o medidor contra o
+ * curso. O raio da pilha desce com ela, senão os dois de trás sairiam da caixa
+ * do palco.
+ */
+@media (width <= 640px) {
+  .secao {
+    --dcw: 100%;
+    --dch: 146px;
+    --dr: 104px;
+    --dh: 320px;
+    --dpad: 16px;
+    --dgap: 14px;
+    --dlogo-w: 62px;
+    --dlogo-h: 46px;
+    --dcorpo-gap: 9px;
+    --dfs-inst: 12px;
+    --dfs-nivel: 8.5px;
+    --dfs-curso: 11px;
+  }
+
+  .arena {
+    gap: 6px;
+  }
+}
+
+/* paisagem curta: sobra largura e falta altura, então a pilha se fecha */
+@media (width > 640px) and (height <= 720px) {
+  .secao {
+    --dch: 150px;
+    --dr: 112px;
+    --dh: 336px;
+  }
 }

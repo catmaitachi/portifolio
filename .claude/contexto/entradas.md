@@ -11,7 +11,7 @@ entra com um gesto próprio**. `inicio` já tinha o seu: o zoom da câmera saind
 | Seção | Entrada | Onde |
 |---|---|---|
 | Sobre | a bio chega cifrada e se decifra da esquerda para a direita, um parágrafo depois do outro | `hooks/useDecipher.ts` |
-| Formação | os badges sobem em bloco, logo depois do título | `EducationCarousel.module.css` |
+| Formação | os diplomas sobem, o da frente primeiro | `DiplomaCard.module.css` |
 | Projetos | os cartões sobem, o do meio primeiro | `ProjectCard.module.css` |
 | Trajetória | duas ondas opostas giram e param; os nós acendem atrás delas | `TimelineCurve.module.css` |
 | Música | as linhas das duas listas chegam da esquerda, e o que está tocando sobe por último | `MusicSection.module.css` |
