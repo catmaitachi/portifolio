@@ -1,0 +1,331 @@
+/**
+ * Entrada: as capas sobem, a primeira antes das outras.
+ *
+ * Sobem, como os cartões de projeto, porque o elemento é uma imagem larga e
+ * baixa: um deslocamento lateral nela lê como deslize, um vertical lê como
+ * assentamento. `backwards`, nunca `forwards`, pela regra de sempre.
+ */
+@keyframes capaSobe {
+  from {
+    opacity: 0;
+    transform: translateY(var(--sobe, 22px));
+  }
+}
+
+@keyframes pulsaVivo {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.75);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.secao {
+  --arte-w: clamp(150px, 24vmin, 232px);
+  /* a proporção do header.jpg da Steam é 460x215 */
+  --arte-ar: 0.467;
+
+  /**
+   * A largura do cartão da faixa, **entre** o pôster de Filmes e o cartão maior
+   * que esta seção já teve.
+   *
+   * Filmes é pequeno porque tem duas faixas empilhadas numa seção de uma tela de
+   * altura; Jogos tem uma só, com o destaque acima dela, e ali sobra altura para
+   * o cartão ser maior sem passar do rodapé. Igual aos dois seria errado pelos
+   * dois lados: no tamanho de Filmes a arte não aproveita o espaço que existe, e
+   * no tamanho anterior as duas seções vizinhas deixariam de se parecer.
+   */
+  --faixa-item: clamp(88px, 11.5vmin, 124px);
+}
+
+.bloco {
+  max-width: 940px;
+}
+
+.destaque {
+  display: flex;
+  gap: clamp(14px, 2.4vmin, 26px);
+  align-items: center;
+  padding: clamp(12px, 1.8vmin, 18px);
+  border: 1px solid rgb(255 255 255 / 13%);
+  border-radius: 2px;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.35s,
+    background 0.35s;
+}
+
+.destaque:hover {
+  border-color: rgb(255 255 255 / 26%);
+  background: rgb(255 255 255 / 3%);
+}
+
+@supports (corner-shape: bevel) {
+  .destaque {
+    border-radius: 16px 2px;
+    corner-shape: bevel;
+  }
+}
+
+/**
+ * A moldura da arte existe mesmo sem arte.
+ *
+ * A capa é montada a partir do `appid` por convenção, não vem de um endpoint, e
+ * pode não existir. Com a moldura, o que falta é um retângulo vazio de 1px, que
+ * é o mesmo espaço reservado dos banners de projeto; sem ela seria o ícone de
+ * imagem quebrada do navegador, a única coisa fora da paleta na página.
+ */
+.arte {
+  /* âncora do brilho especular, que é `position: absolute` */
+  position: relative;
+  display: block;
+  flex: none;
+  width: var(--arte-w);
+  aspect-ratio: 1 / var(--arte-ar);
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 2px;
+  background: rgb(255 255 255 / 3%);
+
+  /* o clarão acompanha a largura da arte, não os 240px do retrato */
+  --brilho-r: 160px;
+
+  /* a inclinação é escrita pelo JS (ver `useInclinacao`); daqui sai o retorno */
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* arte de jogo é identidade de terceiro: fica colorida, como os banners */
+.arte img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.corpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+/**
+ * **Uma linha, sempre.** O rótulo troca de texto conforme o estado ("tocando
+ * agora" contra "nada tocando agora"), e num celular estreito o mais longo dos
+ * dois quebrava em duas linhas. Isso muda a altura da seção em degrau, e é
+ * justamente o degrau que faz a escala que cabe oscilar (ver
+ * `useEscalaQueCabe`).
+ */
+.rotulo {
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: rgb(255 255 255 / 42%);
+  font-size: 8.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.pulso {
+  display: block;
+  flex: none;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fff;
+  animation: pulsaVivo 2.2s ease-in-out infinite;
+}
+
+.nome {
+  overflow: hidden;
+  color: #fff;
+  font-size: clamp(15px, 2.4vmin, 24px);
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tempos {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  color: rgb(255 255 255 / 50%);
+  font-size: clamp(9px, 1.2vmin, 11px);
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+}
+
+.total {
+  color: rgb(255 255 255 / 30%);
+}
+
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tituloLista {
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
+  color: rgb(255 255 255 / 40%);
+  font-size: 8.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-align: left;
+  hyphens: manual;
+}
+
+.cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: inherit;
+  text-decoration: none;
+}
+
+/**
+ * A moldura da arte existe mesmo sem arte, e a arte fica colorida.
+ *
+ * Identidade de terceiro não se repinta, como os banners de projeto. Quando a
+ * Steam não tem a arte em pé, o que sobra é um retângulo de 1px na proporção
+ * certa, que é o espaço reservado de sempre; sem ele seria o ícone de imagem
+ * quebrada do navegador, a única coisa fora da paleta na página inteira.
+ *
+ * É a mesma peça do pôster de Filmes, com o mesmo 2:3 e a mesma inclinação: as
+ * duas faixas precisam ter a mesma silhueta para as seções vizinhas não lerem
+ * como dois desenhos diferentes.
+ */
+.capa {
+  position: relative;
+  display: block;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 2px;
+  background: rgb(255 255 255 / 3%);
+  opacity: 0.84;
+
+  /* o clarão acompanha a largura da capa, não os 240px do retrato */
+  --brilho-r: 130px;
+
+  /* a inclinação é escrita pelo JS (ver `useInclinacao`); daqui sai o retorno */
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition:
+    opacity 0.35s,
+    border-color 0.35s,
+    transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@supports (corner-shape: bevel) {
+  .capa {
+    border-radius: 12px 2px;
+    corner-shape: bevel;
+  }
+}
+
+.cartao:hover .capa {
+  opacity: 1;
+}
+
+.capa img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.nomePequeno {
+  overflow: hidden;
+  color: rgb(255 255 255 / 82%);
+  font-size: clamp(10px, 1.3vmin, 12px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.horasPequenas {
+  color: rgb(255 255 255 / 34%);
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (width <= 640px) {
+  .destaque {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .destaque .arte {
+    width: 100%;
+  }
+
+  .corpo {
+    width: 100%;
+  }
+
+  .secao {
+    --faixa-item: clamp(84px, 26vw, 104px);
+  }
+}
+
+/**
+ * **A moldura só existe quando não há imagem.**
+ *
+ * Ela nasceu como espaço reservado: sem arte, o que sobra é um retângulo de 1px
+ * na proporção certa, e sem ele sobraria o ícone de imagem quebrada do
+ * navegador, a única coisa fora da paleta na página inteira. Sobre a arte, ela
+ * não estava reservando nada — era um fio branco em volta de toda imagem da
+ * página, e num conjunto de artes coloridas isso lê como recorte mal feito.
+ *
+ * A borda continua declarada e só perde a cor, então a caixa não muda de tamanho
+ * e nada em volta se mexe. O fundo sai junto: com `background-clip: border-box`,
+ * que é o padrão, ele pintaria a faixa de 1px que a borda transparente deixou
+ * ver, e o fio voltaria mais fraco.
+ *
+ * `:has` é o que permite perguntar isso ao próprio elemento. O estado que
+ * interessa é "a imagem chegou", e ele não existe no React: quem o produz é o
+ * `onError` da `<img>`, escrevendo `hidden` no nó.
+ */
+.capa:has(img:not([hidden])) {
+  border-color: transparent;
+  background: none;
+}
+
+/**
+ * **A moldura só existe quando não há imagem.**
+ *
+ * Ela nasceu como espaço reservado: sem arte, o que sobra é um retângulo de 1px
+ * na proporção certa, e sem ele sobraria o ícone de imagem quebrada do
+ * navegador, a única coisa fora da paleta na página inteira. Sobre a arte, ela
+ * não estava reservando nada — era um fio branco em volta de toda imagem da
+ * página, e num conjunto de artes coloridas isso lê como recorte mal feito.
+ *
+ * A borda continua declarada e só perde a cor, então a caixa não muda de tamanho
+ * e nada em volta se mexe. O fundo sai junto: com `background-clip: border-box`,
+ * que é o padrão, ele pintaria a faixa de 1px que a borda transparente deixou
+ * ver, e o fio voltaria mais fraco.
+ *
+ * `:has` é o que permite perguntar isso ao próprio elemento. O estado que
+ * interessa é "a imagem chegou", e ele não existe no React: quem o produz é o
+ * `onError` da `<img>`, escrevendo `hidden` no nó.
+ */
+.arte:has(img:not([hidden])) {
+  border-color: transparent;
+  background: none;
+}

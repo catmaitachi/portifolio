@@ -1,0 +1,235 @@
+/**
+ * Entrada: os pôsteres se acendem, um depois do outro.
+ *
+ * Só opacidade e uma escala mínima, sem deslocamento: são duas faixas cheias de
+ * pôsteres, e trinta coisas deslizando ao mesmo tempo viram agitação. Elas
+ * acendem em cascata dentro de cada faixa, e a segunda faixa começa depois da
+ * primeira (`--base`): o olho segue a leitura em vez de escolher por onde
+ * começar. `backwards`, nunca `forwards`, pela regra de sempre.
+ */
+@keyframes posterAcende {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+/**
+ * O pôster tem o mesmo tamanho do cartão de Jogos.
+ *
+ * Ele já foi menor, e o motivo era altura: esta seção tem **duas** faixas
+ * empilhadas numa tela, 2:3 é a proporção mais alta da página, e cada linha
+ * custa a largura vezes 1,5 mais o nome e o rodapé. Com 118px as duas passavam
+ * do crédito no rodapé.
+ *
+ * O que mudou foi haver uma seção vizinha com a mesma faixa: duas fileiras de
+ * cartões lado a lado no mesmo lado do site, em tamanhos diferentes, leem como
+ * dois desenhos e não como um. Quem cobre a diferença de altura é o
+ * `useEscalaQueCabe`, que é medida e não estimativa — foi justamente para isso
+ * que ele existe, e um número escolhido a dedo aqui erra na primeira tradução
+ * mais longa.
+ */
+.secao {
+  /* a largura do item da faixa comum (ver `sections/Faixa.module.css`) */
+  --faixa-item: clamp(88px, 11.5vmin, 124px);
+}
+
+.bloco {
+  max-width: 1000px;
+}
+
+.cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: inherit;
+  text-decoration: none;
+}
+
+/**
+ * A entrada fica **pendurada em `data-ativo`**, não no mount.
+ *
+ * O atributo aparece quando a seção vira a ativa e some quando ela sai, e é isso
+ * que tira o `animation-name` de `none` e recomeça a cascata — o mesmo mecanismo
+ * dos nós da Trajetória. Presa ao mount, ela rodava uma vez só, no instante em
+ * que o feed chegava.
+ */
+.bloco[data-ativo] .cartao {
+  animation: posterAcende 0.5s ease-out backwards;
+  animation-delay: calc(var(--base, 0ms) + var(--ordem, 0) * 45ms);
+}
+
+/**
+ * A moldura existe mesmo sem pôster, e o pôster fica colorido.
+ *
+ * Arte de filme é identidade de terceiro, como os banners de projeto: não se
+ * repinta. Quando o feed não trouxe imagem, o que sobra é um retângulo de 1px na
+ * proporção certa, que é o espaço reservado de sempre.
+ */
+.poster {
+  position: relative;
+  display: block;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 2px;
+  background: rgb(255 255 255 / 3%);
+  opacity: 0.84;
+
+  /* o clarão acompanha a largura do pôster, não os 240px do retrato */
+  --brilho-r: 120px;
+
+  /* a inclinação é escrita pelo JS (ver `useInclinacao`); daqui sai o retorno */
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition:
+    opacity 0.35s,
+    border-color 0.35s,
+    transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@supports (corner-shape: bevel) {
+  .poster {
+    border-radius: 12px 2px;
+    corner-shape: bevel;
+  }
+}
+
+.cartao:hover .poster {
+  opacity: 1;
+}
+
+.poster img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* revisita é fato sobre a sessão, não sobre o filme: fica no canto, discreto */
+.revisita {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 2px 5px;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 2px;
+  background: rgb(0 0 0 / 62%);
+  color: rgb(255 255 255 / 72%);
+  font-size: 7px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.nome {
+  overflow: hidden;
+  color: rgb(255 255 255 / 86%);
+  font-size: clamp(9.5px, 1.25vmin, 12px);
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rodape {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ano {
+  color: rgb(255 255 255 / 30%);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+}
+
+.semNota {
+  color: rgb(255 255 255 / 22%);
+  font-size: 7.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/**
+ * O lugar na lista de favoritos, no lugar onde os recentes mostram a nota.
+ *
+ * Numa lista de favoritos a nota é sempre cinco, e cinco marcas cheias em doze
+ * cartões seriam a mesma informação repetida doze vezes. O que a lista afirma é
+ * a **ordem**, e é ela que aparece aqui.
+ *
+ * É um selo, e não um número solto: dois algarismos ao lado do ano, na mesma
+ * linha, leriam como parte da data. A moldura é o que separa um do outro, e o
+ * chanfro é o de sempre, num raio proporcional a uma caixa deste tamanho.
+ */
+.posto {
+  flex: none;
+  padding: 3px 6px;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: 2px;
+  color: rgb(255 255 255 / 82%);
+  font-size: 8.5px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.12em;
+}
+
+@supports (corner-shape: bevel) {
+  .posto {
+    corner-shape: bevel;
+    border-radius: 6px 2px;
+  }
+}
+
+/**
+ * A nota: cinco marcas de 1px, preenchidas pela fração.
+ *
+ * Cada marca é uma trilha vazia com um preenchimento de largura `--cheio`, então
+ * a meia estrela do Letterboxd sai exata em vez de arredondada. É a mesma
+ * gramática do medidor das formações e do estado dos projetos, que já é uma
+ * barra de 1px com preenchimento.
+ */
+.nota {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.marca {
+  position: relative;
+  display: block;
+  width: 7px;
+  height: 3px;
+  overflow: hidden;
+  background: rgb(255 255 255 / 14%);
+}
+
+.marca::after {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--cheio, 0%);
+  background: rgb(255 255 255 / 82%);
+  content: '';
+}
+
+/**
+ * **A moldura só existe quando não há imagem.**
+ *
+ * Ela nasceu como espaço reservado: sem arte, o que sobra é um retângulo de 1px
+ * na proporção certa, e sem ele sobraria o ícone de imagem quebrada do
+ * navegador, a única coisa fora da paleta na página inteira. Sobre a arte, ela
+ * não estava reservando nada — era um fio branco em volta de toda imagem da
+ * página, e num conjunto de artes coloridas isso lê como recorte mal feito.
+ *
+ * A borda continua declarada e só perde a cor, então a caixa não muda de tamanho
+ * e nada em volta se mexe. O fundo sai junto: com `background-clip: border-box`,
+ * que é o padrão, ele pintaria a faixa de 1px que a borda transparente deixou
+ * ver, e o fio voltaria mais fraco.
+ *
+ * `:has` é o que permite perguntar isso ao próprio elemento. O estado que
+ * interessa é "a imagem chegou", e ele não existe no React: quem o produz é o
+ * `onError` da `<img>`, escrevendo `hidden` no nó.
+ */
+.poster:has(img:not([hidden])) {
+  border-color: transparent;
+  background: none;
+}

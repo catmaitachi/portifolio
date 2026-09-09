@@ -1,14 +1,104 @@
 ## Seções e navegação
 
+### São dois eixos, e eles não se misturam
+
+O site tem **dois lados**, pessoal e profissional, e o cabeçalho no canto superior esquerdo é quem os
+alterna. Ele **não substitui** o menu de seções: o cabeçalho decide o lado, o menu continua sendo as
+seções daquele lado.
+
+Ele é um **menu recolhido** — mostra só o lado em vigor, um clique abre o outro — e apontar um nome
+revela uma linha sobre o que existe daquele lado. Os detalhes de por que assim estão em `hud.md`.
+
+O modo é dado, não `if`: `shared.json → modos` traz, para cada um, as seções que ele tem e os canais
+de contato que ele mostra. `secoesDoModo` e `canaisDoModo` (`content/index.ts`) são as duas portas, e
+as duas devolvem sempre lista utilizável, porque a chave pode vir de um hash digitado errado ou de um
+`localStorage` de uma versão anterior.
+
+Três consequências que não são detalhe:
+
+- **`SECOES` deixou de ser a ordem de rolagem** e virou a ordem canônica, a lista completa contra a
+  qual as listas dos modos são conferidas (`check:i18n` reclama de chave que não existe ali, e
+  também de canal que não existe em `canais`, que o TypeScript não pega porque chave de canal é
+  `string`);
+- **o JSX não pode mais listar as seções de cima para baixo.** `MONTAR`, no `App`, liga chave a
+  componente, e a lista sai num `Fragment`. Nunca num elemento de embrulho: as seções precisam ser
+  filhas diretas de `.rolagem` para o `scroll-snap` valer, e o filtro da supernova exige que o alvo
+  do toque seja a caixa de uma `<section>`. Uma `<div>` no meio quebra os dois de uma vez, sem erro
+  no console;
+- **o número da seção saiu dos dicionários** e virou a posição na ordem em vigor. Escrito como texto,
+  o lado pessoal leria 02, 05, 03.
+
+**Trocar de modo mantém a seção quando ela existe do outro lado**, e vai para o Início quando não
+existe. Quem está lendo o Sobre não deve ser jogado para o topo por ter trocado de lado. O destino
+fica num ref e é alcançado num efeito de **layout**, nunca no mesmo passo do `setModo`: a rolagem
+precisa que o contêiner já tenha as seções novas, senão o alvo cai fora da altura que existe e é
+limitado.
+
+### O endereço
+
+`#personal/music`, lido e escrito por `navigation/useHashRoute.ts`. É hash e não caminho porque o
+site é estático: um caminho de verdade exigiria o servidor devolvendo `index.html` para qualquer
+rota, e o `base: './'` deixaria de valer.
+
+**Os nomes no endereço são em inglês, e as chaves do projeto continuam em português.** As chaves são
+a língua em que o código é escrito, e o conteúdo é bilíngue por dicionário; o endereço não é chave,
+é a única parte da página que alguém lê **fora** do site — num link colado numa mensagem ou numa
+candidatura —, e ali o inglês alcança os dois idiomas. Traduzir o slug por idioma seria pior: o mesmo
+lugar teria dois endereços, e um link mudaria de sentido conforme a preferência de quem o abriu.
+
+A tradução mora em `SLUG_MODO` e `SLUG_SECAO`, dois `Record` **totais** — uma seção ou um modo novo
+quebra o build até ganhar nome no endereço.
+
+- **modo entra por `pushState`, seção por `replaceState`.** Trocar de lado é navegação e o botão
+  voltar deve desfazê-la; rolar não pode encher o histórico, senão voltar do Contato ao Início
+  pediria cinco cliques;
+- **nada é escrito quando o hash já diz o que se quer escrever**, e isso resolve sem sinalizador o
+  caso de chegar por `popstate`: ali o hash já é o do destino, então não nasce uma entrada nova em
+  cima da que o visitante acabou de alcançar;
+- **a posição inicial é seca.** Abrir `#pessoal/contato` posiciona a página; animar faria a página
+  desfilar por tudo que vem antes na frente de quem acabou de chegar. É o `suave: false` de `irPara`;
+- **a página assume a restauração de rolagem** (`history.scrollRestoration = 'manual'`, no `main`).
+  O navegador devolve a posição salva **depois** do carregamento, o que chega tarde: o endereço já
+  disse em que seção a página abre, e a restauração passava por cima, deixando o React na seção certa
+  e a rolagem no topo, com a tela mostrando uma seção inativa, isto é, vazia;
+- **um alvo sem altura fica pendurado, não vira zero.** A posição de uma seção é
+  `índice × clientHeight`, e num contêiner de altura zero isso dá zero para qualquer índice. Quando
+  a viewport ainda não tem tamanho, `irPara` guarda o alvo e o aplica no primeiro `resize` que
+  trouxer altura.
+
+O modo também vai para o `localStorage` (`portfolio.modo`), como o idioma, mas **o hash ganha dele**:
+um link recebido agora diz mais sobre a intenção de quem clicou do que a última visita. Ali a chave
+é a de sempre (`pessoal`), não o slug: o armazenamento é interno, e traduzi-lo só criaria um segundo
+vocabulário para manter em sincronia.
+
+### O título da aba segue o endereço
+
+`navigation/useDocumentTitle.ts`. A página é uma só e nunca recarrega, então sem ele a aba diria a
+mesma coisa do começo ao fim, e quem abrisse dois lugares do site em duas abas não teria como
+distingui-las. O histórico tem o mesmo problema: ele guarda o título de cada entrada, e são as trocas
+de modo que viram entrada.
+
+**No Início a parte é a etiqueta do modo, não o nome da seção.** "Início" não diz em que lado do site
+alguém está, e é exatamente ali que os dois lados mostram a mesma seção com textos diferentes.
+
+O texto sai do dicionário (`documento`), com marcador em vez de concatenação: inverter as duas
+partes, ou trocar o separador, é editar uma string nos dois idiomas e não mexer em componente
+nenhum. O `<title>` do `index.html` existe só até o React assumir, e traz o mesmo formato para o modo
+padrão — assim não há um pisca de título na abertura.
+
+### A rolagem
+
 Contêiner `.rolagem` (fixo, `scroll-snap-type: y mandatory`, barra oculta) sobre o canvas; cada
 seção tem `height: 100%` e `scroll-snap-align: start`. **Só ele rola** — o documento tem
 `overflow: hidden`. O canvas e o HUD ficam fixos atrás.
 
-Sobre, Projetos, Trajetória e Contato compartilham a mesma **composição aberta** (`section.module.css`,
+Sobre, Formação, Projetos, Trajetória e Contato compartilham a mesma **composição aberta** (`section.module.css`,
 puxada por `composes`): índice + risco, título grande, conteúdo sem moldura, bordas de 1px a 13% com
 raio de 2px. Entram por opacidade + 26px de deslocamento quando a seção é a ativa.
 
-`useSectionScroll` lê o índice num rAF por rajada de scroll e só faz `setState` quando ele **muda**.
+`useSectionScroll(total)` lê o índice num rAF por rajada de scroll e só faz `setState` quando ele
+**muda**. O total vem por parâmetro porque cada modo tem a sua lista, e ele é lido por ref: trocar de
+modo não recria `irPara` nem faz o listener de teclado ser registrado de novo.
 O teclado (↑/↓, PageUp/Down, Home/End) é global, mas **sai do caminho quando o foco está num campo
 de texto** — senão a navegação roubaria o cursor do formulário de contato.
 
@@ -32,8 +122,9 @@ porque fora da seção o listener não existe.
 
 Corolário: os componentes de dentro (o palco da órbita, a curva do tempo) **não tratam ←/→**. Eles
 continuam focáveis e rotulados, mas um segundo handler local só criaria a chance de um passo duplo —
-foi assim que a órbita ficou dependente de foco. A exceção é o carrossel de formações, que trata a
-seta no próprio elemento porque a seção Sobre não reivindica ←/→ para si.
+foi assim que a órbita ficou dependente de foco. As duas seções que reivindicam ←/→ hoje são
+Projetos e Trajetória, e nenhuma delas duplica o listener por dentro. Formação as tinha e deixou de
+ter quando a faixa passou a andar sozinha, sem passo para onde ir.
 
 `editandoTexto()` — a regra de "aqui a seta é do cursor" — mora junto do hook, e tanto a rolagem
 quanto as seções a usam. Duplicada, ela sairia de sincronia no dia em que um campo novo aparecesse.

@@ -11,13 +11,34 @@ entra com um gesto próprio**. `inicio` já tinha o seu: o zoom da câmera saind
 | Seção | Entrada | Onde |
 |---|---|---|
 | Sobre | a bio chega cifrada e se decifra da esquerda para a direita, um parágrafo depois do outro | `hooks/useDecipher.ts` |
+| Formação | os crachás chegam da direita, um depois do outro | `DiplomaCard.module.css` |
 | Projetos | os cartões sobem, o do meio primeiro | `ProjectCard.module.css` |
 | Trajetória | duas ondas opostas giram e param; os nós acendem atrás delas | `TimelineCurve.module.css` |
+| Música | as linhas das duas listas chegam da esquerda, e o que está tocando sobe por último | `MusicSection.module.css` |
+| Jogos | o destaque sobe, e as capas da faixa sobem depois dele | `GamesSection.module.css` |
+| Filmes | os pôsteres se acendem, faixa por faixa | `FilmsSection.module.css` |
 | Contato | os canais chegam das laterais, o do meio primeiro | `ChannelCard.module.css` |
 
 Projetos sobe e Contato vem de lado — o curso é diferente, a gramática é a mesma. O cartão de
 projeto anda **120px** contra os 46 do canal, e não é exagero: ele tem 436px de altura, e um pulo de
 40px nele mal se lê. Distância de entrada acompanha o tamanho do elemento.
+
+**As três seções de dado remoto penduram a entrada em `data-ativo`, não no mount.** É o mesmo
+mecanismo dos nós da Trajetória: o atributo aparece quando a seção vira a ativa, o `animation-name`
+sai de `none` e a animação recomeça do zero, sem `key` e sem remontar nada. Presas ao mount, elas
+rodavam **uma vez só** — no instante em que a resposta do provedor chegava — e voltar para a seção
+encontrava tudo já montado, que é justamente a diferença entre uma entrada e um efeito de
+carregamento.
+
+Nelas a ordem também é conteúdo, e não decoração:
+
+- em **Música** o destaque entra depois das listas, porque é ele que fica no pé da seção: subir é
+  entrar por onde ele está, e a seção se monta de cima para baixo;
+- em **Jogos** o destaque entra **antes** da pilha de recentes, pelo motivo oposto: é ele que a seção
+  existe para mostrar, e uma cascata que começa no que está aberto agora lê como ordem em vez de um
+  monte de capas chegando junto;
+- em **Filmes** a segunda faixa começa depois da primeira (`--base`), então o olho segue a leitura em
+  vez de escolher por onde começar.
 
 Quatro decisões valem para todas, e são o que mantém isso barato e escalável:
 
@@ -35,6 +56,18 @@ Quatro decisões valem para todas, e são o que mantém isso barato e escalável
 - **Sem quique.** A primeira versão dos cartões passava do lugar e voltava; era gesto de desenho
   animado e brigava com a régua de 1px do resto da página. O que dá caráter é a ordem das duas
   coisas — a opacidade chega antes do movimento, então o elemento se materializa e só depois assenta.
+
+**Uma entrada não pode correr junto com a do bloco, no mesmo sentido.** O `.bloco` inteiro sobe 26px
+em 0,9s (`section.module.css`), e é fácil escrever uma cascata que se some a ele em vez de vir depois
+dele: foi o que aconteceu em Jogos, onde as capas subiam 22px em 0,6s sem atraso nenhum. Os dois
+movimentos viravam um só, o menor terminava antes do maior, e a seção aparecia **sem entrada
+nenhuma** — não uma entrada discreta, uma entrada invisível. A cascata de lá hoje começa em 520ms, já
+com o bloco assentando, e a distância do destaque subiu para 40px, pela regra acima de a distância
+acompanhar o tamanho. As capas da faixa sobem só 14px, e ali o limite é outro: elas vivem dentro de
+um `overflow-x`, que corta no eixo Y tudo que passar do recuo da faixa.
+
+Quem escapa disso são as entradas que **não** transladam no eixo Y: os pôsteres de Filmes se acendem,
+e por isso leem por cima do movimento do bloco sem precisar esperá-lo.
 
 ### As duas ondas da Trajetória
 

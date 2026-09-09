@@ -1,0 +1,519 @@
+/**
+ * Entrada da seção: as linhas chegam da esquerda, uma depois da outra.
+ *
+ * `--ordem` é a posição na lista, e é a mesma gramática dos cartões de projeto e
+ * dos canais de contato. `backwards`, nunca `forwards`: o estado final já é o
+ * estado natural do elemento, e o que precisa ser coberto é o atraso.
+ */
+@keyframes linhaEntra {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+}
+
+/**
+ * O destaque sobe, e é o último a chegar.
+ *
+ * Ele fica no pé da seção, então subir é entrar por onde ele está — o contrário
+ * das linhas das listas, que chegam da esquerda. O atraso o põe depois delas:
+ * a seção se monta de cima para baixo, e o que está tocando é o remate.
+ */
+@keyframes destaqueEntra {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+/**
+ * O mesmo brilho que passa pelo nome na abertura, agora na barra.
+ *
+ * O keyframe é **copiado** de `HeroSection.module.css`, e isso é obrigatório, não
+ * preguiça: CSS Modules escopa os dois lados — o nome no `@keyframes` e o nome
+ * escrito em `animation` —, então um keyframe de outro módulo simplesmente não
+ * casa, sem erro de build e sem aviso no console (ver `hud.md`). O que se
+ * compartilha aqui são os números, e eles são os mesmos: varredura em 8,4s, com
+ * a passagem clara consumindo o primeiro terço.
+ */
+@keyframes brilhoBarra {
+  0% {
+    background-position: 150% center;
+  }
+
+  33.3% {
+    background-position: -50% center;
+  }
+
+  100% {
+    background-position: -50% center;
+  }
+}
+
+/**
+ * A barra do que está tocando anda sozinha, do ponto atual até o fim.
+ *
+ * O que chega do Spotify é um instantâneo, e a duração da animação é o que falta
+ * da faixa. Sem isso a barra ficaria parada entre uma busca e a seguinte.
+ */
+@keyframes correFaixa {
+  from {
+    width: var(--de, 0%);
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+/* o ponto que diz que o dado é ao vivo, e não um retrato de dez minutos atrás */
+@keyframes pulsaVivo {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.75);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.secao {
+  --capa: clamp(78px, 11vmin, 116px);
+}
+
+.bloco {
+  max-width: 940px;
+}
+
+/**
+ * O destaque: capa à esquerda, o resto à direita.
+ *
+ * Chanfro nos dois cantos opostos, como todo retângulo de conteúdo com borda
+ * (ver `direcao-visual.md`). Os 14px acompanham o tamanho da caixa, entre o
+ * cartão de canal e o de projeto.
+ */
+.destaque {
+  display: flex;
+  gap: clamp(14px, 2vmin, 22px);
+  align-items: center;
+  padding: clamp(12px, 1.8vmin, 18px);
+  border: 1px solid rgb(255 255 255 / 13%);
+  border-radius: 2px;
+}
+
+/**
+ * As entradas ficam **penduradas em `data-ativo`**, não no mount.
+ *
+ * O atributo aparece quando a seção vira a ativa e some quando ela sai, e é isso
+ * que faz o `animation-name` sair de `none` e a animação recomeçar do zero — o
+ * mesmo mecanismo dos nós da Trajetória, sem `key` e sem remontar nada. Presas ao
+ * mount, elas rodavam uma vez só, no instante em que a resposta do Spotify
+ * chegava, e voltar para a seção mostrava um bloco que já estava montado.
+ */
+.bloco[data-ativo] .destaque {
+  animation: destaqueEntra 0.6s ease-out 0.42s backwards;
+}
+
+.bloco[data-ativo] .item {
+  animation: linhaEntra 0.5s ease-out backwards;
+  animation-delay: calc(var(--ordem, 0) * 55ms);
+}
+
+/**
+ * Calado, o bloco se apaga e a capa perde a cor.
+ *
+ * Ele continua ali, e continua dizendo o que foi a última faixa — mas a seção
+ * inteira é sobre o que está tocando **agora**, e um bloco em cor cheia
+ * afirmaria isso mesmo com o rótulo dizendo o contrário. A cor é o que separa o
+ * agora do passado: a capa é a única cor da seção, e tirá-la é a diferença mais
+ * visível que existe aqui sem escrever nada.
+ */
+.destaque:not([data-vivo]) {
+  opacity: 0.52;
+  border-color: rgb(255 255 255 / 8%);
+}
+
+.destaque:not([data-vivo]) .capa {
+  filter: grayscale(1);
+}
+
+@supports (corner-shape: bevel) {
+  .destaque {
+    border-radius: 14px 2px;
+    corner-shape: bevel;
+  }
+}
+
+/**
+ * A capa é a única cor da seção, e fica colorida.
+ *
+ * É identidade de terceiro, como os banners de projeto e o vermelho da UFMG:
+ * capa de álbum não se repinta. Sem capa, o quadrado vazio de 1px é a mesma
+ * moldura de espaço reservado que o resto da página usa.
+ */
+.capa {
+  /* âncora do brilho especular, que é `position: absolute` */
+  position: relative;
+  display: block;
+  flex: none;
+  width: var(--capa);
+  height: var(--capa);
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 2px;
+
+  /* o clarão acompanha a capa, não os 240px do retrato */
+  --brilho-r: 150px;
+
+  /* a inclinação é escrita pelo JS (ver `useInclinacao`); daqui sai o retorno */
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.capa img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/**
+ * Cada artista é um link, e o sublinhado só aparece ao apontar.
+ *
+ * A linha do artista fica sob o nome da faixa, que é o texto grande do bloco:
+ * três sublinhados acesos ali o tempo todo tirariam dele a hierarquia. O que
+ * marca que há link é a cor subindo junto com o risco.
+ */
+.artistaLink {
+  border-bottom: 1px solid transparent;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    color 0.3s,
+    border-color 0.3s;
+}
+
+.artistaLink:hover {
+  border-bottom-color: rgb(255 255 255 / 40%);
+  color: rgb(255 255 255 / 85%);
+}
+
+.corpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+/**
+ * **Uma linha, sempre.** O rótulo troca de texto conforme o estado ("tocando
+ * agora" contra "nada tocando agora"), e num celular estreito o mais longo dos
+ * dois quebrava em duas linhas. Isso muda a altura da seção em degrau, e é
+ * justamente o degrau que faz a escala que cabe oscilar (ver
+ * `useEscalaQueCabe`).
+ */
+.rotulo {
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+  color: rgb(255 255 255 / 42%);
+  font-size: 8.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-align: left;
+  hyphens: manual;
+}
+
+.pulso {
+  display: block;
+  flex: none;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fff;
+  animation: pulsaVivo 2.2s ease-in-out infinite;
+}
+
+.faixaNome {
+  overflow: hidden;
+  color: #fff;
+  font-size: clamp(15px, 2.4vmin, 24px);
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 0.3s;
+}
+
+.faixaNome:hover {
+  opacity: 0.7;
+}
+
+.artista {
+  margin: 0;
+  overflow: hidden;
+  color: rgb(255 255 255 / 50%);
+  font-size: clamp(10px, 1.4vmin, 13px);
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  text-overflow: ellipsis;
+  text-align: left;
+  white-space: nowrap;
+  hyphens: manual;
+}
+
+/**
+ * A barra herda a trilha de 1px que o resto da página usa nos medidores.
+ *
+ * O que muda aqui é que ela **anda**: a régua é a mesma das formações e do
+ * estado dos projetos, e é isso que a mantém no tema em vez de virar um
+ * componente de player emprestado de outro lugar.
+ */
+/**
+ * O medidor: tempo, trilha e duração, numa linha só.
+ *
+ * A linha existe também por um motivo de layout, e não só de leitura. A trilha
+ * compartilhada nasceu no medidor das formações, que é uma **linha**: lá o
+ * `flex: 1` é o que a faz ocupar o espaço que sobra. Solta dentro do corpo do
+ * destaque, que é uma **coluna**, o mesmo `flex: 1` virava `flex-basis: 0` na
+ * altura — a barra existia, com a animação correndo, e media zero pixel. Dentro
+ * de uma linha ela volta a se comportar como foi escrita.
+ */
+.medidor {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.trilha {
+  background: rgb(255 255 255 / 10%);
+}
+
+/**
+ * Os dois números são a mesma peça: o decorrido anda, a duração está parada.
+ *
+ * `tabular-nums` porque o decorrido é reescrito a cada segundo, e sem ele a
+ * largura do bloco mudaria a cada troca de algarismo, empurrando a barra de um
+ * lado para o outro.
+ */
+.tempo {
+  flex: none;
+  min-width: 4ch;
+  color: rgb(255 255 255 / 38%);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+/**
+ * Duas animações no mesmo elemento, e elas não disputam nada.
+ *
+ * `correFaixa` mexe na **largura** e dura o que falta da faixa; `brilhoBarra`
+ * mexe na **posição do fundo** e repete no ciclo do nome. O degradê é o mesmo do
+ * título — base em `#a6a6a6` com um platô branco no meio —, e o platô não é
+ * detalhe: uma parada única no meio tem espessura zero e nunca chega à tela.
+ */
+.progresso {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--de, 0%);
+  background-image: linear-gradient(
+    120deg,
+    #a6a6a6 0%,
+    #a6a6a6 40%,
+    #fff 47%,
+    #fff 53%,
+    #a6a6a6 60%,
+    #a6a6a6 100%
+  );
+  background-size: 200% auto;
+  animation:
+    correFaixa var(--resta, 0ms) linear both,
+    brilhoBarra 8.4s linear infinite;
+}
+
+/**
+ * A cabeça da barra: um traço curto e mais aceso na ponta que avança.
+ *
+ * Uma linha de 1px crescendo devagar é quase imperceptível de relance — o que
+ * se lê num medidor é a **borda**, não a área preenchida. O traço fica dentro
+ * do preenchimento, encostado à direita, então ele viaja de graça com a mesma
+ * animação de largura e não custa um segundo relógio.
+ */
+.progresso::after {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 14px;
+  background-image: linear-gradient(90deg, transparent, #fff);
+  content: '';
+}
+
+.colunas {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: clamp(20px, 4vmin, 54px);
+}
+
+.coluna {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tituloLista {
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
+  color: rgb(255 255 255 / 40%);
+  font-size: 8.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-align: left;
+  hyphens: manual;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.numero {
+  flex: none;
+  color: rgb(255 255 255 / 24%);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+}
+
+.link {
+  overflow: hidden;
+  color: rgb(255 255 255 / 82%);
+  font-size: clamp(10px, 1.4vmin, 13px);
+  text-overflow: ellipsis;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.3s;
+}
+
+.link:hover {
+  color: #fff;
+}
+
+/* o artista da faixa cede espaço primeiro: o nome dela é o que se procura */
+.secundario {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: rgb(255 255 255 / 34%);
+  font-size: 9.5px;
+  font-weight: 300;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/**
+ * Menos movimento devolve o branco chapado, em vez de congelar o degradê.
+ *
+ * O `reset.css` zera a duração de toda animação, e sem esta regra a barra ficaria
+ * parada na cor **base** do degradê, mais apagada do que era antes de existir
+ * brilho nenhum. É a mesma regra que o nome tem, pela mesma razão.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .progresso {
+    background-image: none;
+    background-color: rgb(255 255 255 / 72%);
+  }
+}
+
+/**
+ * Mobile: as duas listas empilham, e o **destaque não muda de forma**.
+ *
+ * Empilhar a capa sobre o texto foi a primeira versão, e estava errada: ela
+ * dobrava a altura do bloco justamente na tela onde ela é mais disputada, e o
+ * que está tocando deixava de ser reconhecível de relance por ter virado outro
+ * desenho. Aqui quem cede é o texto — o nome da faixa e o do artista já cortam
+ * com reticências, e cortar um título é mais barato que reorganizar o bloco.
+ */
+@media (width <= 640px) {
+  .secao {
+    --capa: 64px;
+  }
+
+  /**
+   * No estreito o respiro **sobe**, em vez de descer com a tela.
+   *
+   * Os tokens da página encolhem os espaçamentos quando falta largura, e aqui
+   * isso saiu pela culatra: as duas listas deixam de ser duas colunas e viram
+   * uma pilha de dezoito linhas iguais, então o que antes era separado pelo
+   * espaço horizontal passa a depender só do vertical. Com os valores de tela
+   * larga a seção lia como um bloco só de texto.
+   *
+   * A escala que cabe (`useEscalaQueCabe`) é quem paga a conta se isso não
+   * couber, e é para isso que ela existe.
+   */
+  .secao .bloco {
+    gap: 28px;
+  }
+
+  .colunas {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .coluna {
+    gap: 14px;
+  }
+
+  .lista {
+    gap: 12px;
+  }
+
+  .destaque {
+    gap: 16px;
+  }
+}
+
+/**
+ * **A moldura só existe quando não há imagem.**
+ *
+ * Ela nasceu como espaço reservado: sem arte, o que sobra é um retângulo de 1px
+ * na proporção certa, e sem ele sobraria o ícone de imagem quebrada do
+ * navegador, a única coisa fora da paleta na página inteira. Sobre a arte, ela
+ * não estava reservando nada — era um fio branco em volta de toda imagem da
+ * página, e num conjunto de artes coloridas isso lê como recorte mal feito.
+ *
+ * A borda continua declarada e só perde a cor, então a caixa não muda de tamanho
+ * e nada em volta se mexe. O fundo sai junto: com `background-clip: border-box`,
+ * que é o padrão, ele pintaria a faixa de 1px que a borda transparente deixou
+ * ver, e o fio voltaria mais fraco.
+ *
+ * `:has` é o que permite perguntar isso ao próprio elemento. O estado que
+ * interessa é "a imagem chegou", e ele não existe no React: quem o produz é o
+ * `onError` da `<img>`, escrevendo `hidden` no nó.
+ */
+.capa:has(img:not([hidden])) {
+  border-color: transparent;
+  background: none;
+}

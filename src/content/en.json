@@ -2,29 +2,62 @@
   "nav": {
     "inicio": "Home",
     "sobre": "About",
+    "formacao": "Education",
     "projetos": "Projects",
     "experiencia": "Journey",
+    "musica": "Music",
+    "jogos": "Games",
+    "filmes": "Films",
     "contato": "Contact"
   },
 
-  "hero": {
-    "etiqueta": "Portfolio",
-    "nome": "Lucas Spiazzi",
-    "legenda": "Software Developer"
+  "modos": {
+    "pessoal": {
+      "rotulo": "Personal",
+      "descricao": "Get to know a bit about my hobbies and interests",
+      "etiqueta": "Lifestyle",
+      "legenda": "Software Developer"
+    },
+    "profissional": {
+      "rotulo": "Professional",
+      "descricao": "See my projects and professional experiences",
+      "etiqueta": "Portfolio",
+      "legenda": "Software Developer"
+    }
   },
 
+  "hero": {
+    "nome": "Lucas Spiazzi"
+  },
+
+  "documento": "{nome} - {parte}",
+
   "sobre": {
-    "indice": "01",
     "titulo": "About Me",
-    "paragrafos": [
-      "I'm a software designer in the age of AI. While generative models speed up coding, my role lies in what comes before it: envisioning, structuring, and planning solid systems, guided by Software Engineering best practices.",
-      "I believe every project is born from a human need that deserves to be explored, understood, and handled responsibly, since its impact reflects, in the long run, on both the individual and society.",
-      "As a developer, I'm committed to constantly evolving my solutions toward a more sustainable and humane future."  
+    "paragrafos": {
+      "profissional": [
+        "I'm a software designer in the age of AI. While generative models speed up coding, my role lies in what comes before it: envisioning, structuring, and planning solid systems, guided by Software Engineering best practices.",
+        "I believe every project is born from a human need that deserves to be explored, understood, and handled responsibly, since its impact reflects, in the long run, on both the individual and society.",
+        "As a developer, I'm committed to constantly evolving my solutions toward a more sustainable and humane future."
+      ],
+      "pessoal": [
+        "I overthink things, and sometimes that pays off. I'm critical, I have good ideas now and then, and I take in a lot from what I consume. I love the art that lives in music, films, games and books. More than that, I love nature, travel and landscapes: the things that remind me life isn't only routine.",
+        "I value my friendships deeply, even though some days I'm terrible at being social. I try to be level headed, funny, thoughtful, and sometimes I even try to be someone I'm not. But I always come back to myself."
+      ]
+    },
+    "dados": [
+      { "key": "residencia", "rotulo": "Lives in", "valor": "Belo Horizonte, MG, Brazil" },
+      { "key": "aniversario", "rotulo": "Birthday", "valor": "July 7, 2005" }
     ]
   },
 
   "formacoes": {
     "titulo": "Education",
+    "intro": "My academic path.",
+    "rotulos": {
+      "conclusao": "Completion",
+      "periodos": "Terms"
+    },
     "estados": {
       "concluido": "Completed",
       "cursando": "In progress",
@@ -32,12 +65,11 @@
     },
     "lista": [
       {
-        "slot": "senac",
-        "instituicao": "SENAC",
-        "nivel": "Technical",
-        "curso": "Information Technology",
-        "estado": "concluido",
-        "conclusao": "2022.12"
+        "slot": "ufmg",
+        "instituicao": "UFMG",
+        "nivel": "Master's",
+        "curso": "Field TBD",
+        "estado": "pretensao"
       },
       {
         "slot": "puc",
@@ -48,17 +80,17 @@
         "progresso": { "feito": 4, "total": 8 }
       },
       {
-        "slot": "ufmg",
-        "instituicao": "UFMG",
-        "nivel": "Master's",
-        "curso": "Field TBD",
-        "estado": "pretensao"
+        "slot": "senac",
+        "instituicao": "SENAC",
+        "nivel": "Technical",
+        "curso": "Information Technology",
+        "estado": "concluido",
+        "conclusao": "2022.12"
       }
     ]
   },
 
   "projetos": {
-    "indice": "02",
     "titulo": "Projects",
     "intro": "My highlights, the projects I like most.",
     "banner": "...",
@@ -73,7 +105,6 @@
         "key": "clinplay",
         "nome": "ClinPlaY",
         "linha": "Gamified and accessible physical therapy in SaaS format.",
-        "descricao": "Remote monitoring platform that transforms home exercises into an interactive and measurable experience. It uses gamification to boost motivation, provides continuous feedback on technique and execution, allowing the physiotherapist to monitor the patient's recovery without it being interrupted when they leave the clinic. ",
         "ano": "2026",
         "papel": "Scrum Master",
         "stack": ["React", "TypeScript", "Java", "Spring Boot"],
@@ -85,7 +116,6 @@
         "key": "vaga-02",
         "nome": "—",
         "linha": "to be defined",
-        "descricao": "",
         "ano": "—",
         "papel": "—",
         "stack": [],
@@ -96,7 +126,6 @@
         "key": "vaga-03",
         "nome": "—",
         "linha": "to be defined",
-        "descricao": "",
         "ano": "—",
         "papel": "—",
         "stack": [],
@@ -106,8 +135,44 @@
     ]
   },
 
+  "musica": {
+    "titulo": "Music",
+    "intro": "What has been playing on my Spotify.",
+    "tocando": "Playing now",
+    "silencio": "Nothing playing right now",
+    "faixas": "Most played this month",
+    "artistas": "Most listened this month",
+    "recentes": "Played recently"
+  },
+
+  "jogos": {
+    "titulo": "Games",
+    "intro": "What I have been playing lately.",
+    "jogando": "Playing now",
+    "ultimo": "Played last",
+    "recentes": "Last two weeks",
+    "horas": "h",
+    "duasSemanas": "in 2 weeks",
+    "total": "total"
+  },
+
+  "filmes": {
+    "titulo": "Films",
+    "intro": "My cinephile era.",
+    "favoritos": "Favourites",
+    "recentes": "Watched recently",
+    "posicao": "#{n} on the list",
+    "semNota": "no rating",
+    "revisita": "rewatch"
+  },
+
+  "remoto": {
+    "carregando": "Fetching…",
+    "erro": "Could not fetch this right now.",
+    "vazio": "Nothing here yet."
+  },
+
   "experiencia": {
-    "indice": "03",
     "titulo": "Journey",
     "intro": "My professional story, year by year.",
     "tipos": {
@@ -216,10 +281,9 @@
   },
 
   "contato": {
-    "indice": "04",
     "titulo": "Let us talk",
     "intro": "Open to opportunities and collaborations.",
-    "email": "lukasspiazzi@outlook.com",
+    "email": "lukasspiazzi@gmail.com",
     "ou": "or find me at",
     "enviar": "send",
     "enviando": "opening mail…",
@@ -236,20 +300,17 @@
 
   "credito": "Made with Claude",
 
-  "aviso": {
-    "fechar": "Dismiss notice",
-    "nova": {
-      "titulo": "Supernova",
-      "texto": "You have the power to bring a star to life. Experiment with clicking and holding on the cosmos."
-    }
-  },
-
   "a11y": {
-    "secoes": "Portfolio sections",
+    "secoes": "Sections",
+    "modos": "Switch between the personal site and the professional portfolio",
+    "modosAbrir": "Choose which side of the site",
     "idioma": "Switch language between Portuguese and English",
-    "projetos": "Projects — open a card to read the description",
+    "projetos": "Projects — use the arrow keys to move through the cards",
     "experiencia": "Journey — use the arrow keys to move through the years",
     "canais": "Contact channels",
-    "retrato": "Portrait"
+    "retrato": "Portrait",
+    "faixaAntes": "Previous in {lista}",
+    "faixaDepois": "Next in {lista}",
+    "perfil": "My {rede} profile"
   }
 }

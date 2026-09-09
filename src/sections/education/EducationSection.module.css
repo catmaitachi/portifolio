@@ -1,0 +1,216 @@
+/**
+ * Tokens da faixa de crachás.
+ *
+ * `--cw` e `--cgap` não são só tamanho: é deles que sai a distância que a faixa
+ * percorre numa volta (`--cw + --cgap`, vezes o número de formações). Mexer num
+ * dos dois sem que o outro saiba quebraria o laço, e por isso a conta está num
+ * lugar só, no `@keyframes` abaixo.
+ */
+.secao {
+  --cw: 236px; /* largura do crachá */
+  --ch: 348px; /* altura do crachá */
+  --cgap: 26px; /* respiro entre um crachá e o seguinte */
+  --cpad: 20px;
+  --cinterno: 12px;
+  --clogo-h: 62px;
+  --cfs-inst: 13px;
+  --cfs-nivel: 8.5px;
+  --cfs-curso: 15px;
+  --cfs-selo: 7.5px;
+  --cfs-valor: 10px;
+  /**
+   * Quanto tempo cada crachá leva para atravessar o seu próprio passo.
+   *
+   * A duração da volta é isto **vezes o número de formações**, e não um número
+   * fixo: com um número fixo, a faixa aceleraria a cada formação nova para dar
+   * a volta no mesmo tempo, e a velocidade é justamente o que se percebe aqui.
+   */
+  --cvolta: 8s;
+}
+
+.bloco {
+  max-width: 960px;
+}
+
+/**
+ * O palco corta o que passa da largura do bloco.
+ *
+ * É esse corte que faz a faixa entrar por uma borda e sair pela outra em vez de
+ * terminar numa aresta reta, e o `mask-image` apaga os últimos pontos de cada
+ * lado para amaciá-lo. A máscara é curta de propósito: o que importa aqui é ver
+ * os crachás inteiros, e um degradê longo devolveria como sombra o que a seção
+ * existe para mostrar.
+ *
+ * Ela só existe **enquanto a faixa anda**. Parada, não há nada entrando nem
+ * saindo, e um degradê nas bordas apagaria de leve o primeiro e o último crachá
+ * sem ter o que amaciar.
+ */
+/**
+ * O recuo é a folga por onde o crachá cresce ao ser apontado.
+ *
+ * O corte é do eixo X e não pode sair, mas `overflow: hidden` corta os dois, e
+ * o crachá que inclina passa da caixa por cima e por baixo. O recuo afasta a
+ * borda de corte e a margem negativa devolve o espaço ao layout, então nada em
+ * volta se mexeu. A máscara acompanha a caixa nova sozinha, porque o degradê é
+ * horizontal e o que muda aqui é a altura.
+ */
+.palco {
+  width: 100%;
+  margin-block: -22px;
+  padding-block: 22px;
+  overflow: hidden;
+}
+
+.palco[data-modo='desfilando'] {
+  mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+}
+
+/**
+ * O terceiro estado: não cabe, e não pode andar.
+ *
+ * Sob `prefers-reduced-motion` a faixa fica parada, e o que passa da largura
+ * ficaria fora da tela para sempre se o palco continuasse com `overflow:
+ * hidden`. Aqui ele rola de lado, com o encaixe por proximidade e a rolagem
+ * nativa que traz arrasto, roda e inércia de graça — é o mesmo arranjo das
+ * faixas de pôsteres de Filmes, e pela mesma razão.
+ */
+.palco[data-modo='rolavel'] {
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 22%) transparent;
+}
+
+/* o crachá vem de outro módulo, então o encaixe é pedido pelo filho da faixa */
+.faixa[data-modo='rolavel'] > * {
+  scroll-snap-align: center;
+}
+
+/**
+ * Uma volta.
+ *
+ * O deslocamento é exatamente **uma volta da lista** (`--n` crachás mais os
+ * respiros entre eles), e é por isso que a lista aparece duas vezes no DOM: no
+ * instante em que a animação reinicia, a cópia está ocupando o lugar da
+ * original, e o laço fecha sem nenhum salto.
+ *
+ * `linear` e nada mais: qualquer aceleração viraria um pulso, e a faixa deixaria
+ * de ser um movimento de fundo para virar um gesto que pede atenção.
+ */
+@keyframes desfilar {
+  to {
+    transform: translateX(calc(var(--n, 3) * (var(--cw) + var(--cgap)) * -1));
+  }
+}
+
+/**
+ * O trilho do arraste.
+ *
+ * Ele existe só para carregar um `transform`: o do dedo. A animação mora na
+ * faixa, que é filha dele, e no mesmo elemento os dois se apagariam — é a mesma
+ * separação do `<g>` da curva da Trajetória e da entrada do cartão de projeto.
+ *
+ * A largura acompanha a da faixa: em `max-content` quando ela desfila, para o
+ * conteúdo não se comprimir, e no palco inteiro quando ela cabe, para haver
+ * folga que o `justify-content` da faixa possa dividir.
+ */
+.trilho {
+  width: 100%;
+}
+
+.trilho[data-modo='desfilando'],
+.trilho[data-modo='rolavel'] {
+  width: max-content;
+}
+
+/**
+ * Parada, a faixa é uma fileira centrada; andando, ela é larga como o conteúdo.
+ *
+ * `width: max-content` é o que impede os crachás de se comprimirem para caber,
+ * e comprimidos a conta da volta deixaria de bater com a largura real, então a
+ * faixa saltaria a cada ciclo. Quando ela cabe, a largura passa a ser a do
+ * palco justamente para haver folga que o `justify-content` possa dividir: em
+ * `max-content` não sobra espaço nenhum, e centrar não teria efeito.
+ */
+.faixa {
+  display: flex;
+  gap: var(--cgap);
+  justify-content: center;
+  width: 100%;
+}
+
+.faixa[data-modo='desfilando'],
+.faixa[data-modo='rolavel'] {
+  justify-content: flex-start;
+  width: max-content;
+}
+
+.faixa[data-modo='desfilando'] {
+  animation: desfilar calc(var(--n, 3) * var(--cvolta)) linear infinite;
+}
+
+/**
+ * Enquanto ela desfila, o palco é uma superfície de arraste.
+ *
+ * O `touch-action: pan-y` divide o toque com a página, como o palco de Projetos:
+ * o dedo continua rolando a seção para cima e para baixo, e sobra o eixo
+ * horizontal, que é o do movimento. No mouse a faixa já está parada sob o
+ * ponteiro, então arrastar move o que está à vista.
+ */
+.palco[data-modo='desfilando'] {
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.palco[data-modo='desfilando']:active {
+  cursor: grabbing;
+}
+
+/**
+ * Apontar a faixa a segura.
+ *
+ * Não é conveniência: com o texto andando, ler um crachá inteiro depende de ele
+ * ficar parado, e o ponteiro em cima dele é exatamente o sinal de que alguém
+ * está lendo. `:focus-within` faz o mesmo por quem chegou pelo teclado.
+ */
+.palco:hover .faixa,
+.palco:focus-within .faixa {
+  animation-play-state: paused;
+}
+
+/**
+ * Mobile: o crachá encolhe, e é aqui que a faixa passa a andar.
+ *
+ * Os três não cabem na tela ao mesmo tempo, e nenhum ajuste de largura
+ * resolveria isso sem deixar o texto ilegível: três crachás legíveis pedem mais
+ * de 600px. É essa falta que o movimento cobre, porque cada um passa pelo meio
+ * sozinho. Ninguém escreve isso em lugar nenhum: quem decide é a medida do DOM
+ * (`useCabeNaFaixa`), e estes números só a alimentam.
+ */
+@media (width <= 640px) {
+  .secao {
+    --cw: 186px;
+    --ch: 288px;
+    --cgap: 18px;
+    --cpad: 16px;
+    --cinterno: 10px;
+    --clogo-h: 50px;
+    --cfs-inst: 11px;
+    --cfs-nivel: 7.5px;
+    --cfs-curso: 13px;
+    --cfs-selo: 7px;
+    --cfs-valor: 9.5px;
+  }
+}
+
+/* paisagem curta: falta altura, e o crachá é a peça mais alta da página */
+@media (width > 640px) and (height <= 720px) {
+  .secao {
+    --cw: 206px;
+    --ch: 296px;
+    --cpad: 16px;
+    --cinterno: 9px;
+    --clogo-h: 50px;
+    --cfs-curso: 14px;
+  }
+}

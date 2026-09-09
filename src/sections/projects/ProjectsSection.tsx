@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { useArrowKeys } from '~/hooks/useArrowKeys';
 import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
+import type { SectionProps } from '../types';
 import { ProjectCard } from './ProjectCard';
 import styles from './ProjectsSection.module.css';
 import { useOrbit } from './useOrbit';
@@ -11,43 +12,22 @@ import { useOrbit } from './useOrbit';
  * Projetos: carrossel em órbita 3D.
  *
  * Girar: clique num cartão lateral, ←/→ (sem precisar de foco, enquanto a seção
- * está ativa), arraste horizontal ou os traços-índice abaixo. Clique no cartão
- * da frente abre a descrição sobre ele — exceto numa vaga, que gira mas não abre.
+ * está ativa), arraste horizontal ou os traços-índice abaixo.
+ *
+ * **Não há mais painel de descrição.** O cartão mostra tudo o que tem, e o link
+ * para o projeto fica na frente dele (ver `ProjectCard`). Com isso saíram daqui
+ * o fechamento ao deixar a seção e a tecla Esc: não existe mais estado aberto
+ * para desfazer.
  */
-export function ProjectsSection({ ativo }: { ativo: boolean }) {
+export function ProjectsSection({ ativo, indice }: SectionProps) {
   const t = useT();
   const secaoRef = useRef<HTMLElement>(null);
   // o conteúdo encolhe até caber na altura que a tela tem
   useEscalaQueCabe(secaoRef);
   const lista = t.projetos.lista;
   const orbita = useOrbit(lista.length);
-  const { fechar } = orbita;
 
   useArrowKeys(ativo, orbita.girar);
-
-  // sair da seção fecha o painel aberto: voltar depois e encontrar um cartão
-  // já aberto seria um estado que o visitante não pediu
-  useEffect(() => {
-    if (!ativo) fechar();
-  }, [ativo, fechar]);
-
-  /**
-   * Esc fecha o painel.
-   *
-   * O painel cobre o cartão inteiro e é a única coisa focável ali dentro; sem
-   * uma saída explícita, quem navega por teclado teria de voltar até o cartão e
-   * apertar Enter de novo para sair do que abriu.
-   */
-  useEffect(() => {
-    if (!ativo || orbita.aberto === null) return;
-    const aoTeclar = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-      e.preventDefault();
-      fechar();
-    };
-    window.addEventListener('keydown', aoTeclar);
-    return () => window.removeEventListener('keydown', aoTeclar);
-  }, [ativo, orbita.aberto, fechar]);
 
   return (
     <section
@@ -57,7 +37,7 @@ export function ProjectsSection({ ativo }: { ativo: boolean }) {
     >
       <div className={`${comum.bloco} ${styles.bloco}`} data-ativo={ativo || undefined}>
         <p className={comum.indice}>
-          <span>{t.projetos.indice}</span>
+          <span>{indice}</span>
           <span className={comum.indiceRisco} aria-hidden="true" />
         </p>
 
@@ -81,9 +61,7 @@ export function ProjectsSection({ ativo }: { ativo: boolean }) {
                 indice={i}
                 geo={orbita.geometria(i, p.estado === 'definir')}
                 ativo={ativo}
-                aberto={orbita.aberto === i}
-                focavel={orbita.aberto === null || orbita.aberto === i}
-                onAlternar={() => orbita.alternar(i, p.estado !== 'definir')}
+                onFocar={() => orbita.focar(i)}
               />
             ))}
           </div>

@@ -1,0 +1,259 @@
+/**
+ * Entrada: os crachás chegam da direita, um depois do outro.
+ *
+ * O curso é o da faixa, e é isso que o distingue da entrada de Projetos, que
+ * sobe: aqui o movimento da seção é horizontal, e um crachá que entrasse por
+ * baixo faria uma promessa de eixo que o resto da seção não cumpre.
+ *
+ * A animação mora no crachá e a translação contínua mora na faixa, que é o pai:
+ * uma animação de `transform` no mesmo elemento apagaria a outra enquanto roda.
+ * É a mesma separação do cartão de projeto e do `<g>` da curva da Trajetória.
+ *
+ * **Sem quique**, e a opacidade chega antes do movimento: é a gramática dos
+ * cartões de projeto e dos canais de contato.
+ */
+@keyframes crachaEntra {
+  from {
+    opacity: 0;
+    transform: translateX(64px) scale(0.96);
+  }
+
+  42% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/**
+ * O crachá.
+ *
+ * Retângulo em pé, com as peças empilhadas e centradas. O centro é consequência
+ * da forma, não estética: numa coluna estreita, texto à esquerda sob um logo
+ * centrado leria como duas colunas que não existem. O rodapé é a exceção, e é
+ * onde a leitura fecha.
+ */
+.cracha {
+  /* âncora do brilho especular, que é `position: absolute` */
+  position: relative;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: var(--cinterno, 12px);
+  align-items: center;
+  width: var(--cw, 236px);
+  height: var(--ch, 348px);
+  padding: var(--cpad, 20px);
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 2px;
+  background: rgb(0 0 0 / 74%);
+  overflow: hidden;
+  text-align: center;
+
+  /* o clarão acompanha a largura do crachá, não os 240px do retrato */
+  --brilho-r: 150px;
+
+  /* a inclinação é escrita pelo JS; o retorno ao repouso é desta transição */
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition:
+    transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.55s ease;
+}
+
+/* chanfro dos dois cantos opostos — ver "Cantos chanfrados" no CLAUDE.md */
+@supports (corner-shape: bevel) {
+  .cracha {
+    corner-shape: bevel;
+    border-radius: 18px 2px;
+  }
+}
+
+/* pretensão: ainda não aconteceu, então a moldura é tracejada */
+.cracha[data-estado='pretensao'] {
+  border-style: dashed;
+}
+
+/**
+ * `backwards`, nunca `forwards`: o estado final já é o estado natural do crachá,
+ * e o que precisa ser coberto é o **atraso**. `--ordem` é a posição na faixa,
+ * então acrescentar formações não pede nada aqui.
+ */
+.cracha[data-entrada] {
+  animation: crachaEntra 0.8s cubic-bezier(0.16, 0.84, 0.24, 1) calc(var(--ordem, 0) * 130ms)
+    backwards;
+}
+
+/**
+ * O furo da fita.
+ *
+ * É o que faz um retângulo em pé ser lido como crachá, e é a única forma nova
+ * que o cartão ganhou. Um risco de 1px, como tudo aqui: sem preenchimento, sem
+ * sombra e sem ilusão de recorte. Ele substituiu a moldura dupla, que era a
+ * gramática de um certificado e deixou de valer quando o cartão trocou de forma.
+ */
+.furo {
+  flex: none;
+  width: 52px;
+  height: 7px;
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 4px;
+}
+
+.logo {
+  flex: none;
+  width: 100%;
+  height: var(--clogo-h, 62px);
+  margin-top: 4px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.titulos {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.instituicao {
+  max-width: 100%;
+  overflow: hidden;
+  color: #fff;
+  font-size: var(--cfs-inst, 13px);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nivel {
+  color: rgb(255 255 255 / 50%);
+  font-size: var(--cfs-nivel, 8.5px);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+/**
+ * O selo: onde um crachá carimba o que ele credencia.
+ *
+ * É o estado da formação, e ele mora **só** aqui — no medidor a mesma palavra
+ * apareceria duas vezes no mesmo cartão, e ali ela competiria com a fração, que
+ * é o número que a barra explica.
+ */
+.selo {
+  flex: none;
+  padding: 6px 10px;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 2px;
+  color: rgb(255 255 255 / 72%);
+  font-size: var(--cfs-selo, 7.5px);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@supports (corner-shape: bevel) {
+  .selo {
+    corner-shape: bevel;
+    border-radius: 7px 2px;
+  }
+}
+
+.cracha[data-estado='pretensao'] .selo {
+  border-style: dashed;
+  color: rgb(255 255 255 / 52%);
+}
+
+/**
+ * O curso ocupa o miolo, e as margens automáticas o centram no que sobra.
+ *
+ * Sem elas o bloco todo ficaria colado no alto e o rodapé pendurado sozinho lá
+ * embaixo; com elas, a folga se divide acima e abaixo do curso, que é a linha
+ * que o crachá existe para nomear.
+ */
+.curso {
+  margin: auto 0;
+  color: rgb(255 255 255 / 82%);
+  font-size: var(--cfs-curso, 15px);
+  font-weight: 300;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  text-wrap: pretty;
+}
+
+.rodape {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding-top: 12px;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+}
+
+.linhaDado {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+/* a posição na lista, na régua do índice das seções */
+.ordinal {
+  color: rgb(255 255 255 / 26%);
+  font-size: 8px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.2em;
+  white-space: nowrap;
+}
+
+/**
+ * O dado que o estado produz: a data de conclusão ou os períodos cumpridos.
+ *
+ * O valor fica **fora do i18n**, como a versão no rodapé: "2022.12" e "4/8" são
+ * dados, idênticos nos dois idiomas. Quem traduz é o rótulo ao lado.
+ */
+.dado {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.rotulo {
+  color: rgb(255 255 255 / 34%);
+  font-size: 7.5px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.valor {
+  color: rgb(255 255 255 / 86%);
+  font-size: var(--cfs-valor, 10px);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+}
+
+/* o medidor toma a linha inteira, e a fração a fecha pela direita */
+.medidor {
+  min-width: 0;
+}
+
+.parte {
+  flex: none;
+  min-width: 4ch;
+  color: rgb(255 255 255 / 62%);
+  font-size: 8.5px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+  text-align: right;
+}

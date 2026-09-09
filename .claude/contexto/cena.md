@@ -16,7 +16,14 @@ próprio no build; nada da primeira pintura depende dele.
   inferior direito (`cancer`), Projetos no superior direito (`crux`), Trajetória no superior esquerdo
   (`ursaMajor`) e Contato no inferior esquerdo (`phoenix`);
 - **nunca repetir as coordenadas de um `placement` entre seções** — a troca fica invisível, e com uma
-  figura só isso pesa ainda mais.
+  figura só isso pesa ainda mais. **Os dois modos têm cinco seções com céu para quatro cantos**, e
+  cada um resolve isso com um lugar que não é canto. No pessoal (Sobre, Música, Jogos, Filmes e
+  Contato) é Filmes, na direita a dois terços, porque o par mais próximo seria justamente Filmes e
+  Contato. No profissional (Sobre, Formação, Projetos, Trajetória e Contato) é Formação, na esquerda
+  a dois terços: a vaga dela cai entre Sobre e Projetos, que estão os dois à direita, então a figura
+  vai para o outro lado e as duas trocas atravessam a tela. Nos dois modos a altura é a mesma, dois
+  terços, que é onde a figura passa por baixo do miolo em que o conteúdo mora. Coordenadas se repetem **entre modos** sem problema: duas seções
+  que nunca aparecem no mesmo lado do site não têm troca entre si.
 
 `tween(obj, key, to, dur)` interpola qualquer propriedade num rAF próprio, cancelando o anterior na
 mesma propriedade.
@@ -124,7 +131,6 @@ uma rampa de 0,3s, senão o toque curto arrancaria o céu antes de explodir.
 | `scene/SpaceCanvas.tsx` | **o que conta como gesto no vazio** — conhecimento do DOM da página, não do motor |
 | `scene/scenePlan.ts` | `NOVA_NIVEIS`, a tabela onde os tempos vivem uma vez só |
 | `hud/NovaGauge.tsx` | o anel de recarga, animado só por CSS |
-| `hud/useNovaHint.ts` | quando sugerir a supernova a quem ainda não a descobriu |
 
 O `App` liga as pontas: a cena avisa qual nível foi acendido e ele entrega ao medidor a recarga
 **daquele** nível, lida da mesma `NOVA_NIVEIS`. Um círculo que fecha antes (ou depois) de o próximo

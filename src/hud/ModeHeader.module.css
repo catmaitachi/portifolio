@@ -1,0 +1,195 @@
+/** ver `HeroSection.module.css`: keyframe e uso precisam morar no mesmo módulo */
+@keyframes fina {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/**
+ * O cabeçalho fica **centrado** no topo, e o menu abre para baixo a partir dali.
+ *
+ * O centro é o lugar de um cabeçalho, e no desktop ele está livre: o seletor de
+ * idioma ocupa a direita e o canto esquerdo está vazio. No mobile o idioma passa a ocupar
+ * o centro da primeira linha, então o cabeçalho desce **uma linha e fica abaixo
+ * dele**, ainda centrado. Empilhados eles leem como um bloco de cabeçalho, e
+ * dividir a mesma linha não caberia numa tela de 375px.
+ *
+ * A altura que ele reserva é `--hud-topo-altura`, em `reset.css`, e é de lá que
+ * as seções derivam o respiro do topo. No mobile ela conta **duas** linhas, pela
+ * mesma razão. Mexer no tamanho de uma linha é mexer em `--hud-topo-linha`, uma
+ * vez só. **O menu aberto e a frase não entram nessa conta**: os dois são
+ * transitórios e passam por cima do conteúdo, como qualquer menu.
+ *
+ * Entra em 5s, entre o menu de seções (4.9s) e o crédito (5.2s): é navegação, e
+ * chega junto com a outra.
+ */
+.cabecalho {
+  --cab-top: var(--hud-topo-base);
+  --cab-fs: 10px;
+  /* a altura de uma opção; é ela que a expansão anima, de zero até aqui */
+  --cab-item: var(--hud-topo-linha);
+
+  position: absolute;
+  z-index: 4;
+  top: var(--cab-top);
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+  animation: fina 1s ease-out 5s both;
+}
+
+/**
+ * Os dois nomes se alinham pelo **centro**, não pela esquerda.
+ *
+ * "Profissional" é mais longo que "Pessoal", e num cabeçalho centrado alinhá-los
+ * à esquerda deixaria o bloco inteiro torto em relação ao eixo da página.
+ */
+.lista {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/**
+ * O lado em vigor fica **sempre em cima**, por `order`.
+ *
+ * Sem isso, o nome recolhido apareceria na posição que a chave dele ocupa em
+ * `MODOS` — o segundo, com um vazio acima — e ao abrir o menu ele saltaria de
+ * lugar, que é exatamente o quadro em que o olho está olhando para ele.
+ */
+.modo {
+  display: flex;
+  order: 1;
+  align-items: center;
+  height: var(--cab-item);
+  margin: 0;
+  padding: 0 2px;
+  overflow: hidden;
+  border: 0;
+  background: none;
+  color: rgb(255 255 255 / 40%);
+  font: inherit;
+  font-size: var(--cab-fs);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    height 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.26s ease,
+    transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+    color 0.35s;
+}
+
+.modo[data-escolhido] {
+  order: 0;
+  color: #fff;
+}
+
+.modo:hover {
+  color: rgb(255 255 255 / 72%);
+}
+
+/**
+ * Recolhido, o que não está em vigor tem altura zero.
+ *
+ * Altura, e não `display: none`: o menu abre e fecha animado, e um elemento que
+ * sai da árvore não tem de onde crescer. O `overflow: hidden` do `.modo` é o que
+ * mantém o texto dentro da caixa de altura zero.
+ */
+.modo[data-oculto] {
+  height: 0;
+  opacity: 0;
+  transform: translateY(-5px);
+  pointer-events: none;
+}
+
+/**
+ * A frase sobre o lado apontado.
+ *
+ * `position: absolute` para que a caixa do `<nav>` continue sendo só o menu. O
+ * cabeçalho não é o canvas nem uma `<section>`, então pressioná-lo não acende
+ * supernova (ver o filtro em `SpaceCanvas`), e uma zona morta do tamanho da
+ * frase, no canto onde o olho cai primeiro, seria zona morta o tempo todo e não
+ * só enquanto ela está à mostra.
+ *
+ * `top: 100%` a coloca sob o menu, e ela **desce junto** quando ele abre, porque
+ * quem cresceu foi a caixa do menu. É a leitura certa: a frase é sobre o nome que
+ * está sendo apontado, e precisa continuar embaixo dele.
+ *
+ * `display: grid` com as duas frases na **mesma célula** (`grid-area: 1 / 1`) é o
+ * que as empilha sem tirá-las do fluxo: o painel mede a mais larga, e trocar uma
+ * pela outra não muda largura nenhuma.
+ */
+.painel {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  display: grid;
+  padding-top: 6px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.descricao {
+  grid-area: 1 / 1;
+  margin: 0;
+  color: rgb(255 255 255 / 38%);
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  /* é rótulo, não texto corrido: não se justifica nem se parte ao meio */
+  text-align: center;
+  white-space: nowrap;
+  hyphens: manual;
+  opacity: 0;
+  /* `--lado` é a distância em índices até a frase mostrada: 0 nela, ±1 nas vizinhas */
+  transform: translateX(calc(var(--lado, 0) * 12px));
+  transition:
+    opacity 0.28s ease,
+    transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.descricao[data-visivel] {
+  opacity: 1;
+}
+
+/**
+ * Sem ponteiro não há frase.
+ *
+ * Ela aparece no hover, e num aparelho de toque o menu é a interação inteira.
+ * Deixá-la no DOM sem `display: none` faria a frase abrir no toque e ficar
+ * aberta cobrindo o topo da seção até o toque seguinte.
+ */
+@media (hover: none) {
+  .painel {
+    display: none;
+  }
+}
+
+/**
+ * No mobile ele desce para a segunda linha do topo, sob o seletor de idioma.
+ *
+ * O idioma é centrado ali desde antes de existir cabeçalho, e os dois na mesma
+ * linha não cabem: "Pessoal | Profissional" já mede 218px numa tela de 375, e o
+ * seletor come outros 68. Empilhados, os dois continuam centrados e leem como um
+ * bloco só.
+ *
+ * O deslocamento sai de `--hud-topo-linha` mais o respiro entre as duas, e é a
+ * mesma conta que `--hud-topo-altura` faz do outro lado, em `reset.css`. Um
+ * número solto aqui sairia de sincronia com o que as seções reservam, que é
+ * exatamente o defeito que o rodapé já teve uma vez.
+ */
+@media (width <= 640px) {
+  .cabecalho {
+    --cab-top: calc(var(--hud-topo-base) + var(--hud-topo-linha) + var(--hud-topo-entre));
+    --cab-fs: 9px;
+  }
+}

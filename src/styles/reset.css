@@ -26,6 +26,35 @@
   --hud-nav-altura: 44px;
   /* topo do rodapé: abaixo disso é território do HUD */
   --hud-rodape: calc(var(--hud-nav-base) + var(--hud-nav-altura));
+
+  /* onde a primeira linha do topo começa, medindo da borda */
+  --hud-topo-base: max(2.4vh, 20px);
+  /* a altura de uma linha do topo: o seletor de idioma, ou o cabeçalho de modo */
+  --hud-topo-linha: 21px;
+  /* o respiro entre as duas linhas, quando elas se empilham */
+  --hud-topo-entre: 6px;
+  /**
+   * Quanto o HUD ocupa no topo.
+   *
+   * No desktop é uma linha só, porque idioma e cabeçalho dividem a mesma: um à
+   * direita, o outro no centro. O menu aberto e a frase do hover **não** entram
+   * aqui — os dois são transitórios e passam por cima do conteúdo.
+   */
+  --hud-topo-altura: var(--hud-topo-linha);
+  /* base do topo: acima disso é território do HUD */
+  --hud-topo: calc(var(--hud-topo-base) + var(--hud-topo-altura));
+  /* o que separa o conteúdo do cabeçalho, espelhando o respiro do rodapé */
+  --hud-topo-respiro: clamp(10px, 2svh, 18px);
+}
+
+/**
+ * No mobile o topo tem **duas** linhas: idioma em cima, cabeçalho de modo
+ * embaixo. Os dois centrados, e não cabem lado a lado numa tela estreita.
+ */
+@media (width <= 640px) {
+  :root {
+    --hud-topo-altura: calc(2 * var(--hud-topo-linha) + var(--hud-topo-entre));
+  }
 }
 
 *,

@@ -43,8 +43,22 @@ const FOLGA = 0.97;
  * **A medida é iterativa de propósito.** `getBoundingClientRect` devolve a altura
  * já com o `zoom` aplicado, então a altura natural sai dividindo pela escala em
  * vigor. Aplicar a escala nova muda a medida e acorda o observador de novo, mas
- * na segunda passagem a diferença cai abaixo de `EPSILON` e a coisa para. É o
- * `EPSILON` que fecha o laço, não um limite de tentativas.
+ * na segunda passagem a diferença cai abaixo de `EPSILON` e a coisa para.
+ *
+ * **`EPSILON` sozinho não fecha o laço, e essa era uma premissa errada.** Ele
+ * fecha enquanto a altura do conteúdo for proporcional à escala, e ela não é: um
+ * parágrafo que cabe em duas linhas numa escala e pede três na seguinte muda de
+ * altura em degrau. Aí existem duas escalas que se apontam uma para a outra — na
+ * menor sobra espaço e o hook cresce, na maior falta e ele encolhe — e a medição
+ * fica indo e voltando para sempre. No desktop isso passa despercebido porque
+ * sobra altura; no mobile, com a seção justa, a tela treme.
+ *
+ * O que fecha o laço é uma **busca monótona**: encolher prova que a escala em
+ * vigor não cabia, então ela vira teto e nunca mais é proposta. Cada passo baixa
+ * o teto em pelo menos `EPSILON`, então o pior caso são algumas dezenas de
+ * passos entre 1 e `MINIMA`, e não um laço infinito. O teto é medido, não
+ * escrito: ele volta a ser o do CSS quando a **seção** muda de tamanho, que é
+ * quando tudo o que se sabia sobre o que cabe deixa de valer.
  *
  * O `--esc` é escrito na seção e o `zoom` mora nos filhos dela (ver
  * `section.module.css`), o que deixa o padding de fora: o espaço do HUD no
@@ -57,6 +71,15 @@ export function useEscalaQueCabe(secaoRef: React.RefObject<HTMLElement | null>):
     if (!secao) return;
 
     let raf = 0;
+
+    /**
+     * A maior escala que já se provou não caber, nesta altura de tela.
+     *
+     * Começa sem valor: o teto é o do CSS até a primeira medição dizer o
+     * contrário. É ele que impede a proposta de crescer de volta para uma escala
+     * que já transbordou, que é o passo com que a oscilação se alimenta.
+     */
+    let tetoMedido = Infinity;
 
     /**
      * Teto da escala, vindo do CSS (`--esc-max`).
@@ -87,15 +110,20 @@ export function useEscalaQueCabe(secaoRef: React.RefObject<HTMLElement | null>):
       const atual = parseFloat(secao.style.getPropertyValue('--esc')) || limite;
       // a altura que o conteúdo teria sem escala nenhuma
       const natural = ocupado / atual;
-      const nova = Math.min(limite, Math.max(MINIMA, (dentro * FOLGA) / natural));
+      const cabe = (dentro * FOLGA) / natural;
+      const nova = Math.min(limite, tetoMedido, Math.max(MINIMA, cabe));
 
       if (Math.abs(nova - atual) < EPSILON) return;
+      // encolher é a prova de que a escala em vigor não coube: ela vira teto
+      if (nova < atual) tetoMedido = atual - EPSILON;
       // no teto, devolve a decisão ao CSS em vez de fixar o mesmo número inline
       if (nova >= limite) secao.style.removeProperty('--esc');
       else secao.style.setProperty('--esc', nova.toFixed(3));
     };
 
-    const agendar = () => {
+    const agendar = (entradas: ResizeObserverEntry[] = []) => {
+      // a seção mudou de tamanho: o que se sabia sobre o que cabe não vale mais
+      if (entradas.some((e) => e.target === secao)) tetoMedido = Infinity;
       if (raf) return;
       raf = requestAnimationFrame(medir);
     };

@@ -2,7 +2,20 @@
 
 ## Requisitos Funcionais (RF)
 
-**RF01** — O sistema deve exibir 5 seções navegáveis por scroll vertical com snap: Início, Sobre, Projetos, Trajetória e Contato.
+**RF01** — O sistema deve exibir dois modos, Pessoal e Profissional, cada um com a própria lista de seções navegáveis por scroll vertical com snap. O modo profissional traz Início, Sobre, Formação, Projetos, Trajetória e Contato; o pessoal traz Início, Sobre, Música, Jogos, Filmes e Contato.
+
+**RF01a** — O sistema deve permitir alternar entre os modos por um cabeçalho no topo, que ao receber o ponteiro exibe as seções do modo apontado e anima a transição entre as duas listas.
+
+**RF01b** — O sistema deve refletir o modo e a seção no endereço (`#modo/secao`), de forma que o link possa ser compartilhado, a página recarregada no mesmo ponto e o botão voltar desfaça a troca de modo.
+
+**RF01c** — A seção Contato deve exibir os canais do modo em vigor.
+
+**RF01d** — O modo Pessoal deve exibir a música que está tocando e as mais ouvidas do mês, o jogo em
+execução e os jogados nas últimas duas semanas, e os últimos filmes assistidos com a nota atribuída,
+buscando esses dados de Spotify, Steam e Letterboxd.
+
+**RF01e** — O sistema deve distinguir na tela os estados de espera, de falha e de ausência de dado,
+nunca apresentando falha como ausência.
 
 **RF02** — O sistema deve permitir navegação entre seções via menu lateral, clique e teclado (↑/↓, PageUp/Down, Home/End), e no mobile também pela rolagem da faixa de seções, que deve mover a página e o destaque de forma contínua durante o gesto.
 
@@ -16,19 +29,23 @@
 
 **RF07** — A seção Início deve exibir etiqueta, nome e legenda, com entrada animada em cascata.
 
-**RF08** — A seção Sobre deve exibir retrato, biografia com rolagem própria e lista de formações em badges.
+**RF08** — A seção Sobre deve exibir retrato, biografia com rolagem própria e os dados de nascimento e residência.
+
+**RF08a** — A biografia deve mudar conforme o modo em vigor, com um texto por modo em cada idioma.
+
+**RF08b** — A seção Formação, exclusiva do modo profissional, deve exibir as formações como crachás verticais com todas as informações visíveis ao mesmo tempo, dispostos numa faixa horizontal e agrupados por estado, na ordem em curso, concluído e pretensão. A faixa deve permanecer parada e centrada quando todos os crachás couberem na largura disponível, e apenas nesse caso deve entrar em movimento contínuo, sem paradas e sem cartão selecionado. O movimento deve pausar enquanto o ponteiro ou o foco estiverem sobre a faixa, e sob `prefers-reduced-motion` deve ser substituído por rolagem horizontal navegável por teclado.
 
 **RF09** — O sistema deve indicar o estado de cada formação (concluído, cursando, pretensão).
 
-**RF10** — O sistema deve converter a lista de formações em carrossel automático quando os badges não couberem na tela.
+**RF10** — Cada diploma deve exibir a data de conclusão ou a fração de etapas cumpridas junto da barra de estado.
 
 **RF11** — A seção Projetos deve exibir os projetos em um carrossel em órbita 3D, navegável por clique, arraste e teclado.
 
-**RF12** — Cada cartão de projeto deve exibir banner, índice, nome, linha de resumo, ano, papel, stack tecnológica e estado.
+**RF12** — Cada cartão de projeto deve exibir banner, índice, nome, linha de resumo, ano, papel, stack tecnológica, estado e o link "ver ao vivo" quando houver, tudo na frente do cartão, com o estado e o link nas extremidades opostas do rodapé.
 
-**RF13** — O sistema deve expandir a descrição do projeto sobre o cartão ao ser clicado, incluindo link "ver ao vivo" quando disponível.
+**RF13** — O sistema não deve manter conteúdo oculto atrás de interação: não há painel de descrição, e o link "ver ao vivo" responde apenas no cartão que está na frente da órbita.
 
-**RF14** — O sistema deve indicar o estado de cada projeto (ativo, arquivado, vaga), sendo que projetos em estado "vaga" não abrem descrição.
+**RF14** — O sistema deve indicar o estado de cada projeto (ativo, arquivado, vaga), sendo que projetos em estado "vaga" não têm link para onde levar.
 
 **RF15** — A seção Trajetória deve exibir uma linha do tempo em curva com progresso preenchido até o evento ativo.
 
@@ -57,8 +74,6 @@
 **RF27** — O sistema deve acender uma estrela e disparar uma onda de choque que desloca as estrelas vizinhas quando o visitante clicar ou tocar em uma área vazia da cena.
 
 **RF28** — O sistema deve impor um tempo de recarga entre duas estrelas acesas, indicado por um medidor circular que se fecha durante a espera e desaparece quando a funcionalidade volta a estar disponível.
-
-**RF29** — O sistema deve sugerir a funcionalidade de acender estrelas por meio de um aviso dispensável, que não deve ser exibido a quem já a descobriu em qualquer visita anterior.
 
 **RF30** — A biografia deve entrar cifrada e se decifrar progressivamente, um parágrafo após o outro, quando a seção Sobre se torna ativa.
 

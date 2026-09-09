@@ -1,3 +1,4 @@
+
 .caixa {
   /* --retrato é redefinido pela seção Sobre nas faixas responsivas */
   width: var(--retrato, 100%);
@@ -5,7 +6,6 @@
   /* a proporção é token da seção Sobre, que a usa para limitar a coluna do texto */
   aspect-ratio: 1 / var(--retrato-ar, 1.25);
   justify-self: center;
-  perspective: 900px;
 }
 
 .carta {
@@ -31,17 +31,27 @@
   }
 }
 
-/** Brilho especular: um halo que segue o cursor por --bx/--by. */
-.brilho {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    240px circle at var(--bx, 50%) var(--by, 50%),
-    rgb(255 255 255 / 30%),
-    rgb(255 255 255 / 6%) 42%,
-    transparent 70%
-  );
-  opacity: 0;
-  transition: opacity 0.45s ease;
-  pointer-events: none;
+/* o brilho especular mora em `section.module.css`, compartilhado (ver `useInclinacao`) */
+
+/**
+ * **A moldura só existe quando não há imagem.**
+ *
+ * Ela nasceu como espaço reservado: sem arte, o que sobra é um retângulo de 1px
+ * na proporção certa, e sem ele sobraria o ícone de imagem quebrada do
+ * navegador, a única coisa fora da paleta na página inteira. Sobre a arte, ela
+ * não estava reservando nada — era um fio branco em volta de toda imagem da
+ * página, e num conjunto de artes coloridas isso lê como recorte mal feito.
+ *
+ * A borda continua declarada e só perde a cor, então a caixa não muda de tamanho
+ * e nada em volta se mexe. O fundo sai junto: com `background-clip: border-box`,
+ * que é o padrão, ele pintaria a faixa de 1px que a borda transparente deixou
+ * ver, e o fio voltaria mais fraco.
+ *
+ * `:has` é o que permite perguntar isso ao próprio elemento. O estado que
+ * interessa é "a imagem chegou", e ele não existe no React: quem o produz é o
+ * `onError` da `<img>`, escrevendo `hidden` no nó.
+ */
+.carta:has(img:not([hidden])) {
+  border-color: transparent;
+  background: none;
 }

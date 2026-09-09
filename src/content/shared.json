@@ -2,6 +2,12 @@
   "_comentario": [
     "Conteúdo que NÃO muda entre idiomas. Textos ficam em pt.json / en.json.",
     "secoes  — ordem canônica das seções. A chave casa com `nav` nos dicionários.",
+    "          NÃO é a ordem de rolagem: quem manda nela é o modo (ver `modos`).",
+    "modos   — o site pessoal e o portfólio profissional. Cada um traz as seções que",
+    "          tem e os canais de contato que mostra. A chave casa com `modos` nos",
+    "          dicionários; `secoes` casa com `secoes` e `canais` com `canais`.",
+    "perfis  — o perfil de onde o dado de uma seção vem, com link e ícone. A chave é a",
+    "          da seção; `icone` casa com uma chave de ICONES (src/content/assets.ts).",
     "canais  — cartões da seção Contato. `icone` casa com uma chave de ICONES",
     "          (src/content/assets.ts). Canal sem `url` aparece tracejado e apagado.",
     "logos   — escala óptica por logo de formação. A chave casa com `slot` em",
@@ -11,10 +17,45 @@
   "secoes": [
     { "key": "inicio" },
     { "key": "sobre" },
+    { "key": "formacao" },
     { "key": "projetos" },
     { "key": "experiencia" },
+    { "key": "musica" },
+    { "key": "jogos" },
+    { "key": "filmes" },
     { "key": "contato" }
   ],
+
+  "modos": [
+    {
+      "key": "pessoal",
+      "secoes": ["inicio", "sobre", "musica", "jogos", "filmes", "contato"],
+      "canais": ["instagram", "tiktok"]
+    },
+    {
+      "key": "profissional",
+      "secoes": ["inicio", "sobre", "formacao", "projetos", "experiencia", "contato"],
+      "canais": ["github", "linkedin"]
+    }
+  ],
+
+  "perfis": {
+    "musica": {
+      "icone": "spotify",
+      "rotulo": "Spotify",
+      "url": "https://open.spotify.com/user/ksfikml2v9h6y3uxhuhlctbqw"
+    },
+    "jogos": {
+      "icone": "steam",
+      "rotulo": "Steam",
+      "url": "https://steamcommunity.com/profiles/76561198386226487"
+    },
+    "filmes": {
+      "icone": "letterboxd",
+      "rotulo": "Letterboxd",
+      "url": "https://letterboxd.com/catmaitachi/"
+    }
+  },
 
   "canais": [
     {

@@ -6,16 +6,19 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | Onde | Tokens |
 |---|---|
 | `section.module.css` | `--pt --pb --px --gap` |
-| `AboutSection` | `--retrato-col --retrato-ar --cols --corpo-gap --retrato --coluna-max --txt --pfs --plh` |
-| `EducationCarousel` | `--bw --badge-pad --badge-gap --badge-corpo-gap --logo-w --logo-h --fs-inst --fs-nivel --fs-curso --detalhe-w --detalhe-ml` |
+| `AboutSection` | `--retrato-col --retrato-ar --cols --corpo-gap --retrato --coluna-max --txt --pfs --plh --fatos-gap --fatos-pt --fatos-fs` |
+| `EducationSection` | `--cw --ch --cgap --cpad --cinterno --clogo-h --cfs-inst --cfs-nivel --cfs-curso --cfs-selo --cfs-valor --cvolta` |
 | `ProjectsSection` | `--pcw --pch --pbh --ph --pr --pperspectiva --pcard` |
 | `JourneySection` | `--exph --exp-cargo --exp-per --exp-curva --exp-rail --exp-fantasma --exp-gap --exp-txt --exp-topo` |
+| `MusicSection` | `--capa` |
+| `GamesSection` | `--arte-w --arte-ar --faixa-item` |
+| `FilmsSection` | `--faixa-item` |
 | `ContactSection` | `--form-cols --enviar-just` |
 | `NavMenu` | `--nav-top --nav-bottom --nav-left --nav-right --nav-tx --nav-ty --nav-dir --nav-align --nav-gap --nav-risco --nav-risco-ativo --nav-risco-w --nav-risco-esc --nav-risco-rot` |
 | `LanguageToggle` | `--lang-left --lang-right --lang-tx` |
 | `Version` | `--ver-bottom --ver-left --ver-right --ver-tx` |
+| `ModeHeader` | `--cab-left --cab-fs --cab-item` |
 | `NovaGauge` | `--nova-bottom --nova-left --nova-size` |
-| `Notice` | `--aviso-top --aviso-left --aviso-w` |
 | `Credit` | `--credito-vis` |
 
 Faixas: `≤640px` (mobile: coluna única, nav horizontal, seletor centrado, quatro vagas na linha do
@@ -28,6 +31,17 @@ alcançava também 360×640 e 375×667, que são celulares comuns em pé: ali o 
 `--pb` caía de 116px para ~70px contra os 100px que o HUD ocupa, e **o conteúdo corria por baixo da
 barra de seções**. As duas faixas descrevem situações diferentes, então não podem se sobrepor.
 
+### O topo e o rodapé são contratos
+
+O HUD ocupa as duas pontas da tela e as seções precisam reservar as duas. Nenhuma seção conhece o
+`NavMenu` nem o `ModeHeader`, então os números moram em `:root` (`reset.css`) e as duas pontas
+derivam deles.
+
+No topo, o `--pt` é `max(--pt-livre, --hud-topo + --hud-topo-respiro)`: as media queries mexem só em
+`--pt-livre`, e o cabeçalho é um **piso**, não um valor somado. Com os números de hoje o piso não
+alcança o respiro de tela larga nem o do mobile, então nada mudou de tamanho quando o cabeçalho
+nasceu; ele só passa a mandar em paisagem curta, que é onde o respiro apertava.
+
 ### O rodapé do mobile é um contrato
 
 Em `≤640px` o HUD ocupa a faixa de baixo: a barra de seções e, abaixo dela, a versão. As seções
@@ -39,6 +53,10 @@ precisam reservar esse espaço, e nenhuma delas conhece o `NavMenu`. O número m
 | `--hud-nav-base` | onde a barra de seções começa, medindo do fundo |
 | `--hud-nav-altura` | rótulo + risco + o respiro vertical da faixa |
 | `--hud-rodape` | a soma: abaixo disso é território do HUD |
+| `--hud-topo-base` | onde o cabeçalho de modo começa, medindo do topo |
+| `--hud-topo-altura` | a linha dos dois modos (a prévia flutua por cima e não reserva nada) |
+| `--hud-topo` | a soma: acima disso é território do HUD |
+| `--hud-topo-respiro` | o que separa o conteúdo do cabeçalho, espelhando o respiro do rodapé |
 
 Ele existe porque os números estavam duplicados em valores soltos (`bottom: 56px` na faixa contra
 `--pb: 116px` nas seções), e foi assim que saíram de sincronia sem ninguém notar.
@@ -68,11 +86,25 @@ conteúdo cresça, e o hook, medindo só o bloco, não via motivo para encolher 
 tamanho cheio enquanto as outras reduziam. Um teto que vale para todas resolve, porque não depende
 de o bloco estar transbordando.
 
-Mesmo com o teto ele continuou grande, e a razão é que **escala não conserta densidade**. O Sobre é a
-única seção que empilha três coisas (retrato, texto e formações), e o badge de formação é a peça mais
-densa da página: logo, três linhas e um medidor dentro de uma moldura com padding. Reduzir tudo por
-igual mantém a proporção do que já estava apertado, então os badges ganharam tokens próprios
+Mesmo com o teto ele continuou grande, e a razão é que **escala não conserta densidade**. O Sobre
+empilhava três coisas (retrato, texto e formações), e o badge de formação é a peça mais densa da
+página: logo, três linhas e um medidor dentro de uma moldura com padding. Reduzir tudo por igual
+mantém a proporção do que já estava apertado, então os badges ganharam tokens próprios
 (`--badge-pad`, `--logo-w`, `--fs-curso` e companhia).
+
+**A conclusão disso veio depois, e foi mudar o conteúdo de lugar.** A formação virou seção própria
+(ver `secoes.md`) e no Sobre ficaram duas linhas de texto no lugar dela: a seção mais densa da página
+deixou de empilhar três coisas, e volta ao teto da escala sozinha num iPhone SE.
+
+Na seção nova o badge virou um diploma, e ali o eixo apertado se inverte: ele é o único conteúdo, e
+o que falta é **largura**, porque os três ficam lado a lado num carrossel. No mobile o cartão **vira
+retrato**: deitado, o logo dividia 300px com a instituição, o nível e o selo, e cada peça virava
+mancha. Essa é a única mudança de layout da seção que não cabe num token, e por isso mora no módulo
+do cartão, que é quem tem o `flex-direction`.
+
+A largura dele é `min(560px, 62%)` no desktop e 78% no mobile, e a fração não é enfeite: ela é o que
+deixa sobrar palco dos dois lados para o vizinho aparecer. Escrita só em px, uma janela média punha o
+da frente ocupando a largura inteira, e o carrossel voltava a parecer um cartão só.
 
 **E no badge a compensação é horizontal.** Estreitá-lo junto com o resto saiu pela culatra: em 208px
 sobravam 132px para o texto, e "Tecnologia da Informação" pede 138px mesmo a 9px de fonte. O curso
@@ -109,7 +141,23 @@ o número real dos dois lados.
 
 A medição é iterativa de propósito: `getBoundingClientRect` já devolve a altura com o `zoom`
 aplicado, então a altura natural sai dividindo pela escala em vigor. Aplicar a escala nova acorda o
-`ResizeObserver`, e na segunda passagem a diferença cai abaixo do epsilon e para. O observador olha
+`ResizeObserver`, e na segunda passagem a diferença cai abaixo do epsilon e para.
+
+**O epsilon sozinho não fecha o laço, e essa premissa custou uma tela tremendo.** Ele fecha enquanto
+a altura do conteúdo for proporcional à escala, e ela não é: um texto que cabe em duas linhas numa
+escala e pede três na seguinte muda de altura em **degrau**. Aí existem duas escalas que se apontam
+uma para a outra — na menor sobra espaço e o hook cresce, na maior falta e ele encolhe — e a medição
+vai e volta para sempre. No desktop sobra altura e isso nunca aparece; no mobile, com a seção justa,
+a tela treme.
+
+O que fecha o laço é uma **busca monótona**: encolher prova que a escala em vigor não cabia, então
+ela vira teto e nunca mais é proposta. Cada passo baixa o teto em pelo menos um epsilon, então o pior
+caso são algumas dezenas de passos. O teto medido é descartado quando a **seção** muda de tamanho,
+porque aí tudo que se sabia sobre o que cabe deixa de valer.
+
+Corolário para quem escreve seção nova: **texto de rótulo que troca de estado deve ser `nowrap`.** O
+rótulo do destaque de Música alterna entre "tocando agora" e "nada tocando agora", e o mais longo dos
+dois quebrava em duas linhas num celular estreito — exatamente o degrau descrito acima. O observador olha
 a seção **e cada filho dela**, porque a seção muda com a tela e os filhos mudam com o conteúdo: uma
 troca de idioma reescreve o texto inteiro sem a seção mexer um pixel.
 
