@@ -98,9 +98,11 @@ mantém a proporção do que já estava apertado, então os badges ganharam toke
 deixou de empilhar três coisas, e volta ao teto da escala sozinha num iPhone SE.
 
 Na seção nova o badge virou um diploma, e ali o eixo apertado se inverte: ele é o único conteúdo e o
-que falta é **altura**, porque são três empilhados. No mobile o cartão toma a largura inteira e perde
-altura, e o **passo da pilha** desce junto: mantido no valor de desktop, o que escapa de cada um de
-baixo seria quase um quinto do cartão.
+que falta é **altura**, porque são três empilhados. No mobile o cartão **vira retrato**: deitado, o logo
+dividia 300px com a instituição, o nível e o selo, e cada peça virava mancha. Essa é a única mudança
+de layout da seção que não cabe num token, e por isso mora no módulo do cartão, que é quem tem o
+`flex-direction`. O **passo da pilha** desce junto: mantido no valor de desktop, o que escapa de cada
+um de baixo seria quase um quinto do cartão.
 
 **E no badge a compensação é horizontal.** Estreitá-lo junto com o resto saiu pela culatra: em 208px
 sobravam 132px para o texto, e "Tecnologia da Informação" pede 138px mesmo a 9px de fonte. O curso

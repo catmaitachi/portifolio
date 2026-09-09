@@ -56,7 +56,7 @@
     "intro": "Onde eu estudei, onde eu estudo e onde eu pretendo estudar.",
     "rotulos": {
       "conclusao": "Conclusão",
-      "etapas": "Etapas"
+      "periodos": "Períodos"
     },
     "estados": {
       "concluido": "Concluído",
@@ -65,12 +65,11 @@
     },
     "lista": [
       {
-        "slot": "senac",
-        "instituicao": "SENAC",
-        "nivel": "Técnico",
-        "curso": "Tecnologia da Informação",
-        "estado": "concluido",
-        "conclusao": "2022.12"
+        "slot": "ufmg",
+        "instituicao": "UFMG",
+        "nivel": "Mestrado",
+        "curso": "Área a definir",
+        "estado": "pretensao"
       },
       {
         "slot": "puc",
@@ -81,11 +80,12 @@
         "progresso": { "feito": 4, "total": 8 }
       },
       {
-        "slot": "ufmg",
-        "instituicao": "UFMG",
-        "nivel": "Mestrado",
-        "curso": "Área a definir",
-        "estado": "pretensao"
+        "slot": "senac",
+        "instituicao": "SENAC",
+        "nivel": "Técnico",
+        "curso": "Tecnologia da Informação",
+        "estado": "concluido",
+        "conclusao": "2022.12"
       }
     ]
   },

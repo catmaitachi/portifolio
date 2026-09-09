@@ -20,9 +20,9 @@ import { useDeck, VISIVEIS_ATRAS } from './useDeck';
  * Ela **só existe no modo profissional** (`shared.json → modos`), e não precisa
  * saber disso: quem decide é a lista do modo.
  *
- * Navegar: clique num diploma de baixo, ←/→ enquanto a seção está ativa, ou os
- * traços ao lado. Não há arraste, e o motivo está em `useDeck`, junto do porquê
- * de a pilha não ser circular.
+ * Navegar: clique num diploma de baixo, arraste sobre o da frente, ←/→ enquanto
+ * a seção está ativa, ou os traços ao lado. Por que o arraste vale nos dois
+ * eixos, e por que a pilha não é circular, está em `useDeck`.
  *
  * **Ela abre no que está em curso**, não no primeiro da lista. A lista está em
  * ordem cronológica, e abrir nela é abrir no que já terminou há mais tempo; o
@@ -63,7 +63,13 @@ export function EducationSection({ ativo, indice }: SectionProps) {
         </div>
 
         <div className={styles.arena}>
-          <div className={styles.palco} role="group" aria-label={t.formacoes.titulo} tabIndex={0}>
+          <div
+            ref={pilha.palcoRef}
+            className={styles.palco}
+            role="group"
+            aria-label={t.formacoes.titulo}
+            tabIndex={0}
+          >
             {lista.map((f, i) => (
               <DiplomaCard
                 key={f.slot}

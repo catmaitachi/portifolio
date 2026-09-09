@@ -1,4 +1,7 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+
+/** Deslocamento mínimo do arraste para contar como um passo, em px. */
+const LIMIAR_ARRASTE = 46;
 
 /**
  * Quantos diplomas aparecem atrás do da frente. O resto some.
@@ -24,6 +27,7 @@ export interface GeometriaDeck {
 }
 
 export interface Deck {
+  palcoRef: React.RefObject<HTMLDivElement | null>;
   ativo: number;
   andar: (delta: number) => void;
   focar: (i: number) => void;
@@ -49,12 +53,24 @@ export interface Deck {
  * **Nada de rAF**: `ativo` muda e as `transition` de `transform` e `opacity`
  * fazem o movimento, como na órbita de Projetos.
  *
- * **E não há arraste.** Em Projetos o gesto é horizontal e não disputa nada;
- * aqui ele seria vertical, que é o eixo em que a página rola com `scroll-snap`.
- * Segurá-lo para a pilha exigiria `touch-action: none` sobre o maior elemento da
- * seção, e o visitante perderia a rolagem justamente onde o dedo cai primeiro.
+ * **O arraste é o mesmo de Projetos, e vale nos dois eixos.** Ele começa sobre o
+ * diploma da frente, é decidido no `pointerup` (arraste curto é clique, longo é
+ * passo) e o `click` que vem depois dele é engolido, senão o gesto andaria a
+ * pilha **e** o clique cairia no cartão que estava ali.
+ *
+ * Os dois eixos existem por causa do toque, e não por capricho: subir o dedo é o
+ * gesto natural para uma pilha vertical, mas o eixo vertical do celular é o da
+ * rolagem da página, e tomá-lo exigiria `touch-action: none` sobre o maior
+ * elemento da seção — o visitante perderia a rolagem justamente onde o dedo cai
+ * primeiro. Com `touch-action: pan-y` no palco, o dedo continua rolando a página
+ * para cima e para baixo, e é o gesto **horizontal** que anda a pilha, que é o
+ * mesmo de Projetos. No mouse os dois funcionam, e vale o maior deslocamento.
+ *
+ * Arrastar **para cima** (ou para a esquerda) avança, que é tirar o de cima da
+ * mesa; para baixo (ou para a direita) volta.
  */
 export function useDeck(total: number, inicial: number): Deck {
+  const palcoRef = useRef<HTMLDivElement>(null);
   const [ativo, setAtivo] = useState(inicial);
 
   const n = Math.max(1, total);
@@ -70,6 +86,78 @@ export function useDeck(total: number, inicial: number): Deck {
   }, []);
 
   const focar = useCallback((i: number) => setAtivo(i), []);
+
+  useEffect(() => {
+    const el = palcoRef.current;
+    if (!el) return;
+
+    let x0: number | null = null;
+    let y0 = 0;
+    let limpeza: number | undefined;
+
+    /**
+     * O `click` que vem logo depois de um arraste é do mesmo gesto e morre aqui.
+     * A captura no palco basta para o React nunca ver o evento: ele escuta na
+     * raiz do documento e dispara `onClick` na subida, que deixa de acontecer.
+     */
+    const engolirClique = (ev: Event) => {
+      ev.stopPropagation();
+      ev.preventDefault();
+    };
+
+    const soltarEngolidor = () => {
+      el.removeEventListener('click', engolirClique, true);
+      clearTimeout(limpeza);
+      limpeza = undefined;
+    };
+
+    // o gesto começa sobre o diploma da frente, que é o que está por cima da pilha
+    const inicio = (e: PointerEvent) => {
+      const frente = el.querySelector<HTMLElement>('[data-frente]');
+      if (!frente) return;
+      const caixa = frente.getBoundingClientRect();
+      const dentro =
+        e.clientX >= caixa.left &&
+        e.clientX <= caixa.right &&
+        e.clientY >= caixa.top &&
+        e.clientY <= caixa.bottom;
+      if (!dentro) return;
+      x0 = e.clientX;
+      y0 = e.clientY;
+    };
+
+    const fim = (e: PointerEvent) => {
+      if (x0 === null) return;
+      const dx = e.clientX - x0;
+      const dy = e.clientY - y0;
+      x0 = null;
+      // vale o eixo que andou mais: no mouse os dois servem, no toque sobra o X
+      const d = Math.abs(dy) >= Math.abs(dx) ? dy : dx;
+      if (Math.abs(d) <= LIMIAR_ARRASTE) return;
+
+      el.addEventListener('click', engolirClique, { capture: true, once: true });
+      // nem todo gesto gera `click` (soltar fora do elemento, por exemplo), e sem
+      // esta soltura o engolidor comeria o próximo clique bom
+      limpeza = window.setTimeout(soltarEngolidor, 0);
+
+      // para cima, ou para a esquerda, é tirar o de cima da mesa
+      andar(d < 0 ? 1 : -1);
+    };
+
+    const cancelar = () => {
+      x0 = null;
+    };
+
+    el.addEventListener('pointerdown', inicio);
+    el.addEventListener('pointerup', fim);
+    el.addEventListener('pointercancel', cancelar);
+    return () => {
+      el.removeEventListener('pointerdown', inicio);
+      el.removeEventListener('pointerup', fim);
+      el.removeEventListener('pointercancel', cancelar);
+      soltarEngolidor();
+    };
+  }, [andar]);
 
   const geometria = useCallback(
     (i: number): GeometriaDeck => {
@@ -103,5 +191,5 @@ export function useDeck(total: number, inicial: number): Deck {
     [ativo],
   );
 
-  return { ativo, andar, focar, geometria };
+  return { palcoRef, ativo, andar, focar, geometria };
 }

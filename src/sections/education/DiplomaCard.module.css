@@ -101,10 +101,15 @@
  * se vê do de baixo passa a ser só o que escapa embaixo, que é o que responde ao
  * clique.
  */
+/* `grab` porque este diploma **é** a área de arraste da pilha (ver `useDeck`) */
 .diploma[data-frente] {
   border-color: rgb(255 255 255 / 32%);
   background: #000;
-  cursor: default;
+  cursor: grab;
+}
+
+.diploma[data-frente]:active {
+  cursor: grabbing;
 }
 
 .diploma:hover {
@@ -226,6 +231,12 @@
   border-top: 1px solid rgb(255 255 255 / 9%);
 }
 
+/* o medidor toma o resto da linha, e a fração fecha o rodapé pela direita */
+.medidor {
+  flex: 1;
+  min-width: 0;
+}
+
 /* a posição na pilha, na régua do índice das seções */
 .ordinal {
   flex: none;
@@ -276,4 +287,57 @@
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.12em;
   text-align: right;
+}
+
+/**
+ * Mobile: o cartão vira retrato, e cada peça ganha uma faixa.
+ *
+ * Isto é **layout**, não tamanho, então não cabia num token: o que muda é o eixo
+ * do cabeçalho e do rodapé. Deitado, num celular, o logo dividia 300px com a
+ * instituição, o nível e o selo, e sobrava mancha para cada um; em pé o cartão
+ * troca a largura que não tem pela altura que sobra.
+ *
+ * O centro é consequência, não estética: numa coluna estreita, texto alinhado à
+ * esquerda sob um logo centrado leria como duas colunas que não existem. O
+ * rodapé é a exceção e continua nas pontas, porque ali as duas linhas são de
+ * dado e a fração fecha a leitura pela direita, como no desktop.
+ */
+@media (width <= 640px) {
+  .topo {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .logo {
+    background-position: center;
+  }
+
+  .titulos {
+    flex: none;
+    align-items: center;
+    width: 100%;
+  }
+
+  .selo {
+    align-self: center;
+  }
+
+  .curso {
+    margin-top: 0;
+    text-align: center;
+  }
+
+  /* o curso ocupa a faixa do meio, e o rodapé continua colado no pé */
+  .rodape {
+    flex-wrap: wrap;
+    margin-top: auto;
+    row-gap: 10px;
+  }
+
+  /* a barra desce para uma linha só dela, em vez de dividir a linha do dado */
+  .medidor {
+    flex: 1 0 100%;
+  }
 }

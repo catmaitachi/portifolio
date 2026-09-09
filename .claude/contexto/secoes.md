@@ -74,15 +74,24 @@ A profundidade vem de escala e opacidade, **sem `perspective`**: uma inclinaçã
 a leitura de anel, que é o que esta pilha não é. E, como em Projetos, nada de rAF — `ativo` muda e as
 `transition` fazem o movimento.
 
-**Ela abre no que está em curso**, não no primeiro da lista. A lista está em ordem cronológica, e
-abrir nela é abrir no que terminou há mais tempo; o que responde "onde ele está academicamente hoje"
-é o de agora. Sem nenhum `cursando`, o primeiro serve.
+**A lista vai do mais recente para o mais antigo**, ao contrário da Trajetória: uma pilha se lê de
+cima para baixo, e o que está por cima é o que veio por último. **E ela abre no que está em curso**,
+não no primeiro: o que responde "onde ele está academicamente hoje" é o de agora, não a pretensão que
+abre a pilha. Sem nenhum `cursando`, o primeiro serve.
 
-**Não há arraste, e a ausência é a decisão.** Em Projetos o gesto é horizontal e não disputa nada;
-aqui ele seria vertical, que é o eixo em que a página rola com `scroll-snap`. Segurá-lo para a pilha
-exigiria `touch-action: none` sobre o maior elemento da seção, e o visitante perderia a rolagem
-justamente onde o dedo cai primeiro. Sobram o clique num diploma de baixo, as setas ←/→ enquanto a
-seção está ativa e os traços ao lado.
+**O arraste é o mesmo de Projetos, e vale nos dois eixos.** Ele começa sobre o diploma da frente, é
+decidido no `pointerup` (curto é clique, longo é passo) e o `click` que vem depois dele é engolido,
+senão o gesto andaria a pilha **e** o clique cairia no cartão que estava ali. Arrastar para cima, ou
+para a esquerda, avança, que é tirar o de cima da mesa.
+
+Os dois eixos existem por causa do toque, e não por capricho. Subir o dedo é o gesto natural para uma
+pilha vertical, mas o eixo vertical do celular é o da rolagem da página, e tomá-lo exigiria
+`touch-action: none` sobre o maior elemento da seção: o visitante perderia a rolagem justamente onde
+o dedo cai primeiro. Com `touch-action: pan-y` no palco o dedo continua rolando a página, e é o gesto
+**horizontal** que anda a pilha, que é o de Projetos. No mouse os dois funcionam, e vale o eixo que
+andou mais.
+
+Além dele: clique num diploma de baixo, ←/→ enquanto a seção está ativa e os traços ao lado.
 
 **Os traços ficam em pé, ao lado da pilha.** Em Projetos eles são uma linha embaixo do palco porque a
 órbita anda de lado; um índice horizontal aqui apontaria para um eixo que não é o do movimento. Eles
@@ -116,14 +125,22 @@ tudo que o conteúdo tem, ao mesmo tempo.
 - **O estado mora no selo, e só nele.** Ele saía no medidor junto da barra, e a mesma palavra em dois
   lugares do mesmo cartão seria repetição; no pé ela ainda competia com a fração, que é o número que
   a barra explica.
-- **A fração aparece como número**, e a `pretensao` é a exceção: ela não tem o que mostrar, e um "0%"
-  leria como defeito em vez de "ainda não começou".
+- **A fração aparece como número, encostada na direita.** O medidor toma o resto da linha, então ela
+  fecha o rodapé pela borda em vez de ficar solta no meio dele. A `pretensao` é a exceção: não tem o
+  que mostrar, e um "0%" leria como defeito em vez de "ainda não começou".
 - **O rótulo do dado é traduzido, o valor não.** "2022.12" e "4/8" são dados, idênticos nos dois
-  idiomas, como a versão no rodapé; quem traduz é o "Conclusão" e o "Etapas" ao lado
+  idiomas, como a versão no rodapé; quem traduz é o "Conclusão" e o "Períodos" ao lado
   (`formacoes.rotulos`).
 - **O da frente é preto sólido**, e não os 92% do cartão de projeto: lá o vizinho fica quase todo
   para fora, aqui ele está exatamente atrás, e 6% de transparência bastavam para o nome da outra
   instituição fantasmar por cima do curso.
+
+**No mobile o diploma fica em pé**, e é a única mudança de layout da seção que não cabia num token.
+Deitado num celular, o logo dividia 300px com a instituição, o nível e o selo, e sobrava mancha para
+cada um; em pé o cartão troca a largura que não tem pela altura que sobra, e cada peça ganha uma
+faixa inteira. O centro é consequência, não estética: numa coluna estreita, texto à esquerda sob um
+logo centrado leria como duas colunas que não existem. O rodapé é a exceção e continua nas pontas,
+com a barra descendo para uma linha só dela.
 
 ---
 

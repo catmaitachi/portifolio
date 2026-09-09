@@ -60,7 +60,7 @@ export function DiplomaCard({ formacao, indice, total, geo, ativo, onFocar }: Di
         ? `${formacao.progresso.feito}/${formacao.progresso.total}`
         : null;
   const rotulo =
-    formacao.estado === 'concluido' ? t.formacoes.rotulos.conclusao : t.formacoes.rotulos.etapas;
+    formacao.estado === 'concluido' ? t.formacoes.rotulos.conclusao : t.formacoes.rotulos.periodos;
 
   return (
     <article
@@ -125,7 +125,12 @@ export function DiplomaCard({ formacao, indice, total, geo, ativo, onFocar }: Di
             </span>
           )}
 
-          <span className={comum.medidor}>
+          {/**
+           * O medidor toma o resto da linha, e por isso a porcentagem fica
+           * encostada na borda direita do diploma: ela é o fecho da leitura, não
+           * um número solto no meio do rodapé.
+           */}
+          <span className={`${comum.medidor} ${styles.medidor}`}>
             <span className={comum.trilha}>
               <span
                 className={comum.preenchimento}

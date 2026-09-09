@@ -56,7 +56,7 @@
     "intro": "Where I studied, where I study, and where I plan to study.",
     "rotulos": {
       "conclusao": "Completion",
-      "etapas": "Steps"
+      "periodos": "Terms"
     },
     "estados": {
       "concluido": "Completed",
@@ -65,12 +65,11 @@
     },
     "lista": [
       {
-        "slot": "senac",
-        "instituicao": "SENAC",
-        "nivel": "Technical",
-        "curso": "Information Technology",
-        "estado": "concluido",
-        "conclusao": "2022.12"
+        "slot": "ufmg",
+        "instituicao": "UFMG",
+        "nivel": "Master's",
+        "curso": "Field TBD",
+        "estado": "pretensao"
       },
       {
         "slot": "puc",
@@ -81,11 +80,12 @@
         "progresso": { "feito": 4, "total": 8 }
       },
       {
-        "slot": "ufmg",
-        "instituicao": "UFMG",
-        "nivel": "Master's",
-        "curso": "Field TBD",
-        "estado": "pretensao"
+        "slot": "senac",
+        "instituicao": "SENAC",
+        "nivel": "Technical",
+        "curso": "Information Technology",
+        "estado": "concluido",
+        "conclusao": "2022.12"
       }
     ]
   },

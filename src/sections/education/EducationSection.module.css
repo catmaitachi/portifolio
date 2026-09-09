@@ -47,6 +47,11 @@
  * **Sem `perspective`**: a pilha é papel sobre papel, e a profundidade vem da
  * escala e da opacidade. Com perspectiva os de baixo ganhavam uma inclinação que
  * lia como anel, que é justamente o que esta pilha não é.
+ *
+ * `touch-action: pan-y` é o que divide o toque com a página: o dedo continua
+ * rolando a seção para cima e para baixo, e sobra o eixo horizontal para andar a
+ * pilha (ver `useDeck`). É a decisão espelhada da do palco de Projetos, que fica
+ * com o eixo X e devolve o Y.
  */
 .palco {
   position: relative;
@@ -55,6 +60,7 @@
   max-width: var(--dcw);
   height: var(--dh);
   outline: none;
+  touch-action: pan-y;
 }
 
 .tracos {
@@ -100,30 +106,34 @@
 }
 
 /**
- * Mobile: a largura é a que a tela cobra, e o resto acompanha.
+ * Mobile: o diploma fica **em pé**.
  *
- * O cartão vira a largura inteira e perde altura junto, porque o curso passa a
- * caber em menos linhas do que o corpo de desktop pedia. O passo da pilha desce
- * com a altura: mantido em 34px, o que escapa de cada um de baixo seria quase um
- * quinto do cartão.
+ * Deitado ele tinha 360px de largura para acomodar logo, instituição, nível e
+ * selo na mesma linha, e cada peça ficava com um punhado de pixels: o logo
+ * encolhia até virar mancha, o curso cabia numa linha e meia e o rodapé
+ * espremia três coisas onde cabiam duas. Em pé o cartão troca a largura que não
+ * tem pela altura que sobra, e cada peça ganha uma faixa inteira para si.
+ *
+ * A mudança de eixo mora no módulo do cartão, que é quem tem o `flex-direction`;
+ * aqui ficam só os tokens, como sempre.
  */
 @media (width <= 640px) {
   .secao {
     --dcw: 100%;
-    --dch: 190px;
+    --dch: 302px;
     --dpasso: 26px;
-    --dsaida: 44px;
-    --dpad: 16px;
-    --dgap: 12px;
-    --dlogo-w: 68px;
-    --dlogo-h: 48px;
-    --dfs-inst: 13px;
+    --dsaida: 52px;
+    --dpad: 18px;
+    --dgap: 14px;
+    --dlogo-w: 104px;
+    --dlogo-h: 62px;
+    --dfs-inst: 14px;
     --dfs-nivel: 8.5px;
-    --dfs-curso: 14px;
+    --dfs-curso: 16px;
     --dfs-selo: 7.5px;
-    --dfs-valor: 10px;
+    --dfs-valor: 11px;
     --drodape-gap: 10px;
-    --drodape-pt: 10px;
+    --drodape-pt: 12px;
   }
 
   .arena {
