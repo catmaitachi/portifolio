@@ -14,10 +14,11 @@ import { ambiente, falha, json, metodoInvalido } from './_resposta';
  * de "não joguei nada" — daí o estado explícito quando as duas coisas faltam ao
  * mesmo tempo.
  *
- * A arte vem do CDN da própria Steam, montada a partir do `appid`. Não há
- * endpoint que a devolva: é caminho por convenção, e por isso `capa` pode ser
- * uma URL que não existe para um app fora da loja. A seção trata poster que não
- * carrega, como já trata banner de projeto ausente.
+ * A arte vem do CDN da própria Steam, e o caminho dela é **perguntado**, numa
+ * terceira chamada: o caminho por convenção que existia aqui deixou de valer
+ * para os jogos do esquema novo (ver `capas`). Quando a pergunta falha sobra a
+ * convenção, e quando a convenção também erra sobra a moldura vazia, que a
+ * seção já desenha como faz com banner de projeto ausente.
  */
 
 interface JogoSteam {
@@ -27,14 +28,97 @@ interface JogoSteam {
   playtime_forever?: number;
 }
 
-const capaDe = (appid: number) =>
-  `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`;
+/**
+ * A arte **por convenção**, que é o que a Steam serviu por anos e deixou de
+ * servir para tudo.
+ *
+ * Ela continua valendo para os jogos antigos, e é o degrau de baixo quando a
+ * consulta que resolve a arte de verdade não responde: uma URL que talvez
+ * exista é melhor resposta que nenhuma, porque quem decide o que fazer com ela
+ * é o `onError` da seção.
+ */
+const capaPorConvencao = (appid: number) =>
+  `https://shared.steamstatic.com/store_item_assets/steam/apps/${appid}/header.jpg`;
+
 const lojaDe = (appid: number) => `https://store.steampowered.com/app/${appid}/`;
 
-const normalizar = (j: JogoSteam): Jogo => ({
+/** O host que serve `store_item_assets` sem redirecionar. */
+const ASSETS = 'https://shared.steamstatic.com/store_item_assets/';
+
+/** A resolução da arte não pode segurar a resposta: o conteúdo daqui são os jogos. */
+const ESPERA_ASSETS = 4000;
+
+interface ItemLoja {
+  id?: number;
+  assets?: {
+    /** o caminho até a pasta do app, com `${FILENAME}` no lugar do arquivo */
+    asset_url_format?: string;
+    /** o nome do arquivo, que hoje vem prefixado por um hash de conteúdo */
+    header?: string;
+  };
+}
+
+/**
+ * Onde está a arte de cada jogo, perguntado em vez de adivinhado.
+ *
+ * A URL de capa era montada a partir do `appid` num caminho fixo
+ * (`steam/apps/<appid>/header.jpg`), e isso **deixou de valer**: a Steam passou
+ * a guardar a arte da loja num caminho com hash de conteúdo
+ * (`steam/apps/<appid>/<hash>/header.jpg`), e os jogos publicados ou
+ * reprocessados sob o esquema novo simplesmente não têm nada no caminho antigo.
+ * Não é um jogo com defeito, é a convenção que envelheceu — e uma convenção que
+ * envelhece em silêncio some da tela sem erro nenhum.
+ *
+ * `IStoreBrowseService/GetItems` devolve exatamente esse caminho, para **muitos
+ * appids numa requisição só**, sem chave e sem paginação. É a diferença que
+ * importa contra o `appdetails` da loja, que aceita um id por chamada (com
+ * vários ele responde `null`) e traz a página inteira do jogo para entregar uma
+ * URL.
+ *
+ * O formato serve os dois esquemas de graça: num jogo antigo o `header` vem sem
+ * hash, e a mesma substituição produz o caminho de sempre.
+ *
+ * **Ela nunca derruba a resposta.** Falha, demora ou forma mudada devolvem um
+ * mapa vazio, e cada jogo cai na convenção — que ainda acerta a maior parte
+ * deles. É o mesmo arranjo da lista do Letterboxd, e pela mesma razão: o que a
+ * seção existe para mostrar são os jogos.
+ */
+async function capas(appids: number[]): Promise<Map<number, string>> {
+  const mapa = new Map<number, string>();
+  if (!appids.length) return mapa;
+
+  const entrada = {
+    ids: appids.map((appid) => ({ appid })),
+    context: { language: 'english', country_code: 'US' },
+    data_request: { include_assets: true },
+  };
+
+  try {
+    const r = await fetch(
+      `https://api.steampowered.com/IStoreBrowseService/GetItems/v1/?input_json=${encodeURIComponent(
+        JSON.stringify(entrada),
+      )}`,
+      { signal: AbortSignal.timeout(ESPERA_ASSETS) },
+    );
+    if (!r.ok) return mapa;
+
+    const corpo = (await r.json()) as { response?: { store_items?: ItemLoja[] } };
+    for (const item of corpo.response?.store_items ?? []) {
+      const formato = item.assets?.asset_url_format;
+      const arquivo = item.assets?.header;
+      if (item.id === undefined || !formato || !arquivo) continue;
+      mapa.set(item.id, ASSETS + formato.replace('${FILENAME}', arquivo));
+    }
+  } catch {
+    // resolver a arte é enfeite; devolver os jogos, não
+  }
+  return mapa;
+}
+
+const normalizar = (j: JogoSteam, capas: Map<number, string>): Jogo => ({
   id: String(j.appid),
   nome: j.name ?? '',
-  capa: capaDe(j.appid),
+  capa: capas.get(j.appid) ?? capaPorConvencao(j.appid),
   url: lojaDe(j.appid),
   minutosRecentes: j.playtime_2weeks ?? 0,
   minutosTotais: j.playtime_forever ?? 0,
@@ -74,13 +158,22 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
      * resumo traz só o nome. Quando ele ainda não aparece ali (partida da
      * primeira vez), os minutos ficam em zero, que é a verdade.
      */
+    const abertoId = jogador?.gameid && jogador.gameextrainfo ? Number(jogador.gameid) : null;
+
+    /**
+     * Uma consulta só para toda a tela: os recentes mais o que está aberto,
+     * que pode não estar entre eles numa partida da primeira vez.
+     */
+    const arte = await capas([
+      ...new Set([...jogos.map((g) => g.appid), ...(abertoId ? [abertoId] : [])]),
+    ]);
+
     const jogando: Jogo | null =
-      jogador?.gameid && jogador.gameextrainfo
+      abertoId && jogador?.gameextrainfo
         ? {
             ...normalizar(
-              jogos.find((g) => String(g.appid) === jogador.gameid) ?? {
-                appid: Number(jogador.gameid),
-              },
+              jogos.find((g) => g.appid === abertoId) ?? { appid: abertoId },
+              arte,
             ),
             nome: jogador.gameextrainfo,
           }
@@ -88,7 +181,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
 
     const dados: Jogos = {
       jogando,
-      recentes: jogos.map(normalizar),
+      recentes: jogos.map((g) => normalizar(g, arte)),
     };
 
     // 60s: o "jogando agora" é o dado vivo daqui, e ele muda em minutos, não em

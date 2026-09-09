@@ -395,9 +395,9 @@ como parte da data.
 
 **Capas, artes e pôsteres ficam coloridos.** É identidade de terceiro, como os banners de projeto e o
 vermelho da UFMG: não se repinta. A moldura de 1px existe mesmo sem a imagem, e é o mesmo espaço
-reservado dos banners — a arte da Steam é montada a partir do `appid` por convenção e pode não
-existir, e sem a moldura sobraria o ícone de imagem quebrada do navegador, a única coisa fora da
-paleta na página inteira.
+reservado dos banners — o endereço da arte da Steam é perguntado a cada resposta
+e pode não vir (ver `dados.md`), e sem a moldura sobraria o ícone de imagem quebrada do navegador, a
+única coisa fora da paleta na página inteira.
 
 **A grade de Jogos é `auto-fill` com um mínimo**, nunca um número fixo de colunas: quem jogou um só
 na quinzena não deve ver três vagas vazias, que leem como conteúdo que faltou carregar.

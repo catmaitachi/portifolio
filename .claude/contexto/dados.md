@@ -59,8 +59,21 @@ nome inteiro apontaria para o primeiro deles.
 - **Steam**: `gameextrainfo` só existe enquanto a partida está aberta, e sumir é como a API diz que
   ela acabou. O tempo jogado vem da outra chamada, porque o resumo traz só o nome. **O perfil
   precisa estar público**: fechado, a API responde 200 sem esses campos, o que é indistinguível de
-  não ter jogado. A arte é montada a partir do `appid` no CDN **por convenção**, não por um endpoint,
-  então ela pode não existir.
+  não ter jogado. **A arte não sai de nenhuma das duas**, e por um tempo ela foi montada a partir do
+  `appid` num caminho fixo do CDN (`steam/apps/<appid>/header.jpg`). Isso deixou de valer: a Steam
+  guarda a arte da loja num caminho com hash de conteúdo
+  (`steam/apps/<appid>/<hash>/header.jpg`), e o que foi publicado ou reprocessado sob o esquema novo
+  não tem nada no caminho antigo. Uma convenção que envelhece não dá erro, ela some da tela.
+
+  Hoje o caminho é **perguntado**, numa terceira chamada a `IStoreBrowseService/GetItems`, que aceita
+  **muitos appids de uma vez**, não pede chave e devolve o `asset_url_format` da pasta junto do nome
+  do arquivo. O formato serve os dois esquemas de graça, porque num jogo antigo o `header` vem sem
+  hash. O `appdetails` da loja também teria a URL e **não** serve: com mais de um id ele responde
+  `null`, e traz a página inteira do jogo para entregar uma linha.
+
+  Ela **nunca derruba a resposta**, e tem três degraus: a URL resolvida, a convenção antiga (que
+  ainda acerta a maior parte do catálogo) e, quando as duas erram, a moldura vazia que a seção já
+  desenha. É o arranjo da lista do Letterboxd, e pela mesma razão: o conteúdo daqui são os jogos.
 - **Letterboxd**: é um feed, não um contrato. A forma pode mudar sem aviso e sem versão, e no dia em
   que mudar esta função para de achar os campos. **É o ponto mais frágil do projeto**, e é frágil por
   fora. Ele responde 403 sem um user-agent de navegador, traz listas e textos junto dos filmes (que
