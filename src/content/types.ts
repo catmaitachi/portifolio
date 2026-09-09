@@ -116,11 +116,10 @@ export interface Dictionary {
   >;
   hero: { nome: string };
   /**
-   * O título da aba, com `{parte}` e `{nome}`.
+   * O título da aba, com `{nome}` e `{parte}`.
    *
    * A parte é o nome da seção, ou a etiqueta do modo quando o visitante está no
-   * Início — que é onde não existe seção para nomear. Ela vem **na frente**
-   * porque a aba corta o fim: o que distingue uma aba da outra precisa sobrar.
+   * Início — que é onde não existe seção para nomear.
    */
   documento: string;
   sobre: { titulo: string; paragrafos: string[] };

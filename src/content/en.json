@@ -29,7 +29,7 @@
     "nome": "Lucas Spiazzi"
   },
 
-  "documento": "{parte} — {nome}",
+  "documento": "{nome} - {parte}",
 
   "sobre": {
     "titulo": "About Me",

@@ -123,3 +123,8 @@ Em desenvolvimento, um plugin do Vite (`apply: 'serve'`, em `vite.config.ts`) ca
 comando para abrir o projeto, sem a CLI da Vercel. **A leitura do env é por requisição**, não na
 subida: um segredo acrescentado com o servidor no ar não fazia efeito, e o sintoma era a função
 dizendo que a variável faltava enquanto ela estava no arquivo, à vista.
+
+Isso vale para variável **acrescentada**, e não para variável **trocada**: `loadEnv` não passa por
+cima do que já está no `process.env`, então mudar o valor de uma que o servidor já leu exige
+reiniciar o `npm run dev`. O sintoma é pior que o anterior, porque não parece defeito: a função
+responde 200 com o dado antigo.

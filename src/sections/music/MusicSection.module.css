@@ -199,16 +199,52 @@
   hyphens: manual;
 }
 
+/**
+ * A barra herda a trilha de 1px que o resto da página usa nos medidores.
+ *
+ * O que muda aqui é que ela **anda**: a régua é a mesma das formações e do
+ * estado dos projetos, e é isso que a mantém no tema em vez de virar um
+ * componente de player emprestado de outro lugar.
+ */
+/**
+ * **`flex: none` e altura explícita**, e as duas são obrigatórias aqui.
+ *
+ * A trilha compartilhada nasceu no medidor das formações, que é uma **linha**:
+ * lá o `flex: 1` é o que a faz ocupar o espaço que sobra, e a altura de 1px vem
+ * da regra. Dentro do corpo do destaque o eixo é o outro — é uma coluna —, e ali
+ * `flex: 1` vira `flex-basis: 0` na **altura**: a barra existia, com a animação
+ * correndo, e media zero pixel. Um medidor que não se vê é pior que um medidor
+ * que não existe, porque ninguém vai procurá-lo.
+ */
 .trilha {
-  margin-top: 6px;
+  flex: none;
+  height: 1px;
+  margin-top: 8px;
+  background: rgb(255 255 255 / 10%);
 }
 
 .progresso {
   position: absolute;
   inset: 0 auto 0 0;
   width: var(--de, 0%);
-  background: rgb(255 255 255 / 75%);
+  background: rgb(255 255 255 / 55%);
   animation: correFaixa var(--resta, 0ms) linear both;
+}
+
+/**
+ * A cabeça da barra: um traço curto e mais aceso na ponta que avança.
+ *
+ * Uma linha de 1px crescendo devagar é quase imperceptível de relance — o que
+ * se lê num medidor é a **borda**, não a área preenchida. O traço fica dentro
+ * do preenchimento, encostado à direita, então ele viaja de graça com a mesma
+ * animação de largura e não custa um segundo relógio.
+ */
+.progresso::after {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 14px;
+  background: linear-gradient(90deg, transparent, #fff);
+  content: '';
 }
 
 .colunas {
@@ -301,7 +337,36 @@
     --capa: 64px;
   }
 
+  /**
+   * No estreito o respiro **sobe**, em vez de descer com a tela.
+   *
+   * Os tokens da página encolhem os espaçamentos quando falta largura, e aqui
+   * isso saiu pela culatra: as duas listas deixam de ser duas colunas e viram
+   * uma pilha de dezoito linhas iguais, então o que antes era separado pelo
+   * espaço horizontal passa a depender só do vertical. Com os valores de tela
+   * larga a seção lia como um bloco só de texto.
+   *
+   * A escala que cabe (`useEscalaQueCabe`) é quem paga a conta se isso não
+   * couber, e é para isso que ela existe.
+   */
+  .secao .bloco {
+    gap: 28px;
+  }
+
   .colunas {
     grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .coluna {
+    gap: 14px;
+  }
+
+  .lista {
+    gap: 12px;
+  }
+
+  .destaque {
+    gap: 16px;
   }
 }

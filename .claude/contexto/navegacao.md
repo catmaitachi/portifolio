@@ -81,10 +81,10 @@ de modo que viram entrada.
 **No Início a parte é a etiqueta do modo, não o nome da seção.** "Início" não diz em que lado do site
 alguém está, e é exatamente ali que os dois lados mostram a mesma seção com textos diferentes.
 
-O texto sai do dicionário (`documento`), com marcador em vez de concatenação, e a parte vem **na
-frente** porque a aba corta o fim: o que distingue uma aba da outra precisa sobrar. O `<title>` do
-`index.html` existe só até o React assumir, e traz o mesmo formato para o modo padrão — assim não há
-um pisca de título na abertura.
+O texto sai do dicionário (`documento`), com marcador em vez de concatenação: inverter as duas
+partes, ou trocar o separador, é editar uma string nos dois idiomas e não mexer em componente
+nenhum. O `<title>` do `index.html` existe só até o React assumir, e traz o mesmo formato para o modo
+padrão — assim não há um pisca de título na abertura.
 
 ### A rolagem
 

@@ -16,8 +16,9 @@ import { useT } from '~/i18n/useLanguage';
  * mostram a mesma seção com textos diferentes.
  *
  * O texto sai do dicionário como todo o resto, com marcador em vez de
- * concatenação: a ordem das palavras é do idioma. E ele muda junto com o idioma
- * de graça, porque `t` está nas dependências.
+ * concatenação: a ordem das palavras é do idioma, e inverter as duas partes é
+ * editar uma string em vez de mexer aqui. E ele muda junto com o idioma de
+ * graça, porque `t` está nas dependências.
  */
 export function useDocumentTitle(modo: ModoKey, secao: SectionKey): void {
   const t = useT();
