@@ -1,7 +1,9 @@
 ## Regras de React que o projeto segue
 
 **A revisão de qualidade periódica passa pelo [React Doctor](https://react.doctor)**
-(`npx react-doctor@latest --verbose`). Ele pega a classe de defeito que o `tsc` não vê e que não
+(`npx react-doctor@latest --verbose`). Na passagem da v1.1 ele achou **quatro** apontamentos, e os
+quatro são os falsos positivos descritos aqui: `useRemoto`, o `AbortController` do `SpaceCanvas` e as
+duas leituras do clique no cartão lateral de Projetos. Nada do que a v1.1 acrescentou foi apontado. Ele pega a classe de defeito que o `tsc` não vê e que não
 aparece em teste, porque depende de timing: ref escrita durante o render, estado ajustado por efeito
 depois de uma prop, efeito sem limpeza. A primeira passada achou 20 desses num código que compilava
 e funcionava.
@@ -102,6 +104,27 @@ voo, só ignoraria a resposta.
 `removeEventListener` literal no cleanup e não reconhece o `signal`. É falso positivo conhecido: não
 mexer aqui para calar a regra, e não trocar o `AbortController` por remoção manual, que reintroduz o
 caso não coberto.
+
+### O terceiro falso positivo aceito: o clique no cartão lateral de Projetos
+
+`react-doctor/no-static-element-interactions` e `click-events-have-key-events` apontam a mesma linha
+do `ProjectCard`: uma `<div>` com `onClick` e sem `role`, sem `tabIndex` e sem tratador de teclado.
+
+Ela é **enriquecimento para o mouse**, e a função que ela oferece está inteira em outro lugar: trocar
+de projeto é trabalho das setas ←/→ e dos traços-índice, que são botões de verdade e estão na
+tabulação. Quem navega por teclado não perde nada por essa `<div>` não responder, porque nunca chega
+nela.
+
+As duas saídas que a regra prescreve pioram o que está aqui:
+
+- **virar um `<button>`** repõe exatamente o defeito que o painel de descrição deixou para trás: um
+  controle com um `<a>` dentro, que ARIA não permite. Foi por isso que o `role="button"` saiu;
+- **ganhar `tabIndex` e um tratador de teclado** devolve três cartões à tabulação para duplicar o
+  que as setas já fazem, e leva o foco para dois cartões que o visitante não consegue ler, porque
+  estão girados e apagados na órbita.
+
+A regra não tem como enxergar que a ação existe duas vezes na mesma tela. Vale a mesma decisão dos
+outros dois: **não deformar o código para calar a regra.**
 
 Pela mesma razão a guarda `if (controle.signal.aborted)` fica **depois** do `await`, e não antes:
 ela não checa o resultado do import, checa se o componente ainda existe depois da espera. Movida
