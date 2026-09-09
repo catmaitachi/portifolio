@@ -412,9 +412,32 @@ ou quatro jogos, e a seção vai passar a dividir o espaço com o League of Lege
 uma tira vertical, e a arte deitada da loja não tem altura para sobreviver a esse recorte. As duas
 chegam do contrato, e uma não é a outra recortada.
 
-**Levantar uma carta empurra as seguintes**, em vez de abrir por cima delas: sem isso, numa quinzena
-de três jogos, apontar uma apagava as outras. O irmão geral (`~`) resolve sozinho, sem estado no
-React, porque a pilha abre sempre para o mesmo lado.
+**Apontar a pilha a solta inteira, e apontar uma carta abre um vão onde o ponteiro está.** São dois
+movimentos, e eles resolvem coisas diferentes. Havia só o segundo, empurrando quem vinha depois, e
+ele era feio na ponta direita: a carta apontada subia para a frente de todas e passava por cima das
+que vinham antes dela, então apontar o fim da pilha cobria o começo. Empurrar só quem vem depois
+nunca ia consertar isso, porque o problema é o que fica **atrás** do ponteiro.
+
+O afastamento geral é proporcional à posição, então a pilha se abre em leque assim que o ponteiro
+chega, e na hora de levantar uma carta quase não há mais o que cobrir. A abertura local é o resto,
+dividido em dois: quem vem antes recua meia abertura, quem vem depois avança a outra metade. A
+largura total cresce sempre a mesma coisa, não importa qual carta seja, e as duas pontas da faixa
+reservam esse crescimento, senão a seção ganha rolagem lateral no primeiro apontar.
+
+Os dois deslocamentos viajam no **mesmo** `transform`, somados dentro de um `calc`: são translações
+no mesmo eixo do mesmo elemento, e em duas declarações a segunda apagaria a primeira. É a regra do
+`<g>` da curva da Trajetória vista pelo outro lado, onde a saída foi separar os elementos porque um
+dos dois vinha do JavaScript.
+
+`:has` é o que permite falar de quem vem **antes**, e não tem substituto aqui: o combinador de irmão
+só anda para a frente. A alternativa seria guardar no React qual carta está apontada, isto é, um
+render por movimento de ponteiro sobre uma fileira de imagens.
+
+**E as outras capas recuam em luz.** Com o leque aberto, todas as artes ficam à vista ao mesmo tempo,
+e oito imagens coloridas lado a lado não dizem qual está sendo apontada: os 8px de levantar sozinhos
+são pouco contra isso. É opacidade, e não `filter`: a arte é identidade de terceiro e não se
+repinta, então o que se mexe é o quanto dela chega, nunca a cor. É o mesmo recurso dos cartões
+laterais da órbita de Projetos.
 
 **Sem ponteiro não há pilha.** A carta empilhada depende de alguém poder apontá-la, e num aparelho de
 toque isso não existe: as capas ficariam cobertas para sempre. Em `(hover: none)` ela vira o que já

@@ -106,7 +106,7 @@ function Conteudo({ dados }: { dados: Jogos }) {
       {resto.length > 0 && (
         <div className={styles.grupo}>
           <p className={styles.tituloLista}>{t.jogos.recentes}</p>
-          <ul className={styles.pilha}>
+          <ul className={styles.pilha} style={{ '--total': resto.length } as React.CSSProperties}>
             {resto.map((g, i) => (
               <li
                 key={g.id}
