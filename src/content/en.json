@@ -105,7 +105,6 @@
         "key": "clinplay",
         "nome": "ClinPlaY",
         "linha": "Gamified and accessible physical therapy in SaaS format.",
-        "descricao": "Remote monitoring platform that transforms home exercises into an interactive and measurable experience. It uses gamification to boost motivation, provides continuous feedback on technique and execution, allowing the physiotherapist to monitor the patient's recovery without it being interrupted when they leave the clinic. ",
         "ano": "2026",
         "papel": "Scrum Master",
         "stack": ["React", "TypeScript", "Java", "Spring Boot"],
@@ -117,7 +116,6 @@
         "key": "vaga-02",
         "nome": "—",
         "linha": "to be defined",
-        "descricao": "",
         "ano": "—",
         "papel": "—",
         "stack": [],
@@ -128,7 +126,6 @@
         "key": "vaga-03",
         "nome": "—",
         "linha": "to be defined",
-        "descricao": "",
         "ano": "—",
         "papel": "—",
         "stack": [],
@@ -301,14 +298,6 @@
   },
 
   "credito": "Made with Claude",
-
-  "aviso": {
-    "fechar": "Dismiss notice",
-    "nova": {
-      "titulo": "Supernova",
-      "texto": "You have the power to bring a star to life. Experiment with clicking and holding on the cosmos."
-    }
-  },
 
   "a11y": {
     "secoes": "Sections",

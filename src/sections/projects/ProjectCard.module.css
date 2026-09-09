@@ -48,7 +48,7 @@
 }
 
 .cartao {
-  position: relative; /* âncora do painel de descrição */
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -114,7 +114,7 @@
   border-style: dashed;
 }
 
-/* a vaga não abre descrição, mas arrasta como qualquer cartão da frente */
+/* a vaga não leva a lugar nenhum, mas arrasta como qualquer cartão da frente */
 .cartao[data-vaga][data-frente] {
   cursor: grab;
 }
@@ -240,66 +240,15 @@
   margin-top: auto;
 }
 
-.descricao {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: var(--pcard, 18px);
-  background: rgb(0 0 0 / 94%);
-  opacity: 0;
-  transform: translateY(100%);
-  transition:
-    opacity 0.5s ease,
-    transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.descricao[data-aberto] {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.descTopo {
-  display: flex;
-  flex: none;
-  gap: 12px;
-  align-items: baseline;
-  justify-content: space-between;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgb(255 255 255 / 12%);
-}
-
-.descNome {
-  color: #fff;
-  font-size: 12px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-}
-
-.descIndice {
-  color: rgb(255 255 255 / 34%);
-  font-size: 9px;
-  letter-spacing: 0.22em;
-}
-
-.descTexto {
-  flex: 1;
-  min-height: 0;
-  margin: 0;
-  padding-right: 10px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: rgb(255 255 255 / 22%) transparent;
-  color: rgb(255 255 255 / 72%);
-  font-size: 11.5px;
-  font-weight: 300;
-  line-height: 1.9;
-  letter-spacing: 0.05em;
-  text-wrap: pretty;
-}
-
+/**
+ * O link para ver o projeto, agora no corpo do cartão.
+ *
+ * Ele existe nos três cartões para que todos tenham a mesma altura de corpo, e
+ * **só o da frente responde**: fora dela ele sai da tabulação (no componente) e
+ * do ponteiro (aqui), porque ali o clique é do cartão, que gira a órbita. Sem
+ * isso, apontar um cartão lateral prometeria um alvo que o giro vai levar
+ * embora.
+ */
 .aoVivo {
   flex: none;
   align-self: flex-start;
@@ -309,6 +258,11 @@
   font-size: 9px;
   letter-spacing: 0.24em;
   text-transform: uppercase;
+  pointer-events: none;
+}
+
+.cartao[data-frente] .aoVivo {
+  pointer-events: auto;
 }
 
 .aoVivo:hover {

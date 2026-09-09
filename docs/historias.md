@@ -4,9 +4,9 @@
 
 Quem procura um desenvolvedor para tirar um projeto do papel.
 
-**HU01.** Como cliente avaliando com quem trabalhar, quero ver cada projeto com nome, ano, papel exercido, tecnologias e situação, e abrir a descrição completa sobre o cartão, para saber se ele já resolveu um problema parecido com o meu.
+**HU01.** Como cliente avaliando com quem trabalhar, quero ver cada projeto com nome, resumo, ano, papel exercido, tecnologias e situação, tudo de uma vez e sem precisar abrir nada, para saber se ele já resolveu um problema parecido com o meu.
 
-**HU02.** Como cliente interessado em um projeto específico, quero abrir o link "ver ao vivo" do cartão, para ver o resultado funcionando.
+**HU02.** Como cliente interessado em um projeto específico, quero abrir o link "ver ao vivo" na frente do cartão, para ver o resultado funcionando.
 
 **HU03.** Como cliente com uma dúvida pontual, quero escrever pelo formulário, onde só a mensagem é obrigatória, ou copiar o e-mail e procurar pelos canais, para começar a conversa sem cadastro.
 

@@ -62,103 +62,66 @@ página (ver `responsivo.md`), e era ele que obrigava o Sobre inteiro a encolher
 celular, e com ele fora ela volta ao teto da escala sozinha. A segunda é de leitura: formação
 tem estado, data e progresso, e no rodapé de uma biografia isso lia como legenda do retrato.
 
-**Os diplomas ficam num carrossel horizontal, e ele anda sozinho.** A pilha que existia aqui antes
-falhava na única coisa que precisava fazer: os de trás apareciam como dois riscos embaixo do da
-frente, e nada ali dizia que eram cartões inteiros esperando a vez. Deitados lado a lado, cada
-vizinho aparece pela beirada, com o nome da instituição legível, e o que existe na seção fica
-evidente sem que ninguém precise tocar em nada.
+**A faixa anda sempre, e não tem passo.** Ela já foi uma pilha e já foi um carrossel que parava em
+cada formação por alguns segundos, e as duas falhavam pelo mesmo motivo, por caminhos diferentes: na
+pilha, o que estava atrás aparecia como dois riscos e ninguém adivinhava que eram cartões; no
+carrossel com espera, a parada era comprida demais para quem já leu e curta demais para quem estava
+lendo, e a troca chegava como um salto. Hoje a faixa desliza devagar o tempo todo, os crachás estão
+todos na tela ao mesmo tempo, e o que muda é qual deles está passando pelo meio.
 
-**Ele é um anel, e a distância é circular.** Cada diploma sabe a própria distância ao da frente pelo
-caminho mais curto, e é dela que saem deslocamento, escala e opacidade. É o arranjo da órbita de
-Projetos, achatado. Um trilho transladando teria de dar um salto para voltar ao começo, e um
-carrossel automático dá essa volta a cada ciclo, então aqui a navegação **é** circular, ao contrário
-da pilha e ao contrário da curva da Trajetória.
+Três coisas decorrem disso, e nenhuma é detalhe:
 
-A profundidade vem de escala e opacidade, **sem `perspective`**: com ela os vizinhos ganhavam uma
-inclinação de anel, e um diploma é papel, não a face de um cilindro. E, como em Projetos, nada de
-rAF, `ativo` muda e as `transition` fazem o movimento.
+- **A lista aparece duas vezes no DOM**, e é o que fecha o laço. A faixa translada exatamente uma
+  volta da lista, e no instante em que a animação reinicia a cópia está ocupando o lugar da
+  original. Sem ela haveria um salto a cada volta, e nenhuma duração o esconderia. A segunda passada
+  é `aria-hidden`, porque é a mesma formação de novo.
+- **A duração é por crachá, não por volta.** `--cvolta` é o tempo de um passo e a animação dura isso
+  vezes o número de formações. Com uma duração fixa de volta, acrescentar uma formação aceleraria a
+  faixa, e velocidade é justamente o que se percebe aqui.
+- **Não há estado nenhum**: nem cartão ativo, nem índice, nem relógio em JavaScript. Foi embora com
+  eles o arraste, as setas ←/→ e os traços-índice, porque nada disso tem sentido sem um passo para
+  onde ir. A faixa é uma animação de CSS, o que a põe no compositor da GPU e a deixa parar sozinha
+  sob `prefers-reduced-motion`, onde ela não anda em vez de andar em duração zero.
 
-**O automático é o motivo de a seção ter mudado de forma**, então ele tem de ser visível e
-previsível. Cada diploma fica 5,6s na frente, e o traço ativo carrega o relógio: um risco branco
-corre por dentro dele até o próximo passo. Sem isso a troca chega como um salto no meio da leitura.
+**Apontar a faixa a segura**, e `:focus-within` faz o mesmo pelo teclado. Não é conveniência: com o
+texto andando, ler um crachá inteiro depende de ele ficar parado, e o ponteiro em cima dele é
+exatamente o sinal de que alguém está lendo.
 
-**Quatro coisas param o relógio**, e cada uma por um motivo próprio: o ponteiro entrando no palco e o
-foco caindo dentro dele, porque quem está lendo um diploma não pode perdê-lo para um cronômetro; a
-seção deixar de ser a ativa e a aba sair de vista, porque um relógio que corre escondido gasta para
-mostrar o que ninguém vê, que é a mesma regra da recarga da supernova; e `prefers-reduced-motion`,
-porque movimento que ninguém pediu é justamente o que a preferência recusa. Parado, o risco do traço
-congela onde está em vez de sumir.
+**O palco corta o que passa da largura do bloco**, e um `mask-image` curto amacia as duas bordas. Ele
+é curto de propósito: o que a seção existe para mostrar são os crachás inteiros, e um degradê longo
+devolveria como sombra justamente isso.
 
-**O palco toma a largura do bloco e corta o que passa dela.** É esse corte que faz o vizinho entrar
-pela borda em vez de terminar numa aresta no meio do nada, e um `mask-image` apaga os últimos pontos
-de cada lado para amaciá-lo. Ele não alcança o diploma da frente, que ocupa o miolo.
+### O crachá
 
-Daí vem a largura do cartão ser `min(560px, 62%)`, com teto **e** fração. Só o teto deixava o da
-frente ocupando a largura inteira numa janela média, e o carrossel voltava a parecer um cartão só,
-que é o defeito da pilha que ele veio substituir. O passo entre um diploma e o vizinho é fração da
-largura **do cartão** (78%), e não do palco: é assim que um `translateX` percentual mede, e escrito
-sobre o palco ele mudaria de sentido entre o desktop, onde a largura vem em px, e o mobile, onde vem
-em porcentagem.
-
-**A lista vai do mais recente para o mais antigo**, ao contrário da Trajetória: é a ordem em que ele
-os conta, do que está fazendo agora para trás. **E o carrossel abre no que está em curso**, não no
-primeiro: o que responde "onde ele está academicamente hoje" é o de agora, não a pretensão que abre a
-lista. Sem nenhum `cursando`, o primeiro serve.
-
-**O arraste é o de Projetos, e agora só no eixo X**, que é o do movimento. Ele começa sobre o diploma
-da frente, é decidido no `pointerup` (curto é clique, longo é passo) e o `click` que vem depois dele
-é engolido, senão o gesto andaria o carrossel **e** o clique cairia no cartão que estava ali.
-Arrastar para a esquerda traz o próximo. O eixo vertical fica com a rolagem da página
-(`touch-action: pan-y` no palco), como no palco de Projetos.
-
-Além dele: clique num diploma vizinho, ←/→ enquanto a seção está ativa, e os traços abaixo do palco.
-
-**Os traços deitaram junto com o carrossel.** Em pé eles apontavam para o eixo da pilha; agora o
-movimento é horizontal, e uma linha embaixo do palco é o índice do que se vê, como em Projetos. Eles
-continuam sendo o jeito de pular direto para um diploma, e o ativo virou também o relógio do
-automático.
-
-### O diploma
-
-O badge de 312px virou um cartão de carta, e o que ele mostra deixou de depender do ponteiro: no
-badge a data e a fração ficavam **escondidas atrás da barra** e só o hover as revelava. Aqui está
-tudo que o conteúdo tem, ao mesmo tempo.
+O cartão deitado, na proporção de um diploma, virou um **retângulo em pé**. A forma resolve dois
+problemas de uma vez: cada peça ganha uma faixa inteira em vez de dividir uma linha com as outras
+três, e numa faixa que anda de lado um cartão estreito é um cartão que cabe, então três aparecem por
+inteiro onde antes cabia um.
 
 | Onde | O quê |
 |---|---|
-| alto, à esquerda | o logo da instituição, em escala óptica própria (`shared.json → logos`) |
-| alto, ao lado | instituição em versalete espaçado, e o nível abaixo dela |
-| alto, à direita | o **selo** com o estado |
+| topo | o **furo da fita**, e o logo da instituição em escala óptica própria (`shared.json → logos`) |
+| abaixo | instituição em versalete espaçado, o nível, e o **selo** com o estado |
 | miolo | o curso, na maior tipografia do cartão |
-| pé | a posição na lista, o dado do estado com o rótulo dele, a barra e a fração em número |
+| pé | a posição na lista e o dado do estado, e embaixo a barra com a fração em número |
 
-- **A moldura é dupla**, um risco de 1px correndo por dentro do outro, que é a gramática de um
-  certificado. É o único ornamento do cartão, porque fita, brasão e serifa seriam formas que não
-  existem em nenhum outro lugar da página. O risco de dentro acompanha o chanfro com um raio menor,
-  senão os dois cantos cortados brigariam.
-- **O estado mora no selo, e só nele.** Ele saía no medidor junto da barra, e a mesma palavra em dois
-  lugares do mesmo cartão seria repetição; no pé ela ainda competia com a fração, que é o número que
-  a barra explica.
-- **A fração aparece como número, encostada na direita.** O medidor toma o resto da linha, então ela
-  fecha o rodapé pela borda em vez de ficar solta no meio dele. A `pretensao` é a exceção: não tem o
-  que mostrar, e um "0%" leria como defeito em vez de "ainda não começou".
+- **O furo é o que faz a forma ser lida como crachá.** É um risco de 1px como todo o resto, sem
+  preenchimento e sem ilusão de recorte. Ele substituiu a moldura dupla, que era a gramática de um
+  certificado e deixou de valer quando o cartão trocou de forma.
+- **O centro é consequência, não estética**: numa coluna estreita, texto à esquerda sob um logo
+  centrado leria como duas colunas que não existem. O rodapé é a exceção, e é onde a leitura fecha.
+- **O curso tem margens automáticas**, então a folga se divide acima e abaixo dele. Sem isso o bloco
+  ficaria colado no alto com o rodapé pendurado lá embaixo.
+- **O estado mora no selo, e só nele.** No medidor a mesma palavra apareceria duas vezes no mesmo
+  cartão, e ali ela competiria com a fração, que é o número que a barra explica.
 - **O rótulo do dado é traduzido, o valor não.** "2022.12" e "4/8" são dados, idênticos nos dois
   idiomas, como a versão no rodapé; quem traduz é o "Conclusão" e o "Períodos" ao lado
-  (`formacoes.rotulos`).
-- **O da frente é preto sólido**, e não os 92% do cartão de projeto: o passo é menor que a largura,
-  então ele cobre um pedaço de cada vizinho, e 6% de transparência bastavam para o nome da outra
-  instituição fantasmar por cima do curso. E o fundo **não faz transição**, só a borda: meio segundo
-  interpolando entre sólido e translúcido é meio segundo com os dois translúcidos ao mesmo tempo,
-  bem durante o passo, que é quando o olho está no cartão.
+  (`formacoes.rotulos`). A `pretensao` não mostra fração: um "0%" leria como defeito em vez de
+  "ainda não começou".
 
-**No mobile o diploma fica em pé**, e é a única mudança de layout da seção que não cabia num token.
-A largura dele vira porcentagem (78%) pela mesma razão do desktop: em 100% não sobraria borda de onde
-o vizinho espiar.
-Deitado num celular, o logo dividia 300px com a instituição, o nível e o selo, e sobrava mancha para
-cada um; em pé o cartão troca a largura que não tem pela altura que sobra, e cada peça ganha uma
-faixa inteira. O centro é consequência, não estética: numa coluna estreita, texto à esquerda sob um
-logo centrado leria como duas colunas que não existem. O rodapé é a exceção e continua nas pontas,
-com a barra descendo para uma linha só dela.
+**No mobile os três não cabem ao mesmo tempo**, e nenhum ajuste de largura resolve isso sem deixar o
+texto ilegível: três crachás legíveis pedem mais de 600px. É justamente o que a faixa cobre, porque
+cada um passa pelo meio sozinho.
 
 ---
 
@@ -187,8 +150,8 @@ atende mais. `:active` troca para `grabbing`, sem estado no React.
 
 **O `click` que segue um arraste é engolido** por um listener de captura no palco, solto num
 `setTimeout(0)` para não sobreviver a um gesto que não gerou clique. Sem isso o arraste sobre o
-cartão da frente girava *e* o clique caía no cartão que estava ali, abrindo o painel de um cartão
-que já tinha virado lateral. A captura no palco basta porque o React escuta na raiz do documento e
+cartão da frente girava *e* o clique caía no cartão que estava ali, trazendo para o meio um cartão
+que o gesto já tinha levado embora. A captura no palco basta porque o React escuta na raiz do documento e
 dispara `onClick` na subida, que deixa de acontecer.
 
 **O cartão da frente é opaco** (`rgb(0 0 0 / 92%)`, contra os 42% dos demais). A órbita é fechada de
@@ -202,9 +165,22 @@ do lateral é exatamente o que responde.** Devolver a área inteira aos laterais
 `foco` tem **piso alto** (`.52 + .48·prof`; vaga `.34 + .3·prof`): com n=3 a profundidade dos
 laterais é só .25 e um falloff linear os apagaria por completo no céu preto.
 
-**Descrição cobre o cartão**: painel `inset: 0` sobre o cartão inteiro (por isso o cartão é
-`position: relative`), de `translateY(100%)` a 0. O link *ver ao vivo* só entra na tabulação quando
-aberto. Sair da seção fecha o painel.
+**Não há painel de descrição, e o cartão não é um botão.** Um texto longo escondido atrás de um
+clique era o único conteúdo oculto da página, e o cartão já mostra o que o projeto é: nome, uma linha
+de resumo, ano, papel, stack, estado e o link para ver ao vivo. Contar o projeto por extenso é
+trabalho do projeto, não do portfólio.
+
+Três coisas saíram junto com o painel, e nenhuma faz falta: o fechamento ao deixar a seção, a tecla
+Esc e a regra de tabulação que tirava os outros cartões do caminho enquanto um estava aberto.
+
+**O link fica no corpo do cartão, e só o da frente responde.** Ele é desenhado nos três para que
+todos tenham a mesma altura de corpo, senão o cartão mudaria de geometria no meio do giro; fora da
+frente ele sai da tabulação e do ponteiro, porque ali o clique é do cartão, que gira a órbita.
+
+E isso resolveu o defeito de acessibilidade que estava anotado em `pendencias.md`: o cartão era
+`role="button"` com um link dentro, o que ARIA não permite, e o aninhamento existia só para o painel
+fechar ao clique. Sem painel, o cartão volta a ser um `<article>`, o link é o único elemento
+interativo dele, e quem navega por teclado troca de projeto pelas setas ou pelos traços-índice.
 
 Marcador geométrico por cartão: dois contornos de 1px com raio/rotação próprios, escolhidos pelo
 índice entre quatro variantes.

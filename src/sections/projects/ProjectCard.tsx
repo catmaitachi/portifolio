@@ -21,32 +21,32 @@ interface ProjectCardProps {
   projeto: Projeto;
   indice: number;
   geo: Geometria;
-  aberto: boolean;
   /** seção ativa: dispara a entrada do cartão, escalonada por `geo.ordem` */
   ativo: boolean;
-  /**
-   * Se o cartão entra na tabulação.
-   *
-   * Com um painel aberto, só o cartão do painel é focável: os outros ficam
-   * **atrás** dele, e tabular para um cartão que o visitante não consegue ver é
-   * perder o foco no meio da tela. Continuam clicáveis — o mouse não tem esse
-   * problema, e clicar num lateral segue girando a órbita.
-   */
-  focavel: boolean;
-  onAlternar: () => void;
+  /** clique num cartão lateral: traz ele para a frente */
+  onFocar: () => void;
 }
 
-export function ProjectCard({
-  projeto,
-  indice,
-  geo,
-  ativo,
-  aberto,
-  focavel,
-  onAlternar,
-}: ProjectCardProps) {
+/**
+ * Um cartão da órbita.
+ *
+ * **Não há mais painel de descrição, e o cartão deixou de ser um botão.** O que
+ * o projeto é cabe no que já está na frente: nome, uma linha de resumo, ano,
+ * papel, stack, o estado e o link para ver ao vivo. Um texto longo escondido
+ * atrás de um clique era conteúdo oculto num site que não tem nenhum outro, e a
+ * própria página é o portfólio: o lugar de contar o projeto por extenso é o
+ * projeto.
+ *
+ * Isso resolveu de graça o defeito de acessibilidade que estava anotado em
+ * `pendencias.md`: o cartão era `role="button"` com um link dentro, o que ARIA
+ * não permite. Agora o único elemento interativo aqui é o link, e ele só
+ * responde no cartão da frente. Quem navega por teclado troca de projeto pelas
+ * setas ou pelos traços-índice, que são botões de verdade; o clique num cartão
+ * lateral continua existindo para o mouse, que nunca teve esse problema.
+ */
+export function ProjectCard({ projeto, indice, geo, ativo, onFocar }: ProjectCardProps) {
   const t = useT();
-  // "a definir" é uma vaga reservada: gira na órbita, mas não abre descrição
+  // "a definir" é uma vaga reservada: gira na órbita e não tem para onde levar
   const vaga = projeto.estado === 'definir';
   const glifo = GLIFOS[indice % GLIFOS.length];
   const rotulo = String(indice + 1).padStart(2, '0');
@@ -69,18 +69,8 @@ export function ProjectCard({
         data-vaga={vaga || undefined}
         data-frente={geo.naFrente || undefined}
         data-entrada={ativo || undefined}
-        role="button"
-        tabIndex={focavel ? 0 : -1}
-        aria-expanded={aberto}
-        aria-label={projeto.nome}
-        onClick={onAlternar}
-        onKeyDown={(e) => {
-          if (e.key !== 'Enter' && e.key !== ' ') return;
-          e.preventDefault();
-          // impede que o Espaço role a página e que a seta chegue ao palco
-          e.stopPropagation();
-          onAlternar();
-        }}
+        // o da frente já está onde deveria: só os laterais respondem ao clique
+        onClick={geo.naFrente ? undefined : onFocar}
       >
         <div className={styles.banner}>
           <Figure
@@ -113,37 +103,33 @@ export function ProjectCard({
           {/* stack como texto único: um `map` aninhado aqui só geraria nós a mais */}
           <span className={styles.stack}>{projeto.stack.join('  ·  ')}</span>
 
-          <div className={`${comum.medidor} ${styles.rodape}`}>
-            <span className={comum.trilha}>
-              <span className={comum.preenchimento} style={{ width: preenchido ? '100%' : '0%' }} />
-            </span>
-            <span className={comum.estado}>{t.projetos.estados[projeto.estado]}</span>
-          </div>
-        </div>
-
-        {/**
-         * A descrição cobre o cartão inteiro (`inset: 0`), subindo de baixo.
-         * Fica dentro do cartão — por isso o cartão é `position: relative`.
-         */}
-        <div className={styles.descricao} data-aberto={aberto || undefined}>
-          <div className={styles.descTopo}>
-            <span className={styles.descNome}>{projeto.nome}</span>
-            <span className={styles.descIndice}>{rotulo}</span>
-          </div>
-          <p className={styles.descTexto}>{projeto.descricao}</p>
+          {/**
+           * O link fica na frente do cartão, que é o único lugar onde ele pode
+           * ficar depois que o painel saiu.
+           *
+           * Ele é desenhado nos três cartões para que a altura do corpo seja a
+           * mesma em todos — renderizado só no da frente, o cartão mudaria de
+           * geometria no meio do giro. Fora da frente ele sai da tabulação e do
+           * ponteiro, e é o clique do cartão lateral que responde ali.
+           */}
           {aoVivo ? (
             <a
               className={styles.aoVivo}
               href={aoVivo}
               target="_blank"
               rel="noreferrer"
-              /* só entra na tabulação quando o painel está aberto */
-              tabIndex={aberto ? 0 : -1}
-              onClick={(e) => e.stopPropagation()}
+              tabIndex={geo.naFrente ? 0 : -1}
             >
               {t.projetos.aoVivo}
             </a>
           ) : null}
+
+          <div className={`${comum.medidor} ${styles.rodape}`}>
+            <span className={comum.trilha}>
+              <span className={comum.preenchimento} style={{ width: preenchido ? '100%' : '0%' }} />
+            </span>
+            <span className={comum.estado}>{t.projetos.estados[projeto.estado]}</span>
+          </div>
         </div>
       </div>
     </article>

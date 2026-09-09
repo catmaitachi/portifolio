@@ -1,15 +1,13 @@
 import { useMemo, useRef } from 'react';
-import { useArrowKeys } from '~/hooks/useArrowKeys';
 import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
 import type { SectionProps } from '../types';
 import { DiplomaCard } from './DiplomaCard';
 import styles from './EducationSection.module.css';
-import { AUTO_MS, useCarrossel } from './useCarrossel';
 
 /**
- * Formação: os diplomas num carrossel horizontal que anda sozinho.
+ * Formação: uma faixa de crachás que não para de andar.
  *
  * A seção nasceu do pé do Sobre, e por duas razões que se somam. A primeira é de
  * tamanho: o badge de formação era a peça mais densa da página (ver
@@ -20,14 +18,21 @@ import { AUTO_MS, useCarrossel } from './useCarrossel';
  * Ela **só existe no modo profissional** (`shared.json → modos`), e não precisa
  * saber disso: quem decide é a lista do modo.
  *
- * Navegar: esperar (o carrossel anda sozinho), clicar num diploma vizinho,
- * arrastar sobre o da frente, ←/→ enquanto a seção está ativa, ou os traços
- * abaixo do palco. Por que o anel é circular e quando o relógio para está em
- * `useCarrossel`.
+ * **O movimento é contínuo, e não tem passo.** A versão anterior parava em cada
+ * formação por alguns segundos e saltava para a seguinte, e a espera era o pior
+ * de dois mundos: comprida demais para quem já leu e curta demais para quem
+ * estava lendo. Aqui a faixa anda devagar o tempo todo, todos os crachás estão
+ * na tela ao mesmo tempo, e o que muda é qual deles está passando pelo meio.
  *
- * **Ela abre no que está em curso**, não no primeiro da lista: o que responde
- * "onde ele está academicamente hoje" é o de agora, não a pretensão que abre a
- * lista. Sem nenhum `cursando`, o primeiro serve.
+ * **A lista aparece duas vezes**, e é isso que fecha o laço: a faixa translada
+ * exatamente uma volta da lista e volta ao começo, onde a cópia já está no lugar
+ * da original. Sem a cópia haveria um salto visível a cada volta, e nenhuma
+ * quantidade de duração o esconderia. A segunda passada é `aria-hidden`, porque
+ * é a mesma formação de novo.
+ *
+ * Não há estado nenhum aqui: nem cartão ativo, nem índice, nem relógio em
+ * JavaScript. A faixa é uma animação de CSS, o que a põe no compositor da GPU e
+ * a deixa parar sozinha sob `prefers-reduced-motion`.
  */
 export function EducationSection({ ativo, indice }: SectionProps) {
   const t = useT();
@@ -35,13 +40,12 @@ export function EducationSection({ ativo, indice }: SectionProps) {
   // o conteúdo encolhe até caber na altura que a tela tem
   useEscalaQueCabe(secaoRef);
   const lista = t.formacoes.lista;
-  const emCurso = useMemo(() => {
-    const i = lista.findIndex((f) => f.estado === 'cursando');
-    return i < 0 ? 0 : i;
-  }, [lista]);
-  const carrossel = useCarrossel(lista.length, emCurso, ativo);
 
-  useArrowKeys(ativo, carrossel.andar);
+  /** A lista, e a cópia que fecha o laço. */
+  const faixa = useMemo(
+    () => [...lista.map((f) => ({ f, copia: false })), ...lista.map((f) => ({ f, copia: true }))],
+    [lista],
+  );
 
   return (
     <section
@@ -60,55 +64,23 @@ export function EducationSection({ ativo, indice }: SectionProps) {
           <p className={comum.intro}>{t.formacoes.intro}</p>
         </div>
 
-        <div className={styles.arena}>
+        <div className={styles.palco}>
           <div
-            ref={carrossel.palcoRef}
-            className={styles.palco}
-            role="group"
-            aria-label={t.formacoes.titulo}
-            tabIndex={0}
+            className={styles.faixa}
+            // quantas formações a volta tem: é a distância que a faixa percorre
+            style={{ '--n': String(lista.length) } as React.CSSProperties}
           >
-            {lista.map((f, i) => (
+            {faixa.map(({ f, copia }, i) => (
               <DiplomaCard
-                key={f.slot}
+                key={`${f.slot}-${copia ? 'b' : 'a'}`}
                 formacao={f}
-                indice={i}
+                indice={i % lista.length}
                 total={lista.length}
-                geo={carrossel.geometria(i)}
+                // a entrada corre da esquerda para a direita, e para na primeira volta
+                ordem={Math.min(i, lista.length)}
                 ativo={ativo}
-                onFocar={() => carrossel.focar(i)}
+                copia={copia}
               />
-            ))}
-          </div>
-
-          {/**
-           * Os traços ficam **embaixo**, na horizontal, porque agora é esse o
-           * eixo do movimento — em pé eles apontariam para um eixo que o
-           * carrossel não tem.
-           *
-           * O ativo também é o relógio: um risco branco corre dentro dele pelo
-           * tempo que falta até o próximo diploma. Ele existe porque o
-           * automático precisa ser previsível — sem isso, a troca chega como um
-           * salto no meio da leitura. O `data-pausado` congela o risco onde ele
-           * estiver, que é o que o ponteiro em cima do palco faz com o relógio.
-           */}
-          <div
-            className={styles.tracos}
-            style={{ '--auto': `${AUTO_MS}ms` } as React.CSSProperties}
-            data-pausado={carrossel.pausado || undefined}
-          >
-            {lista.map((f, i) => (
-              <button
-                key={f.slot}
-                type="button"
-                className={styles.traco}
-                data-ativo={carrossel.ativo === i || undefined}
-                aria-label={f.instituicao}
-                aria-current={carrossel.ativo === i ? 'true' : undefined}
-                onClick={() => carrossel.focar(i)}
-              >
-                <span className={styles.risco} aria-hidden="true" />
-              </button>
             ))}
           </div>
         </div>

@@ -53,15 +53,15 @@ dependências de nove efeitos. Trocar doze erros por nove avisos não é corrigi
 Um `useEffect` que chama `setState` quando uma prop muda sempre custa um quadro: o render que já
 aconteceu usou o valor velho, e só o seguinte mostra o certo.
 
-- Quando o valor **sai** da prop, derive-o no render: `const dispensado = fechado || novas > 0`
-  (`useNovaHint`), em vez de um efeito que dispensa a dica quando `novas` muda.
+- Quando o valor **sai** da prop, derive-o no render: `const escalonar = entrando && !navegando`,
+  em vez de um efeito que ajusta um estado quando a prop muda.
 - Quando o estado é de verdade mas precisa acompanhar a prop, use a atualização guardada **durante
-  o render**, que o React descarta e refaz sem pintar o intermediário:
-  `if (aberto && !montado) setMontado(true)` (`Notice`). Ela precisa **convergir** — depois de
-  rodar, a condição não pode mais valer.
+  o render**, que o React descarta e refaz sem pintar o intermediário. Ela precisa **convergir**:
+  depois de rodar, a condição não pode mais valer. É o que a Trajetória faz para distinguir "acabou
+  de entrar" de "está navegando" (ver `entradas.md`).
 
-O efeito continua sendo o lugar do que é efeito colateral de verdade: em `useNovaHint` ele só grava
-a descoberta no `localStorage`, e não decide mais nada sobre a tela.
+Os dois exemplos que estavam escritos aqui eram o `Notice` e o `useNovaHint`, e os dois saíram do
+projeto junto com as notificações. A regra não mudou com eles.
 
 ### Chave de lista é identidade, não posição
 

@@ -1,209 +1,138 @@
 /**
- * Tokens do carrossel de diplomas.
+ * Tokens da faixa de crachás.
  *
- * O palco tem a altura de **um** cartão: aqui os diplomas ficam lado a lado, e
- * não empilhados, então nada precisa ser reservado embaixo do da frente. Quem
- * decide o quanto o vizinho aparece é `--cpasso`, que sai da largura do cartão
- * para que os dois nunca saiam de sincronia.
+ * `--cw` e `--cgap` não são só tamanho: é deles que sai a distância que a faixa
+ * percorre numa volta (`--cw + --cgap`, vezes o número de formações). Mexer num
+ * dos dois sem que o outro saiba quebraria o laço, e por isso a conta está num
+ * lugar só, no `@keyframes` abaixo.
  */
 .secao {
+  --cw: 236px; /* largura do crachá */
+  --ch: 348px; /* altura do crachá */
+  --cgap: 26px; /* respiro entre um crachá e o seguinte */
+  --cpad: 20px;
+  --cinterno: 12px;
+  --clogo-h: 62px;
+  --cfs-inst: 13px;
+  --cfs-nivel: 8.5px;
+  --cfs-curso: 15px;
+  --cfs-selo: 7.5px;
+  --cfs-valor: 10px;
   /**
-   * Largura do diploma, com teto e proporção.
+   * Quanto tempo cada crachá leva para atravessar o seu próprio passo.
    *
-   * Ela é `min(px, %)` porque as duas pontas importam: o teto mantém o cartão
-   * legível numa tela larga, e a fração garante que **sobre palco dos dois
-   * lados** para os vizinhos aparecerem. Sem a fração, uma janela média deixava
-   * o da frente ocupando a largura inteira, e o carrossel voltava a parecer um
-   * cartão só — que é justamente o defeito da pilha que ele veio substituir.
+   * A duração da volta é isto **vezes o número de formações**, e não um número
+   * fixo: com um número fixo, a faixa aceleraria a cada formação nova para dar
+   * a volta no mesmo tempo, e a velocidade é justamente o que se percebe aqui.
    */
-  --dcw: min(560px, 62%);
-  --dch: 246px; /* altura do diploma */
-  /**
-   * O passo do carrossel: a distância entre o centro de um diploma e o do
-   * vizinho. Menor que 100% de propósito — é o quanto de sobreposição existe
-   * que faz o vizinho aparecer *atrás* do da frente em vez de ao lado dele, e é
-   * o que dá profundidade sem nenhuma perspectiva.
-   *
-   * A unidade é **porcentagem da largura do cartão**, porque é assim que um
-   * `translateX` percentual mede: contra a própria caixa. Escrito como fração
-   * de `--dcw` ele mediria contra o palco quando a largura viesse em `%`, e o
-   * passo mudaria de sentido entre o desktop e o mobile.
-   */
-  --cpasso: 78%;
-  --dpad: 26px;
-  --dgap: 18px;
-  --dlogo-w: 104px;
-  --dlogo-h: 70px;
-  --dfs-inst: 18px;
-  --dfs-nivel: 10px;
-  --dfs-curso: 19px;
-  --dfs-selo: 8.5px;
-  --dfs-valor: 11px;
-  --drodape-gap: 16px;
-  --drodape-pt: 14px;
+  --cvolta: 8s;
 }
 
 .bloco {
   max-width: 960px;
 }
 
-/* o palco e o índice dele, um sobre o outro */
-.arena {
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-  align-items: center;
-}
-
 /**
- * O palco toma a largura inteira do bloco, e o que passa dela é cortado.
+ * O palco corta o que passa da largura do bloco.
  *
- * O corte é a diferença entre um carrossel e três cartões soltos: o vizinho
- * entra pela borda e sai por ela, e o `mask-image` apaga os últimos pontos de
- * cada lado para que ele não termine numa aresta reta. A máscara não alcança o
- * diploma da frente, que ocupa o miolo.
- *
- * **Sem `perspective`**: a profundidade vem da escala e da opacidade. Com
- * perspectiva os vizinhos ganhariam uma inclinação de anel, e um diploma é
- * papel, não a face de um cilindro.
- *
- * `touch-action: pan-y` divide o toque com a página: o dedo continua rolando a
- * seção para cima e para baixo, e sobra o eixo horizontal — que aqui é o do
- * movimento — para andar o carrossel. É o mesmo do palco de Projetos.
+ * É esse corte que faz a faixa entrar por uma borda e sair pela outra em vez de
+ * terminar numa aresta reta, e o `mask-image` apaga os últimos pontos de cada
+ * lado para amaciá-lo. A máscara é curta de propósito: o que importa aqui é ver
+ * os crachás inteiros, e um degradê longo devolveria como sombra o que a seção
+ * existe para mostrar.
  */
 .palco {
-  position: relative;
   width: 100%;
-  height: var(--dch);
-  outline: none;
-  mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
-  touch-action: pan-y;
-}
-
-.tracos {
-  display: flex;
-  gap: 0;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
 }
 
 /**
- * O traço-índice, deitado como o movimento.
+ * A faixa, andando sempre.
  *
- * O padding é área de toque e fica **fora** do risco, que é o filho: com o
- * `background-clip` de antes não haveria onde desenhar o relógio por dentro.
+ * O deslocamento é exatamente **uma volta da lista** (`--n` crachás mais os
+ * respiros entre eles), e é por isso que a lista aparece duas vezes no DOM: no
+ * instante em que a animação reinicia, a cópia está ocupando o lugar da
+ * original, e o laço fecha sem nenhum salto.
+ *
+ * `linear` e nada mais: qualquer aceleração viraria um pulso, e a faixa deixaria
+ * de ser um movimento de fundo para virar um gesto que pede atenção.
+ *
+ * `width: max-content` porque os crachás não podem se comprimir para caber —
+ * comprimidos, a conta da volta deixaria de bater com a largura real e a faixa
+ * saltaria a cada ciclo.
  */
-.traco {
-  display: block;
-  padding: 9px 7px;
-  border: 0;
-  background: none;
-  cursor: pointer;
-}
-
-.risco {
-  display: block;
-  position: relative;
-  width: 12px;
-  height: 1px;
-  background: rgb(255 255 255 / 24%);
-  transition:
-    width 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
-    background 0.45s;
-}
-
-.traco:hover .risco {
-  background: rgb(255 255 255 / 60%);
-}
-
-.traco[data-ativo] .risco {
-  width: 34px;
-  background: rgb(255 255 255 / 26%);
-}
-
-/**
- * O relógio do automático.
- *
- * Um risco branco corre dentro do traço ativo pelo tempo que falta até o
- * próximo diploma, e é ele que torna a troca previsível: sem isso o carrossel
- * anda no meio de uma leitura sem ter avisado nada.
- *
- * Quem o reinicia é o próprio CSS — `data-ativo` aparece no traço seguinte, o
- * `animation-name` sai de `none` e a animação começa do zero. Sem `key`, sem
- * remontar nada; é a mesma mecânica dos nós da Trajetória. `--auto` vem do
- * componente, que lê o mesmo número que o relógio do hook usa para cobrar.
- */
-@keyframes tracoCorre {
-  from {
-    transform: scaleX(0);
-  }
-
+@keyframes desfilar {
   to {
-    transform: scaleX(1);
+    transform: translateX(calc(var(--n, 3) * (var(--cw) + var(--cgap)) * -1));
   }
 }
 
-.traco[data-ativo] .risco::after {
-  position: absolute;
-  inset: 0;
-  transform-origin: 0 50%;
-  animation: tracoCorre var(--auto, 5600ms) linear both;
-  background: #fff;
-  content: '';
+.faixa {
+  display: flex;
+  gap: var(--cgap);
+  width: max-content;
+  animation: desfilar calc(var(--n, 3) * var(--cvolta)) linear infinite;
 }
 
-/* o ponteiro em cima do palco para o relógio, e o risco congela onde estiver */
-.tracos[data-pausado] .risco::after {
+/**
+ * Apontar a faixa a segura.
+ *
+ * Não é conveniência: com o texto andando, ler um crachá inteiro depende de ele
+ * ficar parado, e o ponteiro em cima dele é exatamente o sinal de que alguém
+ * está lendo. `:focus-within` faz o mesmo por quem chegou pelo teclado.
+ */
+.palco:hover .faixa,
+.palco:focus-within .faixa {
   animation-play-state: paused;
 }
 
 /**
- * Mobile: o cartão estreita e os vizinhos aparecem só pela beirada.
+ * Sem movimento, a faixa **para**, e não anda mais devagar.
  *
- * A largura vira **porcentagem** para que sobre borda dos dois lados: em 100%
- * não haveria de onde o vizinho espiar, e o carrossel voltaria a parecer um
- * cartão só. O passo acompanha a largura pela mesma conta do desktop, então o
- * quanto se vê do vizinho é o mesmo dos dois tamanhos.
- *
- * O cartão em si vira **retrato**, e essa mudança mora no módulo dele, que é
- * quem tem o `flex-direction`; aqui ficam só os tokens, como sempre.
+ * O `reset.css` zera durações globalmente, e uma duração zero numa animação
+ * infinita é um caso degenerado. Aqui ela sai de cena de vez, e os crachás
+ * ficam onde estão: são três, cabem na largura, e a seção continua inteira sem
+ * nunca ter se mexido.
  */
-@media (width <= 640px) {
-  .secao {
-    --dcw: 78%;
-    --dch: 302px;
-    --cpasso: 80%;
-    --dpad: 18px;
-    --dgap: 14px;
-    --dlogo-w: 104px;
-    --dlogo-h: 62px;
-    --dfs-inst: 14px;
-    --dfs-nivel: 8.5px;
-    --dfs-curso: 16px;
-    --dfs-selo: 7.5px;
-    --dfs-valor: 11px;
-    --drodape-gap: 10px;
-    --drodape-pt: 12px;
-  }
-
-  .arena {
-    gap: 14px;
-  }
-
-  .palco {
-    mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+@media (prefers-reduced-motion: reduce) {
+  .faixa {
+    animation: none;
   }
 }
 
-/* paisagem curta: sobra largura e falta altura, então o diploma se achata */
+/**
+ * Mobile: o crachá encolhe, e a faixa continua a mesma.
+ *
+ * Aqui os três não cabem na tela ao mesmo tempo, e nenhum ajuste de largura
+ * resolveria isso sem deixar o texto ilegível: três crachás legíveis pedem mais
+ * de 600px. O que a faixa faz é justamente cobrir essa falta, porque cada um
+ * passa pelo meio sozinho.
+ */
+@media (width <= 640px) {
+  .secao {
+    --cw: 186px;
+    --ch: 288px;
+    --cgap: 18px;
+    --cpad: 16px;
+    --cinterno: 10px;
+    --clogo-h: 50px;
+    --cfs-inst: 11px;
+    --cfs-nivel: 7.5px;
+    --cfs-curso: 13px;
+    --cfs-selo: 7px;
+    --cfs-valor: 9.5px;
+  }
+}
+
+/* paisagem curta: falta altura, e o crachá é a peça mais alta da página */
 @media (width > 640px) and (height <= 720px) {
   .secao {
-    --dch: 208px;
-    --dpad: 20px;
-    --dfs-curso: 17px;
-  }
-
-  .arena {
-    gap: 16px;
+    --cw: 206px;
+    --ch: 296px;
+    --cpad: 16px;
+    --cinterno: 9px;
+    --clogo-h: 50px;
+    --cfs-curso: 14px;
   }
 }

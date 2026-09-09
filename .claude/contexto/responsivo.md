@@ -7,7 +7,7 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 |---|---|
 | `section.module.css` | `--pt --pb --px --gap` |
 | `AboutSection` | `--retrato-col --retrato-ar --cols --corpo-gap --retrato --coluna-max --txt --pfs --plh --fatos-gap --fatos-pt --fatos-fs` |
-| `EducationSection` | `--dcw --dch --cpasso --dpad --dgap --dlogo-w --dlogo-h --dfs-inst --dfs-nivel --dfs-curso --dfs-selo --dfs-valor --drodape-gap --drodape-pt` |
+| `EducationSection` | `--cw --ch --cgap --cpad --cinterno --clogo-h --cfs-inst --cfs-nivel --cfs-curso --cfs-selo --cfs-valor --cvolta` |
 | `ProjectsSection` | `--pcw --pch --pbh --ph --pr --pperspectiva --pcard` |
 | `JourneySection` | `--exph --exp-cargo --exp-per --exp-curva --exp-rail --exp-fantasma --exp-gap --exp-txt --exp-topo` |
 | `MusicSection` | `--capa` |
@@ -19,7 +19,6 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | `Version` | `--ver-bottom --ver-left --ver-right --ver-tx` |
 | `ModeHeader` | `--cab-left --cab-fs --cab-item` |
 | `NovaGauge` | `--nova-bottom --nova-left --nova-size` |
-| `Notice` | `--aviso-top --aviso-left --aviso-w` |
 | `Credit` | `--credito-vis` |
 
 Faixas: `≤640px` (mobile: coluna única, nav horizontal, seletor centrado, quatro vagas na linha do

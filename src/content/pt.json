@@ -105,7 +105,6 @@
         "key": "clinplay",
         "nome": "ClinPlaY",
         "linha": "Fisioterapia gamificada e acessível em formato SaaS.",
-        "descricao": "Plataforma de monitoramento remoto que transforma exercícios domiciliares em experiência interativa e mensurável. Utiliza gamificação para aumentar motivação, fornece feedback contínuo sobre técnica e execução, permitindo que o fisioterapeuta acompanhe a recuperação do paciente sem que ela seja interrompida quando ele deixa o consultório.",
         "ano": "2026",
         "papel": "Scrum Master",
         "stack": ["React", "TypeScript", "Java", "Spring Boot"],
@@ -117,7 +116,6 @@
         "key": "vaga-02",
         "nome": "—",
         "linha": "a definir",
-        "descricao": "",
         "ano": "—",
         "papel": "—",
         "stack": [],
@@ -128,7 +126,6 @@
         "key": "vaga-03",
         "nome": "—",
         "linha": "a definir",
-        "descricao": "",
         "ano": "—",
         "papel": "—",
         "stack": [],
@@ -301,14 +298,6 @@
   },
 
   "credito": "Feito com Claude",
-
-  "aviso": {
-    "fechar": "Fechar aviso",
-    "nova": {
-      "titulo": "Supernova",
-      "texto": "Você tem o poder de dar luz a uma estrela. Experimente clicar e segurar no cosmos."
-    }
-  },
 
   "a11y": {
     "secoes": "Seções",

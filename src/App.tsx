@@ -4,11 +4,8 @@ import { Credit } from '~/hud/Credit';
 import { Hud } from '~/hud/Hud';
 import { LanguageToggle } from '~/hud/LanguageToggle';
 import { ModeHeader } from '~/hud/ModeHeader';
-import { Notice } from '~/hud/Notice';
 import { NovaGauge } from '~/hud/NovaGauge';
-import { useNovaHint } from '~/hud/useNovaHint';
 import { Version } from '~/hud/Version';
-import { useT } from '~/i18n/useLanguage';
 import { NavMenu } from '~/navigation/NavMenu';
 import { useDocumentTitle } from '~/navigation/useDocumentTitle';
 import { rotaInicial, salvarModo, useHashRoute, type Rota } from '~/navigation/useHashRoute';
@@ -84,9 +81,6 @@ const ROTA_INICIAL = rotaInicial();
  * supermassiva, o estalo de cada promoção) vive inteiro na cena, sob o dedo do
  * visitante: é onde a informação já está, e o React não precisa render por quadro
  * para mostrá-la.
- *
- * O mesmo contador alimenta a dica da supernova: o aviso do canto superior
- * esquerdo só existe enquanto ele estiver em zero (ver `useNovaHint`).
  */
 export function App() {
   const [modo, setModo] = useState<ModoKey>(ROTA_INICIAL.modo);
@@ -145,8 +139,6 @@ export function App() {
   const aoAcender = useCallback((nivel: number) => {
     setNova((n) => ({ disparo: n.disparo + 1, recarga: NOVA_NIVEIS[nivel - 1].recarga }));
   }, []);
-  const dica = useNovaHint(nova.disparo);
-  const t = useT();
 
   return (
     <div className={styles.palco}>
@@ -184,13 +176,6 @@ export function App() {
       <Credit />
       <Version />
       <NovaGauge disparo={nova.disparo} segundos={nova.recarga} />
-      <Notice
-        aberto={dica.visivel}
-        titulo={t.aviso.nova.titulo}
-        texto={t.aviso.nova.texto}
-        rotuloFechar={t.aviso.fechar}
-        onFechar={dica.fechar}
-      />
     </div>
   );
 }

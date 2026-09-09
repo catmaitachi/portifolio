@@ -131,7 +131,6 @@ uma rampa de 0,3s, senão o toque curto arrancaria o céu antes de explodir.
 | `scene/SpaceCanvas.tsx` | **o que conta como gesto no vazio** — conhecimento do DOM da página, não do motor |
 | `scene/scenePlan.ts` | `NOVA_NIVEIS`, a tabela onde os tempos vivem uma vez só |
 | `hud/NovaGauge.tsx` | o anel de recarga, animado só por CSS |
-| `hud/useNovaHint.ts` | quando sugerir a supernova a quem ainda não a descobriu |
 
 O `App` liga as pontas: a cena avisa qual nível foi acendido e ele entrega ao medidor a recarga
 **daquele** nível, lida da mesma `NOVA_NIVEIS`. Um círculo que fecha antes (ou depois) de o próximo

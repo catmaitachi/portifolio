@@ -25,12 +25,8 @@ export interface Geometria {
 export interface Orbit {
   palcoRef: React.RefObject<HTMLDivElement | null>;
   ativo: number;
-  aberto: number | null;
   girar: (delta: number) => void;
   focar: (i: number) => void;
-  /** clique no cartão: gira se for lateral, abre/fecha se estiver na frente */
-  alternar: (i: number, podeAbrir: boolean) => void;
-  fechar: () => void;
   geometria: (i: number, vaga: boolean) => Geometria;
 }
 
@@ -51,7 +47,6 @@ export interface Orbit {
 export function useOrbit(total: number): Orbit {
   const palcoRef = useRef<HTMLDivElement>(null);
   const [ativo, setAtivo] = useState(0);
-  const [aberto, setAberto] = useState<number | null>(null);
 
   const n = Math.max(1, total);
   const nRef = useRef(n);
@@ -64,31 +59,10 @@ export function useOrbit(total: number): Orbit {
 
   const girar = useCallback((delta: number) => {
     const total = nRef.current;
-    setAtivo((atual) => {
-      const alvo = (((atual + delta) % total) + total) % total;
-      return alvo;
-    });
-    setAberto(null);
+    setAtivo((atual) => (((atual + delta) % total) + total) % total);
   }, []);
 
-  const focar = useCallback((i: number) => {
-    setAtivo(i);
-    setAberto(null);
-  }, []);
-
-  const alternar = useCallback(
-    (i: number, podeAbrir: boolean) => {
-      if (i !== ativo) {
-        focar(i);
-        return;
-      }
-      if (!podeAbrir) return;
-      setAberto((atual) => (atual === i ? null : i));
-    },
-    [ativo, focar],
-  );
-
-  const fechar = useCallback(() => setAberto(null), []);
+  const focar = useCallback((i: number) => setAtivo(i), []);
 
   /**
    * Arraste horizontal = um passo da órbita.
@@ -115,7 +89,7 @@ export function useOrbit(total: number): Orbit {
     /**
      * O `click` que vem logo depois de um arraste é do mesmo gesto e precisa
      * morrer aqui. Sem isso o arraste gira **e** o clique cai no cartão que
-     * estava na frente, abrindo o painel de um cartão que já virou lateral.
+     * estava na frente, trazendo para o meio um cartão que já virou lateral.
      *
      * A captura no palco basta para o React nunca ver o evento: ele escuta na
      * raiz do documento e dispara `onClick` na subida, que não acontece mais.
@@ -193,5 +167,5 @@ export function useOrbit(total: number): Orbit {
     [ativo, n],
   );
 
-  return { palcoRef, ativo, aberto, girar, focar, alternar, fechar, geometria };
+  return { palcoRef, ativo, girar, focar, geometria };
 }

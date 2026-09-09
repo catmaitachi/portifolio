@@ -78,11 +78,6 @@ tamanho da frase, no canto onde o olho cai primeiro, seria zona morta o tempo to
 `top: 100%` e **desce junto** quando o menu abre, porque quem cresceu foi a caixa do menu: a frase é
 sobre o nome apontado e precisa continuar embaixo dele.
 
-**Ele divide o canto com o aviso**, que desceu para debaixo dele. O recuo do aviso é medido contra o
-cabeçalho **aberto**, não recolhido: medido pelo estado recolhido, o painel preto do aviso cobriria a
-frase no exato instante em que ela existe para ser lida. É por isso que o `--aviso-top` parece
-generoso demais para uma linha de 21px.
-
 O menu aberto e a frase **não entram** em `--hud-topo-altura`: os dois são transitórios e passam por
 cima do conteúdo, como qualquer menu. O que as seções reservam é a linha recolhida.
 
@@ -140,60 +135,18 @@ cima da animação de entrada, que vem antes na mesma lista. Pelo mesmo motivo o
 longo da recarga em vez de pulsar `infinite`: uma animação infinita continuaria rodando depois de o
 medidor apagar, e ele fica no DOM até um próximo disparo que pode nunca vir.
 
-### Notificações
+### O HUD não tem notificação, e a página não tem pop-up
 
-`Notice` (`hud/Notice.tsx`) é o **modelo** de notificação do HUD: painel no canto superior esquerdo,
-com título curto, uma linha de texto e um botão de dispensar. É genérico — quem monta decide quando
-o aviso aparece e o que ele diz. Props: `aberto`, `titulo`, `texto`, `rotuloFechar`, `onFechar`.
+Existiu aqui um `Notice`, um painel no canto superior esquerdo que sugeria a supernova a quem ainda
+não a tinha descoberto, e ele **saiu**. A regra que ficou no lugar dele vale para a página inteira:
+**nada de conteúdo oculto e nada de pop-up**. O que a página tem para dizer está escrito nela.
 
-O painel é **preto sólido**, não translúcido como o resto do HUD. O aviso nasce sobre o céu, e uma
-estrela, um meteoro ou uma onda de choque passando por trás de um texto de 11px tiram dele a leitura
-de painel — o aviso é a única coisa do HUD que existe para ser lida, e por isso é a única que não
-deixa a cena atravessar.
+A supernova continua sendo a única coisa que ninguém descobre lendo, e essa era a razão do aviso. A
+troca foi deliberada: um painel que aparece sozinho sobre o conteúdo, com um botão para dispensá-lo,
+custa mais à leitura da página do que a descoberta que ele entregava. Quem clicar no vazio a encontra
+como sempre encontrou, e o anel de recarga continua explicando o que aconteceu.
 
-O canto superior esquerdo é o que sobra ao aviso (cabeçalho no centro do topo, idioma no topo à
-direita, menu à direita, versão embaixo à direita, medidor embaixo à esquerda). Mesmo ali ele
-**desce**, e o recuo é medido contra o cabeçalho **aberto**: o painel é preto sólido, e medido pelo
-cabeçalho recolhido ele cobriria a frase do hover no instante em que ela existe para ser lida. No
-mobile desce mais, porque lá o topo tem duas linhas em vez de uma.
-
-O painel **fica montado durante a animação de saída** e sai do DOM no `animationend` — checando
-`e.target === e.currentTarget`, porque o evento borbulha e o risco lateral também é animado.
-Desmontar no mesmo quadro em que `aberto` vira `false` faria o aviso sumir de uma vez, e um painel
-que pisca e desaparece lê como falha de renderização. Vale aqui a mesma regra do medidor: a
-animação de saída usa `forwards`, **nunca `both`**.
-
-`role="status"` + `aria-live="polite"`: é uma sugestão, não um alerta — não deve interromper o que o
-leitor de tela estiver dizendo. Os textos vivem em `aviso` nos dois dicionários, com `fechar` (o
-rótulo do botão, que serve a qualquer aviso) e um bloco por notificação.
-
-### A dica da supernova
-
-A supernova é a única coisa da página que **ninguém descobre lendo**: não há botão nem rótulo, e
-quem não clica no vazio nunca sabe que ela existe. O aviso conta as duas metades do gesto, clicar e
-segurar, porque a segunda é ainda mais invisível que a primeira. `useNovaHint` (`hud/useNovaHint.ts`) decide
-quando contar, e o `App` liga as pontas — o mesmo contador que alimenta o medidor de recarga.
-
-A espera é de **6,5 s**, não dos 5 s que a ideia pedia: a abertura termina em 6,2 s (a versão entra
-em 5,6 s e leva 0,6 s), e um aviso aos 5 s disputaria a entrada com o resto do HUD. 6,5 s é o
-primeiro instante em que a tela já está parada. Depois de **13 s** o aviso se retira sozinho.
-
-Três coisas apagam a dica, cada uma por um motivo diferente:
-
-| Condição | Por quê |
-|---|---|
-| já acendeu uma estrela | descobriu; repetir para quem já sabe é ruído. Fica em `localStorage` (`portfolio.nova`), então não volta na próxima visita |
-| `prefers-reduced-motion` | a supernova nem chega a disparar (ver `SpaceCanvas`) — convidar para o que não vai acontecer é pior que o silêncio |
-| o visitante fechou o aviso | dispensar é resposta, não indiferença |
-
-**Os dois cronômetros só correm com a aba visível** (`useEsperaVisivel`, no próprio arquivo). É a
-mesma razão pela qual a recarga vive no relógio do motor, e aqui o efeito seria pior: o aviso
-apareceria e expiraria enquanto o visitante está em outra aba, e a dica que existe para ser lida
-nunca teria sido vista.
-
-O aviso **não** é alvo de supernova: o filtro do `SpaceCanvas` exige que o alvo seja o canvas ou a
-caixa de uma `<section>`, e o painel não é nem um nem outro. Clicar nele não acende estrela — o que
-é o certo, senão o botão de dispensar acenderia uma.
+Sai junto disso o `localStorage` da descoberta (`portfolio.nova`): não havia mais nada para lembrar.
 
 ### `@keyframes` vive no módulo que o usa
 

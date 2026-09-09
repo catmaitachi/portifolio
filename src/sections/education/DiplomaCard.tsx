@@ -2,7 +2,6 @@ import { LOGO_ESCALAS, LOGOS, type Formacao } from '~/content';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
 import styles from './DiplomaCard.module.css';
-import type { GeometriaCarrossel } from './useCarrossel';
 
 /**
  * Quanto da formação já aconteceu, em porcentagem.
@@ -24,33 +23,35 @@ interface DiplomaCardProps {
   /** posição na lista, para o `01 / 03` do rodapé */
   indice: number;
   total: number;
-  geo: GeometriaCarrossel;
-  /** seção ativa: dispara a entrada, escalonada por `geo.ordem` */
+  /** ordem de entrada na faixa, da esquerda para a direita */
+  ordem: number;
+  /** seção ativa: dispara a entrada, escalonada por `ordem` */
   ativo: boolean;
-  onFocar: () => void;
+  /** a segunda volta da faixa, que existe só para o laço fechar sem salto */
+  copia?: boolean;
 }
 
 /**
- * Um diploma do carrossel.
+ * Um crachá de formação.
  *
- * O badge que existia aqui era uma etiqueta de 312px em que a data e a fração
- * ficavam **escondidas atrás da barra**, e só o hover as revelava. Num cartão
- * deste tamanho não há motivo para esconder nada, então tudo que o conteúdo tem
- * está na tela: instituição, nível, curso, o estado num selo, o dado que o
- * estado produz (a conclusão ou os períodos), a fração em número e a posição na
- * lista.
+ * Ele era um cartão deitado, na proporção de um diploma, e virou um **retângulo
+ * em pé**: logo grande no alto, instituição e nível embaixo dele, o curso no
+ * miolo e o dado no pé. É a forma de um crachá, e ela resolve dois problemas de
+ * uma vez. O primeiro é de leitura: cada peça ganha uma faixa inteira em vez de
+ * dividir uma linha com as outras três. O segundo é da seção: numa faixa que
+ * anda de lado, cartão estreito é cartão que cabe, e três deles aparecem por
+ * inteiro onde antes cabia um.
  *
- * Duas coisas dão a leitura de diploma, e as duas são de régua, não de ornamento:
- * a **moldura dupla**, um risco de 1px correndo por dentro do outro, e o **selo**
- * no alto à direita, que é onde um certificado carimba o que ele certifica.
- * Selo de fita, brasão ou serifa seriam formas que não existem em nenhum outro
- * lugar da página.
+ * O **furo da fita** no alto é o que faz a forma ser reconhecida como crachá, e
+ * é um risco de 1px como todo o resto da página. Ele substituiu a moldura dupla,
+ * que era a gramática de um certificado e deixou de valer quando o cartão trocou
+ * de forma.
  *
- * Como em Projetos, o `transform` do carrossel mora no elemento **de fora** e a
- * animação de entrada no de dentro: uma animação de `transform` no mesmo
- * elemento apagaria a posição escrita pelo JS enquanto roda.
+ * Tudo o que o conteúdo tem continua na tela ao mesmo tempo: instituição, nível,
+ * curso, o estado num selo, o dado que o estado produz, a fração em número e a
+ * posição na lista. Nada aqui depende de ponteiro.
  */
-export function DiplomaCard({ formacao, indice, total, geo, ativo, onFocar }: DiplomaCardProps) {
+export function DiplomaCard({ formacao, indice, total, ordem, ativo, copia }: DiplomaCardProps) {
   const t = useT();
   const parte = fracao(formacao);
   const detalhe =
@@ -64,56 +65,36 @@ export function DiplomaCard({ formacao, indice, total, geo, ativo, onFocar }: Di
 
   return (
     <article
-      className={styles.vaga}
-      style={{
-        zIndex: geo.camada,
-        transform: `translateX(${geo.deslocamento}) scale(${geo.escala})`,
-        opacity: geo.opacidade,
-      }}
-      aria-hidden={!geo.visivel || undefined}
+      className={styles.cracha}
+      style={{ '--ordem': ordem } as React.CSSProperties}
+      data-estado={formacao.estado}
+      data-entrada={ativo || undefined}
+      // a cópia é a mesma formação de novo: o leitor de tela lê a lista uma vez
+      aria-hidden={copia || undefined}
     >
-      <div
-        className={styles.diploma}
-        style={{ '--ordem': geo.ordem } as React.CSSProperties}
-        data-estado={formacao.estado}
-        data-frente={geo.naFrente || undefined}
-        data-entrada={ativo || undefined}
-        role="button"
-        // o que está fora do carrossel sai da tabulação, como em toda a página
-        tabIndex={geo.visivel ? 0 : -1}
-        aria-current={geo.naFrente ? 'true' : undefined}
-        aria-label={`${formacao.instituicao}, ${formacao.curso}`}
-        onClick={onFocar}
-        onKeyDown={(e) => {
-          if (e.key !== 'Enter' && e.key !== ' ') return;
-          e.preventDefault();
-          // impede que o Espaço role a página e que a seta chegue ao palco
-          e.stopPropagation();
-          onFocar();
+      <span className={styles.furo} aria-hidden="true" />
+
+      <span
+        className={styles.logo}
+        role="img"
+        aria-label={formacao.instituicao}
+        style={{
+          backgroundImage: LOGOS[formacao.slot] ? `url("${LOGOS[formacao.slot]}")` : undefined,
+          transform: `scale(${LOGO_ESCALAS[formacao.slot]?.escala ?? 1})`,
         }}
-      >
-        <div className={styles.topo}>
-          <span
-            className={styles.logo}
-            role="img"
-            aria-label={formacao.instituicao}
-            style={{
-              backgroundImage: LOGOS[formacao.slot] ? `url("${LOGOS[formacao.slot]}")` : undefined,
-              transform: `scale(${LOGO_ESCALAS[formacao.slot]?.escala ?? 1})`,
-            }}
-          />
+      />
 
-          <div className={styles.titulos}>
-            <span className={styles.instituicao}>{formacao.instituicao}</span>
-            <span className={styles.nivel}>{formacao.nivel}</span>
-          </div>
+      <div className={styles.titulos}>
+        <span className={styles.instituicao}>{formacao.instituicao}</span>
+        <span className={styles.nivel}>{formacao.nivel}</span>
+      </div>
 
-          <span className={styles.selo}>{t.formacoes.estados[formacao.estado]}</span>
-        </div>
+      <span className={styles.selo}>{t.formacoes.estados[formacao.estado]}</span>
 
-        <span className={styles.curso}>{formacao.curso}</span>
+      <span className={styles.curso}>{formacao.curso}</span>
 
-        <div className={styles.rodape}>
+      <div className={styles.rodape}>
+        <div className={styles.linhaDado}>
           <span className={styles.ordinal}>
             {String(indice + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
           </span>
@@ -124,25 +105,17 @@ export function DiplomaCard({ formacao, indice, total, geo, ativo, onFocar }: Di
               <span className={styles.valor}>{detalhe}</span>
             </span>
           )}
-
-          {/**
-           * O medidor toma o resto da linha, e por isso a porcentagem fica
-           * encostada na borda direita do diploma: ela é o fecho da leitura, não
-           * um número solto no meio do rodapé.
-           */}
-          <span className={`${comum.medidor} ${styles.medidor}`}>
-            <span className={comum.trilha}>
-              <span
-                className={comum.preenchimento}
-                style={{ width: `${Math.round(parte * 100)}%` }}
-              />
-            </span>
-            {/* a pretensão não tem fração para mostrar, e um "0%" leria como defeito */}
-            {formacao.estado !== 'pretensao' && (
-              <span className={styles.parte}>{Math.round(parte * 100)}%</span>
-            )}
-          </span>
         </div>
+
+        <span className={`${comum.medidor} ${styles.medidor}`}>
+          <span className={comum.trilha}>
+            <span className={comum.preenchimento} style={{ width: `${Math.round(parte * 100)}%` }} />
+          </span>
+          {/* a pretensão não tem fração para mostrar, e um "0%" leria como defeito */}
+          {formacao.estado !== 'pretensao' && (
+            <span className={styles.parte}>{Math.round(parte * 100)}%</span>
+          )}
+        </span>
       </div>
     </article>
   );

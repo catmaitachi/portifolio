@@ -14,7 +14,7 @@
  * O cabeçalho fica **centrado** no topo, e o menu abre para baixo a partir dali.
  *
  * O centro é o lugar de um cabeçalho, e no desktop ele está livre: o seletor de
- * idioma ocupa a direita e o aviso a esquerda. No mobile o idioma passa a ocupar
+ * idioma ocupa a direita e o canto esquerdo está vazio. No mobile o idioma passa a ocupar
  * o centro da primeira linha, então o cabeçalho desce **uma linha e fica abaixo
  * dele**, ainda centrado. Empilhados eles leem como um bloco de cabeçalho, e
  * dividir a mesma linha não caberia numa tela de 375px.

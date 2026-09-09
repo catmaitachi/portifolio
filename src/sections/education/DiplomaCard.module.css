@@ -1,24 +1,21 @@
 /**
- * Entrada: os diplomas chegam da direita, o da frente primeiro.
+ * Entrada: os crachás chegam da direita, um depois do outro.
  *
- * O curso é o do carrossel, e é isso que o distingue da entrada de Projetos, que
- * sobe: aqui o movimento da seção é horizontal, e um diploma que entrasse por
- * baixo faria uma promessa de eixo que o resto da seção não cumpre. Quem chega
- * primeiro é o da frente, e os vizinhos vêm atrás dele, escalonados por
- * `--ordem`, como se o carrossel estivesse assentando.
+ * O curso é o da faixa, e é isso que o distingue da entrada de Projetos, que
+ * sobe: aqui o movimento da seção é horizontal, e um crachá que entrasse por
+ * baixo faria uma promessa de eixo que o resto da seção não cumpre.
  *
- * A animação mora no `.diploma` e não na `.vaga`, pelo mesmo motivo do cartão de
- * projeto: a vaga carrega o `transform` do carrossel, escrito pelo JS, e uma
- * animação de `transform` no mesmo elemento o apagaria enquanto roda. Aqui os
- * dois se compõem, o pai posiciona e o filho entra.
+ * A animação mora no crachá e a translação contínua mora na faixa, que é o pai:
+ * uma animação de `transform` no mesmo elemento apagaria a outra enquanto roda.
+ * É a mesma separação do cartão de projeto e do `<g>` da curva da Trajetória.
  *
- * **Sem quique**, e a opacidade chega antes do movimento: é a mesma gramática
- * dos cartões de projeto e dos canais de contato.
+ * **Sem quique**, e a opacidade chega antes do movimento: é a gramática dos
+ * cartões de projeto e dos canais de contato.
  */
-@keyframes diplomaEntra {
+@keyframes crachaEntra {
   from {
     opacity: 0;
-    transform: translateX(72px) scale(0.96);
+    transform: translateX(64px) scale(0.96);
   }
 
   42% {
@@ -32,181 +29,120 @@
 }
 
 /**
- * Posição no carrossel. O `transform` completo vem do JS (`useCarrossel`).
+ * O crachá.
  *
- * A origem é o **centro**: os vizinhos encolhem em direção ao próprio meio e
- * ficam alinhados com o da frente pela linha de baixo e pela de cima, que é o
- * que faz os três lerem como uma fileira. Com a origem no topo, que era o da
- * pilha, eles pendurariam a partir da borda de cima e a fileira ficaria torta.
- *
- * A largura pode vir em **porcentagem** (é o que o mobile faz), e por isso o
- * recuo é `calc(var(--dcw) / -2)` em vez de um `translateX(-50%)`: assim ela
- * mede contra o palco, e não contra a própria caixa, e o `transform` continua
- * livre para o JS escrever.
+ * Retângulo em pé, com as peças empilhadas e centradas. O centro é consequência
+ * da forma, não estética: numa coluna estreita, texto à esquerda sob um logo
+ * centrado leria como duas colunas que não existem. O rodapé é a exceção, e é
+ * onde a leitura fecha.
  */
-.vaga {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: var(--dcw, 560px);
-  height: var(--dch, 246px);
-  margin-left: calc(var(--dcw, 560px) / -2);
-  transform-origin: 50% 50%;
-  transition:
-    transform 0.75s cubic-bezier(0.22, 0.86, 0.2, 1),
-    opacity 0.55s ease;
-}
-
-.diploma {
-  position: relative;
+.cracha {
   display: flex;
+  flex: none;
   flex-direction: column;
-  gap: var(--dgap, 18px);
-  height: 100%;
-  padding: var(--dpad, 26px) var(--dpad, 26px) calc(var(--dpad, 26px) - 4px);
-  border: 1px solid rgb(255 255 255 / 18%);
+  gap: var(--cinterno, 12px);
+  align-items: center;
+  width: var(--cw, 236px);
+  height: var(--ch, 348px);
+  padding: var(--cpad, 20px);
+  border: 1px solid rgb(255 255 255 / 22%);
   border-radius: 2px;
-  background: rgb(0 0 0 / 62%);
-  cursor: pointer;
-  /**
-   * Só a borda faz transição, nunca o fundo.
-   *
-   * O fundo do da frente é sólido e o dos vizinhos não, e meio segundo
-   * interpolando entre os dois é meio segundo em que os dois são translúcidos ao
-   * mesmo tempo: o cartão que está chegando deixa o vizinho aparecer por baixo
-   * do curso justamente durante o passo, que é quando o olho está nele. Trocado
-   * de uma vez, o da frente já chega opaco.
-   */
-  transition: border-color 0.5s ease;
-}
-
-/**
- * A moldura de dentro é o que faz um diploma.
- *
- * Um risco de 1px correndo por dentro do outro é a gramática de um certificado,
- * e é o único ornamento que este cartão tem. Ele acompanha o chanfro com um raio
- * menor, senão os dois cantos cortados brigariam.
- */
-.diploma::before {
-  position: absolute;
-  inset: 8px;
-  border: 1px solid rgb(255 255 255 / 7%);
-  border-radius: 2px;
-  content: '';
-  pointer-events: none;
+  background: rgb(0 0 0 / 74%);
+  text-align: center;
 }
 
 /* chanfro dos dois cantos opostos — ver "Cantos chanfrados" no CLAUDE.md */
 @supports (corner-shape: bevel) {
-  .diploma {
+  .cracha {
     corner-shape: bevel;
-    border-radius: 22px 2px;
+    border-radius: 18px 2px;
   }
-
-  .diploma::before {
-    corner-shape: bevel;
-    border-radius: 15px 2px;
-  }
-}
-
-/**
- * O da frente é opaco e mais aceso.
- *
- * O passo do carrossel é menor que a largura do cartão, então o da frente cobre
- * um pedaço de cada vizinho. Aqui o preto é **sólido**, e não os 92% do cartão
- * de projeto: 6% de transparência bastavam para o nome da outra instituição
- * fantasmar por cima do curso. O que se vê do vizinho é exatamente o que escapa
- * pelas bordas, que é também o que responde ao clique.
- */
-/* `grab` porque este diploma **é** a área de arraste (ver `useCarrossel`) */
-.diploma[data-frente] {
-  border-color: rgb(255 255 255 / 32%);
-  background: #000;
-  cursor: grab;
-}
-
-.diploma[data-frente]:active {
-  cursor: grabbing;
-}
-
-.diploma:hover {
-  border-color: rgb(255 255 255 / 42%);
 }
 
 /* pretensão: ainda não aconteceu, então a moldura é tracejada */
-.diploma[data-estado='pretensao'] {
+.cracha[data-estado='pretensao'] {
   border-style: dashed;
 }
 
 /**
- * `backwards`, nunca `forwards`: o estado final já é o estado natural do
- * diploma, e o que precisa ser coberto é o **atraso**. `--ordem` vem de
- * `useCarrossel`, então acrescentar formações não pede nada aqui.
+ * `backwards`, nunca `forwards`: o estado final já é o estado natural do crachá,
+ * e o que precisa ser coberto é o **atraso**. `--ordem` é a posição na faixa,
+ * então acrescentar formações não pede nada aqui.
  */
-.diploma[data-entrada] {
-  animation: diplomaEntra 0.8s cubic-bezier(0.16, 0.84, 0.24, 1) calc(var(--ordem, 0) * 150ms)
+.cracha[data-entrada] {
+  animation: crachaEntra 0.8s cubic-bezier(0.16, 0.84, 0.24, 1) calc(var(--ordem, 0) * 130ms)
     backwards;
 }
 
-.topo {
-  display: flex;
-  gap: var(--dgap, 18px);
-  align-items: center;
+/**
+ * O furo da fita.
+ *
+ * É o que faz um retângulo em pé ser lido como crachá, e é a única forma nova
+ * que o cartão ganhou. Um risco de 1px, como tudo aqui: sem preenchimento, sem
+ * sombra e sem ilusão de recorte. Ele substituiu a moldura dupla, que era a
+ * gramática de um certificado e deixou de valer quando o cartão trocou de forma.
+ */
+.furo {
+  flex: none;
+  width: 52px;
+  height: 7px;
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 4px;
 }
 
 .logo {
   flex: none;
-  width: var(--dlogo-w, 110px);
-  height: var(--dlogo-h, 74px);
+  width: 100%;
+  height: var(--clogo-h, 62px);
+  margin-top: 4px;
   background-repeat: no-repeat;
-  background-position: left center;
+  background-position: center;
   background-size: contain;
 }
 
 .titulos {
   display: flex;
-  flex: 1;
+  flex: none;
   flex-direction: column;
-  gap: 7px;
+  gap: 6px;
+  align-items: center;
+  width: 100%;
   min-width: 0;
 }
 
 .instituicao {
+  max-width: 100%;
   overflow: hidden;
   color: #fff;
-  font-size: var(--dfs-inst, 19px);
-  letter-spacing: 0.22em;
+  font-size: var(--cfs-inst, 13px);
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .nivel {
-  overflow: hidden;
   color: rgb(255 255 255 / 50%);
-  font-size: var(--dfs-nivel, 10px);
+  font-size: var(--cfs-nivel, 8.5px);
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /**
- * O selo: onde um certificado carimba o que ele certifica.
+ * O selo: onde um crachá carimba o que ele credencia.
  *
- * É o estado da formação, e ele saiu do medidor por causa disso — a mesma
- * palavra em dois lugares do mesmo cartão seria repetição, e no pé ela competia
- * com a fração, que é o número que a barra explica.
+ * É o estado da formação, e ele mora **só** aqui — no medidor a mesma palavra
+ * apareceria duas vezes no mesmo cartão, e ali ela competiria com a fração, que
+ * é o número que a barra explica.
  */
 .selo {
   flex: none;
-  align-self: flex-start;
-  padding: 7px 11px;
+  padding: 6px 10px;
   border: 1px solid rgb(255 255 255 / 22%);
   border-radius: 2px;
   color: rgb(255 255 255 / 72%);
-  font-size: var(--dfs-selo, 8.5px);
-  letter-spacing: 0.28em;
+  font-size: var(--cfs-selo, 7.5px);
+  letter-spacing: 0.26em;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -214,147 +150,97 @@
 @supports (corner-shape: bevel) {
   .selo {
     corner-shape: bevel;
-    border-radius: 8px 2px;
+    border-radius: 7px 2px;
   }
 }
 
-.diploma[data-estado='pretensao'] .selo {
+.cracha[data-estado='pretensao'] .selo {
   border-style: dashed;
   color: rgb(255 255 255 / 52%);
 }
 
 /**
- * O curso é a linha grande do diploma, e ele fica no miolo.
+ * O curso ocupa o miolo, e as margens automáticas o centram no que sobra.
  *
- * `margin-top: auto` empurra o rodapé para baixo sem que nada precise ter altura
- * fixa: instituição no alto, curso no meio, medidor no pé, e o cartão continua
- * inteiro se o curso ocupar duas linhas.
+ * Sem elas o bloco todo ficaria colado no alto e o rodapé pendurado sozinho lá
+ * embaixo; com elas, a folga se divide acima e abaixo do curso, que é a linha
+ * que o crachá existe para nomear.
  */
 .curso {
-  margin-top: auto;
-  color: rgb(255 255 255 / 78%);
-  font-size: var(--dfs-curso, 20px);
+  margin: auto 0;
+  color: rgb(255 255 255 / 82%);
+  font-size: var(--cfs-curso, 15px);
   font-weight: 300;
-  line-height: 1.3;
+  line-height: 1.4;
   letter-spacing: 0.02em;
   text-wrap: pretty;
 }
 
 .rodape {
   display: flex;
-  gap: var(--drodape-gap, 18px);
-  align-items: center;
-  padding-top: var(--drodape-pt, 14px);
-  border-top: 1px solid rgb(255 255 255 / 9%);
+  flex: none;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding-top: 12px;
+  border-top: 1px solid rgb(255 255 255 / 10%);
 }
 
-/* o medidor toma o resto da linha, e a fração fecha o rodapé pela direita */
-.medidor {
-  flex: 1;
-  min-width: 0;
+.linhaDado {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  justify-content: space-between;
 }
 
 /* a posição na lista, na régua do índice das seções */
 .ordinal {
-  flex: none;
   color: rgb(255 255 255 / 26%);
-  font-size: 8.5px;
+  font-size: 8px;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.2em;
   white-space: nowrap;
 }
 
 /**
- * O dado que o estado produz: a data de conclusão ou as etapas cumpridas.
- *
- * Ele fica **sempre visível**. No badge era largura zero e abria no hover,
- * porque ali não havia linha para ele; aqui há, e esconder atrás de um ponteiro
- * o que já cabe seria negá-lo a quem está no celular.
+ * O dado que o estado produz: a data de conclusão ou os períodos cumpridos.
  *
  * O valor fica **fora do i18n**, como a versão no rodapé: "2022.12" e "4/8" são
  * dados, idênticos nos dois idiomas. Quem traduz é o rótulo ao lado.
  */
 .dado {
   display: flex;
-  flex: none;
-  gap: 7px;
+  gap: 6px;
   align-items: baseline;
+  min-width: 0;
 }
 
 .rotulo {
   color: rgb(255 255 255 / 34%);
-  font-size: 8px;
-  letter-spacing: 0.26em;
+  font-size: 7.5px;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
 }
 
 .valor {
   color: rgb(255 255 255 / 86%);
-  font-size: var(--dfs-valor, 11px);
+  font-size: var(--cfs-valor, 10px);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   white-space: nowrap;
+}
+
+/* o medidor toma a linha inteira, e a fração a fecha pela direita */
+.medidor {
+  min-width: 0;
 }
 
 .parte {
   flex: none;
   min-width: 4ch;
   color: rgb(255 255 255 / 62%);
-  font-size: 9px;
+  font-size: 8.5px;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-align: right;
-}
-
-/**
- * Mobile: o cartão vira retrato, e cada peça ganha uma faixa.
- *
- * Isto é **layout**, não tamanho, então não cabia num token: o que muda é o eixo
- * do cabeçalho e do rodapé. Deitado, num celular, o logo dividia 300px com a
- * instituição, o nível e o selo, e sobrava mancha para cada um; em pé o cartão
- * troca a largura que não tem pela altura que sobra.
- *
- * O centro é consequência, não estética: numa coluna estreita, texto alinhado à
- * esquerda sob um logo centrado leria como duas colunas que não existem. O
- * rodapé é a exceção e continua nas pontas, porque ali as duas linhas são de
- * dado e a fração fecha a leitura pela direita, como no desktop.
- */
-@media (width <= 640px) {
-  .topo {
-    flex-direction: column;
-    gap: 12px;
-    align-items: center;
-    text-align: center;
-  }
-
-  .logo {
-    background-position: center;
-  }
-
-  .titulos {
-    flex: none;
-    align-items: center;
-    width: 100%;
-  }
-
-  .selo {
-    align-self: center;
-  }
-
-  .curso {
-    margin-top: 0;
-    text-align: center;
-  }
-
-  /* o curso ocupa a faixa do meio, e o rodapé continua colado no pé */
-  .rodape {
-    flex-wrap: wrap;
-    margin-top: auto;
-    row-gap: 10px;
-  }
-
-  /* a barra desce para uma linha só dela, em vez de dividir a linha do dado */
-  .medidor {
-    flex: 1 0 100%;
-  }
 }

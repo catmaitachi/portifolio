@@ -89,7 +89,6 @@ Uma entrada em `projetos.lista` nos **dois** dicionários, com a mesma `key` e n
   "key": "meu-projeto",
   "nome": "Meu Projeto",
   "linha": "Uma linha de resumo, sob o nome.",
-  "descricao": "Texto do painel que cobre o cartão quando aberto.",
   "ano": "2026",
   "papel": "Full stack",
   "stack": ["React", "TypeScript"],
@@ -99,7 +98,7 @@ Uma entrada em `projetos.lista` nos **dois** dicionários, com a mesma `key` e n
 ```
 
 - `estado`: `ativo` / `arquivado` (barra cheia) ou `definir` (barra vazia). **`definir` é vaga**:
-  gira na órbita, mas não abre descrição.
+  gira na órbita e não leva a lugar nenhum.
 - `url` vazia esconde o link *ver ao vivo*. Escreva o endereço **completo**
   (`https://exemplo.com`): sem esquema, o `href` vira caminho relativo e o clique leva para
   `<raiz-do-portfólio>/exemplo.com`. `urlExterna()` (`content/links.ts`) prefixa `https://` quando
