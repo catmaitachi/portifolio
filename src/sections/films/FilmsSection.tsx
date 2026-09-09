@@ -4,6 +4,7 @@ import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
 import { useRemoto } from '~/hooks/useRemoto';
 import { useT } from '~/i18n/useLanguage';
 import { EstadoRemoto } from '../EstadoRemoto';
+import { PerfilExterno } from '../PerfilExterno';
 import comum from '../section.module.css';
 import type { SectionProps } from '../types';
 import styles from './FilmsSection.module.css';
@@ -150,7 +151,10 @@ export function FilmsSection({ ativo, indice }: SectionProps) {
         </p>
 
         <div className={comum.cabecalho}>
-          <h2 className={comum.titulo}>{t.filmes.titulo}</h2>
+          <div className={comum.linhaTitulo}>
+            <h2 className={comum.titulo}>{t.filmes.titulo}</h2>
+            <PerfilExterno secao="filmes" />
+          </div>
           <p className={comum.intro}>{t.filmes.intro}</p>
         </div>
 

@@ -1,6 +1,7 @@
 import clinplay from '~/assets/banners/clinplay.svg';
 import github from '~/assets/icons/github.svg';
 import instagram from '~/assets/icons/instagram.svg';
+import letterboxd from '~/assets/icons/letterboxd.svg';
 import linkedin from '~/assets/icons/linkedin.svg';
 import tiktok from '~/assets/icons/tiktok.svg';
 import spotify from '~/assets/icons/spotify.svg';
@@ -29,7 +30,15 @@ import retrato from '~/assets/retrato.jpg';
 
 export const LOGOS: Record<string, string> = { senac, puc, ufmg };
 
-export const ICONES: Record<string, string> = { github, linkedin, instagram, tiktok, spotify, steam };
+export const ICONES: Record<string, string> = {
+  github,
+  linkedin,
+  instagram,
+  tiktok,
+  spotify,
+  steam,
+  letterboxd,
+};
 
 /**
  * Banners dos cartões de projeto. Chave ausente = a moldura de espaço reservado.

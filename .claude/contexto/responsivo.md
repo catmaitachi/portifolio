@@ -128,7 +128,23 @@ o número real dos dois lados.
 
 A medição é iterativa de propósito: `getBoundingClientRect` já devolve a altura com o `zoom`
 aplicado, então a altura natural sai dividindo pela escala em vigor. Aplicar a escala nova acorda o
-`ResizeObserver`, e na segunda passagem a diferença cai abaixo do epsilon e para. O observador olha
+`ResizeObserver`, e na segunda passagem a diferença cai abaixo do epsilon e para.
+
+**O epsilon sozinho não fecha o laço, e essa premissa custou uma tela tremendo.** Ele fecha enquanto
+a altura do conteúdo for proporcional à escala, e ela não é: um texto que cabe em duas linhas numa
+escala e pede três na seguinte muda de altura em **degrau**. Aí existem duas escalas que se apontam
+uma para a outra — na menor sobra espaço e o hook cresce, na maior falta e ele encolhe — e a medição
+vai e volta para sempre. No desktop sobra altura e isso nunca aparece; no mobile, com a seção justa,
+a tela treme.
+
+O que fecha o laço é uma **busca monótona**: encolher prova que a escala em vigor não cabia, então
+ela vira teto e nunca mais é proposta. Cada passo baixa o teto em pelo menos um epsilon, então o pior
+caso são algumas dezenas de passos. O teto medido é descartado quando a **seção** muda de tamanho,
+porque aí tudo que se sabia sobre o que cabe deixa de valer.
+
+Corolário para quem escreve seção nova: **texto de rótulo que troca de estado deve ser `nowrap`.** O
+rótulo do destaque de Música alterna entre "tocando agora" e "nada tocando agora", e o mais longo dos
+dois quebrava em duas linhas num celular estreito — exatamente o degrau descrito acima. O observador olha
 a seção **e cada filho dela**, porque a seção muda com a tela e os filhos mudam com o conteúdo: uma
 troca de idioma reescreve o texto inteiro sem a seção mexer um pixel.
 

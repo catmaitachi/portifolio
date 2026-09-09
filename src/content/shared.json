@@ -48,6 +48,11 @@
       "icone": "steam",
       "rotulo": "Steam",
       "url": "https://steamcommunity.com/profiles/76561198386226487"
+    },
+    "filmes": {
+      "icone": "letterboxd",
+      "rotulo": "Letterboxd",
+      "url": "https://letterboxd.com/catmaitachi/"
     }
   },
 

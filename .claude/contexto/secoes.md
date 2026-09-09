@@ -240,7 +240,7 @@ tocando no meu Spotify" quer o perfil em seguida, e sem o link a seção é uma 
 é sobre a seção inteira, não sobre nenhum item dela, e por isso não desce para o conteúdo: ali ele
 fecha a linha horizontal que o título abre. O componente é um só (`sections/PerfilExterno.tsx`), a
 marca vive em `shared.json → perfis` porque nome próprio não se traduz, e seção sem perfil não
-desenha nada.
+desenha nada. As três do lado pessoal têm o seu: Spotify, Steam e Letterboxd.
 
 **A nota do Letterboxd é desenhada, não escrita.** Cinco marcas de 1px preenchidas pela fração cabem
 na régua da página melhor que um glifo de estrela, que traria uma forma que não existe em nenhum

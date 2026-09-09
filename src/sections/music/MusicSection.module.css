@@ -172,7 +172,16 @@
   min-width: 0;
 }
 
+/**
+ * **Uma linha, sempre.** O rótulo troca de texto conforme o estado ("tocando
+ * agora" contra "nada tocando agora"), e num celular estreito o mais longo dos
+ * dois quebrava em duas linhas. Isso muda a altura da seção em degrau, e é
+ * justamente o degrau que faz a escala que cabe oscilar (ver
+ * `useEscalaQueCabe`).
+ */
 .rotulo {
+  overflow: hidden;
+  white-space: nowrap;
   display: flex;
   gap: 8px;
   align-items: center;
