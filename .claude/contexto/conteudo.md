@@ -107,7 +107,7 @@ Uma entrada em `projetos.lista` nos **dois** dicionários, com a mesma `key` e n
   `src/assets/banners/`, ganha uma linha em `BANNERS` e a mesma chave entra nos dois dicionários —
   JSON não importa arquivo, e o Vite precisa do `import` para versionar o asset. Ausente = a moldura
   de espaço reservado. Os banners são marcas dos próprios projetos e escapam da paleta
-  monocromática pela mesma razão que o vermelho da UFMG: identidade de terceiro não se repinta.
+  monocromática: identidade de terceiro não se repinta.
 
 ### Adicionar uma experiência
 
@@ -143,10 +143,23 @@ português, `July 7, 2005` em inglês.
 
 ### Adicionar uma formação
 
-1. o logo em `src/assets/logos/` (branco sobre transparente, margens recortadas);
+1. o logo em `src/assets/logos/` (branco sobre transparente, margens recortadas, **com o nome da
+   instituição no desenho**, porque o crachá não o escreve de novo, e com traço que aguente o
+   tamanho do crachá, ver abaixo);
 2. uma linha em `LOGOS` (`assets.ts`);
 3. a escala óptica em `shared.json → logos`;
 4. uma entrada em `formacoes.lista` nos dois dicionários, com o mesmo `slot`.
+
+**O logo se confere no tamanho em que aparece, não no arquivo.** No crachá ele tem ~62px de altura, e
+o que decide o tom ali é a espessura do traço nessa escala, e não a cor do arquivo. O da PUC e o do
+SENAC são os dois `#fff`, e mesmo assim o da PUC saía num branco visivelmente mais apagado: o brasão é
+desenho de traço fino, um risco de 2px num arquivo de 480px vira um terço de pixel no crachá, e o
+navegador pinta essa cobertura parcial como cinza. O SENAC é forma cheia e não tem o problema.
+
+O traço do brasão foi engrossado 1px no próprio arquivo, e a luminância mediana do logo no crachá foi
+de 114 para 180 em DPR 2 (o SENAC fica em 255). Com 2px o emblema do escudo fechava num disco. Pintar
+o logo por máscara com um token de cor não resolveria nada: a máscara usa o mesmo alfa que produz o
+cinza.
 
 A lista alimenta a **seção Formação**, que existe só no modo profissional (`shared.json → modos`), e
 a **ordem em que elas aparecem não é a desta lista**: a seção agrupa por estado, primeiro o que está
@@ -165,8 +178,18 @@ quem lê o JSON, sem pensar em posição de tela.
 }
 ```
 
-`estado`: `concluido` (barra 100%), `cursando` (a fração de `progresso`) ou `pretensao` (0%,
-tracejado e apagado).
+`estado`: `concluido` (barra 100%), `cursando` (a fração de `progresso`) ou `pretensao`.
+
+**A `pretensao` é um cartão vago**, e o dado dela é só `slot`, `nivel` e `estado`:
+
+```json
+{ "slot": "mestrado", "nivel": "Mestrado", "estado": "pretensao" }
+```
+
+Sem instituição, sem curso e sem logo: o crachá mostra o nível e o selo, mais apagado que os outros
+(ver `secoes.md`). `instituicao` e `curso` são opcionais no tipo por causa dela, e o `slot`
+continua obrigatório porque é ele que liga as duas listas no `check:i18n`. Um `slot` sem linha em
+`LOGOS` só quer dizer que não há logo.
 
 Os dois campos opcionais são o **detalhe** que a barra esconde e o hover revela (ver *Carrossel de
 formações*):

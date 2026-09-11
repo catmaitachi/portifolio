@@ -14,10 +14,10 @@
   --cinterno: 12px;
   --clogo-h: 62px;
   --cfs-inst: 13px;
-  --cfs-nivel: 8.5px;
+  --cfs-nivel: var(--fs-rotulo);
   --cfs-curso: 15px;
-  --cfs-selo: 7.5px;
-  --cfs-valor: 10px;
+  --cfs-selo: var(--fs-micro);
+  --cfs-valor: var(--fs-controle);
   /**
    * Quanto tempo cada crachá leva para atravessar o seu próprio passo.
    *
@@ -78,7 +78,7 @@
   overflow-x: auto;
   scroll-snap-type: x proximity;
   scrollbar-width: thin;
-  scrollbar-color: rgb(255 255 255 / 22%) transparent;
+  scrollbar-color: var(--linha-forte) transparent;
 }
 
 /* o crachá vem de outro módulo, então o encaixe é pedido pelo filho da faixa */
@@ -90,9 +90,10 @@
  * Uma volta.
  *
  * O deslocamento é exatamente **uma volta da lista** (`--n` crachás mais os
- * respiros entre eles), e é por isso que a lista aparece duas vezes no DOM: no
- * instante em que a animação reinicia, a cópia está ocupando o lugar da
- * original, e o laço fecha sem nenhum salto.
+ * respiros entre eles), e é por isso que a lista se repete no DOM: no instante
+ * em que a animação reinicia, a cópia está ocupando o lugar da original, e o
+ * laço fecha sem nenhum salto. São três passadas, e não duas, por causa do
+ * arraste (ver `useArrastarFaixa`).
  *
  * `linear` e nada mais: qualquer aceleração viraria um pulso, e a faixa deixaria
  * de ser um movimento de fundo para virar um gesto que pede atenção.
@@ -187,7 +188,7 @@
  * sozinho. Ninguém escreve isso em lugar nenhum: quem decide é a medida do DOM
  * (`useCabeNaFaixa`), e estes números só a alimentam.
  */
-@media (width <= 640px) {
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .secao {
     --cw: 186px;
     --ch: 288px;
@@ -196,15 +197,15 @@
     --cinterno: 10px;
     --clogo-h: 50px;
     --cfs-inst: 11px;
-    --cfs-nivel: 7.5px;
+    --cfs-nivel: var(--fs-micro);
     --cfs-curso: 13px;
-    --cfs-selo: 7px;
-    --cfs-valor: 9.5px;
+    --cfs-selo: var(--fs-micro);
+    --cfs-valor: var(--fs-meta);
   }
 }
 
 /* paisagem curta: falta altura, e o crachá é a peça mais alta da página */
-@media (width > 640px) and (height <= 720px) {
+@media (width > 640px) and (height <= 720px) and (orientation: landscape) {
   .secao {
     --cw: 206px;
     --ch: 296px;

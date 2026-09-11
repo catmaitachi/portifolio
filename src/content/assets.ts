@@ -8,7 +8,6 @@ import spotify from '~/assets/icons/spotify.svg';
 import steam from '~/assets/icons/steam.svg';
 import puc from '~/assets/logos/puc.png';
 import senac from '~/assets/logos/senac.png';
-import ufmg from '~/assets/logos/ufmg.png';
 import retrato from '~/assets/retrato.jpg';
 
 /**
@@ -28,7 +27,7 @@ import retrato from '~/assets/retrato.jpg';
  * deixa o cartão de canal visualmente vazio.
  */
 
-export const LOGOS: Record<string, string> = { senac, puc, ufmg };
+export const LOGOS: Record<string, string> = { senac, puc };
 
 export const ICONES: Record<string, string> = {
   github,
@@ -44,8 +43,8 @@ export const ICONES: Record<string, string> = {
  * Banners dos cartões de projeto. Chave ausente = a moldura de espaço reservado.
  *
  * São **marcas dos próprios projetos**, e por isso escapam da paleta
- * monocromática pela mesma razão que o vermelho da UFMG: identidade de terceiro
- * não se repinta. O `scrim` do cartão escurece topo e base para o índice e o
+ * monocromática: identidade de terceiro não se repinta, como as capas e os
+ * pôsteres das seções de dado remoto. O `scrim` do cartão escurece topo e base para o índice e o
  * glifo continuarem legíveis sobre qualquer imagem.
  */
 export const BANNERS: Record<string, string> = { clinplay };

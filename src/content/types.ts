@@ -43,11 +43,23 @@ export interface ProgressoFormacao {
 }
 
 export interface Formacao {
-  /** casa com uma chave de LOGOS (assets.ts) e de `logos` (shared.json) */
+  /**
+   * A identidade do item, que liga as duas listas no `check:i18n`, e a chave de
+   * LOGOS (assets.ts) e de `logos` (shared.json). Sem logo registrado, o crachá
+   * fica sem imagem.
+   */
   slot: string;
-  instituicao: string;
+  /**
+   * `instituicao` e `curso` são opcionais por causa da `pretensao`, que é um
+   * cartão vago: ela mostra só o nível e o selo, e a formação que ainda não
+   * existe não diz onde nem o quê.
+   *
+   * Com logo, a instituição não é escrita no crachá: vira o nome acessível do
+   * logo, que já traz o nome desenhado.
+   */
+  instituicao?: string;
   nivel: string;
-  curso: string;
+  curso?: string;
   estado: EstadoFormacao;
   /**
    * `concluido`: quando terminou, no formato ano.mês. Fica escondida atrás da
