@@ -127,7 +127,7 @@ Uma entrada em `experiencia.lista` nos dois dicionários. A lista está em **ord
 - `texto` é um parágrafo só, contado como a bio, e não repete o nome da empresa, que já está no
   subtítulo;
 - `logo` é opcional e é uma chave de `LOGOS` (`assets.ts`), com o arquivo em `src/assets/logos/`. Ele
-  é pintado por máscara no fundo da ficha, então **pode ser o logo colorido**, desde que o fundo seja
+  é pintado por máscara no canto da ficha, então **pode ser o logo colorido**, desde que o fundo seja
   transparente: um retângulo de fundo vira um retângulo apagado. Foi o caso do banner da ClinPlaY,
   que tinha fundo branco e virou `logos/clinplay.svg` sem ele.
 

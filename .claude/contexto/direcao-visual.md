@@ -39,8 +39,7 @@ Três regras decorrem disso:
   opacidade só quando é imagem. O menu de seções era as duas coisas ao mesmo tempo, uma cor a 55%
   num elemento a 50%, e ficava em 27% de branco por um caminho que nenhuma outra peça usava.
 - **Fica fora da régua o que tem motivo próprio escrito onde está**: o degradê do nome e da barra de
-  Música, a marca no fundo da ficha da Trajetória (5%), os anéis e a mira do HUD e a curva da onda de
-  entrada da Trajetória.
+  Música, os anéis e a mira do HUD e a curva da onda de entrada da Trajetória.
 
 ### Cantos chanfrados
 

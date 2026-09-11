@@ -5,9 +5,9 @@
   --exp-per: 9px; /* rótulo de período nos nós */
   --exp-curva: 132px;
   --exp-rail: 26px; /* coluna do trilho da ficha */
-  --exp-marca: 28%; /* largura da marca no fundo da ficha */
+  --exp-marca-w: 96px; /* largura máxima da marca, ao lado do cabeçalho */
   --exp-gap: clamp(16px, 2.6vmin, 30px);
-  --exp-txt: 78%; /* largura do texto; o resto é o lugar da marca */
+  --exp-txt: 78%; /* largura do texto, que é medida de leitura */
   --exp-topo: clamp(14px, 4.2vh, 54px);
 }
 
@@ -85,7 +85,7 @@
     --exp-per: 8px;
     --exp-curva: 76px;
     --exp-rail: 22px;
-    --exp-marca-h: 88px; /* teto da marca, que no celular desce para o pé da ficha */
+    --exp-marca-w: 72px;
     --exp-gap: 14px;
     /* no celular o cargo, o subtítulo e o texto correm na largura inteira e sem
        a marca ao lado para separá-los, e com o gap de desktop liam como um bloco só */
@@ -101,7 +101,6 @@
   .secao {
     --exph: 210px;
     --exp-curva: 80px;
-    --exp-marca: 24%;
     --exp-topo: 12px;
   }
 }

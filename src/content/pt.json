@@ -162,7 +162,7 @@
         "url": "https://clinplay.com",
         "periodo": "2026.06",
         "tipo": "extensao",
-        "texto": "Uma plataforma de fisioterapia gamificada e acessível, que acompanha o paciente fora do consultório. Como Scrum Master, conduzi o time pelo backlog e pelos ritos, e fechei o escopo de cada sprint.",
+        "texto": "Uma plataforma de fisioterapia gamificada e acessível, que acompanha o paciente fora do consultório. Como Scrum Master, conduzi o time na elicitação de requisitos e no backlog, e fechei o escopo de cada sprint. Também atuei como dev fullstack: fiz o design e boa parte da implementação do front e do back, e modelei os dados que sustentam a plataforma.",
         "stack": ["React", "TypeScript", "Java", "Spring Boot"],
         "logo": "clinplay"
       }
