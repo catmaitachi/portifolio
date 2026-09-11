@@ -15,7 +15,7 @@ interface FigureProps {
  *
  * Substitui o `<image-slot>` do canvas de design, que pintava a própria moldura
  * dentro de um shadow DOM inalcançável de fora. Aqui a moldura é uma classe
- * comum, então o retrato e o banner de projeto podem arredondá-la, recortá-la ou
+ * comum, então o retrato e quem mais a usar podem arredondá-la, recortá-la ou
  * sobrepor um scrim como qualquer outro elemento.
  *
  * O `<img>` fica `aria-hidden` quando é decorativo (`alt` vazio) e a moldura

@@ -34,7 +34,12 @@ export type SectionKey =
 export type ModoKey = 'pessoal' | 'profissional';
 
 export type EstadoFormacao = 'concluido' | 'cursando' | 'pretensao';
-export type EstadoProjeto = 'ativo' | 'arquivado' | 'definir';
+
+/**
+ * As três categorias da Trajetória: extensão, freelance e o trabalho
+ * remunerado constante, do estágio à CLT.
+ */
+export type TipoExperiencia = 'extensao' | 'freela' | 'emprego';
 
 /** Etapas cumpridas de um total — a fração que preenche a barra de `cursando`. */
 export interface ProgressoFormacao {
@@ -89,37 +94,30 @@ export interface DadoPessoal {
   valor: string;
 }
 
-export interface Projeto {
-  key: string;
-  nome: string;
-  /** uma linha de resumo, sob o nome do cartão */
-  linha: string;
-  ano: string;
-  papel: string;
-  stack: string[];
-  estado: EstadoProjeto;
-  /** vazio = sem link "ver ao vivo" */
-  url?: string;
-  /**
-   * Casa com uma chave de BANNERS (assets.ts) — é chave, não caminho: JSON não
-   * importa arquivo, e o Vite precisa do `import` para versionar o asset.
-   * Ausente = a moldura de espaço reservado.
-   */
-  banner?: string;
-}
-
+/**
+ * Um ponto da Trajetória: um trabalho de verdade, com o cargo, onde foi, o que
+ * foi e com o quê.
+ */
 export interface Experiencia {
   key: string;
+  /** o título da ficha */
   cargo: string;
+  /** a empresa ou o projeto, sob o cargo */
   org: string;
-  /** formato ano.mês — é rótulo, não posição na curva */
+  /** o endereço da empresa ou do projeto; com ele, o subtítulo vira link */
+  url?: string;
+  /** formato ano.mês: é o rótulo do nó na curva, e só lá */
   periodo: string;
-  /** casa com uma chave de `experiencia.tipos` */
-  tipo: string;
-  /** até 3 são exibidos (slots fixos 01/02/03) */
-  bullets: string[];
-  /** até 4 são exibidos */
+  tipo: TipoExperiencia;
+  /** o texto da ficha, um parágrafo contado como a bio */
+  texto: string;
+  /** até 5 são exibidos */
   stack: string[];
+  /**
+   * Casa com uma chave de LOGOS (assets.ts): a marca apagada no fundo da ficha.
+   * Ausente = ficha sem marca.
+   */
+  logo?: string;
 }
 
 export interface Dictionary {
@@ -172,13 +170,22 @@ export interface Dictionary {
     rotulos: { conclusao: string; periodos: string };
     lista: Formacao[];
   };
+  /**
+   * Os rótulos de Projetos. A lista não mora aqui: os projetos são
+   * repositórios do GitHub, escolhidos em `shared.json → projetos`, e o que
+   * aparece de cada um vem de lá (`src/data/`).
+   */
   projetos: {
     titulo: string;
     intro: string;
-    banner: string;
+    /** a seção sem nenhum repositório escolhido */
+    vazio: string;
+    codigo: string;
     aoVivo: string;
-    estados: Record<EstadoProjeto, string>;
-    lista: Projeto[];
+    /** a legenda do código de barras de commits, entre as duas datas da janela */
+    atividade: string;
+    arquivado: string;
+    rotulos: { commits: string; estrelas: string; forks: string; desde: string; atualizado: string };
   };
   /**
    * As três seções que leem dado remoto (`src/data/`).
@@ -240,7 +247,8 @@ export interface Dictionary {
   experiencia: {
     titulo: string;
     intro: string;
-    tipos: Record<string, string>;
+    /** `Record` total: uma categoria nova quebra o build até ter nome nos dois idiomas */
+    tipos: Record<TipoExperiencia, string>;
     janela: { anterior: string; posterior: string };
     lista: Experiencia[];
   };
@@ -333,6 +341,11 @@ export interface Shared {
   modos: Modo[];
   /** só as seções que leem dado de fora têm perfil; as outras não têm de onde */
   perfis: Partial<Record<SectionKey, Perfil>>;
+  /**
+   * Os repositórios da seção Projetos, como `dono/nome`, na ordem em que giram.
+   * Vazia, a seção diz que nada foi selecionado ainda e não busca nada.
+   */
+  projetos: string[];
   canais: Canal[];
   logos: Record<string, { escala: number }>;
 }

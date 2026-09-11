@@ -3,14 +3,19 @@ import styles from './EstadoRemoto.module.css';
 
 interface EstadoRemotoProps {
   estado: 'carregando' | 'erro' | 'vazio';
+  /**
+   * O texto no lugar do de `remoto`, para um vazio que tem motivo próprio: em
+   * Projetos, "nada selecionado ainda" diz mais que "nada por aqui".
+   */
+  texto?: string;
 }
 
 /**
  * A linha que aparece quando não há o que mostrar, ainda ou nunca.
  *
- * As três seções que leem dado de fora têm exatamente os mesmos três estados, e
- * escrever a linha em cada uma seria três lugares para manter a mesma frase e o
- * mesmo `aria-busy`. Os textos vêm de `remoto` nos dicionários, como todo o
+ * As seções que leem dado de fora têm exatamente os mesmos três estados, e
+ * escrever a linha em cada uma seria vários lugares para manter a mesma frase e
+ * o mesmo `aria-busy`. Os textos vêm de `remoto` nos dicionários, como todo o
  * resto.
  *
  * **Esperar e falhar não são a mesma coisa**, e a distinção é o motivo de a
@@ -18,7 +23,7 @@ interface EstadoRemotoProps {
  * errada apareceria aqui como "nada por aqui ainda", e a página afirmaria uma
  * coisa que não sabe.
  */
-export function EstadoRemoto({ estado }: EstadoRemotoProps) {
+export function EstadoRemoto({ estado, texto }: EstadoRemotoProps) {
   const t = useT();
 
   return (
@@ -30,7 +35,7 @@ export function EstadoRemoto({ estado }: EstadoRemotoProps) {
       aria-busy={estado === 'carregando' || undefined}
       role="status"
     >
-      {t.remoto[estado]}
+      {texto ?? t.remoto[estado]}
     </p>
   );
 }

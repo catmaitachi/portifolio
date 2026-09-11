@@ -1,33 +1,47 @@
 import { useRef } from 'react';
+import { PROJETOS } from '~/content';
+import type { Projetos } from '~/data/types';
 import { useArrowKeys } from '~/hooks/useArrowKeys';
 import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
+import { useRemoto } from '~/hooks/useRemoto';
 import { useT } from '~/i18n/useLanguage';
+import { EstadoRemoto } from '../EstadoRemoto';
+import { PerfilExterno } from '../PerfilExterno';
 import comum from '../section.module.css';
 import type { SectionProps } from '../types';
+import { nomeLegivel } from './nome';
 import { ProjectCard } from './ProjectCard';
 import styles from './ProjectsSection.module.css';
 import { useOrbit } from './useOrbit';
 
+/** A escolha vai inteira no endereço, e é ele a chave do cache da borda. */
+const CAMINHO = `api/github?repos=${encodeURIComponent(PROJETOS.join(','))}`;
+
 /**
- * Projetos: carrossel em órbita 3D.
+ * Projetos: os repositórios escolhidos a dedo, numa órbita 3D.
+ *
+ * Só projeto pessoal, e o dado de cada um vem do GitHub (`api/github`): a
+ * escolha mora em `shared.json → projetos`, e nome, descrição, linguagens e
+ * números são o que o repositório diz de si. **Sem escolha nenhuma não há o que
+ * buscar**: a seção diz que nada foi selecionado ainda e não chama a função.
  *
  * Girar: clique num cartão lateral, ←/→ (sem precisar de foco, enquanto a seção
- * está ativa), arraste horizontal ou os traços-índice abaixo.
- *
- * **Não há mais painel de descrição.** O cartão mostra tudo o que tem, e o link
- * para o projeto fica na frente dele (ver `ProjectCard`). Com isso saíram daqui
- * o fechamento ao deixar a seção e a tecla Esc: não existe mais estado aberto
- * para desfazer.
+ * está ativa), arraste horizontal ou os traços-índice abaixo. Com um cartão só
+ * não há o que girar, e os traços não aparecem, pela regra da faixa que coube
+ * inteira.
  */
 export function ProjectsSection({ ativo, indice }: SectionProps) {
   const t = useT();
   const secaoRef = useRef<HTMLElement>(null);
   // o conteúdo encolhe até caber na altura que a tela tem
   useEscalaQueCabe(secaoRef);
-  const lista = t.projetos.lista;
+  const escolhidos = PROJETOS.length > 0;
+  // repositório não muda enquanto alguém olha para ele: busca uma vez por entrada, sem repetir
+  const remoto = useRemoto<Projetos>(CAMINHO, ativo && escolhidos);
+  const lista = remoto.estado === 'pronto' ? remoto.dados.repositorios : [];
   const orbita = useOrbit(lista.length);
 
-  useArrowKeys(ativo, orbita.girar);
+  useArrowKeys(ativo && lista.length > 1, orbita.girar);
 
   return (
     <section
@@ -42,44 +56,61 @@ export function ProjectsSection({ ativo, indice }: SectionProps) {
         </p>
 
         <div className={comum.cabecalho}>
-          <h2 className={comum.titulo}>{t.projetos.titulo}</h2>
+          <div className={comum.linhaTitulo}>
+            <h2 className={comum.titulo}>{t.projetos.titulo}</h2>
+            <PerfilExterno secao="projetos" />
+          </div>
           <p className={comum.intro}>{t.projetos.intro}</p>
         </div>
 
-        <div
-          ref={orbita.palcoRef}
-          className={styles.palco}
-          role="group"
-          aria-label={t.a11y.projetos}
-          tabIndex={0}
-        >
-          <div className={styles.anel}>
-            {lista.map((p, i) => (
-              <ProjectCard
-                key={p.key}
-                projeto={p}
-                indice={i}
-                geo={orbita.geometria(i, p.estado === 'definir')}
-                ativo={ativo}
-                onFocar={() => orbita.focar(i)}
-              />
-            ))}
-          </div>
-        </div>
+        {!escolhidos ? (
+          <EstadoRemoto estado="vazio" texto={t.projetos.vazio} />
+        ) : remoto.estado !== 'pronto' ? (
+          <EstadoRemoto estado={remoto.estado} />
+        ) : lista.length === 0 ? (
+          // escolhidos, mas nenhum voltou: todos privados, renomeados ou apagados
+          <EstadoRemoto estado="vazio" />
+        ) : (
+          <>
+            <div
+              ref={orbita.palcoRef}
+              className={styles.palco}
+              role="group"
+              aria-label={t.a11y.projetos}
+              tabIndex={0}
+            >
+              <div className={styles.anel}>
+                {lista.map((r, i) => (
+                  <ProjectCard
+                    key={r.id}
+                    repo={r}
+                    janela={remoto.dados.janela}
+                    indice={i}
+                    geo={orbita.geometria(i)}
+                    ativo={ativo}
+                    onFocar={() => orbita.focar(i)}
+                  />
+                ))}
+              </div>
+            </div>
 
-        <div className={styles.tracos}>
-          {lista.map((p, i) => (
-            <button
-              key={p.key}
-              type="button"
-              className={styles.traco}
-              data-ativo={orbita.ativo === i || undefined}
-              aria-label={p.nome}
-              aria-current={orbita.ativo === i ? 'true' : undefined}
-              onClick={() => orbita.focar(i)}
-            />
-          ))}
-        </div>
+            {lista.length > 1 ? (
+              <div className={styles.tracos}>
+                {lista.map((r, i) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    className={styles.traco}
+                    data-ativo={orbita.ativo === i || undefined}
+                    aria-label={nomeLegivel(r.nome)}
+                    aria-current={orbita.ativo === i ? 'true' : undefined}
+                    onClick={() => orbita.focar(i)}
+                  />
+                ))}
+              </div>
+            ) : null}
+          </>
+        )}
       </div>
     </section>
   );

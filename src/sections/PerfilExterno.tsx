@@ -5,7 +5,7 @@ import comum from './section.module.css';
 /**
  * O ícone do serviço de onde o dado da seção vem, com link para o perfil.
  *
- * As três seções do lado pessoal mostram dado que não é do projeto, e o crédito
+ * Quatro seções mostram dado que não é do projeto, e o crédito
  * a quem o serve não é enfeite: quem lê "o que anda tocando no meu Spotify"
  * imediatamente quer o perfil, e sem ele a seção é uma vitrine sem porta.
  *

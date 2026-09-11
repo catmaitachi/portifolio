@@ -117,7 +117,7 @@
  *
  * O endereço é perguntado à loja a cada resposta e pode não vir (ver
  * `dados.md`). Sem arte, o que sobra é um retângulo vazio de 1px, que é o mesmo
- * espaço reservado dos banners de projeto; sem ele seria o ícone de imagem
+ * espaço reservado de toda imagem da página; sem ele seria o ícone de imagem
  * quebrada do navegador, a única coisa fora da paleta na página.
  */
 .arte {
@@ -146,7 +146,7 @@
   }
 }
 
-/* arte de jogo é identidade de terceiro: fica colorida, como os banners */
+/* arte de jogo é identidade de terceiro: fica colorida, como as capas e os pôsteres */
 .arte img {
   display: block;
   width: 100%;
@@ -226,7 +226,7 @@
 /**
  * A moldura da arte existe mesmo sem arte, e a arte fica colorida.
  *
- * Identidade de terceiro não se repinta, como os banners de projeto. Quando a
+ * Identidade de terceiro não se repinta, como os pôsteres de Filmes. Quando a
  * Steam não tem a arte em pé, o que sobra é um retângulo de 1px na proporção
  * certa, que é o espaço reservado de sempre; sem ele seria o ícone de imagem
  * quebrada do navegador, a única coisa fora da paleta na página inteira.

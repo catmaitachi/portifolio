@@ -223,79 +223,164 @@ escreva "no mobile ela anda" em lugar nenhum.
 
 ## Seção "Projetos"
 
+**Só projeto pessoal, e o que aparece de cada um vem do GitHub.** A seção mostrava tudo o que foi
+feito, e dividia mal o assunto com a Trajetória. Hoje o que foi trabalho para alguém mora lá, e aqui
+fica o que é dele. A escolha é a dedo, em `shared.json → projetos`, e o resto é o que o repositório
+diz de si, lido por `api/github` (ver `dados.md`).
+
+**Sem escolha nenhuma, a seção diz isso** (`projetos.vazio`), na mesma linha dos estados de dado
+remoto, e não chama a função. Escolhidos que não voltam, porque são privados, foram renomeados ou
+apagados, caem no vazio de sempre. A órbita não tem teto de cartões; a função aceita doze por
+consulta.
+
+### O cartão é um bilhete
+
+O cartão é deitado e desenhado como o **bilhete de uma missão**: o corpo, à esquerda, diz o que o
+repositório é; o canhoto, à direita e numa peça à parte, diz o que se confere nele. No celular ele
+fica em pé, com o canhoto embaixo: deitado, numa tela de 375px, a descrição viraria uma coluna de uma
+palavra por linha.
+
+| Onde | O quê |
+|---|---|
+| corpo | o número e o dono, o nome, a descrição em até duas linhas, os tópicos, o código de barras de commits e as linguagens |
+| canhoto | os dados (commits, estrelas, forks, desde e último push) e os links |
+
+- **O código de barras é feito dos commits.** Cada traço é um commit, no dia em que ele aconteceu,
+  dentro dos últimos doze meses, entre as duas datas escritas embaixo. Não há contagem nem escala: um
+  mês parado é espaço vazio, um mês intenso vira faixa cheia, e o ritmo do repositório se lê como a
+  largura das faixas de um código de barras. São os cem commits mais recentes da janela, que para um
+  projeto pessoal é mais de um ano de trabalho, num `<path>` só, com `non-scaling-stroke`. A janela vem
+  da função, e não do relógio do navegador, para o desenho depender só do dado.
+- **O canhoto é uma peça à parte**, a um espaço de verdade do corpo (`--pfolga`), como um canhoto
+  já destacado. Ele já foi colado ao corpo por um picote tracejado, e a divisão lia como uma linha a
+  mais dentro de uma caixa só. São dois retângulos com borda própria, e o chanfro fica um em cada: o
+  canto de cima à esquerda no corpo e o de baixo à direita no canhoto, que é a silhueta de um cartão
+  só, pela regra dos cantos, dividida em duas. As duas peças acendem juntas sob o ponteiro. A base do
+  código de barras continua tracejada, porque é apoio, e não dado.
+- **O número do cartão abre o corpo**, no canto de cima à esquerda, onde ficava um marcador
+  geométrico escolhido pelo índice. O marcador era ornamento que dizia a mesma coisa que o número, de
+  um jeito que ninguém lia como número.
+- **As linguagens são o medidor da página, em trechos.** A barra de 1px se divide pelo tamanho de
+  cada linguagem, com um degrau de branco por trecho, porque a paleta não tem outra coisa, e a mesma
+  amostra na legenda liga um ao outro. Só as três maiores têm nome; o resto vira um último trecho
+  apagado.
+- **Os números são rótulo e valor, como no pé do crachá**, empilhados no canhoto, onde o olho os
+  encontra sem procurar. **Estrela e fork só aparecem quando existem**: um "0" em cada cartão de
+  projeto pessoal diria menos sobre o projeto do que sobre a contagem.
+- **O nome é o do repositório, legível**: `Controlador_Tuya` vira `Controlador Tuya` (`nome.ts`), e o
+  `id` continua sendo o nome de verdade. Acima dele fica o dono, como a origem escrita no alto de um
+  bilhete.
+- A descrição, os tópicos e o nome chegam no idioma em que foram escritos no GitHub, como o título de
+  uma faixa ou de um filme: é dado, e não interface.
+
+O bilhete substituiu um cartão em pé, com a atividade por mês no alto, no lugar do banner. Em pé, a
+descrição corria em linhas curtas e os números se espalhavam pelo corpo; deitado, o texto corre em
+linhas longas e os números ficam numa coluna só.
+
+Deitado, **o lateral aparece além da borda do da frente por uma faixa**, e não mais por inteiro. O
+raio da órbita decide o tamanho dessa faixa, e o limite dele é o menu à direita: com 340px, a 1280px
+de largura, a borda do lateral encostava no rótulo do menu.
+
+### A órbita
+
 **Carrossel em órbita 3D** (`useOrbit`). Os cartões ocupam pontos de um círculo horizontal; para
-cada um, `ang = (i − ativo)·2π/n` dá `sen` (deslocamento em X) e `cos` (profundidade). Da
+cada um, `ang = (i − ativo)·2π/lugares` dá `sen` (deslocamento em X) e `cos` (profundidade). Da
 profundidade saem `escala` (.62→1), `foco` (opacidade) e `camada` (`z-index` 100±50). Um
 `rotateY(−sen·34°)` inclina os laterais para dentro e o palco tem `perspective`.
+
+**A órbita tem ao menos três lugares** (`lugares = max(n, 3)`). Com dois cartões e o círculo dividido
+por dois, o segundo ficaria a 180°, exatamente atrás do primeiro, e a seção pareceria ter um cartão
+só. Com três lugares ele fica ao lado, e o terceiro lugar fica vazio. Com um cartão só não há o que
+girar, e os traços-índice não aparecem, pela regra da faixa que coube inteira.
 
 O giro parece um anel de verdade, mas **todo texto continua de frente**: um anel com `preserve-3d`
 esconderia os cartões de trás por `backface-visibility`, e com n=3 isso seria dois terços da lista.
 
 **Nada de rAF**: `ativo` muda e as `transition` de `transform`/`opacity` (.95s) fazem a volta.
-Girar: clique num cartão lateral, ←/→ com foco no palco, arraste de 46px ou os traços-índice abaixo.
+Girar: clique num cartão lateral, ←/→ com a seção ativa, arraste de 46px ou os traços-índice abaixo.
 O arraste é decidido no `pointerup` justamente para o clique no cartão continuar vivo.
 
 **O arraste começa na faixa do cartão da frente**, não no palco inteiro. O palco é largo porque
 precisa acomodar os cartões laterais, e capturar o gesto em toda essa largura fazia a órbita ser dona
-de metade da seção. A faixa sai do DOM — centro do palco, `offsetWidth` do cartão com `data-frente`,
-que é medida de **layout** e por isso não acompanha o `transform`: não balança durante o giro nem
-duplica o `--pcw` do CSS no JavaScript. Só o início do gesto é filtrado; terminá-lo fora da faixa
-continua valendo. O `cursor: grab` saiu do palco e foi para o **cartão da frente**, que é onde o
-gesto passou a viver — uma mão aberta sobre a largura toda prometeria o que a maior parte dela não
-atende mais. `:active` troca para `grabbing`, sem estado no React.
+de metade da seção. A faixa sai do DOM: centro do palco e `offsetWidth` do cartão com `data-frente`,
+que é medida de **layout** e por isso não acompanha o `transform`, então não balança durante o giro
+nem duplica o `--pcw` do CSS no JavaScript. Só o início do gesto é filtrado; terminá-lo fora da faixa
+continua valendo. O `cursor: grab` mora no **cartão da frente**, que é onde o gesto vive, e `:active`
+troca para `grabbing`, sem estado no React.
+
+**Os cartões chegam depois da seção**, porque vêm do GitHub, e o palco só existe quando há o que
+girar. O efeito que registra o arraste roda de novo quando eles aparecem (`temCartoes` nas
+dependências); sem isso ele encontraria a ref vazia uma vez e nunca mais olharia.
 
 **O `click` que segue um arraste é engolido** por um listener de captura no palco, solto num
 `setTimeout(0)` para não sobreviver a um gesto que não gerou clique. Sem isso o arraste sobre o
 cartão da frente girava *e* o clique caía no cartão que estava ali, trazendo para o meio um cartão
-que o gesto já tinha levado embora. A captura no palco basta porque o React escuta na raiz do documento e
-dispara `onClick` na subida, que deixa de acontecer.
+que o gesto já tinha levado embora. A captura no palco basta porque o React escuta na raiz do
+documento e dispara `onClick` na subida, que deixa de acontecer.
 
 **O cartão da frente é opaco** (`rgb(0 0 0 / 92%)`, contra os 42% dos demais). A órbita é fechada de
-propósito — `--pr` foi reduzido para os cartões não passarem sob o menu — e por isso a caixa do
+propósito, com o `--pr` reduzido para os cartões não passarem sob o menu, e por isso a caixa do
 cartão da frente cobre um pedaço dos vizinhos: 2% em tela larga, 31% em janela média, 43% no mobile.
 Com o preto translúcido, o vizinho aparecia através dele e não respondia ao clique, porque ali o
-clique é do cartão da frente. Prometer um alvo que não existe é pior que escondê-lo: **o que se vê
-do lateral é exatamente o que responde.** Devolver a área inteira aos laterais exigiria `--pr ≈ 0,99
-· --pcw`, o que no mobile jogaria os cartões para fora da tela.
+clique é do cartão da frente. **O que se vê do lateral é exatamente o que responde.** Pela mesma
+regra, a fresta entre o corpo e o canhoto não é do cartão (`pointer-events`): o vizinho que aparece
+por ela responde ao clique ali.
 
-`foco` tem **piso alto** (`.52 + .48·prof`; vaga `.34 + .3·prof`): com n=3 a profundidade dos
-laterais é só .25 e um falloff linear os apagaria por completo no céu preto.
+`foco` tem **piso alto** (`.52 + .48·prof`): com três lugares a profundidade dos laterais é só .25, e
+um falloff linear os apagaria por completo no céu preto.
 
 **Não há painel de descrição, e o cartão não é um botão.** Um texto longo escondido atrás de um
-clique era o único conteúdo oculto da página, e o cartão já mostra o que o projeto é: nome, uma linha
-de resumo, ano, papel, stack, estado e o link para ver ao vivo. Contar o projeto por extenso é
-trabalho do projeto, não do portfólio.
+clique era o único conteúdo oculto da página, e o cartão já mostra o que o projeto é. Contar o
+projeto por extenso é trabalho do repositório, não do portfólio.
 
-Três coisas saíram junto com o painel, e nenhuma faz falta: o fechamento ao deixar a seção, a tecla
-Esc e a regra de tabulação que tirava os outros cartões do caminho enquanto um estava aberto.
+**Os links fecham o canhoto**, o código e, embaixo dele, o projeto no ar. Eles são o fim da
+leitura e não o começo: quem chega até eles já passou pelo nome, pela descrição e pelos números, e a
+pergunta que sobra é onde ver aquilo. O código existe para todo repositório; o projeto no ar, só
+quando o repositório aponta um site no campo *Website*.
 
-**O link fecha o pé do cartão, na ponta oposta ao estado.** Ele é o fim da leitura e não o começo:
-quem chega até ele já passou por nome, resumo, ano, papel e stack, e a pergunta que sobra é onde ver
-aquilo funcionando. Nas extremidades opostas, o estado e o link são duas coisas; encostados, leriam
-como uma legenda só, que é o mesmo motivo dos dois fatos do Sobre. A barra do medidor fica na linha
-de cima, inteira.
+**E só o da frente responde.** Os links são desenhados em todos os cartões, para que o corpo tenha a
+mesma geometria no meio do giro; fora da frente eles saem da tabulação e do ponteiro, porque ali o
+clique é do cartão, que gira a órbita.
 
-**E só o da frente responde.** O link é desenhado nos três para que todos tenham a mesma altura de
-corpo, senão o cartão mudaria de geometria no meio do giro; fora da frente ele sai da tabulação e do
-ponteiro, porque ali o clique é do cartão, que gira a órbita.
-
-E isso resolveu o defeito de acessibilidade que estava anotado em `pendencias.md`: o cartão era
-`role="button"` com um link dentro, o que ARIA não permite, e o aninhamento existia só para o painel
-fechar ao clique. Sem painel, o cartão volta a ser um `<article>`, o link é o único elemento
-interativo dele, e quem navega por teclado troca de projeto pelas setas ou pelos traços-índice.
-
-Marcador geométrico por cartão: dois contornos de 1px com raio/rotação próprios, escolhidos pelo
-índice entre quatro variantes.
+O cartão é um `<article>`, os links são os únicos elementos interativos dele, e quem navega por
+teclado troca de projeto pelas setas ou pelos traços-índice. O clique no cartão lateral é
+enriquecimento para o mouse (ver o falso positivo em `react.md`).
 
 ---
 
 ## Seção "Trajetória"
 
-**Curva animada + ficha estruturada.** Um palco de altura fixa (`--exph`) onde todas as fichas ficam
-sobrepostas (`inset: 0`) e só a ativa aparece — opacidade + 18px de deslocamento, sem rAF, e o palco
-não pula ao trocar. A ficha é uma grade `--exp-rail 1fr`: trilho com índice, risco em degradê e o
-tipo escrito na vertical (`writing-mode`); no conteúdo, o período como **número fantasma**
-(opacidade .075) atrás do cargo, organização com ponto, atividades numeradas e a stack em chips de 1px.
+**Trabalho de verdade, contado como a bio.** A seção guarda o profissional inteiro, em três
+categorias: extensão, freelance e emprego, que é o trabalho remunerado constante, do estágio à CLT. A
+lista foi refeita com esse critério e ficou só com o que é contribuição real: trabalhos de curso,
+monitorias e participações em evento saíram, porque não passavam a credibilidade que a seção existe
+para passar.
+
+**Curva animada + ficha.** Um palco de altura fixa (`--exph`) onde todas as fichas ficam sobrepostas
+(`inset: 0`) e só a ativa aparece, com opacidade e 18px de deslocamento, sem rAF, e o palco não pula
+ao trocar. A ficha é uma grade `--exp-rail 1fr`: no trilho, o índice, um risco em degradê e a
+categoria escrita na vertical (`writing-mode`); no conteúdo, o cargo como título, a empresa ou o
+projeto como subtítulo, um parágrafo de texto e a stack em chips de 1px.
+
+- **O texto é um parágrafo, e não uma lista.** As três atividades numeradas liam como relatório; um
+  `<p>` justificado, como a bio, conta o que o trabalho foi na voz de quem o fez. Ele não repete o nome
+  da empresa, que já está no subtítulo.
+- **O subtítulo vira link** quando a experiência tem `url`, marcado só por um sublinhado de 1px que
+  acende sob o ponteiro, sem ícone. O nome é a pergunta que o link responde, e é por isso que ele mora
+  ali, e não num botão à parte.
+- **No celular o cabeçalho e o texto se afastam um pouco mais** (`--exp-cab-gap` e
+  `--exp-bloco-gap`). Ali o texto corre na largura inteira, sem a marca ao lado, e com o espaçamento
+  de desktop cargo, subtítulo e parágrafo liam como um bloco só.
+- **No fundo fica a marca da empresa ou do projeto**, no lugar do período, que ficava ali como número
+  fantasma. A data continua na curva, onde organiza alguma coisa; na ficha ela só repetia o rótulo do
+  nó. A marca é pintada **por máscara**, a 5% de branco, então o arquivo pode ser o logo colorido da
+  empresa e o que chega à tela é só a silhueta. Ela é mais apagada que o número era (7,5%) porque um
+  logo tem muito mais tinta que quatro algarismos finos. **No celular ela desce para o pé da ficha**,
+  centrada e logo acima dos chips: ali o texto ocupa a largura inteira e passava por cima dela. O
+  tamanho dela é a folga entre o texto e a stack, com teto em `--exp-marca-h`, então um texto mais
+  longo a encolhe em vez de voltar a cobri-la.
+- **Com um evento só, as setas não aparecem**, pela regra da faixa que coube inteira: duas setas
+  apagadas para sempre seriam controle sem função. A curva continua, com o nó sozinho no centro.
 
 A geometria é matemática pura em `timelineGeometry.ts` — sem React e sem DOM.
 
@@ -334,8 +419,7 @@ evento ativo continuar visível. Limitar o deslocamento ao novo máximo não bas
 pode apagar da tela justamente o que estava sendo lido.
 
 **Menos vagas gastam mais folga da curva**, e é essa a única coisa que amarra as duas pontas do
-assunto: com quatro vagas cada passo desloca ⅓ de período contra ⅕ com seis, então as sete entradas
-de hoje deslocam **uma janela inteira** no mobile — cinco vezes o que deslocam no desktop. É por
+assunto: com quatro vagas cada passo desloca ⅓ de período contra ⅕ com seis, então sete entradas deslocam **uma janela inteira** no mobile — cinco vezes o que deslocam no desktop. É por
 isso que o caminho cobre cinco janelas e não as três de antes: com três, a ponta direita parava em
 x=956 num viewBox de 1000, e o canto direito da curva ficava sem linha já no estado inicial. As
 cinco dão teto para ~1,95 janela de deslocamento: **nove entradas no mobile, quinze no desktop.**
@@ -447,9 +531,7 @@ montada, então não há ranking a inventar nem campo a pedir ao Letterboxd.
 O selo tem moldura, e não é enfeite: dois algarismos soltos ao lado do ano, na mesma linha, leriam
 como parte da data.
 
-**Capas, artes e pôsteres ficam coloridos.** É identidade de terceiro, como os banners de projeto: não
-se repinta. **A moldura de 1px só aparece quando a imagem não veio**, e é o
-espaço reservado dos banners: o endereço da arte da Steam é perguntado a cada resposta e pode não vir
+**Capas, artes e pôsteres ficam coloridos.** É identidade de terceiro, e não se repinta. **A moldura de 1px só aparece quando a imagem não veio**, e é o espaço reservado de toda imagem da página: o endereço da arte da Steam é perguntado a cada resposta e pode não vir
 (ver `dados.md`), e sem a moldura sobraria o ícone de imagem quebrada do navegador, a única coisa
 fora da paleta na página inteira. Sobre a arte ela não reservava nada, e por isso saiu (ver
 `direcao-visual.md`).

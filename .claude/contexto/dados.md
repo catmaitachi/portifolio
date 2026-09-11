@@ -1,14 +1,14 @@
 ## Dados de fora (`api/` e `src/data/`)
 
-Três seções do lado pessoal mostram dado que não é do projeto: Música (Spotify), Jogos (Steam) e
-Filmes (Letterboxd). **Nenhuma das três APIs pode ser chamada do navegador**, e é isso que decide a
-arquitetura inteira deste tema:
+Quatro seções mostram dado que não é do projeto: Música (Spotify), Jogos (Steam) e Filmes
+(Letterboxd), do lado pessoal, e Projetos (GitHub), do profissional. **Nenhuma das quatro pode ser
+lida direto do navegador**, e é isso que decide a arquitetura inteira deste tema:
 
 - Spotify e Steam exigem segredo, e os endpoints de "o que estou ouvindo" são do **usuário**, não do
   app: pedem um token renovado com a client secret;
 - Steam e Riot não mandam cabeçalho de CORS;
-- o Letterboxd **não tem API pública**. A deles está em beta fechado há anos, e o que existe é o RSS
-  do perfil, também bloqueado por CORS.
+- o Letterboxd **não tem API pública**. A deles está em beta fechado há anos, e o que existe é o RSS do perfil, também bloqueado por CORS;
+- a API GraphQL do GitHub não responde sem token, e um token no navegador é um token público.
 
 Por isso existe uma função por provedor em `api/`, servida pela Vercel, e é o único código do
 projeto que roda fora do navegador.
@@ -18,6 +18,7 @@ projeto que roda fora do navegador.
 | `api/spotify.ts` | `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REFRESH_TOKEN` | 30s | tocando agora, mais tocadas, mais ouvidos, recentes |
 | `api/steam.ts` | `STEAM_API_KEY`, `STEAM_ID` | 60s | jogando agora e os das duas últimas semanas |
 | `api/letterboxd.ts` | `LETTERBOXD_USER`, `LETTERBOXD_LIST` (opcional) | 30min | últimos assistidos com a nota, e uma lista escolhida a dedo |
+| `api/github.ts` | `GITHUB_TOKEN` | 1h | os repositórios de `shared.json → projetos`, com atividade, linguagens e números |
 
 **O League of Legends ficou de fora, e não por falta de tentativa.** Não existe API de terceiro
 legítima para histórico de partidas: todo rastreador usa a chave própria dele na API da Riot, e a
@@ -95,6 +96,16 @@ nome inteiro apontaria para o primeiro deles.
   se distinguem por não terem `filmTitle`), e escreve apóstrofo como `&#039;` — as entidades
   numéricas são decodificadas por faixa de dígitos, não caso a caso, porque um caso a menos vira um
   título errado na tela. Nota ausente é diferente de nota zero.
+- **GitHub**: a leitura é pela API **GraphQL**, numa chamada só para todos os repositórios, com um
+  alias por repositório, e traz as datas dos cem commits mais recentes de cada um nos últimos doze
+  meses, que viram o código de barras do cartão. Pela REST seriam três ou quatro chamadas por
+  repositório, e sem chave o limite dela é de 60 por hora por IP, dividido com tudo o que roda na
+  mesma máquina da Vercel. A GraphQL exige chave, e é por isso que o `GITHUB_TOKEN` é obrigatório: um
+  token *fine-grained* só com leitura de repositórios públicos basta. **Repositório privado nunca sai
+  da função**, mesmo que o token o enxergue, e o que deixou de existir volta `null` da API e some sem
+  derrubar os outros. A escolha chega pela query `repos`, validada como `dono/nome` antes de entrar no
+  texto da consulta, e a borda guarda a resposta por uma hora, porque número de repositório muda em
+  dias.
 
 ### A lista de favoritos é a parte mais frágil da parte mais frágil
 
@@ -135,8 +146,8 @@ Três decisões seguram o custo e o risco disso:
   escondido gasta para mostrar o que ninguém vê;
 - **erro não apaga o que já estava certo.** Uma falha no meio de uma repetição mantém os dados
   anteriores: o que estava tocando há trinta segundos é melhor resposta que uma seção vazia;
-- Música repete a cada 20s, Jogos a cada 60s, e **Filmes não repete**: um feed de filmes vistos não
-  muda enquanto alguém olha para ele.
+- Música repete a cada 20s, Jogos a cada 60s, e **Filmes e Projetos não repetem**: um feed de filmes vistos e um
+  repositório não mudam enquanto alguém olha para eles.
 
 `react-doctor/no-set-state-after-await-in-effect` **aponta este hook**, e é falso positivo conhecido,
 da mesma família do `AbortController` do `SpaceCanvas`. As duas escritas depois do `await` estão na

@@ -55,32 +55,42 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: clamp(11px, 1.9vmin, 19px);
+  /* entre o cabeçalho, o texto e os chips */
+  gap: var(--exp-bloco-gap, clamp(11px, 1.9vmin, 19px));
   min-width: 0;
 }
 
 /**
- * Período em número grande e quase invisível, atrás do texto. Dá a data em
- * escala sem gastar uma linha da ficha.
+ * A marca da empresa ou do projeto, no fundo da ficha.
+ *
+ * Ela ocupa o lugar que era do período, a 5% de branco, fora da régua de tokens
+ * como o número fantasma que estava ali. É mais apagada que ele (7,5%) porque um
+ * logo tem muito mais tinta que quatro algarismos finos: na mesma intensidade ela
+ * se lia por inteiro. É pintada **por máscara**, então o arquivo pode ser o logo
+ * colorido de terceiro e a ficha continua na paleta: o que chega à tela é só a
+ * silhueta, e nenhuma empresa precisa de uma versão branca do próprio logo.
+ *
+ * Fica à direita e centrada na altura, na faixa que `--exp-txt` deixa livre. No
+ * celular ela desce para o pé da ficha (ver a media query no fim do arquivo).
  */
-.fantasma {
+.marca {
   position: absolute;
-  top: -0.2em;
+  top: 50%;
   right: 0;
-  color: rgb(255 255 255 / 7.5%);
-  font-size: var(--exp-fantasma, clamp(40px, 8.4vmin, 90px));
-  font-weight: 200;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  /* `user-select` não aparece aqui: `<span>` já herda o `none` do `body` */
+  width: var(--exp-marca, 28%);
+  height: 76%;
+  background: rgb(255 255 255 / 5%);
+  mask: var(--marca) right center / contain no-repeat;
+  transform: translateY(-50%);
   pointer-events: none;
 }
 
 .cabecalho {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  /* o texto não invade o número fantasma à direita */
+  /* entre o cargo e o subtítulo */
+  gap: var(--exp-cab-gap, 10px);
+  /* o texto não invade a marca à direita */
   max-width: var(--exp-txt, 78%);
   min-width: 0;
 }
@@ -118,46 +128,46 @@
   border-radius: 50%;
 }
 
-.atividades {
-  display: flex;
-  flex-direction: column;
-  gap: 11px;
-  max-width: var(--exp-txt, 78%);
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+/**
+ * A empresa ou o projeto como link, quando a experiência tem endereço.
+ *
+ * Só um sublinhado de 1px, sem ícone: o subtítulo continua com o peso de
+ * subtítulo, e o link acende sob o ponteiro.
+ */
+.orgLink {
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--linha);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    color var(--dur-hover),
+    border-color var(--dur-hover);
 }
 
-.atividade {
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  min-width: 0;
+.orgLink:hover {
+  border-bottom-color: var(--linha-acesa);
+  color: var(--tx-titulo);
+}
+
+/**
+ * O texto da ficha, com o desenho da bio: parágrafo justificado e hifenizado,
+ * que é a regra de todo `<p>` da página (ver `tipografia.md`).
+ */
+.texto {
+  max-width: var(--exp-txt, 78%);
+  margin: 0;
   color: var(--tx-corpo);
   font-size: var(--fs-corpo);
   font-weight: 300;
-  line-height: 1.75;
+  line-height: 1.85;
   letter-spacing: 0.04em;
-  text-wrap: pretty;
-}
-
-.numero {
-  flex: none;
-  /* alinha a numeração com a primeira linha do texto, não com o topo da caixa */
-  padding-top: 0.42em;
-  color: var(--tx-apagado);
-  font-size: var(--fs-rotulo);
-  letter-spacing: 0.2em;
-  /* numeração da lista: copiar a atividade não deve trazer "01" junto */
-  user-select: none;
 }
 
 .chips {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
-  /* a stack cola no rodapé da ficha, qualquer que seja o número de atividades */
+  /* a stack cola no rodapé da ficha, qualquer que seja o tamanho do texto */
   margin-top: auto;
 }
 
@@ -185,4 +195,40 @@
 .chip:hover {
   border-color: var(--linha-acesa);
   color: var(--tx-titulo);
+}
+
+/**
+ * No celular a marca desce para o pé da ficha, centrada e logo acima dos chips.
+ *
+ * Ali o texto ocupa a largura inteira, e à direita ela ficava por baixo dele. No
+ * pé ela ocupa a folga que já sobrava entre o texto e a stack, e o tamanho dela é
+ * essa folga, com teto em `--exp-marca-h`: um texto mais longo come a folga e a
+ * marca encolhe, em vez de voltar a passar por baixo das letras.
+ *
+ * É a única mudança de layout da ficha que não cabe num token, como o
+ * `flex-direction` do crachá de Formação: ela sai da posição absoluta e entra no
+ * fluxo, entre o texto e os chips, por `order`.
+ */
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
+  .marca {
+    position: static;
+    order: 1;
+    flex: 1 1 0;
+    width: 100%;
+    height: auto;
+    max-height: var(--exp-marca-h, 88px);
+    /* a folga além do teto fica acima dela, e ela encosta nos chips */
+    margin-top: auto;
+    mask-position: center bottom;
+    transform: none;
+  }
+
+  .chips {
+    order: 2;
+  }
+
+  /* com marca, é ela quem leva a stack ao pé; sem ela, vale o `margin-top: auto` */
+  .marca ~ .chips {
+    margin-top: 0;
+  }
 }

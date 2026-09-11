@@ -27,7 +27,7 @@ export interface Orbit {
   ativo: number;
   girar: (delta: number) => void;
   focar: (i: number) => void;
-  geometria: (i: number, vaga: boolean) => Geometria;
+  geometria: (i: number) => Geometria;
 }
 
 /**
@@ -50,6 +50,12 @@ export function useOrbit(total: number): Orbit {
 
   const n = Math.max(1, total);
   const nRef = useRef(n);
+  /**
+   * Os cartões chegam depois da seção: eles vêm do GitHub, e o palco só existe
+   * quando há o que girar. O efeito do arraste precisa rodar de novo quando ele
+   * aparece, senão encontraria a ref vazia uma vez e nunca mais olharia.
+   */
+  const temCartoes = total > 0;
 
   // escrita num efeito, nunca no corpo: o render precisa ser puro e o React pode
   // descartá-lo (ver a nota longa em `NavMenu`)
@@ -141,11 +147,20 @@ export function useOrbit(total: number): Orbit {
       el.removeEventListener('pointercancel', cancelar);
       soltarEngolidor();
     };
-  }, [girar]);
+  }, [girar, temCartoes]);
+
+  /**
+   * **A órbita tem ao menos três lugares.** Com dois cartões e o círculo dividido
+   * por dois, o segundo ficaria a 180°, exatamente atrás do primeiro, e a seção
+   * pareceria ter um cartão só. Com três lugares ele fica ao lado, e o terceiro
+   * lugar fica vazio. A lista de projetos não tem mais tamanho fixo, e dois é um
+   * tamanho tão provável quanto qualquer outro.
+   */
+  const lugares = Math.max(n, 3);
 
   const geometria = useCallback(
-    (i: number, vaga: boolean): Geometria => {
-      const ang = ((i - ativo) * 2 * Math.PI) / n;
+    (i: number): Geometria => {
+      const ang = ((i - ativo) * 2 * Math.PI) / lugares;
       const sen = Math.sin(ang);
       const cos = Math.cos(ang);
       const prof = (cos + 1) / 2; // 1 na frente, 0 atrás
@@ -158,13 +173,13 @@ export function useOrbit(total: number): Orbit {
          * Piso alto de propósito: com n=3 a profundidade dos laterais é só .25 e
          * um falloff linear os apagaria por completo no céu preto.
          */
-        foco: Number((vaga ? 0.34 + 0.3 * prof : 0.52 + 0.48 * prof).toFixed(3)),
+        foco: Number((0.52 + 0.48 * prof).toFixed(3)),
         naFrente: i === ativo,
         // circular: com n=5, o cartão 4 está a um passo do cartão 0, não a quatro
         ordem: Math.min(Math.abs(i - ativo), n - Math.abs(i - ativo)),
       };
     },
-    [ativo, n],
+    [ativo, n, lugares],
   );
 
   return { palcoRef, ativo, girar, focar, geometria };

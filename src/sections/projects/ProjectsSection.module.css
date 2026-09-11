@@ -1,11 +1,13 @@
 /** Tokens do palco da órbita. */
 .secao {
-  --pcw: 308px; /* largura do cartão */
-  --pch: 436px; /* altura do cartão */
-  --pbh: 170px; /* altura do banner */
-  --ph: 470px; /* altura do palco */
+  --pcw: 560px; /* largura do bilhete */
+  --pch: 280px; /* altura do bilhete */
+  --pcanhoto: 150px; /* largura do canhoto, a peça menor do bilhete */
+  --pfolga: 10px; /* o espaço entre o corpo e o canhoto */
+  --pbarras: 34px; /* altura do código de barras de commits */
+  --ph: 312px; /* altura do palco */
   --pr: 300px; /* raio da órbita */
-  --pperspectiva: 1500px;
+  --pperspectiva: 1600px;
   --pcard: 18px; /* padding interno do cartão */
 }
 
@@ -74,27 +76,35 @@
   background-clip: content-box;
 }
 
-/* fecha a órbita para os cartões não passarem por baixo do menu fixo à direita */
+/**
+ * Fecha a órbita para os cartões não passarem por baixo do menu fixo à direita.
+ *
+ * Deitado, o bilhete é largo, e o lateral aparece além da borda do da frente
+ * por uma faixa, e não mais por inteiro: o raio é o que decide o tamanho dessa
+ * faixa, e o limite dele é o menu.
+ */
 @media (901px <= width <= 1200px) {
   .secao {
-    --pr: 225px;
+    --pcw: 480px;
+    --pr: 220px;
   }
 }
 
 @media (641px <= width <= 900px) {
   .secao {
-    --pcw: 268px;
-    --pr: 210px;
+    --pcw: 420px;
+    --pcanhoto: 124px;
+    --pr: 200px;
     --px: 40px;
   }
 }
 
+/* no celular o bilhete fica em pé (ver o módulo do cartão), e os tokens voltam a ser de coluna */
 @media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .secao {
-    --pcw: 236px;
-    --pch: 388px;
-    --pbh: 140px;
-    --ph: 400px;
+    --pcw: 300px;
+    --pch: 420px;
+    --ph: 436px;
     --pr: 150px;
     --pperspectiva: 900px;
     --pcard: 15px;
@@ -104,9 +114,9 @@
 /* paisagem curta; no mobile os valores acima já se adaptam sozinhos */
 @media (width > 640px) and (height <= 720px) and (orientation: landscape) {
   .secao {
-    --pch: 340px;
-    --pbh: 126px;
-    --ph: 352px;
+    --pch: 252px;
+    --pbarras: 26px;
+    --ph: 280px;
     --pcard: 14px;
   }
 }

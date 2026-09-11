@@ -1,10 +1,9 @@
-import type { Experiencia } from '~/content';
+import { LOGOS, urlExterna, type Experiencia } from '~/content';
 import { useT } from '~/i18n/useLanguage';
 import styles from './JourneyEntry.module.css';
 
-/** Bullets e chips exibidos por ficha. Além disso a ficha estoura a altura fixa do palco. */
-const MAX_BULLETS = 3;
-const MAX_STACK = 4;
+/** Chips exibidos por ficha. Além disso a ficha estoura a altura fixa do palco. */
+const MAX_STACK = 5;
 
 interface JourneyEntryProps {
   entrada: Experiencia;
@@ -15,52 +14,68 @@ interface JourneyEntryProps {
 /**
  * Ficha de um evento da trajetória.
  *
+ * O cargo, a empresa ou o projeto, um texto corrido e a stack. **O texto é um
+ * parágrafo, contado como a bio**, e não uma lista de atividades: três frases
+ * numeradas liam como relatório, e o que a ficha precisa passar é o que aquele
+ * trabalho foi, dito por quem o fez. O nome da empresa já está no subtítulo, e
+ * o texto não o repete.
+ *
+ * **O subtítulo vira link** quando a experiência tem endereço, marcado só pelo
+ * sublinhado. É o lugar natural para ele: o nome é a pergunta que o link
+ * responde.
+ *
+ * **No fundo fica a marca da empresa ou do projeto**, bem apagada, no lugar do
+ * período que ficava ali como número fantasma. A data continua na curva, que é
+ * onde ela organiza alguma coisa; na ficha ela só repetia o rótulo do nó, e a
+ * marca diz de quem era o trabalho.
+ *
  * Todas as fichas ficam sobrepostas (`inset: 0`) num palco de altura fixa e só a
  * ativa aparece — trocar de evento é uma transição de opacidade, sem rAF e sem
  * o palco mudando de altura a cada navegação.
  *
  * A ficha inativa sai da navegação por `pointer-events` e `inert`: um leitor de
- * tela não deve encontrar quatro empregos empilhados no mesmo lugar.
+ * tela não deve encontrar quatro empregos empilhados no mesmo lugar, e o link de
+ * uma ficha escondida não entra na tabulação.
  */
 export function JourneyEntry({ entrada, indice, ativa }: JourneyEntryProps) {
   const t = useT();
-  const bullets = entrada.bullets.slice(0, MAX_BULLETS);
   const stack = entrada.stack.slice(0, MAX_STACK);
+  const marca = entrada.logo ? LOGOS[entrada.logo] : undefined;
+  const endereco = urlExterna(entrada.url);
 
   return (
     <article className={styles.ficha} data-ativa={ativa || undefined} inert={!ativa}>
       <div className={styles.trilho}>
         <span className={styles.indice}>{String(indice + 1).padStart(2, '0')}</span>
         <span className={styles.risco} aria-hidden="true" />
-        <span className={styles.tipo}>{t.experiencia.tipos[entrada.tipo] ?? ''}</span>
+        <span className={styles.tipo}>{t.experiencia.tipos[entrada.tipo]}</span>
       </div>
 
       <div className={styles.conteudo}>
-        {/* o período como número fantasma atrás do cargo, sem competir com ele */}
-        <span className={styles.fantasma} aria-hidden="true">
-          {entrada.periodo}
-        </span>
+        {/* a marca é desenho: o nome dela já está escrito logo abaixo do cargo */}
+        {marca ? (
+          <span
+            className={styles.marca}
+            style={{ '--marca': `url("${marca}")` } as React.CSSProperties}
+            aria-hidden="true"
+          />
+        ) : null}
 
         <div className={styles.cabecalho}>
           <h3 className={styles.cargo}>{entrada.cargo}</h3>
           <span className={styles.org}>
             <span className={styles.ponto} aria-hidden="true" />
-            <span>{entrada.org}</span>
+            {endereco ? (
+              <a className={styles.orgLink} href={endereco} target="_blank" rel="noreferrer">
+                {entrada.org}
+              </a>
+            ) : (
+              <span>{entrada.org}</span>
+            )}
           </span>
         </div>
 
-        <ol className={styles.atividades}>
-          {bullets.map((b, i) => (
-            // a chave é o texto da atividade; o índice segue sendo o número que
-            // aparece na ficha, mas identidade e numeração são coisas diferentes
-            <li key={b} className={styles.atividade}>
-              <span className={styles.numero} aria-hidden="true">
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <span>{b}</span>
-            </li>
-          ))}
-        </ol>
+        <p className={styles.texto}>{entrada.texto}</p>
 
         <div className={styles.chips}>
           {stack.map((s) => (

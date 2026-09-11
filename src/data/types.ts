@@ -1,11 +1,11 @@
 /**
  * A forma dos dados remotos, do jeito que a interface os consome.
  *
- * **As seções nunca leem o JSON do provedor.** Spotify, Steam e Letterboxd
- * devolvem formas próprias, herdadas e cheias de campos que não interessam, e
- * cada um deles pode mudar a sua sem avisar. A função em `api/` normaliza, e é
- * este arquivo que as duas pontas leem: trocar de provedor, ou perder um deles,
- * fica sendo trabalho de uma função, não de uma seção inteira.
+ * **As seções nunca leem o JSON do provedor.** Spotify, Steam, Letterboxd e
+ * GitHub devolvem formas próprias, herdadas e cheias de campos que não
+ * interessam, e cada um deles pode mudar a sua sem avisar. A função em `api/`
+ * normaliza, e é este arquivo que as duas pontas leem: trocar de provedor, ou
+ * perder um deles, fica sendo trabalho de uma função, não de uma seção inteira.
  *
  * Tudo que é opcional aqui é opcional **de verdade**: o Letterboxd tem filme sem
  * nota, a Steam tem jogo sem arte, e o Spotify não está tocando nada na maior
@@ -106,6 +106,47 @@ export interface Filmes {
    * estado normal, não falha — o resto da seção continua de pé sozinho.
    */
   favoritos: Filme[];
+}
+
+/** Um repositório escolhido a dedo para a seção Projetos. */
+export interface Repositorio {
+  /** `dono/nome`, que é também a identidade na lista */
+  id: string;
+  /** o nome do repositório, do jeito que está no GitHub */
+  nome: string;
+  /** `null` quando o repositório não tem descrição */
+  descricao: string | null;
+  url: string;
+  /** o projeto no ar (`homepage`); `null` quando não há */
+  site: string | null;
+  estrelas: number;
+  forks: number;
+  /** commits no ramo padrão, desde o primeiro */
+  commits: number;
+  /**
+   * As datas (ISO 8601) dos commits dentro de `Projetos.janela`, dos mais
+   * recentes para trás, até 100. Cada uma vira um traço do código de barras do
+   * cartão.
+   */
+  datasRecentes: string[];
+  /** por tamanho, da maior para a menor; `fracao` é do código inteiro */
+  linguagens: { nome: string; fracao: number }[];
+  topicos: string[];
+  /** ISO 8601 */
+  criadoEm: string;
+  /** ISO 8601: o último push */
+  atualizadoEm: string;
+  arquivado: boolean;
+}
+
+export interface Projetos {
+  /**
+   * Os doze meses que o código de barras cobre, em ISO 8601. Vêm da função, e
+   * não do relógio do navegador, para que o desenho dependa só do dado.
+   */
+  janela: { de: string; ate: string };
+  /** na ordem da escolha, sem os privados e sem os que deixaram de existir */
+  repositorios: Repositorio[];
 }
 
 /** O que uma função de `api/` devolve quando não consegue responder. */

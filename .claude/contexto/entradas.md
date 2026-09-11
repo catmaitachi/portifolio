@@ -22,8 +22,8 @@ a cada volta*).
 | Contato | os canais chegam das laterais, o do meio primeiro | `ChannelCard.module.css` |
 
 Projetos sobe e Contato vem de lado — o curso é diferente, a gramática é a mesma. O cartão de
-projeto anda **120px** contra os 46 do canal, e não é exagero: ele tem 436px de altura, e um pulo de
-40px nele mal se lê. Distância de entrada acompanha o tamanho do elemento.
+projeto anda **72px** contra os 46 do canal, e não é exagero: ele tem 280px de altura, e um pulo de 30px nele
+mal se lê. Distância de entrada acompanha o tamanho do elemento.
 
 **As três seções de dado remoto penduram a entrada em `data-ativo`, não no mount.** É o mesmo
 mecanismo dos nós da Trajetória: o atributo aparece quando a seção vira a ativa, o `animation-name`

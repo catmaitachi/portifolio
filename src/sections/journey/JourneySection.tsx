@@ -55,29 +55,32 @@ export function JourneySection({ ativo, indice }: SectionProps) {
 
         <TimelineCurve lista={lista} linha={linha} ativo={ativo} />
 
-        {/* a ponta é desenhada, e não escrita: `←` e `→` não estão no subconjunto
-            de IBM Plex Mono que o Google Fonts serve, então caíam numa fonte de
-            sistema diferente em cada celular (ver `.ponta` em `section.module.css`) */}
-        <div className={styles.controles}>
-          <button
-            type="button"
-            className={styles.seta}
-            aria-label={t.experiencia.janela.anterior}
-            disabled={linha.noInicio}
-            onClick={() => linha.mudar(-1)}
-          >
-            <span className={comum.ponta} data-lado="antes" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className={styles.seta}
-            aria-label={t.experiencia.janela.posterior}
-            disabled={linha.noFim}
-            onClick={() => linha.mudar(1)}
-          >
-            <span className={comum.ponta} data-lado="depois" aria-hidden="true" />
-          </button>
-        </div>
+        {/* com um evento só não há para onde andar, e as duas setas ficariam
+            apagadas para sempre: é a regra da faixa que coube inteira. A ponta é
+            desenhada, e não escrita: `←` e `→` não estão no subconjunto de IBM
+            Plex Mono que o Google Fonts serve (ver `.ponta` em `section.module.css`) */}
+        {lista.length > 1 ? (
+          <div className={styles.controles}>
+            <button
+              type="button"
+              className={styles.seta}
+              aria-label={t.experiencia.janela.anterior}
+              disabled={linha.noInicio}
+              onClick={() => linha.mudar(-1)}
+            >
+              <span className={comum.ponta} data-lado="antes" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className={styles.seta}
+              aria-label={t.experiencia.janela.posterior}
+              disabled={linha.noFim}
+              onClick={() => linha.mudar(1)}
+            >
+              <span className={comum.ponta} data-lado="depois" aria-hidden="true" />
+            </button>
+          </div>
+        ) : null}
       </div>
     </section>
   );

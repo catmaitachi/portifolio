@@ -11,17 +11,13 @@
  * dá caráter é a ordem das duas coisas: a opacidade chega antes do movimento,
  * então o cartão se materializa no ar e só depois assenta.
  *
- * Mesma gramática da entrada dos canais de contato, que chegam das laterais: a
- * opacidade primeiro, o deslocamento depois, sem quique.
- *
- * O curso é **longo** de propósito — o cartão tem 436px de altura, e um pulo de
- * 40px nele mal se lê. A escala inicial entra pela mesma razão: não é o quique
- * que foi tirado daqui, é um só passo de aproximação, sem passar do ponto.
+ * O curso acompanha a altura do cartão. Em pé ele tinha 436px e subia 120; o
+ * bilhete deitado tem 280px e sobe 72, que é a mesma proporção.
  */
 @keyframes cartaoSobe {
   from {
     opacity: 0;
-    transform: translateY(120px) scale(0.93);
+    transform: translateY(72px) scale(0.95);
   }
 
   38% {
@@ -39,25 +35,30 @@
   position: absolute;
   top: 0;
   left: 50%;
-  width: var(--pcw, 308px);
-  height: var(--pch, 436px);
-  margin-left: calc(var(--pcw, 308px) / -2);
+  width: var(--pcw, 560px);
+  height: var(--pch, 280px);
+  margin-left: calc(var(--pcw, 560px) / -2);
   transition:
     transform 0.95s var(--ease-saida),
     opacity 0.8s ease;
 }
 
+/**
+ * O bilhete: o corpo à esquerda e o canhoto à direita, em duas peças.
+ *
+ * A grade é a única diferença de layout entre o desktop e o celular, e por isso
+ * mora aqui e não num token, como o `flex-direction` do crachá de Formação. No
+ * celular o bilhete fica em pé, com o canhoto embaixo.
+ */
 .cartao {
   position: relative;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--pcanhoto, 150px);
+  gap: var(--pfolga, 10px);
   height: 100%;
-  border: 1px solid var(--linha-forte);
-  border-radius: 2px;
-  overflow: hidden;
-  background: rgb(0 0 0 / 42%);
   cursor: pointer;
-  transition: border-color var(--dur-hover);
+  /* a fresta entre as duas peças não é do cartão: ver `.corpo, .canhoto` */
+  pointer-events: none;
 }
 
 /**
@@ -72,11 +73,40 @@
   animation: cartaoSobe 0.82s var(--ease-entrada) calc(var(--ordem, 0) * 175ms) backwards;
 }
 
-/* chanfro dos dois cantos opostos — ver "Cantos chanfrados" no CLAUDE.md */
+/**
+ * As duas peças do bilhete, cada uma com a própria borda e separadas por um
+ * espaço de verdade (`--pfolga`), como um canhoto já destacado.
+ *
+ * Só elas recebem o ponteiro. O clique na fresta passa para o que está atrás,
+ * que é a regra do cartão da frente logo abaixo: o que se vê é o que responde.
+ */
+.corpo,
+.canhoto {
+  border: 1px solid var(--linha-forte);
+  border-radius: 2px;
+  overflow: hidden;
+  background: rgb(0 0 0 / 42%);
+  pointer-events: auto;
+  transition: border-color var(--dur-hover);
+}
+
+/**
+ * Chanfro dos dois cantos opostos (ver "Cantos chanfrados" no CLAUDE.md), um em
+ * cada peça: o de cima à esquerda no corpo e o de baixo à direita no canhoto. É
+ * a silhueta de um cartão só, dividida em duas, e vale deitado e em pé.
+ */
 @supports (corner-shape: bevel) {
-  .cartao {
+  .corpo,
+  .canhoto {
     corner-shape: bevel;
-    border-radius: 18px 2px;
+  }
+
+  .corpo {
+    border-radius: 18px 2px 2px;
+  }
+
+  .canhoto {
+    border-radius: 2px 2px 18px;
   }
 }
 
@@ -85,184 +115,293 @@
  *
  * Opaco porque a órbita é fechada de propósito (o `--pr` foi reduzido para os
  * cartões não passarem sob o menu fixo), então a caixa deste cartão cobre um
- * pedaço dos vizinhos — 31% em janela média, 43% no mobile. Com o preto a 42% de
- * antes, o vizinho aparecia através dele: visível, e mesmo assim não clicável,
- * porque o clique ali é deste cartão. Prometer um alvo que não existe é pior que
- * escondê-lo — o que se vê do lateral agora é exatamente o que responde.
+ * pedaço dos vizinhos. Com o preto a 42% dos outros, o vizinho aparecia através
+ * dele: visível, e mesmo assim não clicável, porque o clique ali é deste cartão.
+ * O que se vê do lateral é exatamente o que responde.
  *
- * `grab` porque este cartão **é** a faixa de arraste da órbita (ver `useOrbit`):
- * o cursor precisa dizer onde o gesto vive, e o palco não pode dizê-lo porque a
- * maior parte dele não arrasta mais.
+ * A fresta entre as duas peças fica fora disso: ali o cartão não recebe o
+ * ponteiro, então o vizinho que aparece por ela é o vizinho que responde.
+ *
+ * `grab` porque este cartão **é** a faixa de arraste da órbita (ver `useOrbit`).
  */
 .cartao[data-frente] {
-  background: rgb(0 0 0 / 92%);
   cursor: grab;
+}
+
+.cartao[data-frente] > * {
+  background: rgb(0 0 0 / 92%);
 }
 
 .cartao[data-frente]:active {
   cursor: grabbing;
 }
 
-.cartao:hover {
+/* as duas peças acendem juntas: é um bilhete só */
+.cartao:hover > * {
   border-color: var(--linha-acesa);
 }
 
-/* vaga: reservada, não clicável para abrir */
-.cartao[data-vaga] {
-  border-style: dashed;
-}
-
-/* a vaga não leva a lugar nenhum, mas arrasta como qualquer cartão da frente */
-.cartao[data-vaga][data-frente] {
-  cursor: grab;
-}
-
-.cartao[data-vaga][data-frente]:active {
-  cursor: grabbing;
-}
-
-.banner {
-  position: relative;
-  flex: none;
-  height: var(--pbh, 170px);
-  border-bottom: 1px solid var(--linha);
-  overflow: hidden;
-}
-
-/* escurece topo e base para o índice e o glifo lerem sobre qualquer imagem */
-.scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgb(0 0 0 / 60%), transparent 44%, rgb(0 0 0 / 34%));
-  pointer-events: none;
-}
-
-.bannerTopo {
-  position: absolute;
-  top: 12px;
-  right: 14px;
-  left: 14px;
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  justify-content: space-between;
-  pointer-events: none;
-}
-
-.numero {
-  color: var(--tx-corpo);
-  font-size: 26px;
-  font-weight: 300;
-  line-height: 1;
-  letter-spacing: 0.06em;
-}
-
-.glifo {
-  position: relative;
-  flex: none;
-  width: 28px;
-  height: 28px;
-}
-
-.glifo > span:first-child {
-  position: absolute;
-  inset: 0;
-  border: 1px solid rgb(255 255 255 / 50%);
-}
-
-.glifo > span:last-child {
-  position: absolute;
-  inset: 7px;
-  border: 1px solid rgb(255 255 255 / 30%);
-}
+/* ---------- o corpo ---------- */
 
 .corpo {
   display: flex;
-  flex: 1;
   flex-direction: column;
-  gap: clamp(9px, 1.3vmin, 13px);
+  gap: 11px;
+  min-width: 0;
   min-height: 0;
-  padding: var(--pcard, 18px);
+  padding: var(--pcard, 18px) calc(var(--pcard, 18px) + 4px) var(--pcard, 18px) var(--pcard, 18px);
 }
 
-.tituloBloco {
+/* o número e o dono, como a origem escrita no alto de um bilhete */
+.topo {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  align-items: baseline;
   min-width: 0;
+}
+
+/**
+ * O número do cartão, no canto onde ficava um marcador geométrico. É a posição
+ * na órbita, escrita como o índice da ficha da Trajetória.
+ */
+.indice {
+  flex: none;
+  color: var(--tx-corpo);
+  font-size: var(--fs-pequeno);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+.dono {
+  overflow: hidden;
+  color: var(--tx-apagado);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-etiqueta);
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.arquivado {
+  margin-left: auto;
 }
 
 .nome {
   margin: 0;
   color: var(--tx-titulo);
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 400;
-  line-height: 1.2;
-  letter-spacing: 0.16em;
+  line-height: 1.15;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+  /* nome de repositório não tem espaço garantido: quebra onde precisar */
+  overflow-wrap: anywhere;
 }
 
+/**
+ * A descrição do repositório, em até duas linhas.
+ *
+ * Ela é escrita no GitHub, sem pensar no cartão, e pode ter qualquer tamanho; o
+ * cartão tem altura fixa para não mudar de geometria no giro.
+ */
 .linha {
+  display: -webkit-box;
+  overflow: hidden;
   color: var(--tx-apoio);
   font-size: var(--fs-pequeno);
   font-weight: 300;
   line-height: 1.6;
   letter-spacing: 0.05em;
   text-wrap: pretty;
-  /* linha de resumo sob o nome: é conteúdo, e `<span>` não entra na regra global */
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  /* resumo sob o nome do projeto: é conteúdo, e `<span>` não entra na regra global */
   user-select: text;
 }
 
-.meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  color: var(--tx-rotulo);
-  font-size: var(--fs-meta);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-}
-
 .stack {
-  min-height: 12px;
   color: var(--tx-rotulo);
   font-size: var(--fs-meta);
   font-weight: 300;
   line-height: 1.5;
   letter-spacing: 0.14em;
-  text-wrap: pretty;
 }
 
-/**
- * O pé do cartão: a barra, e embaixo dela o estado e o link nas duas pontas.
- *
- * `margin-top: auto` cola o bloco no fundo do cartão qualquer que seja o texto
- * acima, e é o que mantém os três cartões com o pé alinhado enquanto giram.
- */
-.rodape {
+/* o código de barras cola no pé do corpo, qualquer que seja o texto acima */
+.ritmo {
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 8px;
   margin-top: auto;
 }
 
-.linhaFim {
+.barras {
+  display: block;
+  width: 100%;
+  height: var(--pbarras, 34px);
+  overflow: visible;
+}
+
+.barras path {
+  fill: none;
+  stroke: var(--tx-apoio);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+/* a base é tracejada: é o apoio dos traços, e não uma linha de dado */
+.barras .base {
+  stroke: var(--linha);
+  stroke-dasharray: 2 3;
+}
+
+.ritmoLegenda {
   display: flex;
-  gap: 12px;
-  align-items: baseline;
+  gap: 10px;
+  align-items: center;
   justify-content: space-between;
+  color: var(--tx-apagado);
+  font-size: var(--fs-micro);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-etiqueta);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ritmoLegenda > :nth-child(2) {
+  overflow: hidden;
+  color: var(--tx-rotulo);
+  text-overflow: ellipsis;
 }
 
 /**
- * O link para ver o projeto, agora no corpo do cartão.
+ * As linguagens: uma barra de 1px dividida pelo tamanho de cada uma.
  *
- * Ele existe nos três cartões para que todos tenham a mesma altura de corpo, e
- * **só o da frente responde**: fora dela ele sai da tabulação (no componente) e
- * do ponteiro (aqui), porque ali o clique é do cartão, que gira a órbita. Sem
- * isso, apontar um cartão lateral prometeria um alvo que o giro vai levar
- * embora.
+ * É o medidor da página com trechos no lugar do preenchimento, e a cor de cada
+ * trecho é um degrau de branco, porque a paleta não tem outra coisa. A amostra
+ * na legenda repete o degrau do trecho, e é ela que liga um ao outro.
  */
-.aoVivo {
+.linguagens {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.barra {
+  display: flex;
+  gap: 2px;
+  height: 1px;
+}
+
+.barra > span {
+  flex-basis: 0;
+  min-width: 2px;
+  background: var(--linha);
+}
+
+.barra > span:nth-child(1),
+.lingua:nth-child(1) .amostra {
+  background: var(--linha-cheia);
+}
+
+.barra > span:nth-child(2),
+.lingua:nth-child(2) .amostra {
+  background: var(--tx-apoio);
+}
+
+.barra > span:nth-child(3),
+.lingua:nth-child(3) .amostra {
+  background: var(--tx-marcador);
+}
+
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 14px;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.lingua {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.amostra {
+  display: block;
+  flex: none;
+  width: 8px;
+  height: 1px;
+  background: var(--linha);
+}
+
+.fracao {
+  color: var(--tx-apagado);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- o canhoto ---------- */
+
+/* o canhoto: os dados em cima e os links no pé */
+.canhoto {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+  min-height: 0;
+  padding: var(--pcard, 18px);
+}
+
+/* os números do repositório: rótulo apagado e valor aceso, como no pé do crachá */
+.dados {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.dado {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.rotulo {
+  color: var(--tx-apagado);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-etiqueta);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.valor {
+  color: var(--tx-forte);
+  font-size: var(--fs-controle);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+  margin-top: auto;
+}
+
+/**
+ * Os links do cartão: o código e, quando existe, o projeto no ar.
+ *
+ * Eles existem em todos os cartões para que a geometria seja a mesma, e **só o
+ * da frente responde**: fora dela eles saem da tabulação (no componente) e do
+ * ponteiro (aqui), porque ali o clique é do cartão, que gira a órbita.
+ */
+.link {
   flex: none;
   padding-bottom: 3px;
   border-bottom: 1px solid var(--linha-forte);
@@ -270,17 +409,44 @@
   font-size: var(--fs-meta);
   letter-spacing: var(--ls-etiqueta);
   text-transform: uppercase;
+  white-space: nowrap;
   pointer-events: none;
   transition:
     color var(--dur-hover),
     border-color var(--dur-hover);
 }
 
-.cartao[data-frente] .aoVivo {
+.cartao[data-frente] .link {
   pointer-events: auto;
 }
 
-.aoVivo:hover {
+.link:hover {
   border-bottom-color: var(--tx-titulo);
   color: var(--tx-titulo);
+}
+
+/**
+ * No celular o bilhete fica **em pé**: o corpo em cima e o canhoto embaixo, com
+ * o mesmo espaço entre os dois. Deitado, numa tela de 375px, o corpo ficaria
+ * com duzentos pixels e a descrição viraria uma coluna de uma palavra por linha.
+ */
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
+  .cartao {
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .linha {
+    -webkit-line-clamp: 3;
+  }
+
+  .dados {
+    flex-flow: row wrap;
+    gap: 11px 20px;
+  }
+
+  .links {
+    flex-direction: row;
+    justify-content: space-between;
+  }
 }

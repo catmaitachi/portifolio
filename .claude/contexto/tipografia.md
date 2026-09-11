@@ -20,7 +20,7 @@ As exceções moram no módulo de quem as pede, nunca no global:
 |---|---|---|
 | `section.module.css → .indice` | `none` | é `<p>` por semântica, mas lê como marcador: ninguém copia "01" |
 | `HeroSection → .etiqueta` | `none` | ornamento do nome, entre dois riscos |
-| `JourneyEntry → .numero` | `none` | copiar a atividade não deve trazer a numeração junto |
+
 | `JourneyEntry → .org` | `text` | subtítulo do cargo, e `<span>` não entra na regra global |
 | `ProjectCard → .linha` | `text` | idem, resumo sob o nome do projeto |
 | `ContactSection → .email` | `text` | é um `<a>`, e existe justamente para ser copiado |
@@ -60,6 +60,6 @@ não são texto corrido:
 | `section.module.css → .indice` | `text-align: left` + `hyphens: manual` — lê como marcador |
 | `HeroSection → .etiqueta` | idem; uma palavra só, e não há por que parti-la ao meio |
 
-Ficam de fora por não serem `<p>`: os títulos, os chips, os rótulos do HUD e os `<li>` das
-atividades da Trajetória — frases de uma linha, onde justificar não muda nada e hifenizar só
-introduziria hífen.
+Ficam de fora por não serem `<p>`: os títulos, os chips e os rótulos do HUD, frases de uma linha,
+onde justificar não muda nada e hifenizar só introduziria hífen. O texto da ficha da Trajetória é
+`<p>`, e justifica como a bio.
