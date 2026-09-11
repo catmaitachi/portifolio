@@ -369,16 +369,21 @@ projeto como subtítulo, um parágrafo de texto e a stack em chips de 1px.
   acende sob o ponteiro, sem ícone. O nome é a pergunta que o link responde, e é por isso que ele mora
   ali, e não num botão à parte.
 - **No celular o cabeçalho e o texto se afastam um pouco mais** (`--exp-cab-gap` e
-  `--exp-bloco-gap`). Ali o texto corre na largura inteira, sem a marca ao lado, e com o espaçamento
+  `--exp-bloco-gap`). Ali o texto corre na largura inteira, e com o espaçamento
   de desktop cargo, subtítulo e parágrafo liam como um bloco só.
-- **No fundo fica a marca da empresa ou do projeto**, no lugar do período, que ficava ali como número
-  fantasma. A data continua na curva, onde organiza alguma coisa; na ficha ela só repetia o rótulo do
-  nó. A marca é pintada **por máscara**, a 5% de branco, então o arquivo pode ser o logo colorido da
-  empresa e o que chega à tela é só a silhueta. Ela é mais apagada que o número era (7,5%) porque um
-  logo tem muito mais tinta que quatro algarismos finos. **No celular ela desce para o pé da ficha**,
-  centrada e logo acima dos chips: ali o texto ocupa a largura inteira e passava por cima dela. O
-  tamanho dela é a folga entre o texto e a stack, com teto em `--exp-marca-h`, então um texto mais
-  longo a encolhe em vez de voltar a cobri-la.
+- **No canto de cima à direita fica a marca da empresa ou do projeto**, ao lado do cargo e do
+  subtítulo e com a altura dos dois, no lugar do período, que ficava na ficha como número fantasma. A
+  data continua na curva, onde organiza alguma coisa; na ficha ela só repetia o rótulo do nó. A marca
+  é pintada **por máscara**, em `--tx-marcador`, então o arquivo pode ser o logo colorido da empresa e
+  o que chega à tela é só a silhueta. Como fundo grande ela ficava a 5%, e ao lado do cargo esse tom a
+  deixava quase invisível.
+
+  O conteúdo da ficha é uma grade: o cabeçalho e a marca dividem a primeira linha, e a marca estica
+  até a altura dela, com a largura num teto (`--exp-marca-w`) em que o logo cabe por `contain`. Ela
+  já foi duas outras coisas. Primeiro um fundo grande à direita, centrado na altura da ficha, e no
+  celular o texto passava por cima dela; depois o pé da ficha, acima dos chips, onde o tamanho era a
+  folga que o texto deixava, e um parágrafo mais longo a reduzia a quase nada. Ao lado do cabeçalho o
+  tamanho não depende do texto, e o lugar é o mesmo em qualquer tela.
 - **Com um evento só, as setas não aparecem**, pela regra da faixa que coube inteira: duas setas
   apagadas para sempre seriam controle sem função. A curva continua, com o nó sozinho no centro.
 

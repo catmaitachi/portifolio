@@ -114,7 +114,7 @@ export interface Experiencia {
   /** até 5 são exibidos */
   stack: string[];
   /**
-   * Casa com uma chave de LOGOS (assets.ts): a marca apagada no fundo da ficha.
+   * Casa com uma chave de LOGOS (assets.ts): a marca apagada no canto da ficha.
    * Ausente = ficha sem marca.
    */
   logo?: string;

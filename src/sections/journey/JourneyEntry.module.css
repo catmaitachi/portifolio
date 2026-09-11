@@ -51,47 +51,52 @@
   transform: rotate(180deg);
 }
 
+/**
+ * O conteúdo é uma grade: o cabeçalho e a marca dividem a primeira linha, e o
+ * texto e os chips ocupam a largura inteira embaixo. A última linha fica com a
+ * sobra da ficha, e a stack assenta no pé dela, qualquer que seja o tamanho do
+ * texto.
+ */
 .conteudo {
-  position: relative;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  grid-template-columns: minmax(0, 1fr) auto;
   /* entre o cabeçalho, o texto e os chips */
   gap: var(--exp-bloco-gap, clamp(11px, 1.9vmin, 19px));
+  column-gap: 16px;
   min-width: 0;
 }
 
 /**
- * A marca da empresa ou do projeto, no fundo da ficha.
+ * A marca da empresa ou do projeto, no canto de cima à direita da ficha.
  *
- * Ela ocupa o lugar que era do período, a 5% de branco, fora da régua de tokens
- * como o número fantasma que estava ali. É mais apagada que ele (7,5%) porque um
- * logo tem muito mais tinta que quatro algarismos finos: na mesma intensidade ela
- * se lia por inteiro. É pintada **por máscara**, então o arquivo pode ser o logo
+ * Ela divide a primeira linha da grade com o cargo e o subtítulo e estica até a
+ * altura dos dois; a largura é um teto (`--exp-marca-w`) dentro do qual o logo
+ * cabe por `contain`. Ela já foi um fundo grande à direita, centrado na altura da
+ * ficha, e no celular o texto passava por cima dela; depois foi o pé da ficha,
+ * onde o tamanho era a folga que o texto deixava. Ao lado do cabeçalho o tamanho
+ * não depende do texto, e o lugar é o mesmo em qualquer tela.
+ *
+ * A cor é `--tx-marcador`, o degrau mais apagado da régua de texto. Como fundo
+ * grande ela ficava a 5%, fora da régua, e nesse tamanho, ao lado do cargo, os
+ * 5% a deixavam quase invisível. É pintada **por máscara**, então o arquivo pode ser o logo
  * colorido de terceiro e a ficha continua na paleta: o que chega à tela é só a
  * silhueta, e nenhuma empresa precisa de uma versão branca do próprio logo.
- *
- * Fica à direita e centrada na altura, na faixa que `--exp-txt` deixa livre. No
- * celular ela desce para o pé da ficha (ver a media query no fim do arquivo).
  */
 .marca {
-  position: absolute;
-  top: 50%;
-  right: 0;
-  width: var(--exp-marca, 28%);
-  height: 76%;
-  background: rgb(255 255 255 / 5%);
+  grid-area: 1 / 2;
+  width: var(--exp-marca-w, 96px);
+  background: var(--tx-marcador);
   mask: var(--marca) right center / contain no-repeat;
-  transform: translateY(-50%);
   pointer-events: none;
 }
 
 .cabecalho {
   display: flex;
+  grid-area: 1 / 1;
   flex-direction: column;
   /* entre o cargo e o subtítulo */
   gap: var(--exp-cab-gap, 10px);
-  /* o texto não invade a marca à direita */
-  max-width: var(--exp-txt, 78%);
   min-width: 0;
 }
 
@@ -154,6 +159,7 @@
  * que é a regra de todo `<p>` da página (ver `tipografia.md`).
  */
 .texto {
+  grid-column: 1 / -1;
   max-width: var(--exp-txt, 78%);
   margin: 0;
   color: var(--tx-corpo);
@@ -166,9 +172,10 @@
 .chips {
   display: flex;
   flex-wrap: wrap;
+  grid-column: 1 / -1;
   gap: 7px;
   /* a stack cola no rodapé da ficha, qualquer que seja o tamanho do texto */
-  margin-top: auto;
+  align-self: end;
 }
 
 .chip {
@@ -197,38 +204,3 @@
   color: var(--tx-titulo);
 }
 
-/**
- * No celular a marca desce para o pé da ficha, centrada e logo acima dos chips.
- *
- * Ali o texto ocupa a largura inteira, e à direita ela ficava por baixo dele. No
- * pé ela ocupa a folga que já sobrava entre o texto e a stack, e o tamanho dela é
- * essa folga, com teto em `--exp-marca-h`: um texto mais longo come a folga e a
- * marca encolhe, em vez de voltar a passar por baixo das letras.
- *
- * É a única mudança de layout da ficha que não cabe num token, como o
- * `flex-direction` do crachá de Formação: ela sai da posição absoluta e entra no
- * fluxo, entre o texto e os chips, por `order`.
- */
-@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
-  .marca {
-    position: static;
-    order: 1;
-    flex: 1 1 0;
-    width: 100%;
-    height: auto;
-    max-height: var(--exp-marca-h, 88px);
-    /* a folga além do teto fica acima dela, e ela encosta nos chips */
-    margin-top: auto;
-    mask-position: center bottom;
-    transform: none;
-  }
-
-  .chips {
-    order: 2;
-  }
-
-  /* com marca, é ela quem leva a stack ao pé; sem ela, vale o `margin-top: auto` */
-  .marca ~ .chips {
-    margin-top: 0;
-  }
-}

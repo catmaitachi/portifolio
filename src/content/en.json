@@ -162,7 +162,7 @@
         "url": "https://clinplay.com",
         "periodo": "2026.06",
         "tipo": "extensao",
-        "texto": "A gamified, accessible physiotherapy platform that follows the patient outside the clinic. As Scrum Master, I guided the team through the backlog and the ceremonies, and closed the scope of each sprint.",
+        "texto": "A gamified, accessible physiotherapy platform that follows the patient outside the clinic. As Scrum Master, I led the team through requirements elicitation and the backlog, and closed the scope of each sprint. I also worked as a full-stack developer: I did the design and much of the implementation of the front end and the back end, and modeled the data the platform runs on.",
         "stack": ["React", "TypeScript", "Java", "Spring Boot"],
         "logo": "clinplay"
       }

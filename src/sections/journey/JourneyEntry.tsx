@@ -24,10 +24,11 @@ interface JourneyEntryProps {
  * sublinhado. É o lugar natural para ele: o nome é a pergunta que o link
  * responde.
  *
- * **No fundo fica a marca da empresa ou do projeto**, bem apagada, no lugar do
- * período que ficava ali como número fantasma. A data continua na curva, que é
- * onde ela organiza alguma coisa; na ficha ela só repetia o rótulo do nó, e a
- * marca diz de quem era o trabalho.
+ * **No canto de cima à direita fica a marca da empresa ou do projeto**, bem
+ * apagada e com a altura do cargo e do subtítulo, no lugar do período que ficava
+ * na ficha como número fantasma. A data continua na curva, que é onde ela
+ * organiza alguma coisa; na ficha ela só repetia o rótulo do nó, e a marca diz
+ * de quem era o trabalho.
  *
  * Todas as fichas ficam sobrepostas (`inset: 0`) num palco de altura fixa e só a
  * ativa aparece — trocar de evento é uma transição de opacidade, sem rAF e sem
