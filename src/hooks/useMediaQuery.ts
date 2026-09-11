@@ -30,5 +30,8 @@ export function useMediaQuery(consulta: string): boolean {
   return combina;
 }
 
-/** O `≤640px` do resto da página: onde o layout vira coluna. */
-export const TELA_ESTREITA = '(width <= 640px)';
+/**
+ * A mesma faixa do CSS: onde o layout vira coluna. Celular (`≤640px`) e tablet
+ * em pé até 1024px; o tablet deitado fica com o layout de desktop.
+ */
+export const TELA_ESTREITA = '(width <= 640px), (orientation: portrait) and (width <= 1024px)';

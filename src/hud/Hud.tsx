@@ -7,11 +7,12 @@ import styles from './Hud.module.css';
  * coincida com o horizonte do buraco negro** (28vmin) — os dois círculos são a
  * mesma circunferência, um em CSS e outro em canvas.
  *
- * Cronograma da abertura, contado a partir do carregamento:
- *   0–1.5s   zoom out da câmera (canvas)
- *   1.5–2.9s anéis se formam de baixo para cima, do interno ao externo,
- *            0.22s entre eles (`ringIn` com `clip-path`)
- *   2.9s     mira surge e passa a pulsar em cascata
+ * Cronograma da abertura, contado a partir do carregamento. Os instantes moram
+ * em `--abertura-*`, no `reset.css`, e o zoom em `DURACAO.cameraZoom`:
+ *   0–1.2s     zoom out da câmera (canvas)
+ *   0.75–1.7s  anéis se formam de baixo para cima, do interno ao externo,
+ *              0.12s entre eles (`ringIn` com `clip-path`)
+ *   1.35s      mira surge e, assentada, passa a pulsar em cascata
  *
  * Tudo em `transform` e `clip-path`: o compositor da GPU resolve, a CPU não
  * participa de nenhum quadro.

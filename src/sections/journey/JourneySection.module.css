@@ -40,20 +40,20 @@
   justify-content: center;
   margin: 0;
   padding: 0;
-  border: 1px solid rgb(255 255 255 / 38%);
+  border: 1px solid var(--linha-acesa);
   border-radius: 2px;
   background: rgb(255 255 255 / 6%);
-  color: rgb(255 255 255 / 94%);
+  color: var(--tx-hover);
 
   /* a ponta é desenhada (ver `.ponta` em `section.module.css`), não escrita */
   --ponta: 9px;
   cursor: pointer;
   appearance: none;
   transition:
-    border-color 0.4s,
-    background-color 0.4s,
-    color 0.4s,
-    opacity 0.4s;
+    border-color var(--dur-hover),
+    background-color var(--dur-hover),
+    color var(--dur-hover),
+    opacity var(--dur-hover);
 }
 
 /* chanfro dos dois cantos opostos — ver "Cantos chanfrados" no CLAUDE.md */
@@ -65,9 +65,9 @@
 }
 
 .seta:hover:not(:disabled) {
-  border-color: rgb(255 255 255 / 78%);
+  border-color: var(--linha-cheia);
   background: rgb(255 255 255 / 12%);
-  color: #fff;
+  color: var(--tx-titulo);
 }
 
 /* nas pontas o botão apaga em vez de sumir: a posição continua legível.
@@ -78,7 +78,7 @@
   cursor: default;
 }
 
-@media (width <= 640px) {
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .secao {
     --exph: 322px;
     --exp-cargo: 16px;
@@ -93,7 +93,7 @@
 }
 
 /* paisagem curta; no mobile os valores acima já se adaptam sozinhos */
-@media (width > 640px) and (height <= 720px) {
+@media (width > 640px) and (height <= 720px) and (orientation: landscape) {
   .secao {
     --exph: 210px;
     --exp-curva: 80px;

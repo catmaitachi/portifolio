@@ -63,32 +63,36 @@
   opacity: 1;
 }
 
+/**
+ * Os instantes vêm de `--abertura-*`, em `reset.css`: o cronograma inteiro da
+ * abertura mora lá, e mudar o ritmo dela é mexer num lugar só.
+ */
 .anel {
   position: absolute;
   /* os anéis se formam de baixo para cima, do interno ao externo */
-  animation: ringIn 0.75s cubic-bezier(0.3, 0.7, 0.2, 1) both;
+  animation: ringIn 0.6s var(--ease-saida) both;
 }
 
 .anel1 {
   inset: 33%;
-  animation-delay: 1.5s;
+  animation-delay: var(--abertura-aneis);
 }
 
 .anel2 {
   inset: 20%;
-  animation-delay: 1.72s;
+  animation-delay: calc(var(--abertura-aneis) + var(--abertura-passo));
 }
 
 .anel3 {
   inset: 9%;
-  animation-delay: 1.94s;
+  animation-delay: calc(var(--abertura-aneis) + 2 * var(--abertura-passo));
 }
 
 .anelExterno {
   inset: 0;
   border: 1px solid rgb(255 255 255 / 16%);
   border-radius: 50%;
-  animation-delay: 2.16s;
+  animation-delay: calc(var(--abertura-aneis) + 3 * var(--abertura-passo));
 }
 
 .giraCCW60,
@@ -119,12 +123,12 @@
   overflow: visible;
 }
 
-/* mira: surge junto e pulsa em cascata, 0.65s entre os ticks */
+/* mira: surge junto e, assentada, pulsa em cascata, 0.65s entre os ticks */
 .tick {
   position: absolute;
   background: rgb(255 255 255 / 60%);
   animation:
-    miraIn 0.5s ease-out 2.9s both,
+    miraIn 0.4s ease-out var(--abertura-mira) both,
     tickPulse 2.6s ease-in-out infinite;
 }
 
@@ -145,21 +149,21 @@
 .tickTopo {
   top: -4px;
   background: rgb(255 255 255 / 80%);
-  animation-delay: 2.9s, 3.4s;
+  animation-delay: var(--abertura-mira), calc(var(--abertura-mira) + 0.4s);
 }
 
 .tickBase {
   bottom: -4px;
-  animation-delay: 2.9s, 4.05s;
+  animation-delay: var(--abertura-mira), calc(var(--abertura-mira) + 1.05s);
 }
 
 .tickEsq {
   left: -4px;
-  animation-delay: 2.9s, 4.7s;
+  animation-delay: var(--abertura-mira), calc(var(--abertura-mira) + 1.7s);
 }
 
 .tickDir {
   right: -4px;
   background: rgb(255 255 255 / 80%);
-  animation-delay: 2.9s, 5.35s;
+  animation-delay: var(--abertura-mira), calc(var(--abertura-mira) + 2.35s);
 }

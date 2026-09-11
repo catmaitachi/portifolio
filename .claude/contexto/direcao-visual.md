@@ -1,7 +1,8 @@
 ## Direção visual
 
 - Preto profundo, **paleta estritamente monocromática** (preto/branco). Sem cor, sem gradiente
-  colorido. A única exceção é o vermelho da marca UFMG, que é logo de terceiro.
+  colorido. As exceções são identidade de terceiro: os banners de projeto e as capas, artes e
+  pôsteres das seções de dado remoto.
 - Estética sci-fi/HUD minimalista: linhas de 1px, tracejados finos, tipografia mono
   (IBM Plex Mono 200/300/400).
 - Tudo sutil. A intensidade foi reduzida várias vezes na fase de design (nebulosa, halo, borda do
@@ -12,6 +13,34 @@
   luminância média — uma parede de bolhas, com o preto profundo virado cinza. Hoje são 0,09%. Se o
   fundo voltar a clarear, o botão é `GLOW_ALPHA` em `engine/star.ts`, e depois dele a densidade
   do `Starfield`.
+
+### Tokens: a régua é uma só
+
+Cor, tipo e tempo moram em `:root`, no `reset.css`, e os módulos escolhem um degrau. Antes cada
+módulo escrevia o seu número: eram cerca de quarenta níveis de branco só para texto, seis curvas de
+tempo e sete tamanhos de rótulo entre 7px e 9,5px, com diferenças que ninguém via e que só serviam
+para sair de sincronia.
+
+| Família | Tokens |
+|---|---|
+| texto | `--tx-titulo` (#fff), `--tx-hover` 90%, `--tx-forte` 82%, `--tx-corpo` 66%, `--tx-apoio` 50%, `--tx-rotulo` 40%, `--tx-apagado` 32%, `--tx-marcador` 24% |
+| linha | `--linha-sutil` 10%, `--linha` 14%, `--linha-forte` 24%, `--linha-acesa` 36%, `--linha-foco` 55%, `--linha-cheia` 78%, e o fundo `--fundo-sutil` 4% |
+| tipo | `--fs-micro` 7,5px, `--fs-rotulo` 8,5px, `--fs-meta` 9px, `--fs-controle` 10px, `--fs-pequeno` 11px; fluidos `--fs-lista`, `--fs-corpo` e `--fs-destaque`; versalete `--ls-rotulo` (.28em) e `--ls-etiqueta` (.22em) |
+| tempo | `--dur-hover` .35s, `--dur-retorno` .55s, `--ease-saida` (toda transição) e `--ease-entrada` (toda entrada) |
+| abertura | `--abertura-*`, o cronograma inteiro (ver `hud.md`) |
+| HUD | `--hud-borda` e `--hud-fundo`, os recuos das peças (ver `responsivo.md`) |
+
+Três regras decorrem disso:
+
+- **Os nomes dizem o papel.** Um rótulo novo usa `--tx-rotulo`, sem escolher um número. É o que deixa
+  o `prefers-contrast: more` subir todos os textos redefinindo só os tokens (ver
+  `acessibilidade.md`).
+- **O estado muda pela cor quando o elemento é texto ou desenho em `currentcolor`**, e pela
+  opacidade só quando é imagem. O menu de seções era as duas coisas ao mesmo tempo, uma cor a 55%
+  num elemento a 50%, e ficava em 27% de branco por um caminho que nenhuma outra peça usava.
+- **Fica fora da régua o que tem motivo próprio escrito onde está**: o degradê do nome e da barra de
+  Música, o número fantasma da Trajetória (7,5%), os anéis e a mira do HUD, os glifos do cartão de
+  projeto e a curva da onda de entrada da Trajetória.
 
 ### Cantos chanfrados
 
@@ -27,8 +56,16 @@ opostos dá direção ao bloco; nos quatro, a caixa vira um losango achatado e s
 | `DiplomaCard → .cracha` | 18px |
 | `DiplomaCard → .selo` | 7px |
 | `FilmsSection → .posto` | 6px |
+| `FilmsSection → .poster` | 12px |
+| `FilmsSection → .revisita` | 4px |
+| `GamesSection → .destaque` | 14px |
+| `GamesSection → .arte` | 12px |
+| `GamesSection → .capa` | 12px |
+| `MusicSection → .destaque` | 14px |
+| `MusicSection → .capa` | 10px |
 | `JourneySection → .seta` | 9px |
 | `JourneyEntry → .chip` | 6px |
+| `ModeHeader → .lista` | 6px |
 
 O tamanho acompanha o elemento: um chanfro fixo lê como recorte de canto num cartão grande e como
 caixa amassada num chip de 21px de altura. **Nunca passar de metade do lado menor.**
@@ -43,9 +80,8 @@ A implementação é `corner-shape: bevel` + `border-radius: <chanfro> 2px`, den
   `border-radius` grande e mostraria cantos bem arredondados — o oposto da estética de linha reta.
   Dentro do `@supports`, quem não tem a propriedade fica com os 2px de hoje.
 - **A borda de 1px acompanha o corte sozinha**, e o mesmo vale para `border-style: dashed` (vaga,
-  pretensão, canal sem `url`) e para o `overflow: hidden` do cartão e do retrato. Nada disso
-  precisou de regra extra.
-
+  canal sem `url`) e para o `overflow: hidden` do cartão e do retrato. Nada disso precisou de
+  regra extra.
 Ficam **de fora**, e por motivo: os campos do formulário de contato (`.entrada`, `.enviar`) são um
 sublinhado de 1px, não uma caixa — não há canto para chanfrar; os marcadores geométricos do
 `ProjectCard` (`.glifo`) são ornamento com raio e rotação próprios por índice; e tudo que é círculo
@@ -98,8 +134,13 @@ Onde a seta também se move, como a do botão de enviar do Contato, **são dois 
 leva o avanço do `:hover` e o de dentro, a rotação. Dois `transform` no mesmo elemento se apagam, que
 é a regra do `<g>` da curva da Trajetória.
 
-Os três lugares que a usam hoje são os passos da Trajetória (9px, num botão de 38px), as setas das
-faixas de Jogos e Filmes (6px) e o botão de enviar do Contato (6px).
+Os lugares que a usam hoje são os passos da Trajetória (9px, num botão de 38px), as setas das
+faixas de Jogos e Filmes (6px), o botão de enviar do Contato (6px), a seta de link externo dos
+canais de contato (6px, sem rotação nenhuma, que é como ela aponta para fora) e o cabeçalho de modo
+(4px, apontando para baixo e girando para cima quando o menu abre). A dos canais era o caractere
+`↗`, que também não está em nenhum subconjunto servido: a cobertura foi conferida no
+`unicode-range` do CSS da fonte, e `←`, `→` e `↗` não aparecem em nenhum. O do cabeçalho é uma cópia dos quatro
+valores em `ModeHeader.module.css`, porque o HUD não importa nada das seções.
 
 ### A carta que inclina
 
@@ -110,7 +151,7 @@ Jogos e a capa do que está tocando em Música. O efeito nasceu no retrato e vir
 desenho da estrela moram num módulo só no motor: cinco cópias do mesmo rAF sairiam de sincronia na
 primeira calibragem.
 
-Quatro coisas nele não são detalhe:
+Seis coisas nele não são detalhe:
 
 - **a entrada é uma rampa.** Na primeira versão o primeiro `pointermove` já escrevia a inclinação
   cheia e a escala cheia, e como só a sombra tinha transição o elemento saltava do repouso para o
@@ -128,7 +169,16 @@ Quatro coisas nele não são detalhe:
   segunda com `position: relative` e `z-index` no item apontado. `z-index` sozinho não resolve a
   primeira, e recuo sozinho não resolve a segunda;
 - **toque não inclina.** Sem `hover` não há de onde o efeito nascer, e o dedo que arrasta uma faixa
-  de pôsteres passaria por cima de vários cartões levantando cada um pelo caminho.
+  de pôsteres passaria por cima de vários cartões levantando cada um pelo caminho;
+- **a transição de retorno é do CSS, e o hook só a desliga.** Cada cartão declara
+  `transform var(--inclina-t, var(--dur-retorno)) var(--ease-saida)`, e com o ponteiro em cima o hook
+  escreve `--inclina-t: 0s`. Ele já escreveu a `transition` inteira no `style`, e isso apagava as
+  outras transições do cartão: depois do primeiro hover, a opacidade dos pôsteres e das capas passava
+  a saltar em vez de acender;
+- **sem `will-change`.** Uma transformação 3D ganha camada própria quando acontece. Declarada o tempo
+  todo, a promessa reservava uma camada de GPU para cada cartão da página, em todas as seções
+  montadas, e o celular pagava por todas sem nunca inclinar nenhuma. O `preserve-3d` saiu junto: com
+  `overflow: hidden`, que todo cartão inclinável tem, o navegador já o trata como `flat`.
 
 A sombra é ligada **só no retrato**: ele tem tamanho para mostrá-la, e nos cartões pequenos, sobre
 preto, ela é um borrão que não se vê.

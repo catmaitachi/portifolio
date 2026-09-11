@@ -16,10 +16,10 @@
 }
 
 .versao {
-  --ver-bottom: 28px;
+  --ver-bottom: var(--hud-fundo);
   --ver-left: auto;
   /* o mesmo recuo do menu e do seletor de idioma: as três âncoras se alinham */
-  --ver-right: max(3.2vw, 26px);
+  --ver-right: var(--hud-borda);
   --ver-tx: 0;
 
   position: absolute;
@@ -27,8 +27,8 @@
   right: var(--ver-right);
   bottom: var(--ver-bottom);
   left: var(--ver-left);
-  color: rgb(255 255 255 / 34%);
-  font-size: 9.5px;
+  color: var(--tx-apagado);
+  font-size: var(--fs-meta);
   letter-spacing: 0.32em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -37,8 +37,8 @@
    * existe apenas dentro de uma animação some junto com ela.
    */
   transform: translateX(var(--ver-tx));
-  /* último da cascata de abertura, depois do crédito (5.2s) e do idioma (5.4s) */
-  animation: fina 1s ease-out 5.6s both;
+  /* a última peça da abertura, depois do crédito e do idioma (`--abertura-*`) */
+  animation: fina var(--abertura-fina) ease-out var(--abertura-versao) both;
 }
 
 /**
@@ -50,7 +50,7 @@
  * disputar espaço com ela. Os 34px ainda deixam folga até a base da faixa
  * (`--hud-nav-base`, 56px), que é o que a mantém legível como linha própria.
  */
-@media (width <= 640px) {
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .versao {
     --ver-bottom: max(4.2vh, 34px);
     --ver-left: 50%;

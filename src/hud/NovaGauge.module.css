@@ -55,8 +55,8 @@
 }
 
 .medidor {
-  --nova-bottom: 28px;
-  --nova-left: max(3.2vw, 26px);
+  --nova-bottom: var(--hud-fundo);
+  --nova-left: var(--hud-borda);
   --nova-size: 26px;
   /* `--perimetro` (2π·r) vem do componente, que é quem conhece o `r` do SVG */
 
@@ -74,7 +74,7 @@
    * por cima da entrada — o medidor apareceria sem `novaIn`.
    */
   animation:
-    novaIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both,
+    novaIn 0.35s var(--ease-saida) both,
     novaOut 0.5s ease-out var(--recarga) forwards;
 }
 
@@ -88,7 +88,7 @@
 
 .trilha {
   fill: none;
-  stroke: rgb(255 255 255 / 14%);
+  stroke: var(--linha);
   stroke-width: 1;
 }
 
@@ -113,14 +113,13 @@
 }
 
 /**
- * Mobile: a faixa de baixo é do menu e a versão está no centro. O medidor sobe
- * para o mesmo recuo de borda dos dois (`max(2.4vh, 20px)`) e continua na
- * esquerda, onde não disputa espaço com nenhum deles.
+ * Mobile: a faixa de baixo é do menu e a versão está no centro. O medidor desce
+ * para o recuo de borda do topo (`--hud-topo-base`) e continua na esquerda, no
+ * mesmo `--hud-borda` do cabeçalho, onde não disputa espaço com nenhum deles.
  */
-@media (width <= 640px) {
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .medidor {
-    --nova-bottom: max(2.4vh, 20px);
-    --nova-left: 20px;
+    --nova-bottom: var(--hud-topo-base);
     --nova-size: 22px;
   }
 }

@@ -17,13 +17,25 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | `NavMenu` | `--nav-top --nav-bottom --nav-left --nav-right --nav-tx --nav-ty --nav-dir --nav-align --nav-gap --nav-risco --nav-risco-ativo --nav-risco-w --nav-risco-esc --nav-risco-rot` |
 | `LanguageToggle` | `--lang-left --lang-right --lang-tx` |
 | `Version` | `--ver-bottom --ver-left --ver-right --ver-tx` |
-| `ModeHeader` | `--cab-left --cab-fs --cab-item` |
+| `ModeHeader` | `--cab-top --cab-left --cab-right --cab-tx --cab-fs --cab-item` |
 | `NovaGauge` | `--nova-bottom --nova-left --nova-size` |
 | `Credit` | `--credito-vis` |
 
-Faixas: `≤640px` (mobile: coluna única, nav horizontal, seletor centrado, quatro vagas na linha do
-tempo) e **`(width > 640px) and (height <= 720px)`** (paisagem curta: retrato 150px, texto 22vh,
-paddings menores).
+Faixas: **`(width <= 640px), (orientation: portrait) and (width <= 1024px)`** (layout de celular:
+coluna única, nav horizontal, seletor centrado, quatro vagas na linha do tempo) e
+**`(width > 640px) and (height <= 720px) and (orientation: landscape)`** (paisagem curta: retrato
+150px, texto 22vh, paddings menores).
+
+**O tablet em pé usa o layout de celular.** O de desktop reserva 150px de cada lado para o menu
+vertical, e num iPad de 820px sobravam ~520px para o conteúdo. O tablet deitado, a partir de
+1024px de largura, continua no desktop. A consulta aparece idêntica em todo módulo e em
+`TELA_ESTREITA` (`hooks/useMediaQuery.ts`), que é quem a leva ao JavaScript; mudar uma é mudar
+todas. A paisagem curta ganhou `orientation: landscape` para as duas faixas nunca valerem juntas:
+em pé com mais de 640px de largura, a altura já passa de 640.
+
+Entre 641 e 1024px em pé, `section.module.css` sobe `--esc-max` para 1,25 e o recuo lateral para
+8vw. Sem isso o layout do celular, medido para 375px, deixava a bio em 11px com linhas de mais de
+cem caracteres.
 
 **O limite de largura na segunda faixa não é enfeite.** Ela foi escrita para paisagem curta, onde o
 menu é uma coluna à direita e o rodapé está livre, e por isso encolhe os respiros. Sem o limite ela
@@ -57,6 +69,12 @@ precisam reservar esse espaço, e nenhuma delas conhece o `NavMenu`. O número m
 | `--hud-topo-altura` | a linha dos dois modos (a prévia flutua por cima e não reserva nada) |
 | `--hud-topo` | a soma: acima disso é território do HUD |
 | `--hud-topo-respiro` | o que separa o conteúdo do cabeçalho, espelhando o respiro do rodapé |
+| `--hud-borda` | o recuo lateral de todas as peças do HUD; encolhe sozinho na faixa do celular |
+| `--hud-fundo` | a linha de base das peças de baixo no desktop (crédito, versão, medidor) |
+
+O `--hud-borda` nasceu de um desalinhamento: cada peça escrevia o próprio `max(3.2vw, 26px)`, e o
+medidor da supernova tinha 20px fixos no mobile enquanto o cabeçalho tinha `max(3.2vw, 20px)`. Num
+tablet em pé os dois ficavam seis pixels fora de linha.
 
 Ele existe porque os números estavam duplicados em valores soltos (`bottom: 56px` na faixa contra
 `--pb: 116px` nas seções), e foi assim que saíram de sincronia sem ninguém notar.
@@ -81,7 +99,8 @@ no limite deixa o texto colado no rodapé, e basta uma linha a mais numa traduç
 estourar.
 
 **O Sobre é o caso que revelou o teto.** Ele tem uma válvula que as outras seções não têm: o `.texto`
-rola por dentro, com `max-height: var(--txt)`. Isso faz o bloco continuar cabendo por mais que o
+rola por dentro, com `max-height: var(--txt)`. No mobile ela não existe mais, porque ali o texto
+contorna a foto e uma rolagem interna impediria isso (ver `secoes.md`). Isso faz o bloco continuar cabendo por mais que o
 conteúdo cresça, e o hook, medindo só o bloco, não via motivo para encolher nada — o Sobre ficava no
 tamanho cheio enquanto as outras reduziam. Um teto que vale para todas resolve, porque não depende
 de o bloco estar transbordando.

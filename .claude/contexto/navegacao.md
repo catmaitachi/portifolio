@@ -129,7 +129,9 @@ ter quando a faixa passou a andar sozinha, sem passo para onde ir.
 `editandoTexto()` — a regra de "aqui a seta é do cursor" — mora junto do hook, e tanto a rolagem
 quanto as seções a usam. Duplicada, ela sairia de sincronia no dia em que um campo novo aparecesse.
 
-Menu vertical à direita: rótulo + risco de 1px que cresce (12px → 34px) na seção ativa.
+Menu vertical à direita: rótulo + risco de 1px que cresce (12px → 34px) na seção ativa. O estado
+dos itens é cor (`--tx-apagado` em repouso, `--tx-apoio` apontado, `--tx-titulo` no ativo), e o
+risco acompanha por ser `currentcolor`.
 
 **No mobile é uma faixa rolável em que rolar é navegar.** A versão anterior media a posição do item
 ativo e deslocava o nav inteiro por `transform` num `--navdx`: centralizava, mas a faixa era

@@ -8,7 +8,7 @@
   transform: translateY(18px);
   transition:
     opacity 0.55s ease,
-    transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transform 0.8s var(--ease-saida);
   pointer-events: none;
 }
 
@@ -28,8 +28,8 @@
 }
 
 .indice {
-  color: rgb(255 255 255 / 60%);
-  font-size: 11px;
+  color: var(--tx-corpo);
+  font-size: var(--fs-pequeno);
   font-weight: 300;
   letter-spacing: 0.08em;
 }
@@ -42,8 +42,8 @@
 }
 
 .tipo {
-  color: rgb(255 255 255 / 42%);
-  font-size: 8.5px;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
   letter-spacing: 0.42em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -87,7 +87,7 @@
 
 .cargo {
   margin: 0;
-  color: #fff;
+  color: var(--tx-titulo);
   font-size: var(--exp-cargo, clamp(15px, 2.6vmin, 26px));
   font-weight: 400;
   line-height: 1.18;
@@ -101,8 +101,8 @@
   gap: 10px;
   align-items: center;
   min-width: 0;
-  color: rgb(255 255 255 / 48%);
-  font-size: clamp(10px, 1.35vmin, 12.5px);
+  color: var(--tx-apoio);
+  font-size: var(--fs-lista);
   font-weight: 300;
   letter-spacing: 0.14em;
   text-wrap: pretty;
@@ -114,7 +114,7 @@
   flex: none;
   width: 4px;
   height: 4px;
-  border: 1px solid rgb(255 255 255 / 40%);
+  border: 1px solid var(--linha-acesa);
   border-radius: 50%;
 }
 
@@ -134,8 +134,8 @@
   gap: 14px;
   align-items: flex-start;
   min-width: 0;
-  color: rgb(255 255 255 / 72%);
-  font-size: clamp(11px, 1.45vmin, 13.5px);
+  color: var(--tx-corpo);
+  font-size: var(--fs-corpo);
   font-weight: 300;
   line-height: 1.75;
   letter-spacing: 0.04em;
@@ -146,8 +146,8 @@
   flex: none;
   /* alinha a numeração com a primeira linha do texto, não com o topo da caixa */
   padding-top: 0.42em;
-  color: rgb(255 255 255 / 30%);
-  font-size: 8.5px;
+  color: var(--tx-apagado);
+  font-size: var(--fs-rotulo);
   letter-spacing: 0.2em;
   /* numeração da lista: copiar a atividade não deve trazer "01" junto */
   user-select: none;
@@ -163,15 +163,15 @@
 
 .chip {
   padding: 4px 10px;
-  border: 1px solid rgb(255 255 255 / 16%);
+  border: 1px solid var(--linha);
   border-radius: 2px;
-  color: rgb(255 255 255 / 56%);
-  font-size: 8.5px;
-  letter-spacing: 0.22em;
+  color: var(--tx-apoio);
+  font-size: var(--fs-rotulo);
+  letter-spacing: var(--ls-etiqueta);
   text-transform: uppercase;
   transition:
-    border-color 0.4s,
-    color 0.4s;
+    border-color var(--dur-hover),
+    color var(--dur-hover);
 }
 
 /* chanfro dos dois cantos opostos — ver "Cantos chanfrados" no CLAUDE.md */
@@ -183,6 +183,6 @@
 }
 
 .chip:hover {
-  border-color: rgb(255 255 255 / 40%);
-  color: #fff;
+  border-color: var(--linha-acesa);
+  color: var(--tx-titulo);
 }

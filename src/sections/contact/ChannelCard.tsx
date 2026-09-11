@@ -1,5 +1,6 @@
 import { type Canal, ICONES, urlExterna } from '~/content';
 import { useT } from '~/i18n/useLanguage';
+import comum from '../section.module.css';
 import styles from './ChannelCard.module.css';
 
 /**
@@ -66,7 +67,8 @@ export function ChannelCard({ canal, entrando, indice, total }: ChannelCardProps
           <span className={styles.rotulo}>{canal.rotulo}</span>
           {ativo ? (
             <span className={styles.seta} aria-hidden="true">
-              &#8599;
+              {/* sem `data-lado`, a ponta aponta para fora: a seta de link externo */}
+              <span className={comum.ponta} />
             </span>
           ) : null}
         </span>

@@ -80,7 +80,7 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: rgb(255 255 255 / 22%) transparent;
+  scrollbar-color: var(--linha-forte) transparent;
 }
 
 .texto::-webkit-scrollbar {
@@ -88,11 +88,11 @@
 }
 
 .texto::-webkit-scrollbar-track {
-  background: rgb(255 255 255 / 8%);
+  background: var(--linha-sutil);
 }
 
 .texto::-webkit-scrollbar-thumb {
-  background: rgb(255 255 255 / 28%);
+  background: var(--linha-forte);
 }
 
 /**
@@ -120,7 +120,7 @@
   gap: 10px var(--fatos-gap);
   margin: 0;
   padding: var(--fatos-pt) 0 0;
-  border-top: 1px solid rgb(255 255 255 / 10%);
+  border-top: 1px solid var(--linha-sutil);
   list-style: none;
 }
 
@@ -152,20 +152,20 @@
 }
 
 .bloco[data-ativo] .fato {
-  animation: fatoEntra 0.5s ease-out backwards;
+  animation: fatoEntra 0.5s var(--ease-entrada) backwards;
   animation-delay: calc(360ms + var(--ordem, 0) * 110ms);
 }
 
 .fatoRotulo {
-  color: rgb(255 255 255 / 40%);
-  font-size: 8.5px;
-  letter-spacing: 0.28em;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
+  letter-spacing: var(--ls-rotulo);
   text-transform: uppercase;
 }
 
 .fatoValor {
   overflow: hidden;
-  color: rgb(255 255 255 / 78%);
+  color: var(--tx-forte);
   font-size: var(--fatos-fs);
   font-weight: 300;
   letter-spacing: 0.06em;
@@ -176,7 +176,7 @@
 
 .paragrafo {
   margin: 0;
-  color: rgb(255 255 255 / 66%);
+  color: var(--tx-corpo);
   font-size: var(--pfs);
   font-weight: 300;
   line-height: var(--plh);
@@ -185,39 +185,95 @@
 }
 
 /**
- * Mobile: empilhado e mais compacto.
+ * Mobile: diagramado como jornal.
  *
- * O Sobre empilha retrato, texto e os dois fatos um sobre o outro. O `zoom` do
- * `.bloco` reduz tudo junto, mas partindo de um conteúdo denso: os números aqui
- * baixam o ponto de partida, e é a soma dos dois que faz a seção caber.
+ * O retrato fica no canto esquerdo, o título ao lado dele, e o texto começa sob o
+ * título e **continua por baixo da foto** quando ela acaba. Empilhado, o retrato
+ * ocupava uma linha inteira da tela para uma imagem de 96px, com vazio dos dois
+ * lados; ao lado do texto, ele divide a largura em vez de gastá-la.
+ *
+ * Quem faz o texto contornar a foto é `float`, e isso decide o resto do bloco:
+ * uma caixa que forma contexto de formatação próprio fica **ao lado** do float,
+ * sem contornar. Grid, flex e `overflow` diferente de `visible` formam, então o
+ * corpo vira `flow-root`, a coluna e o texto viram bloco comum, e **a bio perde a
+ * rolagem própria**. Com uma rolagem interna ela voltaria a ser uma coluna
+ * estreita ao lado da foto. A bio é curta, e se ela não couber quem responde é a
+ * escala que cabe e, abaixo do piso dela, a rolagem da seção.
  */
-@media (width <= 640px) {
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .secao {
-    --cols: 1fr;
+    /* o respiro entre a foto e o texto que corre ao lado dela */
+    --corpo-gap: 18px;
 
-    /**
-     * Respiro entre as peças empilhadas.
-     *
-     * `--corpo-gap` separa o retrato do texto. Empilhados numa coluna estreita
-     * eles encostam um no outro e a seção lê como um bloco só; cabe porque o
-     * retrato e a coluna de texto encolheram, e a folga que a redução abriu
-     * volta aqui como separação em vez de sobrar no rodapé.
-     */
-    --corpo-gap: 22px;
-
-    /* empilhado, o retrato está acima do texto e não tem base para respeitar */
+    /* a foto não tem base para a coluna respeitar: o texto passa por baixo dela */
     --coluna-max: none;
-    --retrato: 96px;
-    --txt: min(26vh, 180px);
     --pfs: 11px;
     --plh: 1.7;
+    /* a altura de uma linha da bio: a régua que a foto e os parágrafos seguem */
+    --linha: calc(var(--pfs) * var(--plh));
+    /* entre o título e a primeira linha do texto */
+    --titulo-respiro: 12px;
+
+    /**
+     * **A base da foto é a linha de base da última linha ao lado dela.**
+     *
+     * A altura é o título, o respiro dele e um número inteiro de linhas da bio,
+     * menos o trecho entre a linha de base e o fundo da caixa de linha. Com uma
+     * altura qualquer, a base da foto caía no meio de uma linha, que ia inteira
+     * para depois da foto e deixava um vão de até uma linha entre a imagem e o
+     * texto. Encostada no fundo da caixa de linha, ela ficava colada no texto de
+     * baixo. Na linha de base, a foto termina junto com as letras ao lado, e o
+     * que a separa do texto de baixo é a mesma distância que separa duas linhas.
+     *
+     * `--ate-base` é a distância do fundo da caixa de linha até a linha de base:
+     * `(--plh − (ascendente − descendente)) / 2`, em `em`. O 0,522 é a diferença
+     * entre ascendente e descendente da IBM Plex Mono **como o navegador a usa**,
+     * medida no DOM com um marcador `inline-block` na linha de base. As métricas
+     * publicadas da fonte davam 0,75, e com elas a foto passava 1,3px da linha
+     * de base. Trocar de fonte pede medir de novo.
+     *
+     * A largura sai da altura pela proporção: seis linhas dão ~113px.
+     */
+    --ate-base: calc(var(--pfs) * (var(--plh) - 0.522) / 2);
+    --linhas-foto: 6;
+    --retrato-h: calc(
+      var(--titulo-fs) + var(--titulo-respiro) + var(--linhas-foto) * var(--linha) -
+        var(--ate-base)
+    );
+    --retrato: calc(var(--retrato-h) / var(--retrato-ar));
+
     --fatos-gap: 24px;
     --fatos-pt: 14px;
   }
 
-  /* título e texto continuam sendo uma peça só, e não pedem o mesmo respiro */
+  /* `flow-root` contém o float: sem ele, uma bio curta deixaria a foto vazar
+     por cima dos fatos */
+  .corpo {
+    display: flow-root;
+  }
+
+  /* sem margem embaixo: quem separa a foto do texto abaixo é a entrelinha */
+  .retrato {
+    float: left;
+    margin: 0 var(--corpo-gap) 0 0;
+  }
+
   .coluna {
-    gap: 12px;
+    display: block;
+  }
+
+  .texto {
+    display: block;
+    max-height: none;
+    margin-top: var(--titulo-respiro);
+    padding-right: 0;
+    overflow: visible;
+  }
+
+  /* uma linha inteira entre parágrafos, para uma quebra ao lado da foto não
+     tirar o texto da régua e devolver o vão */
+  .paragrafo + .paragrafo {
+    margin-top: var(--linha);
   }
 }
 
@@ -226,7 +282,7 @@
  * dos tokens do mobile, que é o que se quer — o gargalo ali é a altura.
  */
 /* paisagem curta; no mobile os valores acima já se adaptam sozinhos */
-@media (width > 640px) and (height <= 720px) {
+@media (width > 640px) and (height <= 720px) and (orientation: landscape) {
   .secao {
     --retrato: 150px;
     --txt: 22vh;

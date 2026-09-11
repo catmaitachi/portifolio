@@ -21,8 +21,11 @@
 - **Conferir os dados das formações.** A `conclusao` do SENAC (`2022.12`) e o `progresso` da PUC
   (`4/8`) entraram como espaço reservado para a feature de hover — são dados reais sobre a vida de
   alguém e precisam ser corrigidos por quem os conhece (`formacoes.lista`, nos dois dicionários).
-- **Banners de `vaga-02` e `vaga-03`** não existem — as molduras seguem como espaço reservado até
-  haver projeto.
+- **Contraste padrão abaixo do WCAG AA.** Os textos em `--tx-rotulo` (40%) e abaixo ficam entre 1,9:1
+  e 3,7:1 sobre o preto. É a estética da página, e quem pede contraste ao sistema já recebe tudo acima
+  de 4,5:1 (`prefers-contrast`). Subir o padrão muda o desenho da página inteira.
+- **O peso 200 da fonte vem só para o número fantasma da Trajetória**, que está a 7,5% de opacidade.
+  Trocá-lo por 300 tira um arquivo de fonte do carregamento no lado profissional.
 
 ---
 
@@ -37,7 +40,9 @@ Hoje as duas dividem mal o mesmo tema: Projetos mostra tudo que foi feito, e Tra
 foi feito. A divisão passa a ser por **de quem é a coisa**:
 
 - **Projetos vira o catálogo do que é dele.** Só projeto pessoal, as coisinhas, sem cliente e sem
-  empregador. Isso muda o que a órbita mostra, não como ela funciona.
+  empregador. Isso muda o que a órbita mostra, não como ela funciona. Nele não existe projeto a
+  definir, e as duas vagas de hoje saem com a troca: por isso um cartão vago próprio para Projetos,
+  mais simples e apagado como a pretensão de Formação, foi descartado antes de entrar.
 - **Trajetória passa a guardar o profissional inteiro**: empregos, freelas e projetos externos, que
   hoje não têm lugar nenhum quando não são emprego.
 

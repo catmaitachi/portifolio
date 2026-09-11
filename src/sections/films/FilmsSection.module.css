@@ -55,12 +55,12 @@
  * que o feed chegava.
  */
 .bloco[data-ativo] .cartao {
-  animation: posterAcende 0.5s ease-out backwards;
+  animation: posterAcende 0.5s var(--ease-entrada) backwards;
   animation-delay: calc(var(--base, 0ms) + var(--ordem, 0) * 45ms);
 }
 
 /**
- * A moldura existe mesmo sem pôster, e o pôster fica colorido.
+ * A moldura reserva o lugar do pôster, e o pôster fica colorido.
  *
  * Arte de filme é identidade de terceiro, como os banners de projeto: não se
  * repinta. Quando o feed não trouxe imagem, o que sobra é um retângulo de 1px na
@@ -71,21 +71,19 @@
   display: block;
   aspect-ratio: 2 / 3;
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 12%);
+  border: 1px solid var(--linha);
   border-radius: 2px;
-  background: rgb(255 255 255 / 3%);
+  background: var(--fundo-sutil);
   opacity: 0.84;
 
   /* o clarão acompanha a largura do pôster, não os 240px do retrato */
   --brilho-r: 120px;
 
   /* a inclinação é escrita pelo JS (ver `useInclinacao`); daqui sai o retorno */
-  transform-style: preserve-3d;
-  will-change: transform;
   transition:
-    opacity 0.35s,
-    border-color 0.35s,
-    transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+    opacity var(--dur-hover),
+    border-color var(--dur-hover),
+    transform var(--inclina-t, var(--dur-retorno)) var(--ease-saida);
 }
 
 @supports (corner-shape: bevel) {
@@ -112,19 +110,27 @@
   top: 6px;
   right: 6px;
   padding: 2px 5px;
-  border: 1px solid rgb(255 255 255 / 22%);
+  border: 1px solid var(--linha-forte);
   border-radius: 2px;
   background: rgb(0 0 0 / 62%);
-  color: rgb(255 255 255 / 72%);
-  font-size: 7px;
+  color: var(--tx-corpo);
+  font-size: var(--fs-micro);
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
+/* é uma etiqueta com borda como o selo de posto: chanfro na escala de 13px de altura */
+@supports (corner-shape: bevel) {
+  .revisita {
+    corner-shape: bevel;
+    border-radius: 4px 2px;
+  }
+}
+
 .nome {
   overflow: hidden;
-  color: rgb(255 255 255 / 86%);
-  font-size: clamp(9.5px, 1.25vmin, 12px);
+  color: var(--tx-forte);
+  font-size: var(--fs-lista);
   line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -138,15 +144,15 @@
 }
 
 .ano {
-  color: rgb(255 255 255 / 30%);
-  font-size: 9px;
+  color: var(--tx-apagado);
+  font-size: var(--fs-meta);
   letter-spacing: 0.1em;
   font-variant-numeric: tabular-nums;
 }
 
 .semNota {
-  color: rgb(255 255 255 / 22%);
-  font-size: 7.5px;
+  color: var(--tx-marcador);
+  font-size: var(--fs-micro);
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
@@ -165,10 +171,10 @@
 .posto {
   flex: none;
   padding: 3px 6px;
-  border: 1px solid rgb(255 255 255 / 24%);
+  border: 1px solid var(--linha-forte);
   border-radius: 2px;
-  color: rgb(255 255 255 / 82%);
-  font-size: 8.5px;
+  color: var(--tx-forte);
+  font-size: var(--fs-rotulo);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.12em;
 }
@@ -200,14 +206,14 @@
   width: 7px;
   height: 3px;
   overflow: hidden;
-  background: rgb(255 255 255 / 14%);
+  background: var(--linha);
 }
 
 .marca::after {
   position: absolute;
   inset: 0 auto 0 0;
   width: var(--cheio, 0%);
-  background: rgb(255 255 255 / 82%);
+  background: var(--linha-cheia);
   content: '';
 }
 

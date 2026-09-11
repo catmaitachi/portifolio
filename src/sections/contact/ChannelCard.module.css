@@ -31,12 +31,12 @@
   gap: clamp(14px, 2.2vmin, 22px);
   align-items: flex-start;
   padding: clamp(16px, 2.4vmin, 24px);
-  border: 1px solid rgb(255 255 255 / 13%);
+  border: 1px solid var(--linha);
   border-radius: 2px;
   transition:
-    border-color 0.4s,
-    background 0.4s,
-    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    border-color var(--dur-hover),
+    background var(--dur-hover),
+    transform var(--dur-hover) var(--ease-saida);
 }
 
 /* chanfro dos dois cantos opostos — ver "Cantos chanfrados" no CLAUDE.md */
@@ -49,13 +49,12 @@
 
 /* `backwards` cobre o atraso; o estado final já é o natural do cartão */
 .canal[data-entrada] {
-  animation: canalEntra 0.62s cubic-bezier(0.16, 0.84, 0.24, 1) calc(var(--ordem, 0) * 110ms)
-    backwards;
+  animation: canalEntra 0.62s var(--ease-entrada) calc(var(--ordem, 0) * 110ms) backwards;
 }
 
 .canal:hover {
-  border-color: rgb(255 255 255 / 38%);
-  background: rgb(255 255 255 / 4%);
+  border-color: var(--linha-acesa);
+  background: var(--fundo-sutil);
   transform: translateY(-3px);
 }
 
@@ -72,7 +71,7 @@
   object-fit: contain;
   object-position: left center;
   opacity: 0.82;
-  transition: opacity 0.4s;
+  transition: opacity var(--dur-hover);
 }
 
 .canal:hover .icone {
@@ -95,31 +94,40 @@
 }
 
 .rotulo {
-  color: #fff;
-  font-size: 10px;
-  letter-spacing: 0.22em;
+  color: var(--tx-titulo);
+  font-size: var(--fs-controle);
+  letter-spacing: var(--ls-etiqueta);
   text-transform: uppercase;
 }
 
+/**
+ * A seta de link externo, **desenhada** (ver `.ponta` em `section.module.css`).
+ *
+ * Era o caractere `↗`, que não está em nenhum subconjunto de IBM Plex Mono que o
+ * Google Fonts serve: saía de uma fonte de sistema, com outra espessura em cada
+ * aparelho. São dois elementos pela regra de sempre: este leva o avanço do
+ * hover, e a ponta de dentro fica sem rotação, que é como ela aponta para fora.
+ */
 .seta {
+  display: flex;
   flex: none;
-  color: rgb(255 255 255 / 50%);
-  font-size: 11px;
-  opacity: 0.55;
+  align-items: center;
+  --ponta: 6px;
+  color: var(--tx-apagado);
   transition:
-    transform 0.35s cubic-bezier(0.3, 0.7, 0.2, 1),
-    opacity 0.35s;
+    transform var(--dur-hover) var(--ease-saida),
+    color var(--dur-hover);
 }
 
 .canal:hover .seta {
-  opacity: 1;
+  color: var(--tx-titulo);
   transform: translate(3px, -3px);
 }
 
 .identificador {
   overflow: hidden;
-  color: rgb(255 255 255 / 42%);
-  font-size: 9.5px;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-meta);
   font-weight: 300;
   letter-spacing: 0.06em;
   text-overflow: ellipsis;

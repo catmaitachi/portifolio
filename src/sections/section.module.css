@@ -22,6 +22,9 @@
   --pb: clamp(84px, 13vh, 120px);
   --px: max(150px, 5vw);
   --gap: clamp(16px, 2.4vmin, 28px);
+  /* token e não valor solto: o retrato do Sobre no mobile mede o título para
+     acertar a própria altura na régua das linhas */
+  --titulo-fs: clamp(22px, 4.6vmin, 52px);
 
   display: flex;
   flex-direction: column;
@@ -89,7 +92,7 @@
   transform: translateY(26px);
   transition:
     opacity 0.9s ease,
-    transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transform 0.9s var(--ease-saida);
 }
 
 .bloco[data-ativo] {
@@ -97,12 +100,28 @@
   transform: translateY(0);
 }
 
+/**
+ * Seção fora da tela não anima.
+ *
+ * Todas as seções do modo ficam montadas, e as que têm movimento contínuo (a
+ * faixa de crachás, o anel do nó ativo, o ponto que pulsa em Música e Jogos, a
+ * linha de espera de uma busca) seguiam rodando com a seção fora de vista. Numa
+ * máquina fraca cada uma delas é um motivo a mais para o compositor não descansar
+ * enquanto o canvas já disputa o quadro.
+ *
+ * As entradas não são afetadas, porque elas só existem com `data-ativo`. Uma
+ * seção nova ganha isto de graça, por morar dentro de `.bloco`.
+ */
+.bloco:not([data-ativo]) * {
+  animation-play-state: paused;
+}
+
 /* o índice é um `<p>` por semântica, mas lê como marcador: não se copia "01" */
 .indice {
   display: flex;
   gap: 16px;
   align-items: center;
-  color: rgb(255 255 255 / 40%);
+  color: var(--tx-rotulo);
   font-size: clamp(9px, 1.2vmin, 12px);
   letter-spacing: 0.42em;
   text-transform: uppercase;
@@ -116,7 +135,7 @@
   display: block;
   flex: 1;
   height: 1px;
-  background: rgb(255 255 255 / 12%);
+  background: var(--linha-sutil);
 }
 
 .cabecalho {
@@ -150,7 +169,7 @@
   height: 40px;
   margin-right: -9px;
   opacity: 0.5;
-  transition: opacity 0.35s;
+  transition: opacity var(--dur-hover);
 }
 
 .perfil:hover {
@@ -166,8 +185,8 @@
 
 .titulo {
   margin: 0;
-  color: #fff;
-  font-size: clamp(22px, 4.6vmin, 52px);
+  color: var(--tx-titulo);
+  font-size: var(--titulo-fs, clamp(22px, 4.6vmin, 52px));
   font-weight: 400;
   line-height: 1;
   letter-spacing: 0.1em;
@@ -177,8 +196,8 @@
 .intro {
   max-width: 52ch;
   margin: 0;
-  color: rgb(255 255 255 / 50%);
-  font-size: clamp(11px, 1.5vmin, 14px);
+  color: var(--tx-apoio);
+  font-size: var(--fs-corpo);
   font-weight: 300;
   line-height: 1.85;
   letter-spacing: 0.05em;
@@ -198,15 +217,15 @@
   flex: 1;
   height: 1px;
   overflow: hidden;
-  background: rgb(255 255 255 / 14%);
+  background: var(--linha);
 }
 
 .preenchimento {
   position: absolute;
   inset: 0 auto 0 0;
   width: 0;
-  background: rgb(255 255 255 / 75%);
-  transition: width 0.8s cubic-bezier(0.3, 0.7, 0.2, 1);
+  background: var(--linha-cheia);
+  transition: width 0.8s var(--ease-saida);
 }
 
 /**
@@ -238,9 +257,9 @@
 }
 
 .estado {
-  color: rgb(255 255 255 / 50%);
-  font-size: 8.5px;
-  letter-spacing: 0.22em;
+  color: var(--tx-apoio);
+  font-size: var(--fs-rotulo);
+  letter-spacing: var(--ls-etiqueta);
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -262,7 +281,7 @@
  * O rodapé é a exceção e sai de `--hud-rodape`: ali não há o que negociar com a
  * altura, porque o espaço é do HUD.
  */
-@media (width <= 640px) {
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   /**
    * O conteúdo já começa menor no mobile.
    *
@@ -279,6 +298,26 @@
     --pb: calc(var(--hud-rodape) + clamp(10px, 2svh, 18px));
     --px: 20px;
     --gap: clamp(11px, 1.8svh, 15px);
+  }
+}
+
+/**
+ * Tablet em pé: o layout do celular, desenhado maior.
+ *
+ * O tablet em pé usa o layout de coluna única, porque o de desktop reserva 150px
+ * de cada lado para o menu vertical e, num iPad de 820px, sobravam ~520px para o
+ * conteúdo. Só que o layout do celular foi medido para 375px, e esticado a 820
+ * ele deixava a bio em 11px com linhas de mais de cem caracteres.
+ *
+ * Os dois números resolvem isso juntos: a escala de partida sobe (o
+ * `useEscalaQueCabe` continua podendo reduzir a partir dela, se a altura não der)
+ * e o recuo lateral passa a ser fração da tela, o que traz a linha da bio de
+ * volta para perto de oitenta caracteres.
+ */
+@media (orientation: portrait) and (640px < width <= 1024px) {
+  .secao {
+    --esc-max: 1.25;
+    --px: 8vw;
   }
 }
 
@@ -303,8 +342,12 @@
  * deslocamento sobe uma e desce a outra, e as duas ficam desencontradas na
  * vertical. Girando em torno do centro elas se alinham por construção.
  *
- * O tamanho vem de `--ponta`, porque os dois lugares que a usam são de escalas
+ * O tamanho vem de `--ponta`, porque os lugares que a usam são de escalas
  * diferentes: o botão de 38px da Trajetória e a seta de 22px das faixas.
+ *
+ * **Sem `data-lado` ela aponta para fora**, em cima e à direita, porque é onde
+ * o desenho põe o canto quando não gira. É a seta de link externo dos canais de
+ * contato, que antes era o caractere `↗` e tinha o mesmo problema dos outros.
  */
 .ponta {
   display: block;
@@ -333,7 +376,7 @@
  * por baixo da barra de seções. O mobile tem os próprios valores, que já se
  * adaptam à altura sozinhos.
  */
-@media (width > 640px) and (height <= 720px) {
+@media (width > 640px) and (height <= 720px) and (orientation: landscape) {
   .secao {
     --pt-livre: clamp(44px, 7vh, 72px);
     --pb: clamp(70px, 11vh, 96px);

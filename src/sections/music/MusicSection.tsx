@@ -68,7 +68,7 @@ interface Linha {
 function Lista({ titulo, itens }: { titulo: string; itens: Linha[] }) {
   return (
     <div className={styles.coluna}>
-      <p className={styles.tituloLista}>{titulo}</p>
+      <h3 className={styles.tituloLista}>{titulo}</h3>
       <ol className={styles.lista}>
         {itens.map((item, i) => (
           <li key={item.id} className={styles.item} style={{ '--ordem': i } as React.CSSProperties}>
@@ -143,7 +143,17 @@ function Conteudo({ dados }: { dados: Musica }) {
           rel="noreferrer"
           aria-label={destaque.titulo}
         >
-          {destaque.capa ? <img src={destaque.capa} alt="" loading="lazy" /> : null}
+          {destaque.capa ? (
+            <img
+              src={destaque.capa}
+              alt=""
+              loading="lazy"
+              // como em Jogos e Filmes: sem a imagem, a moldura de 1px volta a aparecer
+              onError={(e) => {
+                e.currentTarget.hidden = true;
+              }}
+            />
+          ) : null}
           <span ref={brilhoRef} className={comum.brilho} aria-hidden="true" />
         </a>
 

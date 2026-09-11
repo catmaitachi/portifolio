@@ -12,7 +12,7 @@
   position: relative;
   align-self: flex-start;
   padding-bottom: 9px;
-  color: #fff;
+  color: var(--tx-titulo);
   font-size: clamp(14px, 3.1vmin, 34px);
   font-weight: 300;
   letter-spacing: 0.02em;
@@ -23,7 +23,7 @@
 }
 
 .email:hover {
-  color: #fff;
+  color: var(--tx-titulo);
 }
 
 .risco {
@@ -32,12 +32,12 @@
   left: 0;
   width: 100%;
   height: 1px;
-  background: rgb(255 255 255 / 28%);
-  transition: background 0.4s;
+  background: var(--linha-forte);
+  transition: background var(--dur-hover);
 }
 
 .email:hover .risco {
-  background: #fff;
+  background: var(--tx-titulo);
 }
 
 .form {
@@ -55,8 +55,8 @@
 }
 
 .rotulo {
-  color: rgb(255 255 255 / 38%);
-  font-size: 9px;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-meta);
   letter-spacing: 0.32em;
   text-transform: uppercase;
 }
@@ -66,23 +66,24 @@
   width: 100%;
   padding: 7px 1px;
   border: 0;
-  border-bottom: 1px solid rgb(255 255 255 / 18%);
+  border-bottom: 1px solid var(--linha-forte);
   border-radius: 0;
   background: none;
-  color: #fff;
-  font-size: clamp(11.5px, 1.5vmin, 14px);
+  color: var(--tx-titulo);
+  font-size: var(--fs-corpo);
   font-weight: 300;
   letter-spacing: 0.05em;
   appearance: none;
-  transition: border-color 0.35s;
+  transition: border-color var(--dur-hover);
 }
 
 .entrada::placeholder {
-  color: rgb(255 255 255 / 36%);
+  color: var(--tx-apagado);
 }
 
+/* o sublinhado que acende é o sinal de foco do campo, e substitui o contorno */
 .entrada:focus {
-  border-color: rgb(255 255 255 / 50%);
+  border-color: var(--linha-foco);
   outline: none;
 }
 
@@ -94,20 +95,20 @@
   margin: 0;
   padding: 7px 1px;
   border: 0;
-  border-bottom: 1px solid rgb(255 255 255 / 30%);
+  border-bottom: 1px solid var(--linha-acesa);
   border-radius: 0;
   background: none;
-  color: #fff;
-  font-size: 10px;
+  color: var(--tx-titulo);
+  font-size: var(--fs-controle);
   letter-spacing: 0.28em;
   text-transform: uppercase;
   cursor: pointer;
   appearance: none;
-  transition: border-color 0.35s;
+  transition: border-color var(--dur-hover);
 }
 
 .enviar:hover {
-  border-color: #fff;
+  border-color: var(--tx-titulo);
 }
 
 .seta {
@@ -116,14 +117,14 @@
 
   /* a ponta é desenhada (ver `.ponta` em `section.module.css`), não escrita */
   --ponta: 6px;
-  opacity: 0.65;
+  color: var(--tx-corpo);
   transition:
-    transform 0.35s cubic-bezier(0.3, 0.7, 0.2, 1),
-    opacity 0.35s;
+    transform var(--dur-hover) var(--ease-saida),
+    color var(--dur-hover);
 }
 
 .enviar:hover .seta {
-  opacity: 1;
+  color: var(--tx-titulo);
   transform: translateX(5px);
 }
 
@@ -133,13 +134,13 @@
  */
 .status {
   min-height: 12px;
-  color: rgb(255 255 255 / 50%);
-  font-size: 9.5px;
+  color: var(--tx-apoio);
+  font-size: var(--fs-meta);
   font-weight: 300;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   opacity: 0;
-  transition: opacity 0.4s;
+  transition: opacity var(--dur-hover);
 }
 
 .status[data-visivel] {
@@ -153,8 +154,8 @@
 }
 
 .ou {
-  color: rgb(255 255 255 / 32%);
-  font-size: 9px;
+  color: var(--tx-apagado);
+  font-size: var(--fs-meta);
   letter-spacing: 0.34em;
   text-transform: uppercase;
 }

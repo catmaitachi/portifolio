@@ -7,8 +7,16 @@ import { useReducedMotion } from './useReducedMotion';
  * Só ASCII técnico e Latin-1: a página inteira é IBM Plex Mono, e um glifo que
  * a fonte não tem vira caixa vazia — o efeito passaria de "texto cifrado" a
  * "fonte quebrada". Katakana e blocos foram descartados por isso.
+ *
+ * `∆` e `∑` estiveram aqui e quebravam a regra sem ninguém ver: o subconjunto
+ * `latin` que o Google Fonts serve vai até U+00FF e depois só cobre alguns
+ * símbolos soltos, e os dois (U+2206, U+2211) caíam numa fonte de sistema com
+ * outra largura. É justamente o que a cifra não pode ter, porque é a largura
+ * igual de todos os caracteres que segura as quebras de linha enquanto o
+ * parágrafo se decifra. A cobertura foi conferida no CSS da fonte, pelo
+ * `unicode-range` de cada subconjunto.
  */
-const GLIFOS = '#%&@$*+=<>/\|~^:;?!¤§±×÷¬∆∑0123456789';
+const GLIFOS = '#%&@$*+=<>/|~^:;?!¤§±×÷¬0123456789';
 
 /** Quanto cada parágrafo leva para se resolver, em ms. */
 const DURACAO = 720;
