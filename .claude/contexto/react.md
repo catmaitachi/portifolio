@@ -126,8 +126,9 @@ caso não coberto.
 
 ### O terceiro falso positivo aceito: o clique no cartão lateral de Projetos
 
-`react-doctor/no-static-element-interactions` e `click-events-have-key-events` apontam a mesma linha
-do `ProjectCard`: uma `<div>` com `onClick` e sem `role`, sem `tabIndex` e sem tratador de teclado.
+`react-doctor/no-static-element-interactions` aponta uma linha do `ProjectCard` (até o cartão
+passar a ler o GitHub, `click-events-have-key-events` apontava a mesma): uma `<div>` com `onClick`
+e sem `role`, sem `tabIndex` e sem tratador de teclado.
 
 Ela é **enriquecimento para o mouse**, e a função que ela oferece está inteira em outro lugar: trocar
 de projeto é trabalho das setas ←/→ e dos traços-índice, que são botões de verdade e estão na

@@ -1,24 +1,28 @@
-import { Figure } from '~/components/Figure';
-import { BANNERS, type Projeto, urlExterna } from '~/content';
+import { urlExterna } from '~/content';
+import type { Projetos, Repositorio } from '~/data/types';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
+import { nomeLegivel } from './nome';
 import styles from './ProjectCard.module.css';
 import type { Geometria } from './useOrbit';
 
-/**
- * Marcador geométrico por projeto: dois contornos de 1px com raio e rotação
- * próprios. Dá identidade visual ao cartão sem inventar cor nem ícone — o
- * índice do projeto escolhe qual dos quatro sai.
- */
-const GLIFOS = [
-  { r: '50%', rot: '0deg', r2: '0px', rot2: '45deg' },
-  { r: '0px', rot: '45deg', r2: '50%', rot2: '0deg' },
-  { r: '2px', rot: '0deg', r2: '2px', rot2: '45deg' },
-  { r: '50%', rot: '0deg', r2: '50%', rot2: '0deg' },
-] as const;
+/** Linguagens com nome na legenda; o resto vira o último trecho da barra, sem nome. */
+const MAX_LINGUAGENS = 3;
+/** Tópicos na linha sob a descrição. Mais que isso vira parágrafo. */
+const MAX_TOPICOS = 4;
+
+/** `2026-09-09T20:45:28Z` vira `2026.09`, o ano.mês do resto da página. */
+const anoMes = (iso: string) => iso.slice(0, 7).replace('-', '.');
+
+/** Fração de linguagem em porcentagem, sem mentir que um resto de 0,3% é zero. */
+const porcento = (f: number) => (f < 0.01 ? '<1%' : `${Math.round(f * 100)}%`);
+
+type Janela = Projetos['janela'];
 
 interface ProjectCardProps {
-  projeto: Projeto;
+  repo: Repositorio;
+  /** os doze meses que o código de barras cobre, iguais para todos os cartões */
+  janela: Janela;
   indice: number;
   geo: Geometria;
   /** seção ativa: dispara a entrada do cartão, escalonada por `geo.ordem` */
@@ -28,31 +32,97 @@ interface ProjectCardProps {
 }
 
 /**
- * Um cartão da órbita.
+ * O código de barras do bilhete: **um traço por commit**, no dia em que ele
+ * aconteceu dentro da janela de doze meses.
  *
- * **Não há mais painel de descrição, e o cartão deixou de ser um botão.** O que
- * o projeto é cabe no que já está na frente: nome, uma linha de resumo, ano,
- * papel, stack, o estado e o link para ver ao vivo. Um texto longo escondido
- * atrás de um clique era conteúdo oculto num site que não tem nenhum outro, e a
- * própria página é o portfólio: o lugar de contar o projeto por extenso é o
- * projeto.
- *
- * Isso resolveu de graça o defeito de acessibilidade que estava anotado em
- * `pendencias.md`: o cartão era `role="button"` com um link dentro, o que ARIA
- * não permite. Agora o único elemento interativo aqui é o link, e ele só
- * responde no cartão da frente. Quem navega por teclado troca de projeto pelas
- * setas ou pelos traços-índice, que são botões de verdade; o clique num cartão
- * lateral continua existindo para o mouse, que nunca teve esse problema.
+ * Não há contagem nem escala. Um mês parado é espaço vazio, um mês intenso é
+ * uma faixa cheia, e o desenho diz o ritmo do repositório só com a posição dos
+ * traços, como um código de barras de verdade diz o número só com a largura
+ * das faixas. Um `<path>` só para todos, com `non-scaling-stroke`: o desenho
+ * estica na largura do cartão e o traço continua com 1px.
  */
-export function ProjectCard({ projeto, indice, geo, ativo, onFocar }: ProjectCardProps) {
+function CodigoDeBarras({ datas, janela }: { datas: string[]; janela: Janela }) {
+  const de = Date.parse(janela.de);
+  const largura = Math.max(1, Date.parse(janela.ate) - de);
+  const tracos = datas
+    .map((d) => {
+      const x = ((Date.parse(d) - de) / largura) * 1000;
+      return x >= 0 && x <= 1000 ? `M${x.toFixed(1)} 0V40` : '';
+    })
+    .join('');
+
+  return (
+    <svg className={styles.barras} viewBox="0 0 1000 40" preserveAspectRatio="none" aria-hidden="true">
+      <path className={styles.base} d="M0 40H1000" />
+      {tracos ? <path d={tracos} /> : null}
+    </svg>
+  );
+}
+
+/**
+ * As linguagens: uma barra de 1px dividida pelo tamanho de cada uma, e a legenda
+ * embaixo com as três maiores.
+ */
+function Linguagens({ lista }: { lista: Repositorio['linguagens'] }) {
+  const nomeadas = lista.slice(0, MAX_LINGUAGENS);
+  const resto = Math.max(0, 1 - nomeadas.reduce((soma, l) => soma + l.fracao, 0));
+
+  return (
+    <div className={styles.linguagens}>
+      <span className={styles.barra} aria-hidden="true">
+        {nomeadas.map((l) => (
+          <span key={l.nome} style={{ flexGrow: l.fracao }} />
+        ))}
+        {resto >= 0.005 ? <span style={{ flexGrow: resto }} /> : null}
+      </span>
+      <span className={styles.legenda}>
+        {nomeadas.map((l) => (
+          <span key={l.nome} className={styles.lingua}>
+            <span className={styles.amostra} aria-hidden="true" />
+            {l.nome}
+            <span className={styles.fracao}>{porcento(l.fracao)}</span>
+          </span>
+        ))}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * Um cartão da órbita, desenhado como **bilhete de uma missão**.
+ *
+ * O corpo, à esquerda, é o que o repositório é: o número do cartão, o dono e o
+ * nome, a descrição, os tópicos, o código de barras de commits e as linguagens.
+ * O canhoto, à direita, é uma peça à parte, a um espaço do corpo, e é o que se
+ * confere nele: os dados e as portas de saída, o código e o projeto no ar. É a divisão de um bilhete de
+ * verdade, em que a parte grande diz para onde e a pequena diz o que carimbar,
+ * e ela resolve o que um cartão em pé resolvia mal: com a leitura deitada, o
+ * texto corre em linhas longas e os números ficam numa coluna só, onde o olho
+ * os encontra sem procurar.
+ *
+ * **Estrela e fork só aparecem quando existem**: um "0" em cada cartão de
+ * projeto pessoal diria menos sobre o projeto do que sobre a contagem.
+ *
+ * O cartão não é um botão (ver `acessibilidade.md`): os links são os únicos
+ * elementos interativos dele, e só o da frente responde. Quem navega por
+ * teclado troca de projeto pelas setas ou pelos traços-índice; o clique num
+ * cartão lateral continua existindo para o mouse.
+ */
+export function ProjectCard({ repo, janela, indice, geo, ativo, onFocar }: ProjectCardProps) {
   const t = useT();
-  // "a definir" é uma vaga reservada: gira na órbita e não tem para onde levar
-  const vaga = projeto.estado === 'definir';
-  const glifo = GLIFOS[indice % GLIFOS.length];
   const rotulo = String(indice + 1).padStart(2, '0');
-  const preenchido = projeto.estado === 'ativo' || projeto.estado === 'arquivado';
-  // `url` vazia esconde o link; sem esquema, o href viraria caminho relativo
-  const aoVivo = urlExterna(projeto.url);
+  const dono = repo.id.split('/')[0];
+  const topicos = repo.topicos.slice(0, MAX_TOPICOS);
+  // os links só são alcançáveis no cartão da frente; nos laterais o clique é do cartão
+  const alcance = geo.naFrente ? 0 : -1;
+
+  const dados: [string, string | number][] = [
+    [t.projetos.rotulos.commits, repo.commits],
+    ...(repo.estrelas > 0 ? [[t.projetos.rotulos.estrelas, repo.estrelas] as [string, number]] : []),
+    ...(repo.forks > 0 ? [[t.projetos.rotulos.forks, repo.forks] as [string, number]] : []),
+    [t.projetos.rotulos.desde, anoMes(repo.criadoEm)],
+    [t.projetos.rotulos.atualizado, anoMes(repo.atualizadoEm)],
+  ];
 
   return (
     <article
@@ -66,82 +136,79 @@ export function ProjectCard({ projeto, indice, geo, ativo, onFocar }: ProjectCar
       <div
         className={styles.cartao}
         style={{ '--ordem': geo.ordem } as React.CSSProperties}
-        data-vaga={vaga || undefined}
         data-frente={geo.naFrente || undefined}
         data-entrada={ativo || undefined}
         // o da frente já está onde deveria: só os laterais respondem ao clique
         onClick={geo.naFrente ? undefined : onFocar}
       >
-        <div className={styles.banner}>
-          <Figure
-            src={projeto.banner ? BANNERS[projeto.banner] : undefined}
-            alt=""
-            placeholder={t.projetos.banner}
-            fit="cover"
-          />
-          <span className={styles.scrim} aria-hidden="true" />
-          <div className={styles.bannerTopo} aria-hidden="true">
-            <span className={styles.numero}>{rotulo}</span>
-            <span className={styles.glifo}>
-              <span style={{ borderRadius: glifo.r, transform: `rotate(${glifo.rot})` }} />
-              <span style={{ borderRadius: glifo.r2, transform: `rotate(${glifo.rot2})` }} />
+        <div className={styles.corpo}>
+          <div className={styles.topo}>
+            {/* a posição na órbita, que os traços-índice embaixo já dizem a quem lê a tela */}
+            <span className={styles.indice} aria-hidden="true">
+              {rotulo}
+            </span>
+            <span className={styles.dono}>{dono} /</span>
+            {repo.arquivado ? (
+              <span className={`${comum.estado} ${styles.arquivado}`}>{t.projetos.arquivado}</span>
+            ) : null}
+          </div>
+
+          <h3 className={styles.nome}>{nomeLegivel(repo.nome)}</h3>
+          {repo.descricao ? <span className={styles.linha}>{repo.descricao}</span> : null}
+
+          {/* tópicos como texto único: um `map` aninhado aqui só geraria nós a mais */}
+          {topicos.length ? <span className={styles.stack}>{topicos.join('  ·  ')}</span> : null}
+
+          <div className={styles.ritmo}>
+            <CodigoDeBarras datas={repo.datasRecentes} janela={janela} />
+            <span className={styles.ritmoLegenda}>
+              <span>{anoMes(janela.de)}</span>
+              <span>{t.projetos.atividade}</span>
+              <span>{anoMes(janela.ate)}</span>
             </span>
           </div>
+
+          {repo.linguagens.length ? <Linguagens lista={repo.linguagens} /> : null}
         </div>
 
-        <div className={styles.corpo}>
-          <div className={styles.tituloBloco}>
-            <h3 className={styles.nome}>{projeto.nome}</h3>
-            <span className={styles.linha}>{projeto.linha}</span>
-          </div>
-
-          <div className={styles.meta}>
-            <span>{projeto.ano}</span>
-            <span>{projeto.papel}</span>
-          </div>
-
-          {/* stack como texto único: um `map` aninhado aqui só geraria nós a mais */}
-          <span className={styles.stack}>{projeto.stack.join('  ·  ')}</span>
-
-          {/**
-           * O pé do cartão: a barra por cima, e a linha que fecha a leitura
-           * embaixo, com o estado numa ponta e o link na outra.
-           *
-           * O link está ali porque é o fim da leitura, e não o começo: quem
-           * chega a ele já passou por nome, resumo, ano, papel e stack, e a
-           * pergunta que sobra é onde ver aquilo funcionando. Nas extremidades
-           * opostas, cada um é uma coisa; encostados, os dois leriam como uma
-           * legenda só, que é o mesmo motivo dos dois fatos do Sobre.
-           *
-           * Ele é desenhado nos três cartões para que a altura do corpo seja a
-           * mesma em todos — renderizado só no da frente, o cartão mudaria de
-           * geometria no meio do giro. Fora da frente ele sai da tabulação e do
-           * ponteiro, e é o clique do cartão lateral que responde ali.
-           */}
-          <div className={styles.rodape}>
-            <span className={comum.medidor}>
-              <span className={comum.trilha}>
-                <span
-                  className={comum.preenchimento}
-                  style={{ width: preenchido ? '100%' : '0%' }}
-                />
+        {/**
+         * O canhoto: os dados e os links.
+         *
+         * Os links fecham a leitura, e não a abrem: quem chega a eles já passou
+         * pelo nome, pela descrição e pelos números. Eles são desenhados em todos
+         * os cartões para que a geometria seja a mesma no meio do giro.
+         */}
+        <div className={styles.canhoto}>
+          <div className={styles.dados}>
+            {dados.map(([nome, valor]) => (
+              <span key={nome} className={styles.dado}>
+                <span className={styles.rotulo}>{nome}</span>
+                <span className={styles.valor}>{valor}</span>
               </span>
-            </span>
+            ))}
+          </div>
 
-            <div className={styles.linhaFim}>
-              <span className={comum.estado}>{t.projetos.estados[projeto.estado]}</span>
-              {aoVivo ? (
-                <a
-                  className={styles.aoVivo}
-                  href={aoVivo}
-                  target="_blank"
-                  rel="noreferrer"
-                  tabIndex={geo.naFrente ? 0 : -1}
-                >
-                  {t.projetos.aoVivo}
-                </a>
-              ) : null}
-            </div>
+          <div className={styles.links}>
+            <a
+              className={styles.link}
+              href={repo.url}
+              target="_blank"
+              rel="noreferrer"
+              tabIndex={alcance}
+            >
+              {t.projetos.codigo}
+            </a>
+            {repo.site ? (
+              <a
+                className={styles.link}
+                href={urlExterna(repo.site)}
+                target="_blank"
+                rel="noreferrer"
+                tabIndex={alcance}
+              >
+                {t.projetos.aoVivo}
+              </a>
+            ) : null}
           </div>
         </div>
       </div>

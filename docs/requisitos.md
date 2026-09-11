@@ -41,11 +41,11 @@ nunca apresentando falha como ausência.
 
 **RF11** — A seção Projetos deve exibir os projetos em um carrossel em órbita 3D, navegável por clique, arraste e teclado.
 
-**RF12** — Cada cartão de projeto deve exibir banner, índice, nome, linha de resumo, ano, papel, stack tecnológica, estado e o link "ver ao vivo" quando houver, tudo na frente do cartão, com o estado e o link nas extremidades opostas do rodapé.
+**RF12** — Cada cartão de projeto deve exibir, com dados lidos do GitHub, índice, nome, descrição, tópicos, a atividade de commits dos últimos doze meses, o total de commits, as estrelas quando houver, o mês do último push, as linguagens por proporção e os links para o código e, quando houver, para o projeto no ar.
 
-**RF13** — O sistema não deve manter conteúdo oculto atrás de interação: não há painel de descrição, e o link "ver ao vivo" responde apenas no cartão que está na frente da órbita.
+**RF13** — O sistema não deve manter conteúdo oculto atrás de interação: não há painel de descrição, e os links do cartão respondem apenas no cartão que está na frente da órbita.
 
-**RF14** — O sistema deve indicar o estado de cada projeto (ativo, arquivado, vaga), sendo que projetos em estado "vaga" não têm link para onde levar.
+**RF14** — A seção Projetos deve exibir apenas repositórios escolhidos a dedo no conteúdo, descartando os privados, e informar quando nenhum foi escolhido ainda.
 
 **RF15** — A seção Trajetória deve exibir uma linha do tempo em curva com progresso preenchido até o evento ativo.
 
@@ -53,7 +53,7 @@ nunca apresentando falha como ausência.
 
 **RF17** — O sistema deve exibir uma janela de 6 eventos visíveis por vez na linha do tempo — 4 em telas estreitas (≤640px) —, deslizando conforme a navegação.
 
-**RF18** — O sistema deve exibir a ficha do evento ativo com cargo, organização, período, tipo, atividades e stack tecnológica.
+**RF18** — O sistema deve exibir a ficha do evento ativo com cargo, empresa ou projeto, categoria (extensão, freelance ou emprego), um texto descritivo e a stack tecnológica, com a marca da empresa ou do projeto apagada ao fundo; o período aparece apenas na linha do tempo.
 
 **RF19** — A seção Contato deve permitir envio de mensagem via mailto, sem back-end.
 
@@ -81,11 +81,9 @@ nunca apresentando falha como ausência.
 
 **RF32** — O badge de formação deve revelar seu detalhe (data de conclusão ou etapas cumpridas) sob o ponteiro, e exibi-lo já aberto em dispositivos sem ponteiro.
 
-**RF33** — O painel de descrição do projeto deve ser fechado pela tecla Esc e ao sair da seção Projetos.
-
 **RF34** — Canal de contato sem endereço cadastrado deve ser exibido como espaço reservado, fora da navegação.
 
-**RF35** — Imagem ausente (banner de projeto ou retrato) deve ser substituída por uma moldura de espaço reservado.
+**RF35** — Imagem ausente (retrato, capa, arte ou pôster) deve ser substituída por uma moldura de espaço reservado.
 
 **RF36** — O sistema deve exibir a versão do portfólio, obtida do `package.json` durante o build.
 
@@ -93,7 +91,7 @@ nunca apresentando falha como ausência.
 
 ## Requisitos Não Funcionais (RNF)
 
-**RNF01** — A interface deve usar paleta estritamente monocromática (preto/branco), sem cor ou gradiente colorido, exceto em marcas de terceiros (logos de instituições e banners de projetos).
+**RNF01** — A interface deve usar paleta estritamente monocromática (preto/branco), sem cor ou gradiente colorido, exceto em marcas de terceiros (logos de instituições e capas, artes e pôsteres das seções de dado remoto).
 
 **RNF02** — A estética deve seguir o estilo sci-fi/HUD minimalista (linhas finas de 1px, tracejados, tipografia mono).
 

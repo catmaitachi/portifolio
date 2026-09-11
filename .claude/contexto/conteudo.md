@@ -59,6 +59,9 @@ Steam e do Letterboxd em tempo de execução (ver `dados.md`). O que mora em `mu
 `filmes` nos dois idiomas são só os **rótulos** e os nomes dos estados, que é justamente o que não
 pode ser literal no componente.
 
+Projetos segue o mesmo arranjo desde que passou a ler o GitHub: `projetos` guarda só os rótulos,
+e a escolha dos repositórios mora em `shared.json → projetos` (ver *Adicionar um projeto*).
+
 `remoto` guarda os três estados de qualquer busca (esperando, falhou, vazio) num lugar só: eles não
 são de nenhuma seção em particular, e repeti-los em três blocos seria três lugares para traduzir a
 mesma frase.
@@ -82,32 +85,19 @@ como todo texto visível — e o título da aba é texto visível, ainda que for
 
 ### Adicionar um projeto
 
-Uma entrada em `projetos.lista` nos **dois** dicionários, com a mesma `key` e na mesma posição:
+Projeto é repositório do GitHub, e acrescentar um é uma linha em `shared.json → projetos`:
 
 ```json
-{
-  "key": "meu-projeto",
-  "nome": "Meu Projeto",
-  "linha": "Uma linha de resumo, sob o nome.",
-  "ano": "2026",
-  "papel": "Full stack",
-  "stack": ["React", "TypeScript"],
-  "estado": "ativo",
-  "url": "https://exemplo.com"
-}
+"projetos": ["catmaitachi/Scorepad", "catmaitachi/portifolio"]
 ```
 
-- `estado`: `ativo` / `arquivado` (barra cheia) ou `definir` (barra vazia). **`definir` é vaga**:
-  gira na órbita e não leva a lugar nenhum.
-- `url` vazia esconde o link *ver ao vivo*. Escreva o endereço **completo**
-  (`https://exemplo.com`): sem esquema, o `href` vira caminho relativo e o clique leva para
-  `<raiz-do-portfólio>/exemplo.com`. `urlExterna()` (`content/links.ts`) prefixa `https://` quando
-  falta, então o erro não chega ao visitante — mas o dado certo continua sendo o dado certo.
-- `banner` é uma **chave de `BANNERS`** (`assets.ts`), não um caminho: o arquivo vai em
-  `src/assets/banners/`, ganha uma linha em `BANNERS` e a mesma chave entra nos dois dicionários —
-  JSON não importa arquivo, e o Vite precisa do `import` para versionar o asset. Ausente = a moldura
-  de espaço reservado. Os banners são marcas dos próprios projetos e escapam da paleta
-  monocromática: identidade de terceiro não se repinta.
+- `dono/nome`, exatamente como na URL do repositório, e a ordem da lista é a ordem da órbita;
+- **só repositório público aparece.** Um privado é descartado pela função mesmo que o token o
+  enxergue, e um renomeado some até a linha ser corrigida;
+- o texto do cartão é o do GitHub: a descrição, os tópicos e o campo *Website* do repositório, que
+  vira o link "ver ao vivo". Mudar o que o cartão diz é mudar o repositório, sem tocar aqui;
+- lista vazia é estado previsto: a seção diz que nada foi selecionado ainda e não busca nada;
+- a função aceita até doze por consulta (`TETO`, em `api/github.ts`).
 
 ### Adicionar uma experiência
 
@@ -118,16 +108,28 @@ Uma entrada em `experiencia.lista` nos dois dicionários. A lista está em **ord
 {
   "key": "empresa-2026-01",
   "cargo": "Cargo",
-  "org": "Organização",
+  "org": "Empresa ou projeto",
+  "url": "https://empresa.com",
   "periodo": "2026.01",
-  "tipo": "estagio",
-  "bullets": ["Até três atividades."],
-  "stack": ["Até", "quatro", "itens"]
+  "tipo": "emprego",
+  "texto": "Um parágrafo sobre o que o trabalho foi, na primeira pessoa.",
+  "stack": ["Até", "cinco", "itens"],
+  "logo": "empresa"
 }
 ```
 
-`tipo` precisa existir em `experiencia.tipos` (`academico`, `extensao`, `estagio`, `freela`).
-`periodo` é **ano.mês** e é rótulo, não posição — o espaçamento na curva é sempre uniforme.
+- `tipo` é `extensao`, `freela` ou `emprego`, que é o trabalho remunerado constante, do estágio à
+  CLT. Os nomes ficam em `experiencia.tipos`, que é `Record` total: uma categoria nova quebra o build
+  até ter nome nos dois idiomas;
+- `periodo` é **ano.mês** e é o rótulo do nó na curva, não posição: o espaçamento é sempre uniforme.
+  Ele não aparece na ficha;
+- `url` é opcional: com ele, o subtítulo vira link, sublinhado e sem ícone;
+- `texto` é um parágrafo só, contado como a bio, e não repete o nome da empresa, que já está no
+  subtítulo;
+- `logo` é opcional e é uma chave de `LOGOS` (`assets.ts`), com o arquivo em `src/assets/logos/`. Ele
+  é pintado por máscara no fundo da ficha, então **pode ser o logo colorido**, desde que o fundo seja
+  transparente: um retângulo de fundo vira um retângulo apagado. Foi o caso do banner da ClinPlaY,
+  que tinha fundo branco e virou `logos/clinplay.svg` sem ele.
 
 ### Os dois textos do Sobre
 

@@ -8,8 +8,8 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | `section.module.css` | `--pt --pb --px --gap` |
 | `AboutSection` | `--retrato-col --retrato-ar --cols --corpo-gap --retrato --coluna-max --txt --pfs --plh --fatos-gap --fatos-pt --fatos-fs` |
 | `EducationSection` | `--cw --ch --cgap --cpad --cinterno --clogo-h --cfs-inst --cfs-nivel --cfs-curso --cfs-selo --cfs-valor --cvolta` |
-| `ProjectsSection` | `--pcw --pch --pbh --ph --pr --pperspectiva --pcard` |
-| `JourneySection` | `--exph --exp-cargo --exp-per --exp-curva --exp-rail --exp-fantasma --exp-gap --exp-txt --exp-topo` |
+| `ProjectsSection` | `--pcw --pch --pcanhoto --pfolga --pbarras --ph --pr --pperspectiva --pcard` |
+| `JourneySection` | `--exph --exp-cargo --exp-per --exp-curva --exp-rail --exp-marca --exp-marca-h --exp-gap --exp-cab-gap --exp-bloco-gap --exp-txt --exp-topo` |
 | `MusicSection` | `--capa` |
 | `GamesSection` | `--arte-w --arte-ar --faixa-item` |
 | `FilmsSection` | `--faixa-item` |

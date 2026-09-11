@@ -1,6 +1,6 @@
 ## Pendências
 
-- **Nada disto está publicado.** Música, Jogos e Filmes leem `api/`, e `api/` só existe de verdade na
+- **Nada disto está publicado.** Música, Jogos, Filmes e Projetos leem `api/`, e `api/` só existe de verdade na
   Vercel: falta ligar o repositório, cadastrar as variáveis de `.env.example` e apontar o
   `luuspz.dev` para lá. O link do topo do `README` já aponta para lá, e só passa a
   resolver quando isso acontecer. Em desenvolvimento o plugin do Vite cobre isso (ver `dados.md`).
@@ -10,8 +10,12 @@
   histórico de partidas: todo rastreador usa a chave própria dele na API da Riot, e a chave pessoal
   expira a cada 24 horas.
 
-- **Dois projetos são vagas** (`vaga-02`, `vaga-03`, estado `definir`): giram na órbita e não abrem
-  descrição. Preencher quando houver projeto.
+- **`GITHUB_TOKEN` falta no `.env.local` e na Vercel.** Sem ele a seção Projetos mostra o estado de
+  falha. Um token *fine-grained* só com leitura de repositórios públicos basta (ver `.env.example`).
+- **O texto da ClinPlaY na Trajetória é rascunho**, escrito a partir do que já estava no
+  dicionário: a plataforma, o papel de Scrum Master e a stack. Reescrever com o que ele quiser contar (`experiencia.lista`, nos dois dicionários). O link do
+  subtítulo aponta para `https://clinplay.com`, o endereço que estava no antigo cartão de projeto:
+  conferir.
 - TikTok está sem `url` em `shared.json`, então aparece como "em breve".
 - **`LETTERBOXD_LIST` está no `.env.local` e falta nas variáveis da Vercel.** Sem ela lá, o bloco de
   favoritos simplesmente não aparece em produção, e a seção mostra só os vistos por último.
@@ -24,8 +28,6 @@
 - **Contraste padrão abaixo do WCAG AA.** Os textos em `--tx-rotulo` (40%) e abaixo ficam entre 1,9:1
   e 3,7:1 sobre o preto. É a estética da página, e quem pede contraste ao sistema já recebe tudo acima
   de 4,5:1 (`prefers-contrast`). Subir o padrão muda o desenho da página inteira.
-- **O peso 200 da fonte vem só para o número fantasma da Trajetória**, que está a 7,5% de opacidade.
-  Trocá-lo por 300 tira um arquivo de fonte do carregamento no lado profissional.
 
 ---
 
@@ -33,28 +35,6 @@
 
 Ideias já decididas, ainda não implementadas. Estão aqui e não em `secoes.md` porque descrevem o que
 as seções **vão ser**, e aquele arquivo descreve o que elas são.
-
-### Projetos e Trajetória trocam de assunto
-
-Hoje as duas dividem mal o mesmo tema: Projetos mostra tudo que foi feito, e Trajetória mostra onde
-foi feito. A divisão passa a ser por **de quem é a coisa**:
-
-- **Projetos vira o catálogo do que é dele.** Só projeto pessoal, as coisinhas, sem cliente e sem
-  empregador. Isso muda o que a órbita mostra, não como ela funciona. Nele não existe projeto a
-  definir, e as duas vagas de hoje saem com a troca: por isso um cartão vago próprio para Projetos,
-  mais simples e apagado como a pretensão de Formação, foi descartado antes de entrar.
-- **Trajetória passa a guardar o profissional inteiro**: empregos, freelas e projetos externos, que
-  hoje não têm lugar nenhum quando não são emprego.
-
-A ficha de cada ponto da curva ganha **título, subtítulo, texto, stack e uma imagem na lateral**. A
-imagem é a decisão em aberto, e são duas leituras diferentes: um **logo** diz de quem era o trabalho e
-cabe na régua monocromática dos logos de formação; uma **foto** diz como o trabalho era e traz cor de
-terceiro, como os banners de projeto. Os dois cabem na página, mas não ao mesmo tempo, porque um
-trilho com logo em metade das fichas e foto na outra metade não lê como uma coluna só.
-
-O texto é conteúdo novo nos dois dicionários, e a `bullets` de hoje provavelmente vira ele. A imagem
-segue o caminho de `BANNERS` e `LOGOS` em `assets.ts`: chave no dicionário, arquivo importado no
-registro.
 
 ### Jogos divide a seção com o LoL
 

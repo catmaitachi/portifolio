@@ -91,46 +91,18 @@
   "projetos": {
     "titulo": "Projects",
     "intro": "A few of my little personal projects.",
-    "banner": "...",
+    "vazio": "No project selected yet.",
+    "codigo": "see the code",
     "aoVivo": "see it live",
-    "estados": {
-      "ativo": "Active",
-      "arquivado": "Archived",
-      "definir": "Open slot"
-    },
-    "lista": [
-      {
-        "key": "clinplay",
-        "nome": "ClinPlaY",
-        "linha": "Gamified and accessible physical therapy in SaaS format.",
-        "ano": "2026",
-        "papel": "Scrum Master",
-        "stack": ["React", "TypeScript", "Java", "Spring Boot"],
-        "estado": "ativo",
-        "url": "https://clinplay.com",
-        "banner": "clinplay"
-      },
-      {
-        "key": "vaga-02",
-        "nome": "—",
-        "linha": "to be defined",
-        "ano": "—",
-        "papel": "—",
-        "stack": [],
-        "estado": "definir",
-        "url": ""
-      },
-      {
-        "key": "vaga-03",
-        "nome": "—",
-        "linha": "to be defined",
-        "ano": "—",
-        "papel": "—",
-        "stack": [],
-        "estado": "definir",
-        "url": ""
-      }
-    ]
+    "atividade": "One line per commit",
+    "arquivado": "Archived",
+    "rotulos": {
+      "commits": "Commits",
+      "estrelas": "Stars",
+      "forks": "Forks",
+      "desde": "Since",
+      "atualizado": "Last push"
+    }
   },
 
   "musica": {
@@ -174,10 +146,9 @@
     "titulo": "Journey",
     "intro": "My responsibilities over time.",
     "tipos": {
-      "academico": "Academic",
       "extensao": "Extension",
-      "estagio": "Internship",
-      "freela": "Freelance"
+      "freela": "Freelance",
+      "emprego": "Employment"
     },
     "janela": {
       "anterior": "Previous event",
@@ -185,95 +156,15 @@
     },
     "lista": [
       {
-        "key": "senac",
-        "cargo": "Front-end developer",
-        "org": "SENAC · Final course project",
-        "periodo": "2022.12",
-        "tipo": "academico",
-        "bullets": [
-          "An internal social network for my class, my first complete system.",
-          "I learned HTML, CSS, Bootstrap and JavaScript by writing the project.",
-          "First team project versioned in Git and GitHub."
-        ],
-        "stack": ["HTML", "CSS", "Bootstrap", "JavaScript"]
-      },
-      {
-        "key": "patas",
-        "cargo": "Full-stack developer",
-        "org": "PUC Minas · Interdisciplinary project",
-        "periodo": "2025.06",
-        "tipo": "academico",
-        "bullets": [
-          "Digital pet ID: the owner opens it on their phone, the clinic reads the same link.",
-          "I learned to gather requirements with the team, before starting to write.",
-          "I designed and prototyped in Figma before building the interface."
-        ],
-        "stack": ["Figma", "HTML", "CSS", "JavaScript"]
-      },
-      {
-        "key": "extensao",
-        "cargo": "Speaker",
-        "org": "PUC Minas · Outreach project",
-        "periodo": "2025.06",
-        "tipo": "extensao",
-        "bullets": [
-          "A cybersecurity class for the students at SENAC, where I had graduated.",
-          "Good online practice explained without jargon, for people who are still learning.",
-          "I prepared the content and delivered the class in a group."
-        ],
-        "stack": ["CyberSecurity", "Presentation", "Communication"]
-      },
-      {
-        "key": "azzure",
-        "cargo": "Full-stack developer",
-        "org": "PUC Minas · Interdisciplinary project",
-        "periodo": "2025.11",
-        "tipo": "academico",
-        "bullets": [
-          "I modelled classes and flows in UML before starting the implementation.",
-          "I wrote the route calculation in Java and the React interface that consumes it.",
-          "I organised the team in agile cycles, with scope closed at each delivery."
-        ],
-        "stack": ["Java", "React", "UML", "Scrum"]
-      },
-      {
-        "key": "wms",
-        "cargo": "Social media assistant",
-        "org": "PUC Minas · We Make Software",
-        "periodo": "2026.03",
-        "tipo": "extensao",
-        "bullets": [
-          "I covered the event in photographs, from the stage to backstage.",
-          "I interviewed the special guests.",
-          "I worked with the team to make the event's social media posts."
-        ],
-        "stack": ["Photography", "Interview", "Social Media"]
-      },
-      {
-        "key": "puc-aberta",
-        "cargo": "Student ambassador",
-        "org": "PUC Minas · Open day",
-        "periodo": "2026.05",
-        "tipo": "extensao",
-        "bullets": [
-          "I presented the Software Engineering course to prospective freshmen.",
-          "I contributed with the idea and design of the stand.",
-          "I talked about day-to-day academic life with people still choosing a course."
-        ],
-        "stack": ["Presentation", "Communication", "Ideation"]
-      },
-      {
         "key": "clinplay",
         "cargo": "Scrum Master",
-        "org": "PUC Minas · Interdisciplinary project",
+        "org": "ClinPlaY",
+        "url": "https://clinplay.com",
         "periodo": "2026.06",
-        "tipo": "academico",
-        "bullets": [
-          "ClinPlaY: gamified physiotherapy that follows the patient outside the clinic.",
-          "I led the team as Scrum Master: backlog, ceremonies and scope closed per sprint.",
-          "React with TypeScript on the client, Java with Spring Boot on the service."
-        ],
-        "stack": ["React", "TypeScript", "Java", "Spring Boot"]
+        "tipo": "extensao",
+        "texto": "A gamified, accessible physiotherapy platform that follows the patient outside the clinic. As Scrum Master, I guided the team through the backlog and the ceremonies, and closed the scope of each sprint.",
+        "stack": ["React", "TypeScript", "Java", "Spring Boot"],
+        "logo": "clinplay"
       }
     ]
   },

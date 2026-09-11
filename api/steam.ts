@@ -18,7 +18,7 @@ import { ambiente, falha, json, metodoInvalido } from './_resposta.js';
  * terceira chamada: o caminho por convenção que existia aqui deixou de valer
  * para os jogos do esquema novo (ver `capas`). Quando a pergunta falha sobra a
  * convenção, e quando a convenção também erra sobra a moldura vazia, que a
- * seção já desenha como faz com banner de projeto ausente.
+ * seção já desenha como faz com qualquer imagem ausente.
  */
 
 interface JogoSteam {

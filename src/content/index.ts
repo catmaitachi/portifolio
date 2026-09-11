@@ -32,6 +32,15 @@ export const CANAIS = shared.canais;
 export const LOGO_ESCALAS = shared.logos;
 
 /**
+ * Os repositórios da seção Projetos, escolhidos a dedo.
+ *
+ * Mora em `shared.json`, e não num dicionário, porque é a mesma escolha nos dois
+ * idiomas; o que o GitHub diz de cada um chega em tempo de execução
+ * (`api/github`).
+ */
+export const PROJETOS = shared.projetos;
+
+/**
  * O lado em que o site abre para quem não pediu nenhum.
  *
  * É o profissional porque é o que o endereço promete a quem chega sem contexto:
@@ -97,9 +106,9 @@ export type {
   Modo,
   ModoKey,
   Perfil,
-  Projeto,
   SectionKey,
   Shared,
+  TipoExperiencia,
 } from './types';
-export { BANNERS, ICONES, LOGOS, RETRATO } from './assets';
+export { ICONES, LOGOS, RETRATO } from './assets';
 export { urlExterna } from './links';

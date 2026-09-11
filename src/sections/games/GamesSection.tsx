@@ -22,7 +22,7 @@ const horas = (minutos: number) => Math.round(minutos / 60);
  *
  * O endereço é resolvido a cada resposta (ver `api/steam.ts`) e pode não vir.
  * `onError` esconde a imagem e deixa a moldura vazia de 1px, que é o mesmo
- * espaço reservado dos banners de projeto; sem isso sobraria o ícone de imagem
+ * espaço reservado de toda imagem da página; sem isso sobraria o ícone de imagem
  * quebrada do navegador, a única coisa fora da paleta na página inteira.
  *
  * A moldura é também quem **inclina seguindo o ponteiro** (`useInclinacao`), com

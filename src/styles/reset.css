@@ -80,9 +80,8 @@
  * **Os nomes dizem o papel, não o valor.** É isso que deixa o `prefers-contrast`
  * logo abaixo subir todos os textos de uma vez, sem que nenhum módulo saiba.
  *
- * Fica de fora o que tem motivo próprio escrito onde está: o degradê do nome, o
- * número fantasma da Trajetória, os anéis do HUD e os glifos do cartão de
- * projeto.
+ * Fica de fora o que tem motivo próprio escrito onde está: o degradê do nome, a
+ * marca no fundo da ficha da Trajetória e os anéis do HUD.
  */
 :root {
   /* texto, do mais aceso ao mais apagado */

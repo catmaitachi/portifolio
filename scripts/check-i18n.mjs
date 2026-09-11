@@ -39,7 +39,6 @@ for (const k of chavesEn) if (!chavesPt.has(k)) problemas.push(`falta em pt.json
 
 /** Listas ligadas por `key`/`slot` precisam ter os mesmos itens, na mesma ordem. */
 const listas = [
-  ['projetos.lista', (d) => d.projetos.lista, 'key'],
   ['experiencia.lista', (d) => d.experiencia.lista, 'key'],
   ['formacoes.lista', (d) => d.formacoes.lista, 'slot'],
   ['sobre.dados', (d) => d.sobre.dados, 'key'],

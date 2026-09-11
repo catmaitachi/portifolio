@@ -33,7 +33,7 @@ um tema novo.
 | `motor.md` | `src/engine/`: camadas, contrato de desempenho, constelações, câmera |
 | `cena.md` | o plano de cena por seção e a Super-Nova que o visitante acende |
 | `conteudo.md` | i18n e como acrescentar projeto, experiência, formação ou seção |
-| `dados.md` | `api/` e `src/data/`: Spotify, Steam e Letterboxd, e por que não dá do navegador |
+| `dados.md` | `api/` e `src/data/`: Spotify, Steam, Letterboxd e GitHub, e por que não dá do navegador |
 | `navegacao.md` | rolagem por seções, teclado e a faixa do mobile |
 | `entradas.md` | o gesto de entrada de cada seção, as ondas da curva e a decifragem da bio |
 | `hud.md` | anéis, mira, versão, crédito, medidor da supernova e notificações |

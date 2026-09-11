@@ -14,7 +14,7 @@
   display: block;
   width: 100%;
   height: 100%;
-  /* object-fit vem inline: cover no retrato e no banner, contain quando pedido */
+  /* object-fit vem inline: cover no retrato, contain quando pedido */
 }
 
 .rotulo {
