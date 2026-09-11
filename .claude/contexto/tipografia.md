@@ -42,6 +42,7 @@ justificação aceitável, e nenhuma delas é opcional:
 | `hyphens: auto` | quebra a palavra no fim da linha em vez de esticá-la — é o que o LaTeX faz |
 | `hyphenate-limit-chars: 6 3 3` | recusa palavra de menos de 6 letras e nunca deixa menos de 3 de cada lado do hífen. O padrão (5 2 2) pica palavras curtas e o texto vira uma escada de hífens |
 | `text-wrap: pretty` | o Chrome escolhe as quebras olhando o parágrafo inteiro, não linha a linha — a ideia do algoritmo do Knuth: tira o buraco de uma linha e o distribui pelas vizinhas |
+| `text-justify: inter-character` | espalha a folga entre todos os caracteres da linha, e não só entre as palavras, que é o que o `microtype` faz. É a saída quando a palavra seguinte não tem onde partir: na bio do celular, o pior vão caiu de 3,5 para 1,3 espaço e nenhuma linha passa de 2 |
 
 **A hifenização depende de `<html lang>`**, e é por isso que o `LanguageProvider` reflete o idioma
 por `useEffect` e não nos dois callbacks de troca. Antes, um visitante detectado como `en` ficava

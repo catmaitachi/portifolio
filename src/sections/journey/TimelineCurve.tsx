@@ -77,9 +77,10 @@ export function TimelineCurve({ lista, linha, ativo }: TimelineCurveProps) {
   const corteId = `${useId()}-corte`;
 
   // durante o arraste as transições saem do caminho, senão a curva ficaria
-  // sempre um passo atrás do dedo
-  const transicaoGrupo = arrastando ? 'none' : 'transform .85s cubic-bezier(.22,.86,.2,1)';
-  const transicaoCorte = arrastando ? 'none' : 'transform .95s cubic-bezier(.22,.86,.2,1)';
+  // sempre um passo atrás do dedo; a curva é o token do `reset.css`, que o
+  // style inline enxerga como qualquer regra
+  const transicaoGrupo = arrastando ? 'none' : 'transform .85s var(--ease-saida)';
+  const transicaoCorte = arrastando ? 'none' : 'transform .95s var(--ease-saida)';
 
   return (
     <div
@@ -241,7 +242,7 @@ export function TimelineCurve({ lista, linha, ativo }: TimelineCurveProps) {
                */
               transition: arrastando
                 ? 'opacity .16s ease'
-                : `left .85s cubic-bezier(.22,.86,.2,1),top .85s cubic-bezier(.22,.86,.2,1),opacity ${
+                : `left .85s var(--ease-saida),top .85s var(--ease-saida),opacity ${
                     dentro ? '.14s' : '.4s'
                   } ease`,
             } as React.CSSProperties}

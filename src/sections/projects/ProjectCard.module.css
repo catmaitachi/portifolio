@@ -43,7 +43,7 @@
   height: var(--pch, 436px);
   margin-left: calc(var(--pcw, 308px) / -2);
   transition:
-    transform 0.95s cubic-bezier(0.22, 0.86, 0.2, 1),
+    transform 0.95s var(--ease-saida),
     opacity 0.8s ease;
 }
 
@@ -52,12 +52,12 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  border: 1px solid rgb(255 255 255 / 20%);
+  border: 1px solid var(--linha-forte);
   border-radius: 2px;
   overflow: hidden;
   background: rgb(0 0 0 / 42%);
   cursor: pointer;
-  transition: border-color 0.5s ease;
+  transition: border-color var(--dur-hover);
 }
 
 /**
@@ -69,8 +69,7 @@
  * projetos não pede nada aqui.
  */
 .cartao[data-entrada] {
-  animation: cartaoSobe 0.82s cubic-bezier(0.16, 0.84, 0.24, 1) calc(var(--ordem, 0) * 175ms)
-    backwards;
+  animation: cartaoSobe 0.82s var(--ease-entrada) calc(var(--ordem, 0) * 175ms) backwards;
 }
 
 /* chanfro dos dois cantos opostos — ver "Cantos chanfrados" no CLAUDE.md */
@@ -96,7 +95,6 @@
  * maior parte dele não arrasta mais.
  */
 .cartao[data-frente] {
-  border-color: rgb(255 255 255 / 24%);
   background: rgb(0 0 0 / 92%);
   cursor: grab;
 }
@@ -106,7 +104,7 @@
 }
 
 .cartao:hover {
-  border-color: rgb(255 255 255 / 34%);
+  border-color: var(--linha-acesa);
 }
 
 /* vaga: reservada, não clicável para abrir */
@@ -127,7 +125,7 @@
   position: relative;
   flex: none;
   height: var(--pbh, 170px);
-  border-bottom: 1px solid rgb(255 255 255 / 13%);
+  border-bottom: 1px solid var(--linha);
   overflow: hidden;
 }
 
@@ -152,7 +150,7 @@
 }
 
 .numero {
-  color: rgb(255 255 255 / 60%);
+  color: var(--tx-corpo);
   font-size: 26px;
   font-weight: 300;
   line-height: 1;
@@ -196,7 +194,7 @@
 
 .nome {
   margin: 0;
-  color: #fff;
+  color: var(--tx-titulo);
   font-size: 16px;
   font-weight: 400;
   line-height: 1.2;
@@ -205,8 +203,8 @@
 }
 
 .linha {
-  color: rgb(255 255 255 / 56%);
-  font-size: 11px;
+  color: var(--tx-apoio);
+  font-size: var(--fs-pequeno);
   font-weight: 300;
   line-height: 1.6;
   letter-spacing: 0.05em;
@@ -219,16 +217,16 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px 14px;
-  color: rgb(255 255 255 / 42%);
-  font-size: 9px;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-meta);
   letter-spacing: 0.2em;
   text-transform: uppercase;
 }
 
 .stack {
   min-height: 12px;
-  color: rgb(255 255 255 / 38%);
-  font-size: 9.5px;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-meta);
   font-weight: 300;
   line-height: 1.5;
   letter-spacing: 0.14em;
@@ -267,12 +265,15 @@
 .aoVivo {
   flex: none;
   padding-bottom: 3px;
-  border-bottom: 1px solid rgb(255 255 255 / 26%);
-  color: rgb(255 255 255 / 74%);
-  font-size: 9px;
-  letter-spacing: 0.24em;
+  border-bottom: 1px solid var(--linha-forte);
+  color: var(--tx-corpo);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-etiqueta);
   text-transform: uppercase;
   pointer-events: none;
+  transition:
+    color var(--dur-hover),
+    border-color var(--dur-hover);
 }
 
 .cartao[data-frente] .aoVivo {
@@ -280,6 +281,6 @@
 }
 
 .aoVivo:hover {
-  border-bottom-color: #fff;
-  color: #fff;
+  border-bottom-color: var(--tx-titulo);
+  color: var(--tx-titulo);
 }

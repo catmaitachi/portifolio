@@ -55,7 +55,8 @@ export function AboutSection({ ativo, indice, modo }: SectionProps) {
         </p>
 
         <div className={styles.corpo}>
-          <PortraitCard />
+          {/* no mobile a foto flutua à esquerda e o texto a contorna */}
+          <PortraitCard className={styles.retrato} />
 
           <div className={styles.coluna}>
             <h2 className={comum.titulo}>{t.sobre.titulo}</h2>

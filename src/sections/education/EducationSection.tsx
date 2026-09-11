@@ -56,12 +56,12 @@ const ORDEM_ESTADO: Record<EstadoFormacao, number> = {
  * estava lendo. Aqui não há parada, e o que muda é qual crachá está passando
  * pelo meio.
  *
- * **A lista aparece duas vezes enquanto a faixa anda**, e é isso que fecha o
+ * **A lista aparece três vezes enquanto a faixa anda**, e é isso que fecha o
  * laço: ela translada exatamente uma volta e volta ao começo, onde a cópia já
  * está no lugar da original. Sem a cópia haveria um salto visível a cada volta,
- * e nenhuma duração o esconderia. A segunda passada é `aria-hidden`, porque é a
- * mesma formação de novo, e some do DOM quando a faixa está parada, onde não
- * teria nenhuma função.
+ * e nenhuma duração o esconderia. As passadas extras são `aria-hidden`, porque
+ * são a mesma formação de novo, e somem do DOM quando a faixa está parada, onde
+ * não teriam nenhuma função.
  *
  * **E há um terceiro estado, para quem pediu menos movimento.** Ali a faixa não
  * pode andar, mas o que não cabe também não pode ficar inalcançável: o palco

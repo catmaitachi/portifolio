@@ -8,6 +8,12 @@ aparece em teste, porque depende de timing: ref escrita durante o render, estado
 depois de uma prop, efeito sem limpeza. A primeira passada achou 20 desses num código que compilava
 e funcionava.
 
+**Ele não substitui a leitura.** Na revisão de tokens e abertura ele devolveu os mesmos quatro, e os
+defeitos reais daquela revisão estavam todos fora do que ele olha: glifos que a fonte não tem (`∆`,
+`∑`, `↗`), `outline: none` em regiões focáveis, um hook que sobrescrevia a `transition` do cartão e
+`will-change` permanente em todo cartão inclinável. A varredura precisa de leitura do código e de
+conferência em fonte primária, e o React Doctor é uma das conferências.
+
 Duas coisas fazem parte de usá-lo, e nenhuma é opcional:
 
 - **buscar a receita canônica da regra** (`/docs/rules/react-doctor/<regra>`) antes de corrigir, e
@@ -60,7 +66,8 @@ aconteceu usou o valor velho, e só o seguinte mostra o certo.
 - Quando o estado é de verdade mas precisa acompanhar a prop, use a atualização guardada **durante
   o render**, que o React descarta e refaz sem pintar o intermediário. Ela precisa **convergir**:
   depois de rodar, a condição não pode mais valer. É o que a Trajetória faz para distinguir "acabou
-  de entrar" de "está navegando" (ver `entradas.md`).
+  de entrar" de "está navegando", e o Início para distinguir a abertura de uma volta (ver
+  `entradas.md`).
 
 Os dois exemplos que estavam escritos aqui eram o `Notice` e o `useNovaHint`, e os dois saíram do
 projeto junto com as notificações. A regra não mudou com eles.
@@ -76,6 +83,18 @@ caractere a caractere. A chave é o próprio texto, e o nó é recriado limpo.
 `encaixeDe` e `fracaoDe` (`NavMenu`) só medem o elemento que recebem por parâmetro. No corpo do
 componente eram recriadas a cada render; no escopo do módulo são uma ligação só, e fica visível que
 são contas sobre o DOM, sem relação com o React.
+
+### Seção é `memo`
+
+`MONTAR` (`App.tsx`) guarda cada seção embrulhada em `memo`. As três props (`ativo`, `indice` e
+`modo`) são valores simples, então uma seção só renderiza quando uma delas muda para ela, ou quando o
+idioma muda pelo contexto. O motivo é o estado da supernova, que mora no `App`: sem `memo`, cada
+estrela acesa re-renderizava a página inteira no quadro da explosão, que é o quadro em que o canvas
+mais trabalha. Trocar de seção também deixou de re-renderizar todas para mudar o `ativo` de duas.
+
+Isso só vale enquanto as props continuarem simples. Uma prop nova que seja objeto ou função precisa
+ser estável (`useMemo`, `useCallback`), senão o `memo` compara uma identidade nova a cada render e
+não evita nada.
 
 ### O cleanup do `SpaceCanvas` usa `AbortController`, e a regra continua acesa
 

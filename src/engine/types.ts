@@ -83,6 +83,12 @@ export interface StageEnv {
   mouse: { x: number; y: number; active: boolean };
   camera: CameraState;
   bus: StageBus;
+  /**
+   * A máquina não sustentou o quadro nem sem HiDPI (ver o corte de qualidade em
+   * `stage.ts`). As camadas caras podem desenhar menos: o campo de estrelas
+   * desenha metade delas. Uma vez ligado, fica ligado.
+   */
+  leve: boolean;
 }
 
 /**

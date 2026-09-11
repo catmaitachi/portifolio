@@ -6,7 +6,9 @@ curva da Trajetória e a decifragem da bio. A navegação em si está em `navega
 ### Cada seção entra de um jeito
 
 A moldura é comum — `.bloco[data-ativo]` traz opacidade + 26px —, mas **o conteúdo de cada seção
-entra com um gesto próprio**. `inicio` já tinha o seu: o zoom da câmera saindo do horizonte.
+entra com um gesto próprio**. `inicio` tem dois: o zoom da câmera saindo do horizonte, que é só da
+abertura, e a cascata de etiqueta, nome e legenda, que se refaz a cada volta (ver *O Início se refaz
+a cada volta*).
 
 | Seção | Entrada | Onde |
 |---|---|---|
@@ -66,8 +68,55 @@ com o bloco assentando, e a distância do destaque subiu para 40px, pela regra a
 acompanhar o tamanho. As capas da faixa sobem só 14px, e ali o limite é outro: elas vivem dentro de
 um `overflow-x`, que corta no eixo Y tudo que passar do recuo da faixa.
 
+**E a entrada de Jogos já sumiu uma vez sem ninguém ver.** Quando a grade de recentes virou a faixa,
+as duas regras que aplicavam `capaSobe` miravam a grade e saíram junto com ela. O keyframe continuou
+declarado, o build passou, o console ficou quieto, e a seção passou a aparecer sem entrada nenhuma.
+Um `@keyframes` que nenhuma regra usa é o sintoma a procurar depois de mexer na estrutura de uma
+seção.
+
 Quem escapa disso são as entradas que **não** transladam no eixo Y: os pôsteres de Filmes se acendem,
 e por isso leem por cima do movimento do bloco sem precisar esperá-lo.
+
+Toda entrada usa `--ease-entrada`, e toda transição `--ease-saida` (ver `direcao-visual.md`).
+
+**Seção fora da tela não anima.** `.bloco:not([data-ativo]) *` pausa toda animação que estiver
+correndo dentro de uma seção inativa (`section.module.css`). As entradas não sentem isso, porque só
+existem com `data-ativo`. Quem sente são os movimentos contínuos (a faixa de crachás, o anel do nó
+ativo, o ponto que pulsa em Música e Jogos, a linha de espera de uma busca), que seguiam rodando com
+a seção fora de vista. A barra do que está tocando também para, e a busca que acontece ao voltar a
+recoloca no lugar.
+
+### O Início se refaz a cada volta
+
+A cascata do Início (etiqueta, nome e legenda) ficava presa ao mount e rodava uma vez só, na
+abertura: quem voltava ao topo encontrava o nome parado. Hoje ela pende de `data-ativo`, como as
+entradas das outras seções, e recomeça a cada volta, com o brilho do nome em laço depois dela.
+
+Ela tem **dois relógios**, e o que os separa é a seção já ter saído de cena uma vez (`data-volta`,
+estado derivado durante o render, como na Trajetória):
+
+| | etiqueta | nome | legenda | brilho |
+|---|---|---|---|---|
+| abertura | 1,2s | 1,35s | 1,85s | 3,3s (`--abertura-fim`) |
+| volta | 0s | 0,15s | 0,65s | 1,35s, quando o nome acaba de se formar |
+
+A volta é a mesma cascata sem a espera do HUD, com os mesmos intervalos entre as peças. O brilho
+entra logo depois do nome porque não sobra nada chegando com que ele dispute atenção; na abertura ele
+espera o crédito, o idioma e a versão assentarem (ver `hud.md`). Quem abre o site pelo endereço de
+outra seção já começa como volta.
+
+Duas coisas vieram junto, e nenhuma é opcional:
+
+- **fora de cena o Início fica apagado**, com a mesma transição de 0,9s do `.bloco`. Sem isso a
+  rolagem de volta mostraria o nome inteiro, já formado, e ele sumiria no quadro em que a seção vira a
+  ativa, só para se refazer;
+- **a faixa do brilho descansa fora do texto.** Fora da animação o `background-position` é `-50%`, a
+  mesma posição em que ela para entre uma passada e outra. Na posição inicial do navegador, que valia
+  durante o atraso da abertura, a crista ficava parada sobre a última letra enquanto o nome se formava.
+
+Pendurado em `data-ativo`, o brilho também para quando o Início sai de cena. O Início não mora num
+`.bloco`, então a pausa de `section.module.css` não o alcançava, e o laço seguia rodando com a seção
+fora de vista.
 
 ### As duas ondas da Trajetória
 
@@ -161,6 +210,12 @@ percebe o embaralhamento na frente de onda.
 O alfabeto é só ASCII técnico e Latin-1. A página inteira é IBM Plex Mono, e um glifo que a fonte não
 tem vira caixa vazia — o efeito passaria de "texto cifrado" a "fonte quebrada". Katakana e blocos
 foram descartados por isso.
+
+**E a regra se confere no `unicode-range` da fonte.** `∆` e `∑` estiveram no alfabeto e não são
+Latin-1: nenhum subconjunto de IBM Plex Mono que o Google Fonts serve os cobre, e eles saíam de uma
+fonte de sistema com outra largura, justamente o que a cifra não pode ter. Para conferir um glifo
+novo, ler o CSS da fonte pedido por um navegador; sem user-agent de navegador o Google responde um
+bloco só, sem `unicode-range`.
 
 Dois detalhes que já custaram uma iteração cada:
 

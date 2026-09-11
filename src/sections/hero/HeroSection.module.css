@@ -75,7 +75,21 @@
   }
 }
 
+/**
+ * A cascata tem dois relógios.
+ *
+ * Na abertura ela espera o HUD, e os instantes são os `--abertura-*` do
+ * `reset.css`. Numa volta ao Início (`data-volta`) não há HUD se formando: a
+ * mesma cascata corre sem a espera, com os mesmos intervalos entre as peças, e o
+ * brilho do nome entra em laço assim que ele termina de se formar, em vez de
+ * esperar o fim de uma abertura que já aconteceu.
+ */
 .secao {
+  --hero-etiqueta: var(--abertura-etiqueta);
+  --hero-nome: var(--abertura-nome);
+  --hero-legenda: var(--abertura-legenda);
+  --hero-brilho: var(--abertura-fim);
+
   display: flex;
   flex-direction: column;
   gap: 2.4vmin;
@@ -86,6 +100,26 @@
   padding-left: clamp(22px, 7vw, 120px);
   scroll-snap-align: start;
   text-align: center;
+  /* sai de cena apagando, como o `.bloco` das outras seções */
+  transition: opacity 0.9s ease;
+}
+
+.secao[data-volta] {
+  --hero-etiqueta: 0s;
+  --hero-nome: 0.15s;
+  --hero-legenda: 0.65s;
+  /* quando o `tituloIn` termina */
+  --hero-brilho: calc(var(--hero-nome) + 1.2s);
+}
+
+/**
+ * Fora de cena o Início fica apagado, como toda seção inativa.
+ *
+ * Sem isso a volta mostraria o nome inteiro, já formado, durante a rolagem, e o
+ * apagaria no quadro em que a seção vira a ativa só para refazê-lo.
+ */
+.secao:not([data-ativo]) {
+  opacity: 0;
 }
 
 .etiqueta {
@@ -93,7 +127,7 @@
   gap: 1.1vmin;
   align-items: center;
   margin: 0;
-  color: rgb(255 255 255 / 50%);
+  color: var(--tx-apoio);
   font-size: clamp(9px, 1.35vmin, 14px);
   font-weight: 400;
   letter-spacing: 0.46em;
@@ -103,7 +137,6 @@
   text-align: left;
   hyphens: manual;
   user-select: none;
-  animation: fina 0.9s ease-out 3.5s both;
 }
 
 .regua {
@@ -112,7 +145,6 @@
   height: 1px;
   background: currentcolor;
   opacity: 0.6;
-  animation: reguaIn 0.8s cubic-bezier(0.3, 0.7, 0.2, 1) 3.5s both;
 }
 
 .nome {
@@ -151,8 +183,12 @@
     #a6a6a6 100%
   );
   background-size: 200% auto;
+  /* a faixa estacionada fora do texto, onde o brilho a deixa entre uma passada e
+     outra: é assim que o nome fica antes da primeira e depois que a seção sai.
+     Na posição inicial do navegador, a crista ficava parada sobre a última letra */
+  background-position: -50% center;
   background-clip: text;
-  color: #fff;
+  color: var(--tx-titulo);
   font-size: clamp(13px, min(6.4vmin, 6.8vw), 74px);
   font-weight: 400;
   line-height: 1;
@@ -162,15 +198,6 @@
   text-transform: uppercase;
   word-spacing: -0.12em;
   white-space: nowrap;
-
-  /* O brilho espera a **abertura inteira**, não só o `tituloIn` do próprio nome. Ela
-     termina em 6,2s (a versão entra em 5,6s e leva 0,6s — ver `hud.md`), e é o mesmo
-     instante que `useNovaHint` toma como "a tela já está parada". Nos 5,4s de antes o
-     brilho corria enquanto crédito, idioma e versão ainda entravam, e a primeira
-     passada, que é a única que alguém vê chegando, disputava atenção com elas. */
-  animation:
-    tituloIn 1.6s cubic-bezier(0.22, 0.8, 0.2, 1) 3.75s both,
-    brilhoNome 8.4s linear 6.2s infinite;
   -webkit-text-fill-color: transparent;
 }
 
@@ -190,11 +217,47 @@
 
 .legenda {
   margin: 0;
-  color: rgb(255 255 255 / 42%);
+  color: var(--tx-rotulo);
   font-size: clamp(11px, 1.95vmin, 21px);
   font-weight: 300;
   line-height: 1.7;
   letter-spacing: 0.22em;
   text-wrap: pretty;
-  animation: fina 1.2s ease-out 4.5s both;
+}
+
+/**
+ * A entrada fica **pendurada em `data-ativo`**, como a das outras seções.
+ *
+ * O atributo aparece quando o Início vira a seção ativa e some quando ela sai, e
+ * é isso que tira o `animation-name` de `none` e recomeça a cascata a cada
+ * volta. Presa ao mount, ela rodava uma vez só, na abertura, e voltar ao Início
+ * encontrava o nome parado.
+ *
+ * O brilho do nome vem junto e fica em laço enquanto a seção está ativa. Fora
+ * dela ele para, que é a regra de seção fora da tela não animar
+ * (`section.module.css`), e aqui ela sai de graça: a animação só existe com o
+ * atributo.
+ *
+ * Na abertura o brilho espera a **abertura inteira**, não só o `tituloIn` do
+ * próprio nome: começa em `--abertura-fim`, quando a última peça do HUD
+ * assentou. Correndo antes, a primeira passada, que é a única que alguém vê
+ * chegando, disputava atenção com o crédito, o idioma e a versão ainda entrando.
+ * Numa volta não há nada entrando, e ele começa assim que o nome se forma.
+ */
+.secao[data-ativo] .etiqueta {
+  animation: fina 0.7s ease-out var(--hero-etiqueta) both;
+}
+
+.secao[data-ativo] .regua {
+  animation: reguaIn 0.6s var(--ease-saida) var(--hero-etiqueta) both;
+}
+
+.secao[data-ativo] .nome {
+  animation:
+    tituloIn 1.2s var(--ease-saida) var(--hero-nome) both,
+    brilhoNome 8.4s linear var(--hero-brilho) infinite;
+}
+
+.secao[data-ativo] .legenda {
+  animation: fina 0.9s ease-out var(--hero-legenda) both;
 }

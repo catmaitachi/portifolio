@@ -11,38 +11,42 @@
 }
 
 /**
- * O cabeçalho fica **centrado** no topo, e o menu abre para baixo a partir dali.
+ * No desktop o cabeçalho fica **centrado** no topo, e o menu abre para baixo a
+ * partir dali. O centro é o lugar de um cabeçalho, e ali ele está livre: o
+ * seletor de idioma ocupa a direita.
  *
- * O centro é o lugar de um cabeçalho, e no desktop ele está livre: o seletor de
- * idioma ocupa a direita e o canto esquerdo está vazio. No mobile o idioma passa a ocupar
- * o centro da primeira linha, então o cabeçalho desce **uma linha e fica abaixo
- * dele**, ainda centrado. Empilhados eles leem como um bloco de cabeçalho, e
- * dividir a mesma linha não caberia numa tela de 375px.
+ * No celular os dois dividem a mesma linha, cabeçalho à esquerda e idioma à
+ * direita (ver a faixa no fim do módulo). A posição é token pela regra de
+ * sempre: a faixa só redefine os valores.
  *
  * A altura que ele reserva é `--hud-topo-altura`, em `reset.css`, e é de lá que
- * as seções derivam o respiro do topo. No mobile ela conta **duas** linhas, pela
- * mesma razão. Mexer no tamanho de uma linha é mexer em `--hud-topo-linha`, uma
- * vez só. **O menu aberto e a frase não entram nessa conta**: os dois são
- * transitórios e passam por cima do conteúdo, como qualquer menu.
+ * as seções derivam o respiro do topo: uma linha, em qualquer tela. Mexer no
+ * tamanho dela é mexer em `--hud-topo-linha`, uma vez só. **O menu aberto e a
+ * frase não entram nessa conta**: os dois são transitórios e passam por cima do
+ * conteúdo, como qualquer menu.
  *
- * Entra em 5s, entre o menu de seções (4.9s) e o crédito (5.2s): é navegação, e
- * chega junto com a outra.
+ * Entra logo depois do menu de seções (`--abertura-cabecalho`, em `reset.css`):
+ * é navegação, e chega junto com a outra.
  */
 .cabecalho {
   --cab-top: var(--hud-topo-base);
-  --cab-fs: 10px;
+  --cab-left: 50%;
+  --cab-right: auto;
+  --cab-tx: -50%;
+  --cab-fs: var(--fs-controle);
   /* a altura de uma opção; é ela que a expansão anima, de zero até aqui */
   --cab-item: var(--hud-topo-linha);
 
   position: absolute;
   z-index: 4;
   top: var(--cab-top);
-  left: 50%;
+  right: var(--cab-right);
+  left: var(--cab-left);
   display: flex;
   flex-direction: column;
   align-items: center;
-  transform: translateX(-50%);
-  animation: fina 1s ease-out 5s both;
+  transform: translateX(var(--cab-tx));
+  animation: fina var(--abertura-fina) ease-out var(--abertura-cabecalho) both;
 }
 
 /**
@@ -50,11 +54,81 @@
  *
  * "Profissional" é mais longo que "Pessoal", e num cabeçalho centrado alinhá-los
  * à esquerda deixaria o bloco inteiro torto em relação ao eixo da página.
+ *
+ * **Quem centra é o texto dentro do botão, não o botão dentro da moldura.** A
+ * moldura tem a largura do nome mais longo mesmo recolhida (altura zero não tira
+ * largura), e com `align-items: center` o botão de "Pessoal" media só o próprio
+ * texto: as sobras dos dois lados eram moldura, e clicar nelas não fazia nada.
+ * Esticado, o botão ocupa a moldura inteira e toda a caixa desenhada responde.
  */
 .lista {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
+  /**
+   * **A moldura é o que faz o nome ler como controle.** Solto, em versalete
+   * espaçado, ele tinha o mesmo desenho da etiqueta e da legenda do Início, que
+   * são texto, e ninguém clica em texto. Um contorno de 1px é a gramática dos
+   * chips e dos cartões da página, e é também a caixa do menu: quando ele abre,
+   * a moldura cresce junto com a segunda opção, porque as duas moram dentro dela.
+   *
+   * O convite que existiu antes aqui era movimento em volta do cabeçalho, e saiu
+   * (ver `hud.md`). Este é o cabeçalho mudando de forma, e fica parado.
+   */
+  border: 1px solid var(--linha);
+  border-radius: 2px;
+  transition: border-color var(--dur-hover);
+}
+
+/* chanfro dos dois cantos opostos, no tamanho dos chips (ver `direcao-visual.md`) */
+@supports (corner-shape: bevel) {
+  .lista {
+    corner-shape: bevel;
+    border-radius: 6px 2px;
+  }
+}
+
+/**
+ * Tudo aqui é discreto de propósito: a moldura e a ponta dizem que o nome é um
+ * controle, e não precisam gritar isso. Em 22% de moldura e branco cheio no nome
+ * o chip disputava o olho com o conteúdo da seção logo abaixo.
+ */
+.lista:hover,
+.cabecalho[data-aberto] .lista {
+  border-color: var(--linha-acesa);
+}
+
+/**
+ * A ponta que diz "isto abre", **desenhada**, pela regra de toda seta da página
+ * (ver `.ponta` em `sections/section.module.css`, e `direcao-visual.md`). Os
+ * quatro valores estão copiados e não importados: o HUD não conhece as seções.
+ *
+ * Fica dentro do botão, então clicar nela é clicar no gatilho. O recuo dos dois
+ * lados do `.modo` é o mesmo, então o nome continua centrado na moldura com ou
+ * sem ponta ao lado dele.
+ *
+ * **Só a rotação, nunca uma translação junto**: o ajuste vertical que o V pede,
+ * por ficar do lado da quina, sai de `margin-top`, que não gira com ela.
+ */
+.ponta {
+  position: absolute;
+  top: 50%;
+  right: 9px;
+  width: 4px;
+  height: 4px;
+  margin-top: -3px;
+  border-top: 1px solid currentcolor;
+  border-right: 1px solid currentcolor;
+  opacity: 0.5;
+  transform: rotate(135deg);
+  transition:
+    transform 0.3s var(--ease-saida),
+    margin-top 0.3s var(--ease-saida);
+}
+
+.cabecalho[data-aberto] .ponta {
+  margin-top: -1px;
+  transform: rotate(-45deg);
 }
 
 /**
@@ -65,16 +139,26 @@
  * lugar, que é exatamente o quadro em que o olho está olhando para ele.
  */
 .modo {
+  /* âncora da ponta, que fica no recuo da direita */
+  position: relative;
   display: flex;
   order: 1;
   align-items: center;
-  height: var(--cab-item);
+  /* o botão tem a largura da moldura (ver `.lista`), e o nome fica no meio dela */
+  justify-content: center;
+  /* a moldura soma 2px, e a linha continua com a altura que o topo reserva */
+  height: calc(var(--cab-item) - 2px);
   margin: 0;
-  padding: 0 2px;
+  /**
+   * O recuo da esquerda leva o `letter-spacing` a mais: ele entra também depois
+   * da última letra, e sem a compensação o nome ficaria deslocado para a
+   * esquerda dentro da moldura.
+   */
+  padding: 0 28px 0 calc(28px + 0.28em);
   overflow: hidden;
   border: 0;
   background: none;
-  color: rgb(255 255 255 / 40%);
+  color: var(--tx-apagado);
   font: inherit;
   font-size: var(--cab-fs);
   letter-spacing: 0.28em;
@@ -82,19 +166,21 @@
   white-space: nowrap;
   cursor: pointer;
   transition:
-    height 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+    height 0.3s var(--ease-saida),
     opacity 0.26s ease,
-    transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
-    color 0.35s;
+    transform 0.3s var(--ease-saida),
+    color var(--dur-hover);
 }
 
 .modo[data-escolhido] {
   order: 0;
-  color: #fff;
+  color: var(--tx-corpo);
 }
 
+/* mais claro que o repouso do escolhido: vem depois e empata em especificidade,
+   então um valor menor apagaria o nome ao ser apontado */
 .modo:hover {
-  color: rgb(255 255 255 / 72%);
+  color: var(--tx-hover);
 }
 
 /**
@@ -141,8 +227,8 @@
 .descricao {
   grid-area: 1 / 1;
   margin: 0;
-  color: rgb(255 255 255 / 38%);
-  font-size: 9px;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-meta);
   font-weight: 300;
   letter-spacing: 0.12em;
   /* é rótulo, não texto corrido: não se justifica nem se parte ao meio */
@@ -154,7 +240,7 @@
   transform: translateX(calc(var(--lado, 0) * 12px));
   transition:
     opacity 0.28s ease,
-    transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transform 0.34s var(--ease-saida);
 }
 
 .descricao[data-visivel] {
@@ -175,21 +261,36 @@
 }
 
 /**
- * No mobile ele desce para a segunda linha do topo, sob o seletor de idioma.
+ * No celular ele fica **à esquerda**, na mesma linha do seletor de idioma, que
+ * continua à direita como no desktop.
  *
- * O idioma é centrado ali desde antes de existir cabeçalho, e os dois na mesma
- * linha não cabem: "Pessoal | Profissional" já mede 218px numa tela de 375, e o
- * seletor come outros 68. Empilhados, os dois continuam centrados e leem como um
- * bloco só.
+ * Os dois já estiveram empilhados no centro, o idioma em cima e o cabeçalho
+ * embaixo, porque na época o cabeçalho mostrava os dois nomes lado a lado e não
+ * cabia ao lado de mais nada. Recolhido, ele mostra só o lado em vigor: o chip
+ * mede ~155px e o seletor ~68, e numa tela de 375 sobra mais de 100px entre os
+ * dois. Lado a lado o topo volta a ser uma linha só, e o conteúdo ganha a linha
+ * que a pilha reservava.
  *
- * O deslocamento sai de `--hud-topo-linha` mais o respiro entre as duas, e é a
- * mesma conta que `--hud-topo-altura` faz do outro lado, em `reset.css`. Um
- * número solto aqui sairia de sincronia com o que as seções reservam, que é
- * exatamente o defeito que o rodapé já teve uma vez.
+ * O recuo é o mesmo do seletor do outro lado, então os dois espelham um ao
+ * outro em relação ao centro.
+ *
+ * A frase do hover encosta à esquerda junto com ele. Centrada sob um chip preso
+ * à borda, a mais longa passaria da tela. Ela só existe com ponteiro, então isso
+ * vale para uma janela estreita de desktop, não para o celular.
  */
-@media (width <= 640px) {
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .cabecalho {
-    --cab-top: calc(var(--hud-topo-base) + var(--hud-topo-linha) + var(--hud-topo-entre));
-    --cab-fs: 9px;
+    --cab-left: var(--hud-borda);
+    --cab-tx: 0;
+    --cab-fs: var(--fs-meta);
+  }
+
+  .painel {
+    left: 0;
+    transform: none;
+  }
+
+  .descricao {
+    text-align: left;
   }
 }

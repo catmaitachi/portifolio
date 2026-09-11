@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { secoesDoModo, type ModoKey, type SectionKey } from '~/content';
 import { Credit } from '~/hud/Credit';
 import { Hud } from '~/hud/Hud';
@@ -31,17 +31,24 @@ import styles from './App.module.css';
  * deixou de ser fixa**: com dois modos, cada um com a sua lista, o JSX não pode
  * mais escrever as seções de cima para baixo. Nenhuma seção ganha conhecimento
  * novo com isso — a assinatura é a mesma para todas (ver `sections/types.ts`).
+ *
+ * **Cada seção é `memo`.** As três props são valores simples (um booleano, uma
+ * string e uma chave), então uma seção só renderiza de novo quando uma delas muda
+ * para ela, ou quando o idioma muda. Sem isso, cada estrela acesa (o `setNova`
+ * lá embaixo) re-renderizava a página inteira justamente no quadro da explosão,
+ * que é o quadro em que o canvas mais trabalha, e trocar de seção re-renderizava
+ * todas para mudar o `ativo` de duas.
  */
-const MONTAR: Record<SectionKey, (p: SectionProps) => React.ReactNode> = {
-  inicio: (p) => <HeroSection {...p} />,
-  sobre: (p) => <AboutSection {...p} />,
-  formacao: (p) => <EducationSection {...p} />,
-  projetos: (p) => <ProjectsSection {...p} />,
-  experiencia: (p) => <JourneySection {...p} />,
-  musica: (p) => <MusicSection {...p} />,
-  jogos: (p) => <GamesSection {...p} />,
-  filmes: (p) => <FilmsSection {...p} />,
-  contato: (p) => <ContactSection {...p} />,
+const MONTAR: Record<SectionKey, React.ComponentType<SectionProps>> = {
+  inicio: memo(HeroSection),
+  sobre: memo(AboutSection),
+  formacao: memo(EducationSection),
+  projetos: memo(ProjectsSection),
+  experiencia: memo(JourneySection),
+  musica: memo(MusicSection),
+  jogos: memo(GamesSection),
+  filmes: memo(FilmsSection),
+  contato: memo(ContactSection),
 };
 
 /**
@@ -149,21 +156,24 @@ export function App() {
 
       <div ref={ref} className={styles.rolagem}>
         {/**
-         * `Fragment`, nunca um elemento de embrulho: as seções precisam ser
-         * **filhas diretas** de `.rolagem` para o `scroll-snap` valer, e o filtro
-         * da supernova exige que o alvo do toque seja a caixa de uma `<section>`
-         * — uma `<div>` no meio quebraria os dois de uma vez, sem erro nenhum.
+         * Nunca um elemento de embrulho: as seções precisam ser **filhas diretas**
+         * de `.rolagem` para o `scroll-snap` valer, e o filtro da supernova exige
+         * que o alvo do toque seja a caixa de uma `<section>` — uma `<div>` no meio
+         * quebraria os dois de uma vez, sem erro nenhum. A `key` fica no próprio
+         * componente, que renderiza a `<section>` direto.
          */}
-        {secoes.map((key, i) => (
-          <Fragment key={key}>
-            {MONTAR[key]({
-              ativo: chaveAtiva === key,
+        {secoes.map((key, i) => {
+          const Secao = MONTAR[key];
+          return (
+            <Secao
+              key={key}
+              ativo={chaveAtiva === key}
               // a posição na ordem do modo; o Início é o 00 e não mostra número
-              indice: String(i).padStart(2, '0'),
-              modo,
-            })}
-          </Fragment>
-        ))}
+              indice={String(i).padStart(2, '0')}
+              modo={modo}
+            />
+          );
+        })}
       </div>
 
       <NavMenu

@@ -218,12 +218,11 @@ export function Supernova({
   const NUCLEO = 0.1;
 
   /**
-   * O colapso.
+   * O colapso, em segundos.
    *
-   * Um buraco negro não aparece do nada: ele é o que sobra quando a estrela
-   * implode. Por isso a promoção ao último nível **não tem estalo** — o anel do
-   * estalo se expande, e um anel se expandindo no mesmo instante em que outro
-   * implode não lê como nada.
+   * A promoção ao último nível **não tem estalo**: o anel do estalo se expande, e
+   * um anel se expandindo no mesmo instante em que outro implode não lê como
+   * nada.
    */
   const COLAPSO = 0.6;
   /**
@@ -403,7 +402,7 @@ export function Supernova({
        *
        * O poço interpola **continuamente** entre o nível atual e o seguinte, então
        * o aperto é gradual e não há degrau na física ao promover. O degrau fica
-       * por conta do que aparece na tela (o estalo, o plasma, o horizonte), que é
+       * por conta do que aparece na tela (o estalo, o plasma, a estrela), que é
        * onde ele informa em vez de sacudir.
        */
       if (cargaT >= 0) {
@@ -454,7 +453,7 @@ export function Supernova({
         if (n >= 2) {
           estrelaFade = Math.min(1, estrelaFade + dt / ESTRELA_ENTRA);
           // no último nível a estrela já morreu: o raio fica no que ela tinha, e
-          // é o colapso que o leva a zero
+          // é o colapso que o comprime até o núcleo
           if (n === 2) estrelaR = ESTRELA_MIN + (ESTRELA_MAX - ESTRELA_MIN) * p;
         }
       } else {
@@ -592,7 +591,7 @@ export function Supernova({
       /**
        * As estrelas acesas, com o mesmo desenho do campo.
        *
-       * Vem tudo de `engine/estrela.ts` — o sprite, o tamanho, o alongamento da
+       * Vem tudo de `engine/star.ts` — o sprite, o tamanho, o alongamento da
        * lente — e é essa a razão de aquele módulo existir: estas ficam lado a
        * lado com as do campo no mesmo céu, e uma delas desenhada com outra
        * linguagem salta aos olhos. Aqui o pool é de 12, então não há lote a
@@ -695,9 +694,9 @@ export function Supernova({
          *
          * Ele **cresce ao longo do nível inteiro**, e não com a carga total: o
          * progresso é o de dentro do nível corrente, então o plasma nasce pequeno
-         * quando acende e chega ao tamanho cheio exatamente quando o horizonte
-         * está prestes a se formar. Passado esse ponto ele fica no máximo e vira
-         * o disco do que nasceu ali.
+         * quando acende e chega ao tamanho cheio exatamente quando a estrela
+         * supermassiva está prestes a acender. Passado esse ponto ele segue o raio
+         * dela e vira a sua coroa.
          */
         const eColapso = colapso >= 0 ? colapso / COLAPSO : 0;
         if (plasma && plasmaFade > 0) {

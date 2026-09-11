@@ -242,7 +242,7 @@ export function NavMenu({ secoes, indice, irPara, seguirFracao, soltarFracao }: 
             aria-current={ativo ? 'true' : undefined}
             onClick={() => irPara(i)}
           >
-            <span className={styles.rotulo}>{t.nav[key]}</span>
+            <span>{t.nav[key]}</span>
             <span className={styles.risco} aria-hidden="true" />
           </button>
         );

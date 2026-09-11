@@ -23,10 +23,11 @@
  * até o repouso. Como as curvas são espelhadas, o que se vê é um par se abrindo
  * e fechando — e é isso que dá a leitura de rotação numa figura que só translada.
  *
- * O curso vem do próprio desenho: o caminho cobre **três** janelas (u de -1 a 2),
- * de x=-868 a x=1868 num `viewBox` de 1000. Esses 868px de sobra de cada lado
- * são o teto do deslocamento — passar deles descobre a ponta da curva, e a onda
- * aparece começando do nada no meio da tela. Os 820 daqui são o limite com folga.
+ * O curso vem do próprio desenho: o caminho cobre **cinco** janelas (u de -2 a
+ * 3), de x=-1780 a x=2780 num `viewBox` de 1000. As quatro janelas de sobra são
+ * a folga por onde a onda desliza, e duas coisas a gastam ao mesmo tempo: o
+ * deslocamento da janela e estes 820px. Passar dela descobre a ponta da curva, e
+ * a onda aparece começando do nada no meio da tela (ver `entradas.md`).
  *
  * A desaceleração está toda na curva de tempo: sai rápido e encosta devagar.
  * Anima `transform`, então é trabalho de compositor: o custo não depende do
@@ -142,7 +143,8 @@
   flex: none;
   width: 100%;
   height: var(--exp-curva, 132px);
-  outline: none;
+  /* sem `outline: none`: a curva entra na tabulação, e o contorno de foco global
+     é o que diz a quem usa teclado que as setas agora andam no tempo */
   /* o arraste horizontal é nosso; o vertical continua rolando a página */
   touch-action: pan-y;
 }
@@ -220,7 +222,7 @@
   display: block;
   width: 100%;
   height: 100%;
-  /* a curva cobre três janelas: sem isto ela vazaria para fora da caixa */
+  /* a curva cobre cinco janelas: sem isto ela vazaria para fora da caixa */
   overflow: hidden;
 }
 
@@ -245,23 +247,23 @@
   display: block;
   width: 5px;
   height: 5px;
-  border: 1px solid rgb(255 255 255 / 42%);
+  border: 1px solid var(--linha-acesa);
   border-radius: 50%;
   transition:
-    width 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
-    height 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
+    width 0.32s var(--ease-saida),
+    height 0.32s var(--ease-saida),
     background 0.32s,
-    border-color 0.4s;
+    border-color var(--dur-hover);
 }
 
 .no[data-frente] .ponto {
   width: 9px;
   height: 9px;
-  background: #fff;
+  background: var(--tx-titulo);
 }
 
 .no:hover .ponto {
-  border-color: #fff;
+  border-color: var(--tx-titulo);
 }
 
 /* anel que se abre a partir do nó ativo — só ele anima */
@@ -269,7 +271,7 @@
   position: absolute;
   width: 9px;
   height: 9px;
-  border: 1px solid rgb(255 255 255 / 55%);
+  border: 1px solid var(--linha-foco);
   border-radius: 50%;
   opacity: 0;
   pointer-events: none;
@@ -287,15 +289,15 @@
 .periodo {
   position: absolute;
   left: 50%;
-  color: rgb(255 255 255 / 38%);
+  color: var(--tx-rotulo);
   font-size: var(--exp-per, 9px);
   letter-spacing: 0.2em;
   white-space: nowrap;
   transform: translateX(-50%);
-  transition: color 0.45s;
+  transition: color var(--dur-hover);
 }
 
 .no[data-frente] .periodo,
 .no:hover .periodo {
-  color: #fff;
+  color: var(--tx-titulo);
 }

@@ -28,9 +28,10 @@ const PADRAO: OpcoesInclinacao = {
  * A carta que inclina seguindo o ponteiro, com um brilho especular acompanhando.
  *
  * Nasceu no retrato do Sobre e virou hook porque passou a valer para os crachás
- * de formação, os pôsteres de Filmes e as capas de Jogos: quatro cópias do mesmo
- * rAF sairiam de sincronia na primeira calibragem, e é a mesma razão pela qual a
- * gravidade e o desenho da estrela moram num módulo só no motor.
+ * de formação, os pôsteres de Filmes, as artes de Jogos e a capa de Música:
+ * cinco cópias do mesmo rAF sairiam de sincronia na primeira calibragem, e é a
+ * mesma razão pela qual a gravidade e o desenho da estrela moram num módulo só no
+ * motor.
  *
  * **Escreve direto no `style`**, dentro de um rAF coalescido. Um `setState` por
  * `pointermove` re-renderizaria a seção inteira dezenas de vezes por segundo
@@ -47,6 +48,19 @@ const PADRAO: OpcoesInclinacao = {
  * transição também suavizaria o retorno de cada micromovimento do cursor, e a
  * inclinação deixaria de colar nele. Quem sai continua voltando por `transition`,
  * porque ali não há ponteiro para seguir.
+ *
+ * **A transição de retorno é do CSS, e o hook só a desliga.** Cada cartão declara
+ * a sua (`transform var(--inclina-t, var(--dur-retorno))`), e com o ponteiro em
+ * cima o hook escreve `--inclina-t: 0s`. Antes ele escrevia a `transition`
+ * inteira no `style`, o que apagava as outras transições do cartão: depois do
+ * primeiro hover, a opacidade dos pôsteres de Filmes e das capas de Jogos passava
+ * a saltar em vez de acender, e a curva e a duração do retorno moravam numa
+ * string aqui, fora dos tokens.
+ *
+ * **Sem `will-change`.** Uma transformação 3D ganha camada própria no compositor
+ * quando acontece. Declarada o tempo todo, a promessa reservava uma camada para
+ * cada cartão da página, em todas as seções montadas, e o celular pagava por
+ * todas sem nunca inclinar nenhuma.
  *
  * **A perspectiva vai na própria `transform`**, e não como `perspective` do pai.
  * Assim o efeito não pede um elemento de embrulho, o que importa para os cartões
@@ -112,9 +126,9 @@ export function useInclinacao<T extends HTMLElement = HTMLDivElement>(
       if (!dentro) {
         dentro = true;
         comeco = 0;
-        // enquanto o ponteiro está dentro, só a sombra transiciona: a inclinação
-        // precisa colar no cursor, e quem a suaviza é a rampa
-        alvo.style.transition = 'box-shadow .3s ease';
+        // com o ponteiro dentro a inclinação cola no cursor: quem a suaviza é a
+        // rampa, e a transição do CSS sai do caminho
+        alvo.style.setProperty('--inclina-t', '0s');
       }
       if (!pendente) pendente = requestAnimationFrame(quadro);
     };
@@ -127,7 +141,8 @@ export function useInclinacao<T extends HTMLElement = HTMLDivElement>(
         cancelAnimationFrame(pendente);
         pendente = 0;
       }
-      alvo.style.transition = 'transform .55s cubic-bezier(.2,.8,.2,1),box-shadow .55s ease';
+      // o CSS volta a mandar, e o retorno ao repouso é a transição de lá
+      alvo.style.removeProperty('--inclina-t');
       aplicar(0);
     };
 
@@ -138,6 +153,7 @@ export function useInclinacao<T extends HTMLElement = HTMLDivElement>(
       alvo.removeEventListener('pointermove', mover);
       alvo.removeEventListener('pointerleave', sair);
       alvo.removeEventListener('pointercancel', sair);
+      alvo.style.removeProperty('--inclina-t');
       if (pendente) cancelAnimationFrame(pendente);
     };
   }, [semMovimento, grauX, grauY, escala, perspectiva, entrada, sombra]);

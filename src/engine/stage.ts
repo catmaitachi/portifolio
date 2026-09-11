@@ -22,6 +22,36 @@ const MAX_DPR = 2;
 /** delta máximo por quadro: uma aba retomada não pode dar um salto na cena */
 const MAX_DT = 0.05;
 
+/**
+ * O corte de qualidade, para a máquina que não dá conta.
+ *
+ * O palco mede a duração dos quadros numa média móvel e, se ela passa do limite
+ * por tempo bastante, corta trabalho em dois degraus. Nunca volta atrás: voltar
+ * faria a cena oscilar entre os dois estados, e a medida seguinte já sairia sobre
+ * uma cena mais leve.
+ *
+ * 1. **O HiDPI sai.** Com DPR 2 o canvas tem quatro vezes os pixels de DPR 1, e o
+ *    céu é feito de brilhos borrados, que perdem pouco com isso. Só as dimensões
+ *    do canvas mudam: as camadas trabalham em px de layout e não passam por
+ *    `resize`, então nenhuma estrela muda de lugar.
+ * 2. **O modo leve**, só se nem assim: `env.leve` pede às camadas caras que
+ *    desenhem menos, e o campo de estrelas passa a desenhar metade delas.
+ *
+ * Os limites são diferentes de propósito. O primeiro (40fps) pega também o
+ * navegador em economia de bateria, que prende o quadro em 30fps, e ali cortar
+ * pixels é o que o próprio usuário pediu; o segundo (28fps) fica abaixo disso,
+ * para o céu só ficar mais ralo onde a máquina realmente não aguenta.
+ *
+ * O julgamento espera `CARENCIA` segundos no começo e depois de cada corte: a
+ * abertura, a assadura dos sprites e o `import()` do motor pesam de propósito, e
+ * a medida precisa ser do regime da cena, não da largada.
+ */
+const LENTO_DPR = 1 / 40;
+const LENTO_LEVE = 1 / 28;
+/** peso de cada quadro na média: perto de um segundo de memória a 30fps */
+const PESO = 0.03;
+const CARENCIA = 4;
+
 export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
   // `alpha: false` deixa o compositor pular a mesclagem com o fundo da página.
   const ctx = canvas.getContext('2d', { alpha: false });
@@ -38,6 +68,7 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
     mouse: { x: -1e5, y: -1e5, active: false },
     camera: { k: 1, moving: false, progress: 1, fade: 1 },
     bus: {},
+    leve: false,
   };
 
   // ordem do array = ordem de update; `z` = ordem de desenho
@@ -66,26 +97,62 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
     c.fade = Math.min(1, Math.max(0, (p - 0.35) / 0.5));
   };
 
-  const resize = () => {
-    env.dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
-    env.W = canvas.clientWidth;
-    env.H = canvas.clientHeight;
+  /* o corte de qualidade (ver o topo do arquivo) */
+  let dprTeto = MAX_DPR;
+  let media = 1 / 60;
+  let julgarApos = CARENCIA;
+
+  /** Os pixels do canvas: o que o DPR decide, e nada mais. */
+  const dimensionar = () => {
+    env.dpr = Math.min(window.devicePixelRatio || 1, dprTeto);
     canvas.width = Math.round(env.W * env.dpr);
     canvas.height = Math.round(env.H * env.dpr);
     ctx.setTransform(env.dpr, 0, 0, env.dpr, 0, 0);
+  };
+
+  const resize = () => {
+    env.W = canvas.clientWidth;
+    env.H = canvas.clientHeight;
+    dimensionar();
     env.cx = env.W / 2;
     env.cy = env.H / 2;
     for (const l of layers) l.resize?.(env);
+  };
+
+  /**
+   * Mede o quadro e, se a máquina não está dando conta, corta um degrau.
+   *
+   * Roda **antes** do desenho: mudar as dimensões do canvas o apaga, e depois do
+   * desenho isso daria um quadro preto.
+   */
+  const julgar = (bruto: number) => {
+    if (env.leve || env.camera.moving || env.t < julgarApos) return;
+    // um quadro isolado muito longo (coleta de lixo, um reflow grande) não é regime
+    media += (Math.min(bruto, 0.1) - media) * PESO;
+    if (env.dpr > 1 && media > LENTO_DPR) {
+      dprTeto = 1;
+      dimensionar();
+      canvas.dataset.corte = 'dpr';
+    } else if (media > LENTO_LEVE) {
+      env.leve = true;
+      canvas.dataset.corte = 'leve';
+    } else {
+      return;
+    }
+    media = 1 / 60;
+    julgarApos = env.t + CARENCIA;
   };
 
   let raf: number | null = null;
   let last = performance.now();
 
   const frame = (now: number) => {
-    env.dt = Math.min(MAX_DT, (now - last) / 1000);
+    const bruto = (now - last) / 1000;
+    env.dt = Math.min(MAX_DT, bruto);
     last = now;
     env.t += env.dt;
     stepCamera(env.dt);
+    julgar(bruto);
 
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, env.W, env.H);

@@ -90,7 +90,6 @@
 
   "logos": {
     "senac": { "escala": 0.78 },
-    "puc": { "escala": 1 },
-    "ufmg": { "escala": 0.82 }
+    "puc": { "escala": 1 }
   }
 }

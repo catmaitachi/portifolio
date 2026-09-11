@@ -7,7 +7,7 @@ basta para desmontar a cena inteira.
 Camada = `{ name, z, enabled, resize(env), update(env), draw(ctx, env) }`.
 Ordem do array = ordem de `update`; `z` = ordem de desenho.
 
-`env`: `W H dpr cx cy t dt mouse{x,y,active} camera{k,moving,progress,fade} bus{}`.
+`env`: `W H dpr cx cy t dt mouse{x,y,active} camera{k,moving,progress,fade} bus{} leve`.
 `env.bus` é o barramento entre camadas: `bus.gravity`, publicada pelo `BlackHole`, e `bus.well` e
 `bus.shock`, publicadas pela `Supernova` (a carga e a explosão) — as três lidas pelo `Starfield`, que
 não sabe quem as publicou. `well` é do **mesmo tipo** que `gravity`, então o consumidor soma os dois
@@ -39,8 +39,8 @@ concordar em nada, mas o efeito é por pixel e traz junto uma máscara, uma tabe
 
 | Camada | Arquivo | z | Notas |
 |---|---|---|---|
-| `Nebula` | `layers/nebula.ts` | 0 | Buffer de 128px, 5 massas brancas em deriva, repintado a 12fps e ampliado pela GPU. alpha 0.16. |
-| `Starfield` | `layers/starfield.ts` | 10 | ~354 estrelas num 1280×720 (densidade por área), TypedArrays, repulsão do ponteiro por mola, gravidade de `engine/gravity.ts` e cintilar via LUT, 8 baldes de opacidade. O desenho é o sprite de `engine/star.ts` por `drawImage`, com deriva ambiente de 8px e a lente da gravidade esticando o brilho. Cintilar lento (±22%). |
+| `Nebula` | `layers/nebula.ts` | 0 | Buffer de 128px, 5 massas brancas em deriva, repintado a 12fps e ampliado pela GPU. Cada massa é o mesmo sprite assado uma vez, com o `globalAlpha` dela: nenhum degradê por repintura. alpha 0.16. |
+| `Starfield` | `layers/starfield.ts` | 10 | ~354 estrelas num 1280×720 (densidade por área), TypedArrays, repulsão do ponteiro por mola, gravidade de `engine/gravity.ts` e cintilar via LUT, 8 baldes de opacidade. O desenho é o sprite de `engine/star.ts` por `drawImage`, com deriva ambiente de 8px e a lente da gravidade esticando o brilho. Cintilar lento (±22%). No modo leve desenha metade (ver *O corte de qualidade*). |
 | `Constellations` | `layers/constellations.ts` | 12 | Figuras do céu real. Estrelas herdam as propriedades do `Starfield`; linha de 1px num único `stroke()`; as estrelas saem do mesmo sprite de `engine/star.ts`, sem deriva e sem lente; posições do quadro em `vx_/vy_` pré-alocados. As arestas se desenham das pontas para dentro quando a camada aparece (`drawTime`). `opacity` em 0 tira a camada do `update` **e** do `draw`. |
 | `BlackHole` | `layers/blackHole.ts` | 20 | Raio `0.14·min(W,H)`. Plasma 96×96 por LUT de senos a 20fps (alpha .22), 260 poeiras em órbita kepleriana, halo .18/.06 até 3.4R (degradês em cache por centro/raio/força), horizonte preto + borda **preta** suavizando — nunca borda brilhante. |
 | `Supernova` | `layers/supernova.ts` | 14 | A estrela que o visitante carrega e acende. Pressionar abre um poço (`bus.well`) que aperta em quatro níveis; soltar explode com força, alcance, duração e recarga daquele nível. Pool de 12 estrelas (guardadas em fração da tela), uma onda de cada vez, carga e recarga no relógio do motor. Plasma a partir do nível 2 (criado na primeira vez), estrela supermassiva de 220px num buffer de disco no 3, e no 4 ela colapsa com um pico de 3,2× no puxão até um núcleo crítico de ~22px que treme à espera do release. Sem buraco negro no fim. O degradê do poço fica em cache com `globalAlpha`, e o pulso não entra na chave dele. Ociosa custa três comparações. |
@@ -116,6 +116,34 @@ Obrigatório para qualquer camada nova:
 - desenho em lote (agrupar por opacidade, um `fill()` por grupo);
 - camada desligada precisa custar zero.
 
+### O corte de qualidade
+
+O palco mede os quadros numa média móvel e, numa máquina que não sustenta a cena, corta trabalho em
+dois degraus, sem nunca voltar atrás (voltar faria a cena oscilar entre os dois estados):
+
+1. **o HiDPI sai** quando a média passa de 25ms (abaixo de 40fps). O canvas volta a DPR 1, um quarto
+   dos pixels de DPR 2, e o céu de brilhos borrados perde pouco com isso. Só as dimensões do canvas
+   mudam: as camadas trabalham em px de layout e não passam por `resize`, então nenhuma estrela muda
+   de lugar;
+2. **o modo leve** liga se nem assim, com a média acima de ~36ms (abaixo de 28fps): `env.leve` pede
+   às camadas caras que desenhem menos, e o `Starfield` desenha metade das estrelas, as de índice
+   par. A paridade é do índice e não do balde de opacidade, que muda a cada quadro com o cintilar.
+
+Os dois limites são diferentes de propósito. O primeiro pega também o navegador em economia de
+bateria, que prende o quadro em 30fps, e ali cortar pixels é o que o próprio usuário pediu; o
+segundo fica abaixo disso, para o céu só ficar mais ralo onde a máquina não aguenta.
+
+A medida espera 4s no começo e depois de cada corte (a abertura, a assadura dos sprites e o
+`import()` do motor pesam de propósito), ignora o zoom da intro e limita cada quadro a 100ms na
+média, para uma coleta de lixo não passar por regime. Ela roda **antes** do desenho, porque mudar as
+dimensões do canvas o apaga. O degrau em vigor fica em `canvas.dataset.corte` (`dpr` ou `leve`), que
+é por onde conferir no DevTools.
+
+Conferido em Node com o motor empacotado e um canvas falso (a receita da memória do projeto): a
+60fps nada corta; a 30fps sai só o HiDPI, aos 4,7s; a 22fps sai o HiDPI aos 4,5s e liga o modo leve
+aos 10,1s; uma abertura lenta seguida de 60fps e um soluço isolado de 400ms não cortam nada. No modo
+leve o campo passa de 387 para 194 `drawImage` por quadro num 1280×720.
+
 ### Constelações
 
 O catálogo (`engine/catalog/constellations.ts`) guarda **ascensão reta (h), declinação (°) e
@@ -171,7 +199,7 @@ Três coisas que decorrem disso:
 
 ### Câmera
 
-`stage.camera.zoomOut(26, 1.5)` — a intro começa dentro do horizonte e recua em 1,5s (ease
+`stage.camera.zoomOut(26, 1.2)` — a intro começa dentro do horizonte e recua em 1,2s (ease
 `1−(1−p)⁴`). Durante o zoom, gravidade e repulsão ficam desligadas e estrelas fora da tela são
 descartadas. `camera.fade` (0→1 entre 35% e 85% do trajeto) controla a entrada da nebulosa.
 

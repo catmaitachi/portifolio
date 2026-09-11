@@ -19,8 +19,8 @@
 .estado {
   margin: 0;
   padding: 18px 0;
-  color: rgb(255 255 255 / 42%);
-  font-size: clamp(10px, 1.3vmin, 12px);
+  color: var(--tx-rotulo);
+  font-size: var(--fs-lista);
   font-weight: 300;
   letter-spacing: 0.16em;
   /* é rótulo de estado, não texto corrido */
@@ -33,5 +33,5 @@
 }
 
 .estado[data-estado='erro'] {
-  color: rgb(255 255 255 / 30%);
+  color: var(--tx-apagado);
 }

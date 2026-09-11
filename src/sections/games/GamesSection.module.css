@@ -1,15 +1,53 @@
 /**
- * Entrada: as capas sobem, a primeira antes das outras.
+ * Entrada: o destaque sobe, e as capas da faixa sobem depois dele.
  *
- * Sobem, como os cartões de projeto, porque o elemento é uma imagem larga e
- * baixa: um deslocamento lateral nela lê como deslize, um vertical lê como
- * assentamento. `backwards`, nunca `forwards`, pela regra de sempre.
+ * Sobem, como os cartões de projeto: a seção é uma pilha de cima para baixo, e
+ * nela um deslocamento vertical lê como assentamento. `backwards`, nunca
+ * `forwards`, pela regra de sempre. `--sobe` é a distância, que muda com o
+ * tamanho de quem entra.
  */
 @keyframes capaSobe {
   from {
     opacity: 0;
-    transform: translateY(var(--sobe, 22px));
+    transform: translateY(var(--sobe, 14px));
   }
+}
+
+/**
+ * As entradas ficam **penduradas em `data-ativo`**, não no mount, como em Música
+ * e Filmes: o atributo aparece quando a seção vira a ativa, o `animation-name`
+ * sai de `none` e a cascata recomeça. Presas ao mount, elas rodavam uma vez só,
+ * no instante em que a resposta da Steam chegava.
+ *
+ * **O destaque sobe primeiro**, e a faixa vem atrás dele: é ele que a seção
+ * existe para mostrar, e uma cascata que começa no que está aberto agora lê como
+ * ordem, e não como um monte de capas chegando junto.
+ *
+ * **A cascata começa depois de o bloco assentar.** O `.bloco` inteiro entra
+ * subindo 26px em 0,9s (`section.module.css`), e uma entrada no mesmo sentido
+ * sem atraso se soma a ele: o movimento menor termina antes do maior e a seção
+ * aparece sem entrada nenhuma.
+ *
+ * As distâncias seguem o tamanho: 40px no destaque, que é o bloco mais alto da
+ * seção, e só 14px nas capas, que moram dentro do `overflow-x` da faixa e seriam
+ * cortadas no eixo Y além do recuo dela.
+ *
+ * Estas duas regras já se perderam uma vez, quando a grade de recentes virou a
+ * faixa: elas miravam a grade e saíram junto com ela, e a seção ficou sem
+ * entrada sem erro nenhum. O keyframe continuou declarado, sem ninguém que o
+ * usasse.
+ */
+.bloco[data-ativo] .destaque {
+  --sobe: 40px;
+
+  animation: capaSobe 0.7s var(--ease-entrada) 520ms backwards;
+}
+
+.bloco[data-ativo] .cartao {
+  --sobe: 14px;
+
+  animation: capaSobe 0.6s var(--ease-entrada) backwards;
+  animation-delay: calc(820ms + var(--ordem, 0) * 90ms);
 }
 
 @keyframes pulsaVivo {
@@ -47,39 +85,40 @@
   max-width: 940px;
 }
 
+/* a mesma caixa do destaque de Música, que é a seção vizinha: mesmo respiro e chanfro */
 .destaque {
   display: flex;
-  gap: clamp(14px, 2.4vmin, 26px);
+  gap: clamp(14px, 2.2vmin, 24px);
   align-items: center;
   padding: clamp(12px, 1.8vmin, 18px);
-  border: 1px solid rgb(255 255 255 / 13%);
+  border: 1px solid var(--linha);
   border-radius: 2px;
   color: inherit;
   text-decoration: none;
   transition:
-    border-color 0.35s,
-    background 0.35s;
+    border-color var(--dur-hover),
+    background var(--dur-hover);
 }
 
 .destaque:hover {
-  border-color: rgb(255 255 255 / 26%);
-  background: rgb(255 255 255 / 3%);
+  border-color: var(--linha-acesa);
+  background: var(--fundo-sutil);
 }
 
 @supports (corner-shape: bevel) {
   .destaque {
-    border-radius: 16px 2px;
+    border-radius: 14px 2px;
     corner-shape: bevel;
   }
 }
 
 /**
- * A moldura da arte existe mesmo sem arte.
+ * A arte deitada do destaque, com a moldura de espaço reservado.
  *
- * A capa é montada a partir do `appid` por convenção, não vem de um endpoint, e
- * pode não existir. Com a moldura, o que falta é um retângulo vazio de 1px, que
- * é o mesmo espaço reservado dos banners de projeto; sem ela seria o ícone de
- * imagem quebrada do navegador, a única coisa fora da paleta na página.
+ * O endereço é perguntado à loja a cada resposta e pode não vir (ver
+ * `dados.md`). Sem arte, o que sobra é um retângulo vazio de 1px, que é o mesmo
+ * espaço reservado dos banners de projeto; sem ele seria o ícone de imagem
+ * quebrada do navegador, a única coisa fora da paleta na página.
  */
 .arte {
   /* âncora do brilho especular, que é `position: absolute` */
@@ -89,17 +128,22 @@
   width: var(--arte-w);
   aspect-ratio: 1 / var(--arte-ar);
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 10%);
+  border: 1px solid var(--linha);
   border-radius: 2px;
-  background: rgb(255 255 255 / 3%);
+  background: var(--fundo-sutil);
 
   /* o clarão acompanha a largura da arte, não os 240px do retrato */
   --brilho-r: 160px;
 
   /* a inclinação é escrita pelo JS (ver `useInclinacao`); daqui sai o retorno */
-  transform-style: preserve-3d;
-  will-change: transform;
-  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform var(--inclina-t, var(--dur-retorno)) var(--ease-saida);
+}
+
+@supports (corner-shape: bevel) {
+  .arte {
+    corner-shape: bevel;
+    border-radius: 12px 2px;
+  }
 }
 
 /* arte de jogo é identidade de terceiro: fica colorida, como os banners */
@@ -114,7 +158,7 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 7px;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -131,9 +175,9 @@
   display: flex;
   gap: 8px;
   align-items: center;
-  color: rgb(255 255 255 / 42%);
-  font-size: 8.5px;
-  letter-spacing: 0.28em;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
+  letter-spacing: var(--ls-rotulo);
   text-transform: uppercase;
 }
 
@@ -143,14 +187,14 @@
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--tx-titulo);
   animation: pulsaVivo 2.2s ease-in-out infinite;
 }
 
 .nome {
   overflow: hidden;
-  color: #fff;
-  font-size: clamp(15px, 2.4vmin, 24px);
+  color: var(--tx-titulo);
+  font-size: var(--fs-destaque);
   letter-spacing: 0.02em;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -160,7 +204,7 @@
   display: flex;
   gap: 14px;
   align-items: baseline;
-  color: rgb(255 255 255 / 50%);
+  color: var(--tx-apoio);
   font-size: clamp(9px, 1.2vmin, 11px);
   font-weight: 300;
   letter-spacing: 0.1em;
@@ -168,25 +212,7 @@
 }
 
 .total {
-  color: rgb(255 255 255 / 30%);
-}
-
-.grupo {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.tituloLista {
-  margin: 0;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgb(255 255 255 / 10%);
-  color: rgb(255 255 255 / 40%);
-  font-size: 8.5px;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  text-align: left;
-  hyphens: manual;
+  color: var(--tx-apagado);
 }
 
 .cartao {
@@ -214,21 +240,19 @@
   display: block;
   aspect-ratio: 2 / 3;
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 12%);
+  border: 1px solid var(--linha);
   border-radius: 2px;
-  background: rgb(255 255 255 / 3%);
+  background: var(--fundo-sutil);
   opacity: 0.84;
 
   /* o clarão acompanha a largura da capa, não os 240px do retrato */
   --brilho-r: 130px;
 
   /* a inclinação é escrita pelo JS (ver `useInclinacao`); daqui sai o retorno */
-  transform-style: preserve-3d;
-  will-change: transform;
   transition:
-    opacity 0.35s,
-    border-color 0.35s,
-    transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+    opacity var(--dur-hover),
+    border-color var(--dur-hover),
+    transform var(--inclina-t, var(--dur-retorno)) var(--ease-saida);
 }
 
 @supports (corner-shape: bevel) {
@@ -251,21 +275,21 @@
 
 .nomePequeno {
   overflow: hidden;
-  color: rgb(255 255 255 / 82%);
-  font-size: clamp(10px, 1.3vmin, 12px);
+  color: var(--tx-forte);
+  font-size: var(--fs-lista);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .horasPequenas {
-  color: rgb(255 255 255 / 34%);
-  font-size: 9px;
+  color: var(--tx-apagado);
+  font-size: var(--fs-meta);
   font-weight: 300;
   letter-spacing: 0.1em;
   font-variant-numeric: tabular-nums;
 }
 
-@media (width <= 640px) {
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .destaque {
     flex-direction: column;
     align-items: flex-start;
@@ -285,46 +309,14 @@
 }
 
 /**
- * **A moldura só existe quando não há imagem.**
+ * **A moldura só existe quando não há imagem**, nas duas artes da seção.
  *
- * Ela nasceu como espaço reservado: sem arte, o que sobra é um retângulo de 1px
- * na proporção certa, e sem ele sobraria o ícone de imagem quebrada do
- * navegador, a única coisa fora da paleta na página inteira. Sobre a arte, ela
- * não estava reservando nada — era um fio branco em volta de toda imagem da
- * página, e num conjunto de artes coloridas isso lê como recorte mal feito.
- *
- * A borda continua declarada e só perde a cor, então a caixa não muda de tamanho
- * e nada em volta se mexe. O fundo sai junto: com `background-clip: border-box`,
- * que é o padrão, ele pintaria a faixa de 1px que a borda transparente deixou
- * ver, e o fio voltaria mais fraco.
- *
- * `:has` é o que permite perguntar isso ao próprio elemento. O estado que
- * interessa é "a imagem chegou", e ele não existe no React: quem o produz é o
- * `onError` da `<img>`, escrevendo `hidden` no nó.
+ * A borda continua declarada e só perde a cor, então a caixa não muda de
+ * tamanho; o fundo sai junto, senão ele pintaria a faixa de 1px que a borda
+ * transparente deixou ver. Quem diz se a imagem chegou é o `onError` da
+ * `<img>`, escrevendo `hidden` no nó (ver `direcao-visual.md`).
  */
-.capa:has(img:not([hidden])) {
-  border-color: transparent;
-  background: none;
-}
-
-/**
- * **A moldura só existe quando não há imagem.**
- *
- * Ela nasceu como espaço reservado: sem arte, o que sobra é um retângulo de 1px
- * na proporção certa, e sem ele sobraria o ícone de imagem quebrada do
- * navegador, a única coisa fora da paleta na página inteira. Sobre a arte, ela
- * não estava reservando nada — era um fio branco em volta de toda imagem da
- * página, e num conjunto de artes coloridas isso lê como recorte mal feito.
- *
- * A borda continua declarada e só perde a cor, então a caixa não muda de tamanho
- * e nada em volta se mexe. O fundo sai junto: com `background-clip: border-box`,
- * que é o padrão, ele pintaria a faixa de 1px que a borda transparente deixou
- * ver, e o fio voltaria mais fraco.
- *
- * `:has` é o que permite perguntar isso ao próprio elemento. O estado que
- * interessa é "a imagem chegou", e ele não existe no React: quem o produz é o
- * `onError` da `<img>`, escrevendo `hidden` no nó.
- */
+.capa:has(img:not([hidden])),
 .arte:has(img:not([hidden])) {
   border-color: transparent;
   background: none;

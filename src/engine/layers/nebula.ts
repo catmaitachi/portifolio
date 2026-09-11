@@ -1,4 +1,3 @@
-import { TAU } from '../math';
 import type { Layer, StageEnv } from '../types';
 
 interface NebulaOptions {
@@ -21,11 +20,35 @@ const BLOBS = [
 ] as const;
 
 /**
+ * Uma massa, assada uma vez: o degradê radial num buffer próprio.
+ *
+ * As cinco massas têm os mesmos três degraus (cheio, 32% e zero) e só mudam de
+ * opacidade e de raio, então todas são este buffer desenhado com o `globalAlpha`
+ * e o tamanho de cada uma. Antes eram cinco `createRadialGradient` por
+ * repintura, doze vezes por segundo: sessenta objetos por segundo para o coletor
+ * de lixo, contra o "zero alocação por quadro" do contrato do motor.
+ */
+function assarMassa(lado = 128): HTMLCanvasElement {
+  const cv = document.createElement('canvas');
+  cv.width = lado;
+  cv.height = lado;
+  const c = cv.getContext('2d')!;
+  const r = lado / 2;
+  const g = c.createRadialGradient(r, r, 0, r, r, r);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.45, 'rgba(255,255,255,0.32)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  c.fillStyle = g;
+  c.fillRect(0, 0, lado, lado);
+  return cv;
+}
+
+/**
  * Nebulosa: variação de densidade, sem cor.
  *
- * Cinco degradês radiais num buffer de 128px repintado a 12fps e ampliado pela
- * GPU no `drawImage`. Em resolução total seriam cinco degradês de tela cheia por
- * quadro — aqui são cinco degradês de 128px a cada 83ms.
+ * Cinco massas num buffer de 128px repintado a 12fps e ampliado pela GPU no
+ * `drawImage`. Em resolução total seriam cinco degradês de tela cheia por quadro;
+ * aqui são cinco `drawImage` de um sprite pronto a cada 83ms.
  */
 export function Nebula({
   name = 'nebula',
@@ -36,6 +59,7 @@ export function Nebula({
 }: NebulaOptions = {}): Layer & { alpha: number } {
   const cv = document.createElement('canvas');
   const c = cv.getContext('2d')!;
+  const massa = assarMassa();
   const interval = 1 / fps;
   let acc = 0;
 
@@ -44,6 +68,7 @@ export function Nebula({
     const h = cv.height;
     if (!w || !h) return;
     c.globalCompositeOperation = 'source-over';
+    c.globalAlpha = 1;
     c.clearRect(0, 0, w, h);
     c.globalCompositeOperation = 'lighter';
     const R = Math.max(w, h);
@@ -51,15 +76,11 @@ export function Nebula({
       const bx = w * (0.5 + Math.sin(time * b.sx + b.px) * b.ax);
       const by = h * (0.5 + Math.cos(time * b.sy + b.py) * b.ay);
       const rad = R * b.r;
-      const g = c.createRadialGradient(bx, by, 0, bx, by, rad);
-      g.addColorStop(0, `rgba(255,255,255,${b.a})`);
-      g.addColorStop(0.45, `rgba(255,255,255,${(b.a * 0.32).toFixed(3)})`);
-      g.addColorStop(1, 'rgba(255,255,255,0)');
-      c.fillStyle = g;
-      c.beginPath();
-      c.arc(bx, by, rad, 0, TAU);
-      c.fill();
+      // a opacidade do centro de cada massa entra por `globalAlpha` sobre o sprite cheio
+      c.globalAlpha = b.a;
+      c.drawImage(massa, bx - rad, by - rad, rad * 2, rad * 2);
     }
+    c.globalAlpha = 1;
     c.globalCompositeOperation = 'source-over';
   };
 

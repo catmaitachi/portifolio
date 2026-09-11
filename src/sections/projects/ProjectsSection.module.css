@@ -20,7 +20,8 @@
   /* origem acima do centro: o anel é visto levemente de cima */
   perspective: var(--pperspectiva);
   perspective-origin: 50% 46%;
-  outline: none;
+  /* sem `outline: none`: o palco entra na tabulação, e o contorno de foco global
+     é o único sinal de onde o teclado está quando as setas passam a girar a órbita */
   /* o arraste horizontal é nosso; o vertical continua rolando a página */
   touch-action: pan-y;
   /**
@@ -58,18 +59,18 @@
   margin: 0;
   padding: 9px 0;
   border: 0;
-  background: rgb(255 255 255 / 24%);
+  background: var(--linha-forte);
   background-clip: content-box;
   cursor: pointer;
   appearance: none;
   transition:
-    width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
-    background 0.5s ease;
+    width 0.6s var(--ease-saida),
+    background var(--dur-hover);
 }
 
 .traco[data-ativo] {
   width: 30px;
-  background: #fff;
+  background: var(--tx-titulo);
   background-clip: content-box;
 }
 
@@ -88,7 +89,7 @@
   }
 }
 
-@media (width <= 640px) {
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .secao {
     --pcw: 236px;
     --pch: 388px;
@@ -101,7 +102,7 @@
 }
 
 /* paisagem curta; no mobile os valores acima já se adaptam sozinhos */
-@media (width > 640px) and (height <= 720px) {
+@media (width > 640px) and (height <= 720px) and (orientation: landscape) {
   .secao {
     --pch: 340px;
     --pbh: 126px;

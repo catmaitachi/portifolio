@@ -23,4 +23,20 @@
   seta nenhuma.
 - O rótulo das setas leva o nome da faixa (`{lista}`): "anterior" sozinho não diz anterior do quê
   numa seção com duas faixas, que é justamente onde a pergunta aparece.
+- **O nome da instituição de cada formação é o nome acessível do logo** (`role="img"` com
+  `aria-label`, que é o alt de uma imagem de fundo). Os logos já trazem o nome desenhado, e o texto
+  repetido embaixo deles saiu da tela; sem logo, ele volta a ser escrito.
 - Foco visível só para navegação por teclado (`:focus-visible`).
+- **Nenhuma região focável apaga o contorno.** O palco da órbita e a curva do tempo entram na
+  tabulação e respondem às setas, e os dois tinham `outline: none`: quem chegava pelo teclado não via
+  onde estava. O único `outline: none` que sobra é o do campo de texto do Contato, cujo sublinhado
+  acende no foco e cumpre o mesmo papel.
+- **Os rótulos das listas de dado remoto são `<h3>`**, sob o `<h2>` da seção. "Mais tocadas",
+  "Favoritos" e "Recentes" são sub-títulos, e é por título que um leitor de tela pula de uma lista
+  para a outra.
+- O botão do lado em vigor, no cabeçalho de modo, leva `aria-expanded` **nos dois estados**. Antes o
+  atributo só existia com o menu fechado, e quem o abria nunca ouvia que ele tinha aberto.
+- **`prefers-contrast: more`** sobe todos os textos acima de 4,5:1 e as linhas junto, redefinindo só
+  os tokens de cor do `reset.css`. O desenho padrão é apagado de propósito, e boa parte dos rótulos
+  fica abaixo do WCAG AA (ver `pendencias.md`); quem pede contraste ao sistema recebe a mesma página
+  com tudo legível.

@@ -95,12 +95,13 @@
  * (ver `direcao-visual.md`). Os 14px acompanham o tamanho da caixa, entre o
  * cartão de canal e o de projeto.
  */
+/* a mesma caixa do destaque de Jogos, que é a seção vizinha: mesmo respiro e chanfro */
 .destaque {
   display: flex;
-  gap: clamp(14px, 2vmin, 22px);
+  gap: clamp(14px, 2.2vmin, 24px);
   align-items: center;
   padding: clamp(12px, 1.8vmin, 18px);
-  border: 1px solid rgb(255 255 255 / 13%);
+  border: 1px solid var(--linha);
   border-radius: 2px;
 }
 
@@ -114,11 +115,11 @@
  * chegava, e voltar para a seção mostrava um bloco que já estava montado.
  */
 .bloco[data-ativo] .destaque {
-  animation: destaqueEntra 0.6s ease-out 0.42s backwards;
+  animation: destaqueEntra 0.6s var(--ease-entrada) 0.42s backwards;
 }
 
 .bloco[data-ativo] .item {
-  animation: linhaEntra 0.5s ease-out backwards;
+  animation: linhaEntra 0.5s var(--ease-entrada) backwards;
   animation-delay: calc(var(--ordem, 0) * 55ms);
 }
 
@@ -133,7 +134,7 @@
  */
 .destaque:not([data-vivo]) {
   opacity: 0.52;
-  border-color: rgb(255 255 255 / 8%);
+  border-color: var(--linha-sutil);
 }
 
 .destaque:not([data-vivo]) .capa {
@@ -150,8 +151,8 @@
 /**
  * A capa é a única cor da seção, e fica colorida.
  *
- * É identidade de terceiro, como os banners de projeto e o vermelho da UFMG:
- * capa de álbum não se repinta. Sem capa, o quadrado vazio de 1px é a mesma
+ * É identidade de terceiro, como os banners de projeto: capa de álbum não se
+ * repinta. Sem capa, o quadrado vazio de 1px é a mesma
  * moldura de espaço reservado que o resto da página usa.
  */
 .capa {
@@ -162,16 +163,22 @@
   width: var(--capa);
   height: var(--capa);
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 10%);
+  border: 1px solid var(--linha);
   border-radius: 2px;
 
   /* o clarão acompanha a capa, não os 240px do retrato */
   --brilho-r: 150px;
 
   /* a inclinação é escrita pelo JS (ver `useInclinacao`); daqui sai o retorno */
-  transform-style: preserve-3d;
-  will-change: transform;
-  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform var(--inclina-t, var(--dur-retorno)) var(--ease-saida);
+}
+
+/* chanfro dos dois cantos opostos, na escala de uma capa de 64 a 116px */
+@supports (corner-shape: bevel) {
+  .capa {
+    corner-shape: bevel;
+    border-radius: 10px 2px;
+  }
 }
 
 .capa img {
@@ -193,13 +200,13 @@
   color: inherit;
   text-decoration: none;
   transition:
-    color 0.3s,
-    border-color 0.3s;
+    color var(--dur-hover),
+    border-color var(--dur-hover);
 }
 
 .artistaLink:hover {
-  border-bottom-color: rgb(255 255 255 / 40%);
-  color: rgb(255 255 255 / 85%);
+  border-bottom-color: var(--linha-acesa);
+  color: var(--tx-hover);
 }
 
 .corpo {
@@ -224,9 +231,9 @@
   gap: 8px;
   align-items: center;
   margin: 0;
-  color: rgb(255 255 255 / 42%);
-  font-size: 8.5px;
-  letter-spacing: 0.28em;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
+  letter-spacing: var(--ls-rotulo);
   text-transform: uppercase;
   text-align: left;
   hyphens: manual;
@@ -238,19 +245,19 @@
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--tx-titulo);
   animation: pulsaVivo 2.2s ease-in-out infinite;
 }
 
 .faixaNome {
   overflow: hidden;
-  color: #fff;
-  font-size: clamp(15px, 2.4vmin, 24px);
+  color: var(--tx-titulo);
+  font-size: var(--fs-destaque);
   letter-spacing: 0.02em;
   text-overflow: ellipsis;
   text-decoration: none;
   white-space: nowrap;
-  transition: opacity 0.3s;
+  transition: opacity var(--dur-hover);
 }
 
 .faixaNome:hover {
@@ -260,8 +267,8 @@
 .artista {
   margin: 0;
   overflow: hidden;
-  color: rgb(255 255 255 / 50%);
-  font-size: clamp(10px, 1.4vmin, 13px);
+  color: var(--tx-apoio);
+  font-size: var(--fs-lista);
   font-weight: 300;
   letter-spacing: 0.06em;
   text-overflow: ellipsis;
@@ -295,7 +302,7 @@
 }
 
 .trilha {
-  background: rgb(255 255 255 / 10%);
+  background: var(--linha-sutil);
 }
 
 /**
@@ -308,8 +315,8 @@
 .tempo {
   flex: none;
   min-width: 4ch;
-  color: rgb(255 255 255 / 38%);
-  font-size: 9px;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-meta);
   letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
 }
@@ -370,16 +377,16 @@
   min-width: 0;
 }
 
+/* é um `<h3>`: o sub-título da lista, que o leitor de tela alcança por título */
 .tituloLista {
   margin: 0;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgb(255 255 255 / 10%);
-  color: rgb(255 255 255 / 40%);
-  font-size: 8.5px;
-  letter-spacing: 0.28em;
+  border-bottom: 1px solid var(--linha-sutil);
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
+  font-weight: 400;
+  letter-spacing: var(--ls-rotulo);
   text-transform: uppercase;
-  text-align: left;
-  hyphens: manual;
 }
 
 .lista {
@@ -400,24 +407,24 @@
 
 .numero {
   flex: none;
-  color: rgb(255 255 255 / 24%);
-  font-size: 9px;
+  color: var(--tx-marcador);
+  font-size: var(--fs-meta);
   letter-spacing: 0.1em;
   font-variant-numeric: tabular-nums;
 }
 
 .link {
   overflow: hidden;
-  color: rgb(255 255 255 / 82%);
-  font-size: clamp(10px, 1.4vmin, 13px);
+  color: var(--tx-forte);
+  font-size: var(--fs-lista);
   text-overflow: ellipsis;
   text-decoration: none;
   white-space: nowrap;
-  transition: color 0.3s;
+  transition: color var(--dur-hover);
 }
 
 .link:hover {
-  color: #fff;
+  color: var(--tx-titulo);
 }
 
 /* o artista da faixa cede espaço primeiro: o nome dela é o que se procura */
@@ -425,8 +432,8 @@
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  color: rgb(255 255 255 / 34%);
-  font-size: 9.5px;
+  color: var(--tx-apagado);
+  font-size: var(--fs-meta);
   font-weight: 300;
   text-align: right;
   text-overflow: ellipsis;
@@ -443,7 +450,7 @@
 @media (prefers-reduced-motion: reduce) {
   .progresso {
     background-image: none;
-    background-color: rgb(255 255 255 / 72%);
+    background-color: var(--linha-cheia);
   }
 }
 
@@ -456,7 +463,7 @@
  * desenho. Aqui quem cede é o texto — o nome da faixa e o do artista já cortam
  * com reticências, e cortar um título é mais barato que reorganizar o bloco.
  */
-@media (width <= 640px) {
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .secao {
     --capa: 64px;
   }
@@ -466,15 +473,25 @@
    *
    * Os tokens da página encolhem os espaçamentos quando falta largura, e aqui
    * isso saiu pela culatra: as duas listas deixam de ser duas colunas e viram
-   * uma pilha de dezoito linhas iguais, então o que antes era separado pelo
-   * espaço horizontal passa a depender só do vertical. Com os valores de tela
-   * larga a seção lia como um bloco só de texto.
+   * uma pilha só, então o que antes era separado pelo espaço horizontal passa a
+   * depender só do vertical. Com os valores de tela larga a seção lia como um
+   * bloco só de texto.
    *
    * A escala que cabe (`useEscalaQueCabe`) é quem paga a conta se isso não
    * couber, e é para isso que ela existe.
    */
   .secao .bloco {
     gap: 28px;
+  }
+
+  /**
+   * **Cinco de cada lista, não oito.** Empilhadas, as duas davam dezesseis linhas
+   * iguais antes do destaque, e a seção lia como uma planilha. O corte é aqui e
+   * não na função: no desktop as oito cabem em duas colunas lado a lado, e a
+   * resposta do Spotify é a mesma para as duas telas.
+   */
+  .item:nth-child(n + 6) {
+    display: none;
   }
 
   .colunas {

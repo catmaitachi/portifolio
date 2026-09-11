@@ -7,7 +7,44 @@
   **Toda seção rolável nova precisa de `.rolavel`.**
 - Filhos com `flex: none`, sem `flex-shrink`, que antes comprimia e clipava o conteúdo.
 - Bloco de parágrafos com rolagem própria (`--txt`, barra de 3px, `overscroll-behavior: contain`):
-  chegar ao fim da bio não pode encadear a rolagem para a seção.
+  chegar ao fim da bio não pode encadear a rolagem para a seção. **Só fora do mobile** (ver adiante).
+- **No mobile a seção é diagramada como jornal.** O retrato fica no canto esquerdo, o título ao lado
+  dele, e o texto começa sob o título e continua por baixo da foto quando ela acaba. Empilhado, o
+  retrato ocupava uma linha inteira para uma imagem de 96px, com vazio dos dois lados.
+
+  Quem faz o texto contornar é `float`, e isso decide o resto: uma caixa que forma contexto de
+  formatação próprio (grid, flex, `overflow` diferente de `visible`) fica **ao lado** do float, sem
+  contornar. Por isso o `.corpo` vira `flow-root`, a coluna e o texto viram bloco comum e **a bio
+  perde a rolagem própria** no mobile: com ela, o texto voltaria a ser uma coluna estreita ao lado da
+  foto. A bio é curta, e se não couber quem responde é o `useEscalaQueCabe`, e abaixo do piso dele a
+  rolagem da seção. O `flow-root` também contém o float, senão uma bio curta deixaria a foto vazar
+  por cima dos fatos.
+
+  O float mora numa classe que o Sobre passa ao `PortraitCard` (`className`), e não no módulo do
+  retrato: onde a foto fica é decisão da seção, não do cartão.
+
+  **A base da foto é a linha de base da última linha ao lado dela.** A altura é o título
+  (`--titulo-fs`, token de `section.module.css`), o respiro dele e seis linhas da bio, menos o
+  trecho entre a linha de base e o fundo da caixa de linha (`--ate-base`); a largura sai disso pela
+  proporção, ~113px. Três versões ficaram pelo caminho:
+  - com uma altura qualquer, a base da foto caía no meio de uma linha, que ia inteira para depois
+    dela e deixava um vão de até uma linha entre a imagem e o texto;
+  - encostada no fundo da caixa de linha, a foto ficava colada no texto de baixo;
+  - com quatro linhas (~86px) a coluna ao lado justificava melhor, mas a foto ficava pequena e o
+    bloco apertado.
+
+  Na linha de base, a foto termina junto com as letras ao lado, e o que a separa do texto de baixo é
+  a mesma distância entre duas linhas. Pelo mesmo motivo os parágrafos se separam por uma linha
+  inteira no mobile: uma quebra ao lado da foto com outro respiro tiraria o texto da régua.
+
+  **O preço é a justificação ao lado da foto.** A coluna ali tem uns 28 caracteres, e numa fonte
+  monoespaçada o ajuste só sai do espaço entre palavras. Sem hifenização, perto de metade das linhas
+  ao lado da foto abre vãos de mais de dois espaços. Com hifenização, que todo celular tem, a conta
+  melhora. `--linhas-foto` é o botão: menos linhas, foto menor e coluna mais larga.
+
+  O navegador embutido do ambiente de desenvolvimento **não hifeniza nada**, nem em inglês nem em
+  português. Uma foto dele mostra a bio sem nenhum hífen, e isso não é o que um celular mostra:
+  para avaliar a justificação, medir os vãos no DOM.
 - **A coluna de texto não passa da base do retrato.** O texto rola dentro do que sobra depois do
   título, em vez de descer sozinho ao lado de uma imagem que já acabou — numa tela de 1080px eram
   ~56px de sobra. O teto é `--coluna-max`, e quem cede altura é o `.texto`: `min-height: 0` deixa o
@@ -18,8 +55,8 @@
   (`28cqw`), então `--coluna-max` é ele vezes a proporção. Onde uma faixa responsiva troca
   `--retrato` por um valor fixo (150px em telas baixas), o teto acompanha sozinho. É para isso que o
   `.corpo` é um `container-type: inline-size`: o bloco tem `max-width`, então a coluna não é fração
-  da viewport e `vw` não serviria. No mobile o retrato fica **acima** do texto e não há base a
-  respeitar — `--coluna-max: none`.
+  da viewport e `vw` não serviria. No mobile o texto passa por baixo do retrato e não há base a
+  respeitar, então `--coluna-max: none`.
 
   A proporção mora em `--retrato-ar` e o `PortraitCard` monta o `aspect-ratio` com ela
   (`1 / var(--retrato-ar)`), para a altura do retrato e o teto da coluna não saírem de sincronia.
@@ -147,13 +184,18 @@ inteiro onde antes cabia um.
 | Onde | O quê |
 |---|---|
 | topo | o **furo da fita**, e o logo da instituição em escala óptica própria (`shared.json → logos`) |
-| abaixo | instituição em versalete espaçado, o nível, e o **selo** com o estado |
+| abaixo | o nível, e o **selo** com o estado |
 | miolo | o curso, na maior tipografia do cartão |
 | pé | a posição na lista e o dado do estado, e embaixo a barra com a fração em número |
 
 - **O furo é o que faz a forma ser lida como crachá.** É um risco de 1px como todo o resto, sem
   preenchimento e sem ilusão de recorte. Ele substituiu a moldura dupla, que era a gramática de um
   certificado e deixou de valer quando o cartão trocou de forma.
+- **O nome da instituição está no logo, e só nele.** Os logos trazem o nome desenhado, e o texto em
+  versalete que ficava embaixo repetia a mesma palavra a um centímetro de distância. Ele continua
+  como o nome acessível do logo (o `aria-label` do `role="img"`), e volta a ser escrito só quando a
+  formação não tem logo, senão ela ficaria sem nome na tela. O branco dos logos é assunto do arquivo,
+  não do CSS (ver `conteudo.md`).
 - **O centro é consequência, não estética**: numa coluna estreita, texto à esquerda sob um logo
   centrado leria como duas colunas que não existem. O rodapé é a exceção, e é onde a leitura fecha.
 - **O curso tem margens automáticas**, então a folga se divide acima e abaixo dele. Sem isso o bloco
@@ -162,8 +204,15 @@ inteiro onde antes cabia um.
   cartão, e ali ela competiria com a fração, que é o número que a barra explica.
 - **O rótulo do dado é traduzido, o valor não.** "2022.12" e "4/8" são dados, idênticos nos dois
   idiomas, como a versão no rodapé; quem traduz é o "Conclusão" e o "Períodos" ao lado
-  (`formacoes.rotulos`). A `pretensao` não mostra fração: um "0%" leria como defeito em vez de
-  "ainda não começou".
+  (`formacoes.rotulos`).
+- **A pretensão é um cartão vago**: o furo da fita, o nível no miolo e o selo, e nada mais. Sem
+  instituição, sem logo, sem curso e sem medidor, e o dado não tem esses campos: `instituicao` e
+  `curso` são opcionais no tipo justamente para ela. Detalhada, ela ganhava o mesmo peso das duas
+  formações que existem, e o que ela tem para dizer é só a direção. É também **mais apagada** em
+  tudo, e o apagado sai das cores, não de `opacity`: a entrada anima a opacidade até 1 e, ao
+  terminar, um `opacity` no cartão o faria apagar num salto. A moldura é contínua e mais fraca: ela
+  já foi tracejada, com o `dashed` do navegador e depois com traços espaçados, e nas duas vezes o
+  tracejado pesava mais que o conteúdo do cartão.
 
 **No mobile os três não cabem ao mesmo tempo**, e nenhum ajuste de largura resolve isso sem deixar o
 texto ilegível: três crachás legíveis pedem mais de 600px. É justamente essa falta que o movimento
@@ -342,6 +391,11 @@ errada: dobrava a altura do bloco justamente na tela onde ela é mais disputada,
 deixava de ser reconhecível de relance por ter virado outro desenho. Ali quem cede é o texto, que já
 corta com reticências — cortar um título é mais barato que reorganizar o bloco.
 
+**No mobile cada lista mostra cinco, não oito.** Empilhadas, as duas davam dezesseis linhas iguais
+antes do destaque, e a seção lia como planilha. O corte é CSS (`.item:nth-child(n + 6)`) e não a
+função: no desktop as oito cabem em duas colunas lado a lado, e a resposta do Spotify é a mesma para
+as duas telas.
+
 **A capa leva à faixa, e cada artista ao seu perfil.** A capa é a maior superfície do bloco e a
 primeira coisa que o olho encontra, e era a única parte dele que parecia clicável sem ser; hoje ela é
 um link para a mesma faixa que o nome ao lado, e inclina ao ser apontada como as outras artes da
@@ -393,8 +447,8 @@ montada, então não há ranking a inventar nem campo a pedir ao Letterboxd.
 O selo tem moldura, e não é enfeite: dois algarismos soltos ao lado do ano, na mesma linha, leriam
 como parte da data.
 
-**Capas, artes e pôsteres ficam coloridos.** É identidade de terceiro, como os banners de projeto e o
-vermelho da UFMG: não se repinta. **A moldura de 1px só aparece quando a imagem não veio**, e é o
+**Capas, artes e pôsteres ficam coloridos.** É identidade de terceiro, como os banners de projeto: não
+se repinta. **A moldura de 1px só aparece quando a imagem não veio**, e é o
 espaço reservado dos banners: o endereço da arte da Steam é perguntado a cada resposta e pode não vir
 (ver `dados.md`), e sem a moldura sobraria o ícone de imagem quebrada do navegador, a única coisa
 fora da paleta na página inteira. Sobre a arte ela não reservava nada, e por isso saiu (ver

@@ -9,7 +9,8 @@
 /**
  * Contrato do rodapé do mobile.
  *
- * Em `≤640px` o HUD ocupa a faixa de baixo: a barra de seções e, abaixo dela, a
+ * No layout de celular (`≤640px`, ou tablet em pé até 1024px) o HUD ocupa a
+ * faixa de baixo: a barra de seções e, abaixo dela, a
  * versão. As seções precisam reservar esse espaço no `padding-bottom`, e nenhuma
  * delas conhece o `NavMenu` — então o número mora aqui, uma vez, e as duas
  * pontas derivam dele.
@@ -29,32 +30,160 @@
 
   /* onde a primeira linha do topo começa, medindo da borda */
   --hud-topo-base: max(2.4vh, 20px);
-  /* a altura de uma linha do topo: o seletor de idioma, ou o cabeçalho de modo */
-  --hud-topo-linha: 21px;
-  /* o respiro entre as duas linhas, quando elas se empilham */
-  --hud-topo-entre: 6px;
   /**
-   * Quanto o HUD ocupa no topo.
-   *
-   * No desktop é uma linha só, porque idioma e cabeçalho dividem a mesma: um à
-   * direita, o outro no centro. O menu aberto e a frase do hover **não** entram
-   * aqui — os dois são transitórios e passam por cima do conteúdo.
+   * A altura de uma linha do topo: o seletor de idioma, ou o cabeçalho de modo.
+   * Era 21px, e com a moldura do cabeçalho o texto de 10px ficava encostado nos
+   * dois fios. Os dois se centram nesta altura, então mudar o número mexe nos
+   * dois juntos e nas seções, que reservam o topo a partir dele.
+   */
+  --hud-topo-linha: 26px;
+  /**
+   * Quanto o HUD ocupa no topo: uma linha só, em qualquer tela. No desktop o
+   * idioma fica à direita e o cabeçalho de modo no centro; no celular o idioma
+   * continua à direita e o cabeçalho vai para a esquerda. O menu aberto e a frase do
+   * hover **não** entram aqui, porque os dois são transitórios e passam por cima
+   * do conteúdo.
    */
   --hud-topo-altura: var(--hud-topo-linha);
   /* base do topo: acima disso é território do HUD */
   --hud-topo: calc(var(--hud-topo-base) + var(--hud-topo-altura));
   /* o que separa o conteúdo do cabeçalho, espelhando o respiro do rodapé */
   --hud-topo-respiro: clamp(10px, 2svh, 18px);
+
+  /**
+   * O recuo lateral de todas as peças do HUD, e a linha de base das de baixo.
+   *
+   * Menu, idioma, versão, cabeçalho e medidor da supernova se alinham pelas
+   * bordas da tela, e cada um escrevia o próprio `max(3.2vw, 26px)`. O medidor
+   * tinha 20px fixos no mobile enquanto o cabeçalho tinha `max(3.2vw, 20px)`, e
+   * num tablet em pé os dois ficavam desalinhados por seis pixels.
+   */
+  --hud-borda: max(3.2vw, 26px);
+  --hud-fundo: 28px;
+}
+
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
+  :root {
+    --hud-borda: max(3.2vw, 20px);
+  }
 }
 
 /**
- * No mobile o topo tem **duas** linhas: idioma em cima, cabeçalho de modo
- * embaixo. Os dois centrados, e não cabem lado a lado numa tela estreita.
+ * Os tokens de desenho: cor, tipo, tempo e curva.
+ *
+ * A página é feita de pouca coisa repetida muitas vezes: branco em alguns níveis
+ * de opacidade, quatro tamanhos de rótulo e uma curva de saída. Cada módulo
+ * escrevia o seu número, e somados eram quarenta níveis de branco só para texto
+ * e seis curvas de tempo, com diferenças de 2% e de um centésimo que ninguém vê.
+ * Aqui fica a régua, uma vez, e os módulos escolhem um degrau dela.
+ *
+ * **Os nomes dizem o papel, não o valor.** É isso que deixa o `prefers-contrast`
+ * logo abaixo subir todos os textos de uma vez, sem que nenhum módulo saiba.
+ *
+ * Fica de fora o que tem motivo próprio escrito onde está: o degradê do nome, o
+ * número fantasma da Trajetória, os anéis do HUD e os glifos do cartão de
+ * projeto.
  */
-@media (width <= 640px) {
+:root {
+  /* texto, do mais aceso ao mais apagado */
+  --tx-titulo: #fff;
+  --tx-hover: rgb(255 255 255 / 90%);
+  --tx-forte: rgb(255 255 255 / 82%);
+  --tx-corpo: rgb(255 255 255 / 66%);
+  --tx-apoio: rgb(255 255 255 / 50%);
+  --tx-rotulo: rgb(255 255 255 / 40%);
+  --tx-apagado: rgb(255 255 255 / 32%);
+  --tx-marcador: rgb(255 255 255 / 24%);
+
+  /* linhas de 1px: separadores, molduras, trilhas e o contorno de foco */
+  --linha-sutil: rgb(255 255 255 / 10%);
+  --linha: rgb(255 255 255 / 14%);
+  --linha-forte: rgb(255 255 255 / 24%);
+  --linha-acesa: rgb(255 255 255 / 36%);
+  --linha-foco: rgb(255 255 255 / 55%);
+  --linha-cheia: rgb(255 255 255 / 78%);
+  /* o fundo de uma moldura vazia ou apontada: um sopro de cinza */
+  --fundo-sutil: rgb(255 255 255 / 4%);
+
+  /**
+   * Tipo. Os fixos são os rótulos e controles, que têm tamanho de leitura e não
+   * acompanham a tela; os fluidos são texto de conteúdo.
+   */
+  --fs-micro: 7.5px;
+  --fs-rotulo: 8.5px;
+  --fs-meta: 9px;
+  --fs-controle: 10px;
+  --fs-pequeno: 11px;
+  --fs-lista: clamp(10px, 1.35vmin, 12.5px);
+  --fs-corpo: clamp(11px, 1.5vmin, 14px);
+  --fs-destaque: clamp(15px, 2.4vmin, 24px);
+  /* versalete: o de lista e o de etiqueta (chips, estado, selo) */
+  --ls-rotulo: 0.28em;
+  --ls-etiqueta: 0.22em;
+
+  /**
+   * Tempo. Uma curva para transição e outra para entrada: a de entrada sai
+   * mais depressa, e é ela que faz a opacidade chegar antes do movimento.
+   */
+  --dur-hover: 0.35s;
+  --dur-retorno: 0.55s;
+  --ease-saida: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-entrada: cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+/**
+ * Mais contraste, para quem pediu ao sistema.
+ *
+ * O desenho da página é deliberadamente apagado, e boa parte dos rótulos fica
+ * abaixo dos 4,5:1 do WCAG. Quem liga "aumentar contraste" no sistema recebe a
+ * mesma página com todos os textos acima disso e as linhas mais visíveis. Nenhum
+ * módulo precisa saber que isto existe, porque todos leem os tokens acima.
+ */
+@media (prefers-contrast: more) {
   :root {
-    --hud-topo-altura: calc(2 * var(--hud-topo-linha) + var(--hud-topo-entre));
+    --tx-forte: #fff;
+    --tx-corpo: rgb(255 255 255 / 88%);
+    --tx-apoio: rgb(255 255 255 / 76%);
+    --tx-rotulo: rgb(255 255 255 / 68%);
+    --tx-apagado: rgb(255 255 255 / 60%);
+    --tx-marcador: rgb(255 255 255 / 52%);
+    --linha-sutil: rgb(255 255 255 / 24%);
+    --linha: rgb(255 255 255 / 34%);
+    --linha-forte: rgb(255 255 255 / 48%);
+    --linha-acesa: rgb(255 255 255 / 64%);
+    --linha-foco: #fff;
   }
+}
+
+/**
+ * A abertura, num lugar só.
+ *
+ * O cronograma estava espalhado por oito módulos em segundos soltos, e mudar o
+ * ritmo dele era mexer em todos. Cada peça lê daqui o instante em que entra, e o
+ * zoom da câmera, que corre no canvas, é `DURACAO.cameraZoom` em
+ * `scene/scenePlan.ts`: os anéis começam enquanto ele termina.
+ *
+ * A primeira versão levava 6,6s até a tela parar, e o nome só aparecia aos
+ * 3,75s. Hoje o nome se forma a partir de 1,35s e tudo assenta em 3,3s. A ordem é
+ * a mesma de antes: anéis, mira, nome, legenda, e a navegação por último.
+ */
+:root {
+  /* o primeiro anel, e o intervalo até cada um dos seguintes */
+  --abertura-aneis: 0.75s;
+  --abertura-passo: 0.12s;
+  --abertura-mira: 1.35s;
+  --abertura-etiqueta: 1.2s;
+  --abertura-nome: 1.35s;
+  --abertura-legenda: 1.85s;
+  --abertura-menu: 2.15s;
+  --abertura-cabecalho: 2.2s;
+  --abertura-credito: 2.3s;
+  --abertura-idioma: 2.4s;
+  --abertura-versao: 2.5s;
+  /* a última peça assentou: daqui em diante só o brilho do nome se move */
+  --abertura-fim: 3.3s;
+  /* quanto dura a aparição comum das peças do HUD */
+  --abertura-fina: 0.8s;
 }
 
 *,
@@ -71,7 +200,7 @@ body {
   background: #000;
   /* a rolagem real acontece no contêiner de seções, nunca no documento */
   overflow: hidden;
-  color: #fff;
+  color: var(--tx-titulo);
   font-family: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -138,9 +267,17 @@ textarea {
  * - `text-wrap: pretty` faz o Chrome escolher as quebras olhando o parágrafo
  *   inteiro em vez de linha a linha — a mesma ideia do algoritmo do Knuth, e é
  *   ele que tira o buraco de uma linha e o distribui pelas vizinhas.
+ * - `text-justify: inter-character` espalha a folga da linha entre **todos** os
+ *   caracteres, e não só entre as palavras. É o que o `microtype` faz no LaTeX, e
+ *   é a única saída quando a palavra seguinte não tem onde partir: "As a
+ *   developer, I'm committed to constantly" deixava 4 colunas de sobra numa
+ *   linha de 47, porque "evolving" só parte em "evolv-ing", e as 4 viravam vãos
+ *   de três espaços e meio. Espalhadas entre as letras, nenhuma linha da bio
+ *   passa de 1,3 espaço entre palavras.
  *
- * Onde falta suporte (Firefox não tem `hyphenate-limit-chars`), o parágrafo
- * continua justificado e hifenizado, só com quebras menos bem escolhidas.
+ * Onde falta suporte (Firefox não tem `hyphenate-limit-chars`, e quem não tem
+ * `text-justify` volta a esticar só os espaços), o parágrafo continua
+ * justificado e hifenizado, só com quebras e vãos menos bem resolvidos.
  *
  * Vale por elemento, como a regra de seleção acima: `<p>` é parágrafo em toda a
  * página. Os dois `<p>` que não são texto corrido — o índice da seção e a
@@ -152,21 +289,22 @@ p {
   hyphens: auto;
   hyphenate-limit-chars: 6 3 3;
   text-wrap: pretty;
+  text-justify: inter-character;
 }
 
 a {
-  color: rgb(255 255 255 / 42%);
+  color: var(--tx-rotulo);
   text-decoration: none;
-  transition: color 0.35s;
+  transition: color var(--dur-hover);
 }
 
 a:hover {
-  color: rgb(255 255 255 / 90%);
+  color: var(--tx-hover);
 }
 
 /* foco visível só para quem navega por teclado */
 :focus-visible {
-  outline: 1px solid rgb(255 255 255 / 55%);
+  outline: 1px solid var(--linha-foco);
   outline-offset: 3px;
 }
 

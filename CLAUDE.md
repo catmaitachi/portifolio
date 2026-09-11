@@ -29,7 +29,7 @@ um tema novo.
 | Arquivo | O que guarda |
 |---|---|
 | `arquitetura.md` | as camadas do projeto, o que cada pasta conhece e o alias `~` |
-| `direcao-visual.md` | paleta, estética, cantos chanfrados e o ícone da aba |
+| `direcao-visual.md` | paleta, tokens de cor, tipo e tempo, cantos chanfrados e o ícone da aba |
 | `motor.md` | `src/engine/`: camadas, contrato de desempenho, constelações, câmera |
 | `cena.md` | o plano de cena por seção e a Super-Nova que o visitante acende |
 | `conteudo.md` | i18n e como acrescentar projeto, experiência, formação ou seção |

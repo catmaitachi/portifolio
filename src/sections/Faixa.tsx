@@ -66,7 +66,7 @@ export function Faixa({ titulo, base = 0, total, children }: FaixaProps) {
   return (
     <div className={styles.grupo}>
       <div className={styles.linha}>
-        <p className={styles.titulo}>{titulo}</p>
+        <h3 className={styles.titulo}>{titulo}</h3>
 
         {/* a faixa que coube inteira não ganha controle nenhum: não há o que rolar */}
         {rola && (

@@ -18,18 +18,21 @@
   align-items: center;
   justify-content: space-between;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgb(255 255 255 / 10%);
+  border-bottom: 1px solid var(--linha-sutil);
 }
 
-/* o mesmo rótulo de lista da seção de Música: todas são listas de dado de fora */
+/**
+ * O mesmo rótulo de lista da seção de Música: todas são listas de dado de fora.
+ * É um `<h3>`, o sub-título da faixa sob o título da seção, e é por ele que um
+ * leitor de tela pula de uma faixa para a outra.
+ */
 .titulo {
   margin: 0;
-  color: rgb(255 255 255 / 40%);
-  font-size: 8.5px;
-  letter-spacing: 0.28em;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
+  font-weight: 400;
+  letter-spacing: var(--ls-rotulo);
   text-transform: uppercase;
-  text-align: left;
-  hyphens: manual;
 }
 
 .setas {
@@ -60,28 +63,20 @@
   padding: 0;
   border: 0;
   background: none;
-  color: rgb(255 255 255 / 42%);
+  color: var(--tx-rotulo);
   --ponta: 6px;
   cursor: pointer;
-  transition: color 0.25s;
+  transition: color var(--dur-hover);
 }
 
 .seta:hover:not(:disabled) {
-  color: #fff;
+  color: var(--tx-titulo);
 }
 
 /* na ponta o botão apaga em vez de sumir, como os passos da Trajetória */
 .seta:disabled {
   opacity: 0.24;
   cursor: default;
-}
-
-.ponta {
-  display: block;
-  width: 6px;
-  height: 6px;
-  border-top: 1px solid currentcolor;
-  border-right: 1px solid currentcolor;
 }
 
 /**

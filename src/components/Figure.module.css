@@ -6,8 +6,8 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  /* espaço reservado: cinza levíssimo, só o suficiente para ler como moldura */
-  background: rgb(127 127 127 / 8%);
+  /* espaço reservado: o mesmo sopro de cinza das molduras vazias de Jogos e Filmes */
+  background: var(--fundo-sutil);
 }
 
 .img {
@@ -19,9 +19,9 @@
 
 .rotulo {
   padding: 0 14px;
-  color: rgb(255 255 255 / 30%);
-  font-size: 9px;
-  letter-spacing: 0.22em;
+  color: var(--tx-apagado);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-etiqueta);
   text-align: center;
   text-transform: uppercase;
   text-wrap: balance;

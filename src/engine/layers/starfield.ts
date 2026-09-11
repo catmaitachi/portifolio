@@ -30,7 +30,7 @@ interface StarfieldOptions {
  * Campo de estrelas.
  *
  * Todas as posições vivem em TypedArrays criados no `resize` — nada é alocado
- * por quadro. O desenho de cada estrela vem de `engine/estrela.ts`, o mesmo que
+ * por quadro. O desenho de cada estrela vem de `engine/star.ts`, o mesmo que
  * a supernova e as figuras usam, e os `buckets` quantizam o cintilar em oito
  * degraus de opacidade — o que o canvas agrupa é uma sequência de estrelas com o
  * mesmo estado de pintura.
@@ -220,6 +220,15 @@ export function Starfield({
        */
       const derivaK = zooming ? env.camera.fade : 1;
       const temLente = temGrav || temPoco;
+      /**
+       * Modo leve: metade do céu (ver o corte de qualidade em `stage.ts`).
+       *
+       * A metade é pela paridade do índice, e não da posição no balde: o balde de
+       * uma estrela muda a cada quadro com o cintilar, e cortar por ele faria as
+       * estrelas piscarem entre desenhadas e não. O índice é fixo, e as posições
+       * são sorteadas, então a metade que fica continua espalhada pela tela.
+       */
+      const leve = env.leve;
 
       for (let b = 0; b < buckets; b++) {
         const n = count[b];
@@ -229,6 +238,7 @@ export function Starfield({
 
         for (let k = 0; k < n; k++) {
           const i = bucket[off + k];
+          if (leve && (i & 1) === 1) continue;
           let px = sx[i] + sdx[i];
           let py = sy[i] + sdy[i];
           if (zooming) {

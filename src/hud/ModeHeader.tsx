@@ -87,10 +87,11 @@ export function ModeHeader({ modo, trocar }: ModeHeaderProps) {
               className={styles.modo}
               data-escolhido={escolhido || undefined}
               data-oculto={(!aberto && !escolhido) || undefined}
-              /* fechado ele é gatilho, aberto é opção: os dois papéis não dividem
-                 o mesmo atributo */
+              /* fechado ele é gatilho, aberto é opção e também quem fecha o menu:
+                 o `aria-expanded` acompanha o lado em vigor nos dois estados, senão
+                 o leitor de tela nunca ouviria que o menu abriu */
               aria-label={gatilho ? t.a11y.modosAbrir : undefined}
-              aria-expanded={gatilho ? false : undefined}
+              aria-expanded={escolhido ? aberto : undefined}
               aria-current={aberto && escolhido ? 'true' : undefined}
               aria-describedby={`modo-descricao-${m.key}`}
               tabIndex={aberto || escolhido ? 0 : -1}
@@ -106,6 +107,8 @@ export function ModeHeader({ modo, trocar }: ModeHeaderProps) {
               }}
             >
               {t.modos[m.key].rotulo}
+              {/* a ponta que diz "isto abre"; aberto, ela vira para cima */}
+              {escolhido && <span className={styles.ponta} aria-hidden="true" />}
             </button>
           );
         })}

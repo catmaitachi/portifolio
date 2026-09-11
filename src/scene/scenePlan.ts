@@ -101,8 +101,14 @@ export const DURACAO = {
    * estar correndo quando a camada termina de aparecer.
    */
   constelacaoTraco: 1.7,
-  /** intro: a câmera parte de dentro do horizonte e recua */
-  cameraZoom: 1.5,
+  /**
+   * Intro: a câmera parte de dentro do horizonte e recua.
+   *
+   * Os anéis do HUD começam enquanto ela termina (`--abertura-aneis`, em
+   * `reset.css`): com a curva de saída forte da câmera, aos 60% do trajeto ela já
+   * andou mais de 97% do caminho, e esperar o último pedaço era tempo parado.
+   */
+  cameraZoom: 1.2,
   cameraFator: 26,
 } as const;
 
@@ -119,9 +125,9 @@ export const DURACAO = {
  * de estrela crescendo, e é neles que a carga se vê chegando a algum lugar; sem esse trecho, cada
  * nível seria só mais um degrau logo depois do anterior.
  *
- * **E o último não aparece do nada.** Um buraco negro é o que sobra quando uma estrela massiva
- * colapsa, então a estrela vem antes: ela cresce dos 7s aos 10s e implode ali, e o horizonte nasce
- * de dentro do clarão.
+ * **O último é o colapso.** A estrela cresce dos 7s aos 10s e ali se comprime num núcleo crítico,
+ * que fica tremendo até o gesto acabar; soltar é o que a faz estourar. Não há buraco negro no fim
+ * (ver `cena.md`).
  *
  * Dois valores não são livres:
  *

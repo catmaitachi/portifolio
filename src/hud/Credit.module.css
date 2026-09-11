@@ -17,12 +17,20 @@
   }
 }
 
+/**
+ * Os riscos crescem em escala, e não em largura.
+ *
+ * Largura é layout: animada, ela remontava a linha inteira do crédito a cada
+ * quadro, com o texto escorregando entre os dois riscos até eles chegarem ao
+ * tamanho. Em escala a caixa já nasce com os 34px e o compositor faz o resto, que
+ * é o que o `.regua` do Início já fazia.
+ */
 @keyframes creditLine {
   from {
-    width: 0;
+    transform: scaleX(0);
   }
   to {
-    width: 34px;
+    transform: scaleX(1);
   }
 }
 
@@ -31,12 +39,12 @@
   --credito-vis: visible;
 
   position: absolute;
-  bottom: 28px;
+  bottom: var(--hud-fundo);
   left: 50%;
   display: flex;
   gap: 11px;
   align-items: center;
-  font-size: 9.5px;
+  font-size: var(--fs-meta);
   letter-spacing: 0.32em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -46,17 +54,25 @@
    */
   transform: translateX(-50%);
   visibility: var(--credito-vis);
-  animation: creditIn 1.1s ease-out 5.2s both;
+  animation: creditIn var(--abertura-fina) ease-out var(--abertura-credito) both;
 }
 
 .risco {
   display: block;
-  /* largura final também na regra, pelo mesmo motivo — `creditLine` parte de 0 */
   width: 34px;
   height: 1px;
   background: currentcolor;
   opacity: 0.55;
-  animation: creditLine 1s cubic-bezier(0.3, 0.7, 0.2, 1) 5.2s both;
+  animation: creditLine var(--abertura-fina) var(--ease-saida) var(--abertura-credito) both;
+}
+
+/* cada risco cresce a partir do texto, para fora */
+.risco:first-child {
+  transform-origin: right;
+}
+
+.risco:last-child {
+  transform-origin: left;
 }
 
 /**
@@ -65,15 +81,15 @@
  * Por **visibilidade**, nunca por `display: none`. Um elemento com `display:
  * none` sai da árvore de renderização e leva a animação junto: ao voltar para
  * desktop (rotação, janela redimensionada, DevTools), `creditIn` recomeça do
- * zero — e como ela tem 5.2s de atraso com `both`, o crédito ficava mais de
- * cinco segundos invisível, o que na tela lê como "não voltou".
+ * zero — e como ela tem o atraso da abertura com `both`, o crédito ficava
+ * segundos invisível (eram mais de cinco), o que na tela lê como "não voltou".
  *
  * `visibility: hidden` mantém o elemento na árvore: a animação segue seu curso
  * escondida e o crédito reaparece no mesmo quadro em que a faixa larga volta.
  * A visibilidade também já o tira do clique e da navegação por teclado, então
  * nada de `pointer-events` extra.
  */
-@media (width <= 640px) {
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .credito {
     --credito-vis: hidden;
   }

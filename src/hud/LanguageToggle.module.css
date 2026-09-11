@@ -10,49 +10,49 @@
   }
 }
 
+/**
+ * No celular ele continua à direita, como no desktop, e o cabeçalho de modo vai
+ * para a esquerda: os dois dividem a linha do topo em vez de se empilharem no
+ * centro. O recuo é o `--hud-borda` de todo o HUD, que já encolhe no mobile, e é
+ * isso que faz os dois espelharem um ao outro sem uma faixa aqui.
+ */
 .botao {
   --lang-left: auto;
-  --lang-right: max(3.2vw, 26px);
+  --lang-right: var(--hud-borda);
   --lang-tx: 0;
 
   position: absolute;
   z-index: 4;
-  top: max(2.4vh, 20px);
+  top: var(--hud-topo-base);
   right: var(--lang-right);
   left: var(--lang-left);
   display: flex;
   gap: 10px;
   align-items: center;
+  /* a mesma linha do cabeçalho de modo: no desktop os dois dividem o topo, e
+     centrados na mesma altura ficam na mesma linha de base */
+  height: var(--hud-topo-linha);
   margin: 0;
-  padding: 4px 2px;
+  padding: 0 2px;
   border: 0;
   background: none;
-  font-size: 10px;
+  font-size: var(--fs-controle);
   letter-spacing: 0.28em;
   cursor: pointer;
   appearance: none;
   transform: translateX(var(--lang-tx));
-  animation: fina 1s ease-out 5.4s both;
+  animation: fina var(--abertura-fina) ease-out var(--abertura-idioma) both;
 }
 
 .opcao {
-  color: rgb(255 255 255 / 34%);
-  transition: color 0.35s;
+  color: var(--tx-apagado);
+  transition: color var(--dur-hover);
 }
 
 .opcao[data-ativo] {
-  color: #fff;
+  color: var(--tx-titulo);
 }
 
 .separador {
-  color: rgb(255 255 255 / 20%);
-}
-
-/* mobile: centrado, para não brigar com o polegar na borda */
-@media (width <= 640px) {
-  .botao {
-    --lang-left: 50%;
-    --lang-right: auto;
-    --lang-tx: -50%;
-  }
+  color: var(--tx-marcador);
 }
