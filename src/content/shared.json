@@ -65,7 +65,7 @@
     }
   },
 
-  "projetos": ["catmaitachi/Scorepad"],
+  "projetos": ["catmaitachi/kittens", "catmaitachi/Scorepad"],
 
   "canais": [
     {
