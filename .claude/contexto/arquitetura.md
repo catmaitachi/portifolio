@@ -20,3 +20,14 @@ por prop porque a ordem deixou de ser fixa: ele é a posição na lista do modo 
 modo e a lista dele é o `App`.
 
 O alias `~` aponta para `src/`: mover um arquivo de pasta não quebra os imports dos vizinhos.
+
+## Projetos servidos em subcaminho
+
+`luuspz.dev/kittens/` é a landing page do [kittens](https://github.com/catmaitachi/kittens), que
+continua publicada no GitHub Pages pelo repositório dela. O `vercel.json` só repassa o caminho
+(rewrite, a URL não muda), então um deploy lá aparece aqui sem tocar neste repositório.
+
+- **O redirect de `/kittens` para `/kittens/` não é enfeite.** A página usa caminhos relativos
+  (`./assets/...`); sem a barra final eles resolvem na raiz do portfólio e nada carrega.
+- Não há conflito com a navegação: o endereço das seções é hash (`#personal/music`), nunca caminho.
+- Outro projeto no mesmo esquema é mais um par redirect + rewrite com o nome dele.

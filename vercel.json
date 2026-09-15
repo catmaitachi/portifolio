@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    { "source": "/kittens", "destination": "/kittens/", "permanent": true }
+  ],
+  "rewrites": [
+    { "source": "/kittens/", "destination": "https://catmaitachi.github.io/kittens/" },
+    { "source": "/kittens/:path*", "destination": "https://catmaitachi.github.io/kittens/:path*" }
+  ]
+}
