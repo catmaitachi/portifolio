@@ -1,26 +1,32 @@
 /**
  * Esqueleto compartilhado das seções.
  *
- * Sobre, Projetos, Trajetória e Contato têm a mesma **composição aberta**:
- * índice + risco, título grande, conteúdo sem moldura. Ela vive aqui uma vez e
- * é puxada por `composes` — nenhuma seção redeclara padding, snap ou entrada.
+ * As seções têm a mesma **composição aberta**: índice + risco, título grande,
+ * conteúdo sem moldura. Ela vive aqui uma vez e é puxada por `composes`, e
+ * nenhuma seção redeclara padding ou entrada.
+ *
+ * **A seção não rola: quem rola é a tela** (`navigation/Tela.module.css`). Ela
+ * tem ao menos a altura da tela e cresce com o conteúdo, e numa pilha isso é o
+ * que põe uma seção embaixo da outra.
  *
  * Responsivo por tokens: os valores base moram nas declarações abaixo e cada
  * media query só os redefine.
  *
- * **O topo tem um contrato, como o rodapé.** `--pt-livre` é o respiro que a
- * altura da tela permite, e `--pt` é ele **ou** o que o cabeçalho de modo exige,
- * o que for maior. As media queries redefinem só `--pt-livre`: quem mexer na
- * altura do cabeçalho mexe em `--hud-topo-altura` (`reset.css`) e as seções
- * acompanham sozinhas. Foi exatamente esse número solto em dois lugares que
- * deixou o conteúdo correr por baixo da barra do rodapé uma vez.
+ * **O topo tem um contrato.** `--pt-livre` é o respiro que a altura da tela
+ * permite, e `--pt` é ele **ou** o que o cabeçalho exige, o que for maior. As
+ * media queries redefinem só `--pt-livre`: quem mexer na altura do cabeçalho mexe
+ * em `--hud-topo-altura` (`reset.css`) e as seções acompanham sozinhas.
+ *
+ * Numa tela de abas as abas já ocupam esse espaço, e o painel delas passa um
+ * `--secao-pt` menor, que ganha do respiro do cabeçalho quando existe.
  */
 
 .secao {
   --pt-livre: clamp(56px, 9vh, 96px);
-  --pt: max(var(--pt-livre), calc(var(--hud-topo) + var(--hud-topo-respiro)));
-  --pb: clamp(84px, 13vh, 120px);
-  --px: max(150px, 5vw);
+  --pt: var(--secao-pt, max(var(--pt-livre), calc(var(--hud-topo) + var(--hud-topo-respiro))));
+  --pb: var(--secao-pb, clamp(84px, 13vh, 120px));
+  /* o menu de seções da direita saiu, e a reserva de 150px de cada lado com ele */
+  --px: max(96px, 6vw);
   --gap: clamp(16px, 2.4vmin, 28px);
   /* token e não valor solto: o retrato do Sobre no mobile mede o título para
      acertar a própria altura na régua das linhas */
@@ -31,44 +37,18 @@
   gap: var(--gap);
   align-items: center;
   justify-content: flex-start;
-  height: 100%;
+  /* uma tela de altura, menos na pilha, onde as seções se seguem (`Tela.module.css`) */
+  min-height: var(--secao-min, 100%);
   padding: var(--pt) var(--px) var(--pb);
   overflow-x: hidden;
-  /**
-   * Centragem por margens automáticas (ver `.rolavel`): fica centrado quando
-   * cabe e rola quando não cabe, sem cortar o topo. `justify-content: center`
-   * faria o conteúdo alto transbordar para fora do alcance da rolagem.
-   */
-  overflow-y: auto;
-  scroll-snap-align: start;
-  scrollbar-width: none;
-}
-
-.secao::-webkit-scrollbar {
-  width: 0;
-  height: 0;
 }
 
 /**
- * Escala do conteúdo, escrita por `useEscalaQueCabe` na própria seção.
- *
- * O `zoom` fica nos **filhos** e o `--esc` na seção, e essa divisão é o que
- * mantém o padding de fora: o espaço do HUD no rodapé não se negocia com a
- * altura da tela, e encolher junto traria o conteúdo de volta para debaixo da
- * barra de seções.
- *
- * Vale para todos os filhos, não só para o `.bloco`. No Sobre o carrossel de
- * formações é irmão dele, e enquanto o `zoom` morava no bloco os badges ficavam
- * de fora da escala inteira — a seção parecia caber enquanto eles transbordavam.
- *
- * O valor é **medido** no DOM, não estimado por faixa de altura: degraus por
- * media query saem de uma conta de quanto o conteúdo deveria ocupar, e essa
- * conta erra a cada texto novo, troca de idioma ou projeto acrescentado.
+ * Centragem por margens automáticas: o conteúdo fica centrado na altura da tela
+ * quando cabe, e quando não cabe a seção cresce e a tela rola, sem cortar o topo.
+ * `justify-content: center` faria o conteúdo alto transbordar para cima, fora do
+ * alcance da rolagem.
  */
-.rolavel > * {
-  zoom: var(--esc, var(--esc-max, 1));
-}
-
 .rolavel > *:first-child {
   margin-top: auto;
 }
@@ -87,17 +67,27 @@
   flex-direction: column;
   gap: clamp(18px, 3vmin, 34px);
   width: 100%;
-  /* entra por opacidade + deslocamento quando a seção vira a ativa */
+  /**
+   * Entra da profundidade quando a seção vira a ativa: pequeno, fora de foco e
+   * apagado, e assenta. É a mesma chegada das letras do nome, com menos
+   * distância, porque um bloco inteiro vindo de muito longe leria como zoom da
+   * página e não como algo chegando nela (direção Travelling, ver
+   * `direcao-visual.md`). Numa pilha, a seção fica ativa quando aparece na
+   * rolagem, então a câmera avança e o bloco chega ao mesmo tempo.
+   */
   opacity: 0;
-  transform: translateY(26px);
+  filter: blur(8px);
+  transform: scale(0.86);
   transition:
     opacity 0.9s ease,
+    filter 0.9s var(--ease-saida),
     transform 0.9s var(--ease-saida);
 }
 
 .bloco[data-ativo] {
   opacity: 1;
-  transform: translateY(0);
+  filter: none;
+  transform: none;
 }
 
 /**
@@ -136,6 +126,39 @@
   flex: 1;
   height: 1px;
   background: var(--linha-sutil);
+}
+
+/**
+ * O cabeçalho de ficha do dossiê: o número, o título em versalete e um risco que
+ * termina a linha. É o cabeçalho de um documento, e não o título grande das
+ * outras seções, e as partes do Dossiê o dividem (o arquivo e o contato).
+ */
+.ficha {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.fichaIndice {
+  color: var(--tx-rotulo);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.42em;
+}
+
+.fichaTitulo {
+  margin: 0;
+  color: var(--tx-titulo);
+  font-size: clamp(14px, 1.9vmin, 18px);
+  font-weight: 400;
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.fichaRisco {
+  flex: 1;
+  height: 1px;
+  background: var(--linha);
 }
 
 .cabecalho {
@@ -204,13 +227,7 @@
   text-wrap: pretty;
 }
 
-/** Barra de progresso de 1px + rótulo de estado. Repete-se em formações e projetos. */
-.medidor {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
+/** Trilha de progresso de 1px (a barra do que está tocando em Música). */
 .trilha {
   position: relative;
   display: block;
@@ -218,14 +235,6 @@
   height: 1px;
   overflow: hidden;
   background: var(--linha);
-}
-
-.preenchimento {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 0;
-  background: var(--linha-cheia);
-  transition: width 0.8s var(--ease-saida);
 }
 
 /**
@@ -273,50 +282,27 @@
  * na tela, então o que couber cabe sempre; e diferente de `dvh` ele não muda
  * durante a rolagem, então nada reflowa no meio do gesto.
  *
- * Os respiros ficam **fora** do `zoom` do `.bloco`, e é isso que separa os dois
- * mecanismos: aqui se decide quanto espaço sobra, lá dentro quanto o conteúdo
- * ocupa. Medir o conteúdo também em `svh` encolheria duas vezes, porque o `zoom`
- * multiplica o que estiver dentro dele.
- *
- * O rodapé é a exceção e sai de `--hud-rodape`: ali não há o que negociar com a
- * altura, porque o espaço é do HUD.
+ * O rodapé espelha o topo: a versão e o medidor da supernova ficam a
+ * `--hud-topo-base` da borda de baixo, como o cabeçalho da de cima.
  */
 @media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
-  /**
-   * O conteúdo já começa menor no mobile.
-   *
-   * Desenhado no tamanho de desktop ele fica grande demais numa tela estreita
-   * mesmo quando cabe: título e retrato dominam, e sobra pouco respiro entre as
-   * partes. `useEscalaQueCabe` só **reduz** a partir deste teto, nunca aumenta,
-   * então quem decide o tamanho de partida continua sendo o CSS.
-   */
   .secao {
-    --esc-max: 0.9;
-
     --pt-livre: clamp(52px, 9svh, 78px);
-    /* o rodapé é do HUD; o respiro é só o que separa o conteúdo dele */
-    --pb: calc(var(--hud-rodape) + clamp(10px, 2svh, 18px));
+    --pb: var(--secao-pb, calc(var(--hud-topo) + var(--hud-topo-respiro)));
     --px: 20px;
     --gap: clamp(11px, 1.8svh, 15px);
   }
 }
 
 /**
- * Tablet em pé: o layout do celular, desenhado maior.
+ * Tablet em pé: o layout do celular, com o recuo lateral em fração da tela.
  *
- * O tablet em pé usa o layout de coluna única, porque o de desktop reserva 150px
- * de cada lado para o menu vertical e, num iPad de 820px, sobravam ~520px para o
- * conteúdo. Só que o layout do celular foi medido para 375px, e esticado a 820
- * ele deixava a bio em 11px com linhas de mais de cem caracteres.
- *
- * Os dois números resolvem isso juntos: a escala de partida sobe (o
- * `useEscalaQueCabe` continua podendo reduzir a partir dela, se a altura não der)
- * e o recuo lateral passa a ser fração da tela, o que traz a linha da bio de
- * volta para perto de oitenta caracteres.
+ * O layout do celular foi medido para 375px, e esticado a 820 ele deixava linhas
+ * de mais de cem caracteres na bio. O recuo proporcional traz a linha de volta
+ * para perto de oitenta.
  */
 @media (orientation: portrait) and (640px < width <= 1024px) {
   .secao {
-    --esc-max: 1.25;
     --px: 8vw;
   }
 }
@@ -366,19 +352,65 @@
 }
 
 /**
- * Telas baixas: sobra menos altura, então os respiros encolhem.
+ * O botão de passo: anterior e próximo, de 38px, com a ponta desenhada dentro.
  *
- * **A faixa exige `width > 640px`**, e isso não é detalhe de escrita. A regra
- * foi pensada para paisagem curta, onde o menu é uma coluna à direita e o rodapé
- * está livre; sem o limite de largura ela também alcançava 360×640 e 375×667,
- * que são celulares comuns em pé. Nesses o menu é a faixa de baixo, e o `--pb`
- * caía de 116px para ~70px contra os 100px que o HUD ocupa: o conteúdo corria
- * por baixo da barra de seções. O mobile tem os próprios valores, que já se
- * adaptam à altura sozinhos.
+ * É o mesmo na Carreira (a órbita) e em Jogos (o deque), que são as seções que
+ * andam por um item de cada vez.
+ */
+.passo {
+  display: flex;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--linha-acesa);
+  border-radius: 2px;
+  background: rgb(255 255 255 / 6%);
+  color: var(--tx-hover);
+
+  /* a ponta é desenhada (ver `.ponta` acima), não escrita */
+  --ponta: 9px;
+  cursor: pointer;
+  appearance: none;
+  transition:
+    border-color var(--dur-hover),
+    background-color var(--dur-hover),
+    color var(--dur-hover),
+    opacity var(--dur-hover);
+}
+
+/* chanfro dos dois cantos opostos (ver "Cantos chanfrados" em `direcao-visual.md`) */
+@supports (corner-shape: bevel) {
+  .passo {
+    corner-shape: bevel;
+    border-radius: 9px 2px;
+  }
+}
+
+.passo:hover:not(:disabled) {
+  border-color: var(--linha-cheia);
+  background: rgb(255 255 255 / 12%);
+  color: var(--tx-titulo);
+}
+
+/* nas pontas o botão apaga em vez de sumir: a posição continua legível */
+.passo:disabled {
+  opacity: 0.22;
+  cursor: default;
+}
+
+/**
+ * Telas baixas e deitadas: sobra menos altura, então os respiros encolhem.
+ *
+ * A faixa exige `width > 640px` para nunca valer junto com a do celular, que tem
+ * os próprios respiros e já se adapta à altura sozinha.
  */
 @media (width > 640px) and (height <= 720px) and (orientation: landscape) {
   .secao {
     --pt-livre: clamp(44px, 7vh, 72px);
-    --pb: clamp(70px, 11vh, 96px);
+    --pb: var(--secao-pb, clamp(70px, 11vh, 96px));
   }
 }

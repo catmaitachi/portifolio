@@ -1,0 +1,70 @@
+/** ver `HeroSection.module.css`: keyframe e uso precisam morar no mesmo módulo */
+@keyframes fina {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/**
+ * No rodapé, centrados, na linha de base das peças de baixo (`--hud-fundo`): o
+ * lugar do crédito. A barra entra uma vez, na abertura, logo depois do cabeçalho;
+ * a presença é dos ícones, que se apagam fora do Início e voltam sem esperar a
+ * abertura de novo. O `inert` do componente os tira do clique e do foco quando
+ * estão apagados.
+ */
+.canais {
+  --can-bottom: var(--hud-fundo);
+
+  position: absolute;
+  z-index: 4;
+  bottom: var(--can-bottom);
+  left: 50%;
+  display: flex;
+  gap: clamp(18px, 2.4vw, 28px);
+  align-items: center;
+  transform: translateX(-50%);
+  animation: fina var(--abertura-fina) ease-out var(--abertura-idioma) both;
+}
+
+/* a área de toque é maior que o glifo: 18px de ícone num alvo de 32px */
+.canais > * {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  opacity: 0.42;
+  transition: opacity 0.6s ease;
+}
+
+.canais:not([data-ativo]) > * {
+  opacity: 0;
+}
+
+/* o canal sem endereço: presente, mas bem abaixo dos outros, e sem resposta ao hover */
+.canais[data-ativo] [data-em-breve] {
+  opacity: 0.14;
+}
+
+.canais a:hover,
+.canais a:focus-visible {
+  opacity: 1;
+}
+
+.canais img {
+  display: block;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+/* no celular a versão ocupa o centro do rodapé: os ícones sobem uma linha acima dela */
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
+  .canais {
+    --can-bottom: calc(var(--hud-topo-base) + 22px);
+  }
+}

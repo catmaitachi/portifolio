@@ -1,9 +1,8 @@
 import { useEffect, useRef } from 'react';
 import type { Musica } from '~/data/types';
-import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
 import { useInclinacao } from '~/hooks/useInclinacao';
 import { useRemoto } from '~/hooks/useRemoto';
-import { useT } from '~/i18n/useLanguage';
+import { useLanguage, useT } from '~/i18n/useLanguage';
 import { EstadoRemoto } from '../EstadoRemoto';
 import { PerfilExterno } from '../PerfilExterno';
 import comum from '../section.module.css';
@@ -50,40 +49,16 @@ function Tempo({ inicioMs, duracaoMs }: { inicioMs: number; duracaoMs: number })
   return <span ref={ref} className={styles.tempo} />;
 }
 
-interface Linha {
-  id: string;
-  nome: string;
-  url: string;
-  /** o artista da faixa; a lista de artistas não tem segunda coluna */
-  secundario?: string;
-}
-
 /**
- * As duas listas são a mesma lista.
- *
- * Mais tocadas e mais ouvidos diferem só na segunda coluna, e escrever as duas
- * seria duplicar numeração, escalonamento de entrada e corte de texto para ganhar
- * um campo opcional.
+ * "há 9 horas", no idioma da página. O `Intl` escreve a frase inteira, então não
+ * há texto de dicionário para ela: a ordem das palavras é do idioma.
  */
-function Lista({ titulo, itens }: { titulo: string; itens: Linha[] }) {
-  return (
-    <div className={styles.coluna}>
-      <h3 className={styles.tituloLista}>{titulo}</h3>
-      <ol className={styles.lista}>
-        {itens.map((item, i) => (
-          <li key={item.id} className={styles.item} style={{ '--ordem': i } as React.CSSProperties}>
-            <span className={styles.numero} aria-hidden="true">
-              {String(i + 1).padStart(2, '0')}
-            </span>
-            <a className={styles.link} href={item.url} target="_blank" rel="noreferrer">
-              {item.nome}
-            </a>
-            {item.secundario && <span className={styles.secundario}>{item.secundario}</span>}
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
+function haQuanto(iso: string, lang: string): string {
+  const horas = (Date.now() - new Date(iso).getTime()) / 36e5;
+  const rtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto' });
+  if (horas < 1) return rtf.format(-Math.max(1, Math.round(horas * 60)), 'minute');
+  if (horas < 24) return rtf.format(-Math.round(horas), 'hour');
+  return rtf.format(-Math.round(horas / 24), 'day');
 }
 
 /**
@@ -94,7 +69,7 @@ function Lista({ titulo, itens }: { titulo: string; itens: Linha[] }) {
  * caminhos do que se lê de uma vez.
  */
 function Conteudo({ dados }: { dados: Musica }) {
-  const t = useT();
+  const { t, lang } = useLanguage();
   // a capa inclina seguindo o ponteiro, como o retrato do Sobre e as outras artes
   const { alvoRef: capaRef, brilhoRef } = useInclinacao<HTMLAnchorElement>({
     grauX: 10,
@@ -110,22 +85,6 @@ function Conteudo({ dados }: { dados: Musica }) {
 
   return (
     <>
-      <div className={styles.colunas}>
-        <Lista
-          titulo={t.musica.faixas}
-          itens={dados.faixas.map((f) => ({
-            id: f.id,
-            nome: f.titulo,
-            url: f.url,
-            secundario: f.artistas.map((a) => a.nome).join(', '),
-          }))}
-        />
-        <Lista
-          titulo={t.musica.artistas}
-          itens={dados.artistas.map((a) => ({ id: a.id, nome: a.nome, url: a.url }))}
-        />
-      </div>
-
       <div className={styles.destaque} data-vivo={aoVivo || undefined}>
         {/**
          * A capa **leva à faixa**, e é o mesmo destino do nome ao lado. Ela é a
@@ -159,8 +118,24 @@ function Conteudo({ dados }: { dados: Musica }) {
 
         <div className={styles.corpo}>
           <p className={styles.rotulo}>
-            {aoVivo && <span className={styles.pulso} aria-hidden="true" />}
-            {aoVivo ? t.musica.tocando : t.musica.silencio}
+            {aoVivo ? (
+              <>
+                <span className={styles.pulso} aria-hidden="true" />
+                {t.musica.tocando}
+                {/* quatro traços de 1px subindo e descendo: o som, na régua da página */}
+                <span className={styles.equalizador} aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                </span>
+              </>
+            ) : (
+              <>
+                {t.musica.silencio}
+                {destaque.tocadaEm ? ` · ${haQuanto(destaque.tocadaEm, lang)}` : null}
+              </>
+            )}
           </p>
           <a className={styles.faixaNome} href={destaque.url} target="_blank" rel="noreferrer">
             {destaque.titulo}
@@ -200,28 +175,72 @@ function Conteudo({ dados }: { dados: Musica }) {
           ) : null}
         </div>
       </div>
+
+      <div className={styles.grupo}>
+        <h3 className={styles.tituloLista}>{t.musica.faixas}</h3>
+        {/* a parede de capas: apontar uma a traz para o foco e apaga as outras */}
+        <ol className={styles.capas}>
+          {dados.faixas.map((f, i) => {
+            const artistas = f.artistas.map((a) => a.nome).join(', ');
+            return (
+              <li key={f.id} className={styles.faixa} style={{ '--ordem': i } as React.CSSProperties}>
+                <a
+                  className={styles.faixaLink}
+                  href={f.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`${f.titulo} — ${artistas}`}
+                >
+                  {f.capa ? <img src={f.capa} alt="" loading="lazy" /> : null}
+                  <span className={styles.numero} aria-hidden="true">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span className={styles.legenda} aria-hidden="true">
+                    <span className={styles.legendaTitulo}>{f.titulo}</span>
+                    <span className={styles.legendaArtista}>{artistas}</span>
+                  </span>
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+
+      <div className={styles.grupo}>
+        <h3 className={styles.tituloLista}>{t.musica.artistas}</h3>
+        <ol className={styles.artistas}>
+          {dados.artistas.map((a, i) => (
+            <li key={a.id} style={{ '--ordem': i } as React.CSSProperties}>
+              <a className={styles.artistaCartao} href={a.url} target="_blank" rel="noreferrer">
+                <span className={styles.retrato}>{a.imagem ? <img src={a.imagem} alt="" loading="lazy" /> : null}</span>
+                <span className={styles.artistaNome}>{a.nome}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </div>
     </>
   );
 }
 
 /**
- * Música: o que está tocando, e o que mais tocou no mês.
+ * Música: o que está tocando, e o que mais tocou no mês, em vitrine.
  *
  * O dado vem de `api/spotify`, e a seção nunca fala com o Spotify: ela lê a
  * forma declarada em `data/types.ts`. A busca só acontece com a seção ativa, e se
  * repete a cada 20s enquanto ela estiver na tela e a aba visível (ver
  * `useRemoto`).
  *
- * **O que está tocando fica no pé da seção**, depois das duas listas. Ele é o
- * único bloco que muda enquanto alguém está olhando, e no alto ele empurrava
- * para baixo o que a seção tem de conteúdo — as listas, que são o mês inteiro.
- * Embaixo, ele é o rodapé vivo de um bloco parado, e é para lá que o olho volta.
+ * **As capas são o conteúdo.** O que tocou abre a seção, as oito mais tocadas
+ * são uma parede de capas (apontar uma a traz para o foco e apaga as outras) e
+ * os oito mais ouvidos fecham numa fileira de retratos. Escolhida entre três
+ * direções num preview (a Vitrine; as outras eram um índice tipográfico com a
+ * capa sob o cursor e um visor fixo que trocava com a rolagem).
  *
  * **O silêncio é o estado normal, não uma falha.** Ninguém escuta música o dia
  * inteiro, e a seção precisa continuar fazendo sentido calada: sem nada tocando,
- * o lugar do destaque passa a ser a última faixa ouvida, com o rótulo dizendo que
- * ela é passado, o bloco apagado e a capa sem cor. Uma seção que só funciona
- * enquanto o dono está de fone é uma seção quebrada na maior parte do dia.
+ * o destaque passa a ser a última faixa ouvida, com o rótulo dizendo há quanto
+ * tempo, o bloco apagado e a capa sem cor.
  *
  * **A barra de progresso anda sozinha, em CSS.** O que chega é um instantâneo, e
  * sem nada ela ficaria parada por vinte segundos e daria um salto. Uma animação
@@ -231,13 +250,10 @@ function Conteudo({ dados }: { dados: Musica }) {
  */
 export function MusicSection({ ativo, indice }: SectionProps) {
   const t = useT();
-  const secaoRef = useRef<HTMLElement>(null);
-  useEscalaQueCabe(secaoRef);
   const musica = useRemoto<Musica>('api/spotify', ativo, REPETIR);
 
   return (
     <section
-      ref={secaoRef}
       className={`${comum.secao} ${comum.rolavel} ${styles.secao}`}
       aria-label={t.nav.musica}
     >

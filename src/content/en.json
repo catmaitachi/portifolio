@@ -1,59 +1,68 @@
 {
   "nav": {
     "inicio": "Home",
-    "sobre": "About",
-    "formacao": "Education",
-    "projetos": "Projects",
-    "experiencia": "Journey",
+    "sobre": "About me",
+    "projetos": "Side projects",
+    "experiencia": "Career",
     "musica": "Music",
     "jogos": "Games",
     "filmes": "Films",
     "contato": "Contact"
   },
 
-  "modos": {
-    "pessoal": {
-      "rotulo": "Personal",
-      "descricao": "Get to know a bit about my hobbies and interests",
-      "etiqueta": "Lifestyle",
-      "legenda": "Software Developer"
-    },
-    "profissional": {
-      "rotulo": "Professional",
-      "descricao": "See my projects and professional experiences",
-      "etiqueta": "Portfolio",
-      "legenda": "Software Developer"
-    }
-  },
+  "telas": { "dossie": "Profile", "hobbies": "Hobbies", "trajetoria": "Journey" },
 
   "hero": {
-    "nome": "Lucas Spiazzi"
+    "nome": "Lucas Spiazzi",
+    "etiqueta": "Profile",
+    "legenda": "Software Developer"
   },
 
   "documento": "{nome} - {parte}",
 
   "sobre": {
-    "titulo": "About Me",
-    "paragrafos": {
-      "profissional": [
-        "I'm a software designer in the age of AI. While generative models speed up coding, my role lies in what comes before it: envisioning, structuring, and planning solid systems, guided by Software Engineering best practices.",
-        "I believe every project is born from a human need that deserves to be explored, understood, and handled responsibly, since its impact reflects, in the long run, on both the individual and society.",
-        "As a developer, I'm committed to constantly evolving my solutions toward a more sustainable and humane future."
-      ],
-      "pessoal": [
-        "I overthink things, and sometimes that pays off. I'm critical, I have good ideas now and then, and I take in a lot from what I consume. I love the art that lives in music, films, games and books. More than that, I love nature, travel and landscapes: the things that remind me life isn't only routine.",
-        "I value my friendships deeply, even though some days I'm terrible at being social. I try to be level headed, funny, thoughtful, and sometimes I even try to be someone I'm not. But I always come back to myself."
-      ]
+    "titulo": "Personal file",
+    "rotulos": {
+      "nome": "Name",
+      "ocupacao": "Occupation",
+      "formacao": "Education"
     },
+    "nomeCompleto": "Lucas Moraes Rocha Spiazzi",
+    "reservado": "[ reserved ]",
     "dados": [
       { "key": "residencia", "rotulo": "Lives in", "valor": "Belo Horizonte, MG, Brazil" },
       { "key": "aniversario", "rotulo": "Birthday", "valor": "July 7, 2005" }
+    ],
+    "secoes": [
+      {
+        "key": "perfil",
+        "titulo": "Profile",
+        "paragrafos": [
+          "I overthink things, and sometimes that pays off. I value my friendships a lot, even though some days I'm terrible at being social. With people, I try to be level headed and good humored, and I like them to feel at ease around me. Sometimes I even try to be someone I'm not, but I always end up coming back to myself. When things get complicated, I try to ease the tension so there's still room to talk.",
+          "I love the art I find in music, films, games and books. Traveling and being close to nature get me out of the routine and do me good. Those are the moments that remind me what it is to be human, and that make me care more about the place we live in."
+        ]
+      },
+      {
+        "key": "proposito",
+        "titulo": "Purpose",
+        "paragrafos": [
+          "I want to build my career in initiatives that care about people's well-being, and to put my effort into projects that fight inequality and environmental problems.",
+          "I want to grow as a developer who works alongside AI, learning from it and building better solutions. I'm interested in understanding what a project needs and thinking the system through from its conception. I also want to better understand the environmental impact of this technology and help it evolve with that in mind."
+        ]
+      },
+      {
+        "key": "valores",
+        "titulo": "Values",
+        "paragrafos": [
+          "I value solidarity and try to help whoever needs it. Right now that care shows up mostly with the people close to me, and I want to extend it beyond my own circle.",
+          "I care about the consequences of my choices, even the small ones that can harm the environment. I want the world to stay a good place to live, and I mean to bring that concern into the projects I take part in. As I grow in my career and have more say in decisions, I want my responsibility toward people and the environment to grow with it."
+        ]
+      }
     ]
   },
 
   "formacoes": {
     "titulo": "Education",
-    "intro": "My steady academic line.",
     "rotulos": {
       "conclusao": "Completion",
       "periodos": "Terms"
@@ -64,11 +73,6 @@
       "pretensao": "Planned"
     },
     "lista": [
-      {
-        "slot": "mestrado",
-        "nivel": "Master's",
-        "estado": "pretensao"
-      },
       {
         "slot": "puc",
         "instituicao": "PUC Minas",
@@ -89,13 +93,18 @@
   },
 
   "projetos": {
-    "titulo": "Projects",
+    "titulo": "Side projects",
     "intro": "A few of my little personal projects.",
     "vazio": "No project selected yet.",
     "codigo": "see the code",
     "aoVivo": "see it live",
     "atividade": "One line per commit",
     "arquivado": "Archived",
+    "linguagens": "Languages",
+    "noAr": "live",
+    "soCodigo": "code only",
+    "rodar": "run here",
+    "parar": "back to screenshot",
     "rotulos": {
       "commits": "Commits",
       "estrelas": "Stars",
@@ -109,7 +118,7 @@
     "titulo": "Music",
     "intro": "What has been playing on my Spotify.",
     "tocando": "Playing now",
-    "silencio": "Nothing playing right now",
+    "silencio": "Last played",
     "faixas": "Most played this month",
     "artistas": "Most listened this month",
     "recentes": "Played recently"
@@ -123,7 +132,9 @@
     "recentes": "Last two weeks",
     "horas": "h",
     "duasSemanas": "in 2 weeks",
-    "total": "total"
+    "total": "total",
+    "anterior": "Previous game",
+    "proximo": "Next game"
   },
 
   "filmes": {
@@ -143,7 +154,7 @@
   },
 
   "experiencia": {
-    "titulo": "Journey",
+    "titulo": "Career",
     "intro": "My responsibilities over time.",
     "tipos": {
       "extensao": "Extension",
@@ -171,35 +182,31 @@
 
   "contato": {
     "titulo": "Let us talk",
-    "intro": "Always open to new conversations.",
     "email": "lukasspiazzi@gmail.com",
-    "ou": "or find me at",
-    "enviar": "send",
+    "copiar": "click to copy",
+    "copiado": "copied",
+    "sinal": "channel open",
+    "enviar": "transmit",
     "enviando": "opening mail…",
     "erro": "write a message before sending",
-    "emBreve": "soon",
     "assunto": "Portfolio — message from {nome}",
     "assuntoSemNome": "Portfolio — message",
     "assinatura": "— {nome}",
     "campos": {
-      "nome": { "rotulo": "name", "dica": "what should I call you" },
-      "mensagem": { "rotulo": "message", "dica": "where do we start?" }
+      "frase": { "antes": "Hi Lucas, this is", "depois": "." },
+      "nome": { "rotulo": "your name, optional", "dica": "your name" },
+      "mensagem": { "rotulo": "message", "dica": "Where do we start?" }
     }
   },
 
-  "credito": "Made with Claude",
-
   "a11y": {
     "secoes": "Sections",
-    "modos": "Switch between the personal site and the professional portfolio",
-    "modosAbrir": "Choose which side of the site",
     "idioma": "Switch language between Portuguese and English",
-    "projetos": "Projects — use the arrow keys to move through the cards",
-    "experiencia": "Journey — use the arrow keys to move through the years",
+    "previa": "The {nome} website",
+    "experiencia": "Career — use the arrow keys to move through the years",
     "canais": "Contact channels",
     "retrato": "Portrait",
-    "faixaAntes": "Previous in {lista}",
-    "faixaDepois": "Next in {lista}",
+    "emBreve": "{rede} (coming soon)",
     "perfil": "My {rede} profile"
   }
 }

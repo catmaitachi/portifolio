@@ -1,6 +1,6 @@
+/* todas as fichas na mesma célula do palco (`JourneySection`), e só a escolhida aparece */
 .ficha {
-  position: absolute;
-  inset: 0;
+  grid-area: 1 / 1;
   display: grid;
   grid-template-columns: var(--exp-rail, 26px) 1fr;
   gap: var(--exp-gap, clamp(16px, 2.6vmin, 30px));

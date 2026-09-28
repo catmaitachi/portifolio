@@ -1,0 +1,26 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "src/sections/contact/ContactSection.module.css"
+        ],
+        "createdAt": "2026-09-27T21:08:11.701Z",
+        "reason": "corte seco branco/transparente (preenchimento que varre o texto), não degradê de cor; mecanismo escolhido pelo usuário na vitrine (contato-C-2)"
+      },
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "src/sections/films/FilmsSection.module.css"
+        ],
+        "createdAt": "2026-09-27T21:11:41.763Z",
+        "reason": "corte seco branco/transparente (título que se enche), não degradê de cor; mecanismo escolhido pelo usuário na vitrine (filmes-C)"
+      }
+    ]
+  }
+}

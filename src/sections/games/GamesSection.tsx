@@ -1,11 +1,10 @@
-import { useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Jogo, Jogos } from '~/data/types';
-import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
-import { useInclinacao } from '~/hooks/useInclinacao';
+import { useArrowKeys } from '~/hooks/useArrowKeys';
+import { useReducedMotion } from '~/hooks/useReducedMotion';
 import { useRemoto } from '~/hooks/useRemoto';
 import { useT } from '~/i18n/useLanguage';
 import { EstadoRemoto } from '../EstadoRemoto';
-import { Faixa } from '../Faixa';
 import { PerfilExterno } from '../PerfilExterno';
 import comum from '../section.module.css';
 import type { SectionProps } from '../types';
@@ -18,151 +17,244 @@ const REPETIR = 60_000;
 const horas = (minutos: number) => Math.round(minutos / 60);
 
 /**
- * A arte deitada do destaque, com a moldura que sobrevive à falta dela.
- *
- * O endereço é resolvido a cada resposta (ver `api/steam.ts`) e pode não vir.
- * `onError` esconde a imagem e deixa a moldura vazia de 1px, que é o mesmo
- * espaço reservado de toda imagem da página; sem isso sobraria o ícone de imagem
- * quebrada do navegador, a única coisa fora da paleta na página inteira.
- *
- * A moldura é também quem **inclina seguindo o ponteiro** (`useInclinacao`), com
- * o brilho especular do retrato do Sobre. Ela vale aqui e na arte da faixa, que
- * é a mesma peça com outra proporção.
+ * A geometria do deque, em px e graus: quanto cada capa de trás recua no eixo
+ * z, quanto anda para o lado, quanto gira, e quanto perde de brilho e de foco
+ * por posição. Os números saem do `DepthCarousel` do React Bits, reduzidos.
  */
-function Arte({ capa }: { capa: string | null }) {
-  const { alvoRef, brilhoRef } = useInclinacao<HTMLSpanElement>({
-    grauX: 10,
-    grauY: 12,
-    escala: 1.04,
-    perspectiva: 700,
-  });
+const PROFUNDIDADE = 150;
+const AFASTA = 100;
+const GIRA = 14;
+const APAGA = 0.26;
+const DESFOCA = 1.1;
+/** Quantos px de arraste andam uma capa. */
+const ARRASTE_POR_CAPA = 90;
+/** A mola que leva a posição até o alvo, por quadro: sem passar do ponto. */
+const MOLA = 0.14;
 
-  return (
-    <span ref={alvoRef} className={styles.arte}>
-      {capa ? (
-        <img
-          src={capa}
-          alt=""
-          loading="lazy"
-          onError={(e) => {
-            e.currentTarget.hidden = true;
-          }}
-        />
-      ) : null}
-      <span ref={brilhoRef} className={comum.brilho} aria-hidden="true" />
-    </span>
-  );
-}
+const limitar = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
 /**
- * Um jogo da faixa: a arte em pé, o nome e as horas da quinzena.
+ * O deque: as capas em pé, uma atrás da outra num trilho que recua.
  *
- * É o cartão de Filmes com outro conteúdo, e de propósito: as duas seções são
- * vizinhas no mesmo lado do site, e uma fileira de cartões que se comporta de um
- * jeito em Filmes e de outro em Jogos lê como descuido. A arte é a **em pé**
- * (600x900, a da biblioteca da Steam), na mesma proporção 2:3 do pôster, e é o
- * que faz as duas faixas terem a mesma silhueta.
+ * A da frente é a escolhida, em cor e em foco; as de trás afastam, apagam, perdem
+ * a cor e desfocam pela distância. A posição anda por uma mola num rAF que
+ * escreve **direto no `style`** de cada capa, como a inclinação do retrato: um
+ * `setState` por quadro re-renderizaria a seção inteira para mudar cinco números.
+ * O React só sabe do alvo (`atual`), que muda no fim de um arraste, num clique ou
+ * numa seta.
  *
- * O tamanho fica **entre os dois**: o pôster de Filmes é pequeno porque aquela
- * seção tem duas faixas empilhadas e Jogos tem uma só, com o destaque acima
- * dela. Onde sobra altura, o cartão pode ser maior sem passar do rodapé.
- *
- * Quem inclina é a **arte**, não o cartão inteiro: o nome e as horas ficam onde
- * estão, legíveis, e a moldura da imagem já é o `position: relative` com
- * `overflow: hidden` que o brilho pede.
+ * As capas são desenho (`aria-hidden`): quem usa leitor de tela navega pelo
+ * painel ao lado, que diz o nome, as horas e leva à página do jogo.
  */
-function CartaoJogo({ jogo }: { jogo: Jogo }) {
-  const t = useT();
-  const { alvoRef, brilhoRef } = useInclinacao<HTMLSpanElement>({
-    grauX: 10,
-    grauY: 12,
-    escala: 1.05,
-    perspectiva: 600,
-  });
+function Deque({
+  jogos,
+  atual,
+  ir,
+}: {
+  jogos: Jogo[];
+  atual: number;
+  ir: (i: number) => void;
+}) {
+  const capas = useRef<(HTMLSpanElement | null)[]>([]);
+  const pos = useRef(atual);
+  const alvo = useRef(atual);
+  const quadro = useRef(0);
+  const arraste = useRef<{ x: number; de: number; andou: boolean } | null>(null);
+  const reduzido = useReducedMotion();
+
+  const pintar = useCallback(() => {
+    capas.current.forEach((el, i) => {
+      if (!el) return;
+      const d = i - pos.current;
+      const tras = Math.max(0, d);
+      // a que já passou sai para o lado e some; as de trás só apagam depois da quarta
+      const opacidade = d < 0 ? Math.max(0, 1 + d * 1.4) : Math.max(0, 1 - Math.max(0, d - 3.2));
+      el.style.transform = `translate(-50%, -50%) translateX(${d * AFASTA + Math.min(d, 0) * 40}px) translateZ(${-d * PROFUNDIDADE}px) rotateY(${limitar(d, 0, 1) * -GIRA}deg)`;
+      el.style.opacity = String(opacidade);
+      el.style.filter = `brightness(${Math.max(0.2, 1 - tras * APAGA)}) blur(${Math.min(4, tras * DESFOCA)}px) grayscale(${Math.min(1, tras * 0.6)})`;
+      el.style.zIndex = String(100 - Math.round(d * 10));
+    });
+  }, []);
+
+  const animar = useCallback(() => {
+    cancelAnimationFrame(quadro.current);
+    const passo = () => {
+      pos.current += (alvo.current - pos.current) * (reduzido ? 1 : MOLA);
+      if (Math.abs(alvo.current - pos.current) < 0.001) pos.current = alvo.current;
+      pintar();
+      if (pos.current !== alvo.current) quadro.current = requestAnimationFrame(passo);
+    };
+    passo();
+  }, [pintar, reduzido]);
+
+  useEffect(() => {
+    alvo.current = atual;
+    animar();
+  }, [atual, animar, jogos.length]);
+
+  useEffect(() => () => cancelAnimationFrame(quadro.current), []);
+
+  const ultimo = jogos.length - 1;
 
   return (
-    <a className={styles.cartao} href={jogo.url} target="_blank" rel="noreferrer">
-      <span ref={alvoRef} className={styles.capa}>
-        {jogo.capaAlta ? (
-          <img
-            src={jogo.capaAlta}
-            alt=""
-            loading="lazy"
-            onError={(e) => {
-              e.currentTarget.hidden = true;
+    <div
+      className={styles.deque}
+      aria-hidden="true"
+      onPointerDown={(e) => {
+        arraste.current = { x: e.clientX, de: alvo.current, andou: false };
+        e.currentTarget.setPointerCapture(e.pointerId);
+      }}
+      onPointerMove={(e) => {
+        const a = arraste.current;
+        if (!a) return;
+        const dx = e.clientX - a.x;
+        if (Math.abs(dx) > 4) a.andou = true;
+        if (!a.andou) return;
+        // durante o arraste a posição segue o dedo, sem mola: é ele quem manda
+        alvo.current = limitar(a.de - dx / ARRASTE_POR_CAPA, 0, ultimo);
+        pos.current = alvo.current;
+        pintar();
+      }}
+      onPointerUp={(e) => {
+        const a = arraste.current;
+        arraste.current = null;
+        if (!a) return;
+        if (a.andou) {
+          ir(Math.round(alvo.current));
+          return;
+        }
+        // sem arraste é um clique: a capa apontada vem para a frente
+        const capa = (e.target as HTMLElement).closest<HTMLElement>('[data-i]');
+        if (capa) ir(Number(capa.dataset.i));
+      }}
+      onPointerCancel={() => {
+        arraste.current = null;
+        ir(Math.round(alvo.current));
+      }}
+    >
+      {jogos.map((j, i) => {
+        const arte = j.capaAlta ?? j.capa;
+        return (
+          <span
+            key={j.id}
+            ref={(el) => {
+              capas.current[i] = el;
             }}
-          />
-        ) : null}
-        <span ref={brilhoRef} className={comum.brilho} aria-hidden="true" />
-      </span>
-
-      <span className={styles.nomePequeno}>{jogo.nome}</span>
-      <span className={styles.horasPequenas}>
-        {horas(jogo.minutosRecentes)}
-        {t.jogos.horas} {t.jogos.duasSemanas}
-      </span>
-    </a>
+            className={styles.capa}
+            data-i={i}
+            style={{ '--ordem': i } as React.CSSProperties}
+          >
+            {/* a entrada anima o miolo: o `transform` da capa é da mola */}
+            <span className={styles.arte}>
+              {arte ? (
+                <img
+                  src={arte}
+                  alt=""
+                  draggable={false}
+                  loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.hidden = true;
+                  }}
+                />
+              ) : null}
+            </span>
+          </span>
+        );
+      })}
+      <span className={styles.chao} />
+    </div>
   );
 }
 
 /**
- * O conteúdo, quando ele existe.
+ * O conteúdo, quando ele existe: o painel do jogo escolhido e o deque.
  *
  * Separado do casco pela mesma razão de Música: os três estados da busca já são
  * um ramo, e o terceiro tem ramos próprios.
  */
-function Conteudo({ dados }: { dados: Jogos }) {
+function Conteudo({ dados, ativo }: { dados: Jogos; ativo: boolean }) {
   const t = useT();
+  const [atual, setAtual] = useState(0);
+
   const destaque = dados.jogando ?? dados.recentes[0] ?? null;
   const aoVivo = Boolean(dados.jogando);
+  // o destaque abre o deque, e os recentes vêm atrás dele sem repeti-lo
+  const jogos = destaque
+    ? [destaque, ...dados.recentes.filter((g: Jogo) => g.id !== destaque.id)]
+    : [];
+  const ultimo = jogos.length - 1;
+  const i = limitar(atual, 0, Math.max(0, ultimo));
+
+  const andar = useCallback(
+    (d: number) => setAtual((a) => limitar(a + d, 0, Math.max(0, ultimo))),
+    [ultimo],
+  );
+  useArrowKeys(ativo && jogos.length > 1, andar);
 
   if (!destaque) return <EstadoRemoto estado="vazio" />;
 
-  // o destaque já apareceu grande; a grade é o que sobra
-  const resto = dados.recentes.filter((g: Jogo) => g.id !== destaque.id);
+  const jogo = jogos[i];
+  const rotulo = i > 0 ? t.jogos.recentes : aoVivo ? t.jogos.jogando : t.jogos.ultimo;
 
   return (
-    <>
-      <a
-        className={styles.destaque}
-        href={destaque.url}
-        target="_blank"
-        rel="noreferrer"
-        data-vivo={aoVivo || undefined}
-      >
-        <Arte capa={destaque.capa} />
-
-        <span className={styles.corpo}>
-          <span className={styles.rotulo}>
-            {aoVivo && <span className={styles.pulso} aria-hidden="true" />}
-            {aoVivo ? t.jogos.jogando : t.jogos.ultimo}
-          </span>
-          <span className={styles.nome}>{destaque.nome}</span>
-          <span className={styles.tempos}>
-            {destaque.minutosRecentes > 0 && (
-              <span>
-                {horas(destaque.minutosRecentes)}
-                {t.jogos.horas} {t.jogos.duasSemanas}
-              </span>
-            )}
-            <span className={styles.total}>
-              {horas(destaque.minutosTotais)}
-              {t.jogos.horas} {t.jogos.total}
+    <div className={styles.cena}>
+      <div className={styles.painel} aria-live="polite">
+        <span className={styles.rotulo}>
+          {i === 0 && aoVivo && <span className={styles.pulso} aria-hidden="true" />}
+          {rotulo}
+        </span>
+        <a className={styles.nome} href={jogo.url} target="_blank" rel="noreferrer">
+          {jogo.nome}
+        </a>
+        <span className={styles.tempos}>
+          {jogo.minutosRecentes > 0 && (
+            <span>
+              <b>
+                {horas(jogo.minutosRecentes)}
+                {t.jogos.horas}
+              </b>{' '}
+              {t.jogos.duasSemanas}
             </span>
+          )}
+          <span>
+            <b>
+              {horas(jogo.minutosTotais)}
+              {t.jogos.horas}
+            </b>{' '}
+            {t.jogos.total}
           </span>
         </span>
-      </a>
 
-      {resto.length > 0 && (
-        <Faixa titulo={t.jogos.recentes} total={resto.length}>
-          {resto.map((g, i) => (
-            <li key={g.id} style={{ '--ordem': i } as React.CSSProperties}>
-              <CartaoJogo jogo={g} />
-            </li>
-          ))}
-        </Faixa>
-      )}
-    </>
+        {/* com um jogo só não há para onde andar: a regra da faixa que coube inteira */}
+        {jogos.length > 1 && (
+          <div className={styles.controles}>
+            <button
+              type="button"
+              className={comum.passo}
+              aria-label={t.jogos.anterior}
+              disabled={i === 0}
+              onClick={() => andar(-1)}
+            >
+              <span className={comum.ponta} data-lado="antes" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className={comum.passo}
+              aria-label={t.jogos.proximo}
+              disabled={i === ultimo}
+              onClick={() => andar(1)}
+            >
+              <span className={comum.ponta} data-lado="depois" aria-hidden="true" />
+            </button>
+            <span className={styles.posicao}>
+              {String(i + 1).padStart(2, '0')} / {String(jogos.length).padStart(2, '0')}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <Deque jogos={jogos} atual={i} ir={setAtual} />
+    </div>
   );
 }
 
@@ -175,13 +267,10 @@ function Conteudo({ dados }: { dados: Jogos }) {
  */
 export function GamesSection({ ativo, indice }: SectionProps) {
   const t = useT();
-  const secaoRef = useRef<HTMLElement>(null);
-  useEscalaQueCabe(secaoRef);
   const jogos = useRemoto<Jogos>('api/steam', ativo, REPETIR);
 
   return (
     <section
-      ref={secaoRef}
       className={`${comum.secao} ${comum.rolavel} ${styles.secao}`}
       aria-label={t.nav.jogos}
     >
@@ -200,7 +289,7 @@ export function GamesSection({ ativo, indice }: SectionProps) {
         </div>
 
         {jogos.estado === 'pronto' ? (
-          <Conteudo dados={jogos.dados} />
+          <Conteudo dados={jogos.dados} ativo={ativo} />
         ) : (
           <EstadoRemoto estado={jogos.estado} />
         )}

@@ -1,20 +1,19 @@
-import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { secoesDoModo, type ModoKey, type SectionKey } from '~/content';
-import { Credit } from '~/hud/Credit';
+import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { TELAS, telaPorChave, type SectionKey, type TelaKey } from '~/content';
+import { Canais } from '~/hud/Canais';
 import { Hud } from '~/hud/Hud';
 import { LanguageToggle } from '~/hud/LanguageToggle';
-import { ModeHeader } from '~/hud/ModeHeader';
 import { NovaGauge } from '~/hud/NovaGauge';
 import { Version } from '~/hud/Version';
-import { NavMenu } from '~/navigation/NavMenu';
+import { SectionNav } from '~/navigation/SectionNav';
+import { Tela } from '~/navigation/Tela';
 import { useDocumentTitle } from '~/navigation/useDocumentTitle';
-import { rotaInicial, salvarModo, useHashRoute, type Rota } from '~/navigation/useHashRoute';
-import { useSectionScroll } from '~/navigation/useSectionScroll';
-import { NOVA_NIVEIS } from '~/scene/scenePlan';
+import { rotaInicial, useHashRoute, type Rota } from '~/navigation/useHashRoute';
+import { camera } from '~/scene/camera';
+import { NOVA_NIVEIS, SECAO_DO_BURACO_NEGRO } from '~/scene/scenePlan';
 import { SpaceCanvas } from '~/scene/SpaceCanvas';
 import { AboutSection } from '~/sections/about/AboutSection';
 import { ContactSection } from '~/sections/contact/ContactSection';
-import { EducationSection } from '~/sections/education/EducationSection';
 import { FilmsSection } from '~/sections/films/FilmsSection';
 import { GamesSection } from '~/sections/games/GamesSection';
 import { HeroSection } from '~/sections/hero/HeroSection';
@@ -27,22 +26,20 @@ import styles from './App.module.css';
 /**
  * Qual componente responde por cada chave de seção.
  *
- * É o único lugar do projeto que faz essa ligação, e existe porque a **ordem
- * deixou de ser fixa**: com dois modos, cada um com a sua lista, o JSX não pode
- * mais escrever as seções de cima para baixo. Nenhuma seção ganha conhecimento
- * novo com isso — a assinatura é a mesma para todas (ver `sections/types.ts`).
+ * É o único lugar do projeto que faz essa ligação. Em que tela cada seção mora,
+ * e em que ordem, é dado (`shared.json → telas`), e nenhuma seção ganha
+ * conhecimento com isso: a assinatura é a mesma para todas (ver
+ * `sections/types.ts`).
  *
- * **Cada seção é `memo`.** As três props são valores simples (um booleano, uma
- * string e uma chave), então uma seção só renderiza de novo quando uma delas muda
- * para ela, ou quando o idioma muda. Sem isso, cada estrela acesa (o `setNova`
- * lá embaixo) re-renderizava a página inteira justamente no quadro da explosão,
- * que é o quadro em que o canvas mais trabalha, e trocar de seção re-renderizava
- * todas para mudar o `ativo` de duas.
+ * **Cada seção é `memo`.** As duas props são valores simples, então uma seção só
+ * renderiza de novo quando uma delas muda para ela, ou quando o idioma muda. Sem
+ * isso, cada estrela acesa (o `setNova` lá embaixo) re-renderizava a página
+ * inteira justamente no quadro da explosão, que é o quadro em que o canvas mais
+ * trabalha.
  */
 const MONTAR: Record<SectionKey, React.ComponentType<SectionProps>> = {
   inicio: memo(HeroSection),
   sobre: memo(AboutSection),
-  formacao: memo(EducationSection),
   projetos: memo(ProjectsSection),
   experiencia: memo(JourneySection),
   musica: memo(MusicSection),
@@ -52,7 +49,7 @@ const MONTAR: Record<SectionKey, React.ComponentType<SectionProps>> = {
 };
 
 /**
- * Como a página abriu: o endereço, ou o que ficou da última visita, ou o padrão.
+ * Como a página abriu: o endereço, ou o começo do site.
  *
  * Lido no escopo do módulo, uma vez, porque é um fato do carregamento e não
  * estado: reler no render daria respostas diferentes conforme o hash fosse sendo
@@ -61,86 +58,162 @@ const MONTAR: Record<SectionKey, React.ComponentType<SectionProps>> = {
 const ROTA_INICIAL = rotaInicial();
 
 /**
+ * O que a cena faz quando a tela muda: o salto, e o buraco negro indo embora se
+ * a tela nova não abre com ele. Voltar à que abre com ele não precisa de nada
+ * aqui: ela avisa a presença ao abrir, com a rolagem em que estava.
+ */
+const abreComBuraco = (tela: TelaKey): boolean => telaPorChave(tela).partes[0] === SECAO_DO_BURACO_NEGRO;
+
+function trocouDeTela(para: TelaKey) {
+  camera.saltar();
+  if (!abreComBuraco(para)) camera.buraco(0);
+}
+
+// quem abre o site direto numa tela sem ele não pode ver o buraco negro na abertura
+if (!abreComBuraco(ROTA_INICIAL.tela)) camera.buraco(0);
+
+/**
  * Montagem da página.
  *
- * Três planos empilhados: o canvas ao fundo, o HUD fixo por cima dele e o
- * contêiner de seções (com `scroll-snap`) na frente. Só o contêiner rola — o
- * documento tem `overflow: hidden`.
+ * Três planos empilhados: o canvas ao fundo, o HUD fixo por cima dele e as telas
+ * na frente. Cada tela rola por dentro, e o documento tem `overflow: hidden`.
  *
- * O App é a única peça que conhece **o modo em vigor e a lista de seções dele**.
- * Cada seção sabe se está ativa, que número ocupa e em que lado do site está;
- * nenhuma sabe qual é a sua vizinha nem quantas existem.
- *
- * **Trocar de modo mantém a seção, quando ela existe do outro lado.** Quem está
- * lendo o Sobre não deve ser jogado para o topo por ter trocado de lado; quem está
- * numa seção que só existe de um lado vai para o Início, porque não há para onde
- * mais ir. O destino fica num ref e é alcançado num efeito de layout, nunca no
- * mesmo passo do `setModo`: a rolagem precisa que o contêiner **já tenha** as
- * seções novas, senão o alvo cai fora da altura que existe e é limitado.
+ * O App é a única peça que sabe **em que tela e em que seção** o visitante está.
+ * A tela diz qual seção dela ocupa a janela (a da rolagem, numa pilha) ou qual
+ * aba está aberta, e daqui isso vai para a cena, o HUD, o endereço e o título da
+ * aba.
  *
  * Também é ele quem liga a supernova ao seu medidor: a cena avisa que uma
  * estrela foi acesa, com o nível que a carga atingiu, e o HUD desenha a recarga
  * **daquele nível**. Os dois lados leem a mesma `NOVA_NIVEIS`, então o círculo
  * fecha exatamente quando o próximo disparo passa a ser aceito.
- *
- * Um contador e um número são todo o estado que isso custa, e eles mudam uma vez
- * por disparo. O que acontece **durante** a carga (o poço, o plasma, a
- * supermassiva, o estalo de cada promoção) vive inteiro na cena, sob o dedo do
- * visitante: é onde a informação já está, e o React não precisa render por quadro
- * para mostrá-la.
  */
 export function App() {
-  const [modo, setModo] = useState<ModoKey>(ROTA_INICIAL.modo);
-  const secoes = useMemo(() => secoesDoModo(modo), [modo]);
-  const { ref, indice, irPara, seguirFracao, soltarFracao } = useSectionScroll(secoes.length);
-  const chaveAtiva = secoes[indice] ?? 'inicio';
+  const [tela, setTela] = useState<TelaKey>(ROTA_INICIAL.tela);
+  /** a seção de cada tela que ocupa a janela, como a rolagem a vê */
+  const [nasPilhas, setNasPilhas] = useState<Partial<Record<TelaKey, SectionKey>>>({});
+
+  const parte: SectionKey = nasPilhas[tela] ?? telaPorChave(tela).partes[0];
 
   /**
-   * Seção a alcançar quando a lista mudar, sem animação.
-   *
-   * Começa com a do endereço: abrir `#pessoal/contato` precisa **posicionar** a
-   * página, não desfilar por tudo o que vem antes na frente de quem chegou.
+   * Os contêineres das telas, para levar uma pilha até a seção que o endereço
+   * pede. Um registrador por tela, criado uma vez: um novo a cada render faria o
+   * React soltar e religar a ref a cada render.
    */
-  const destinoRef = useRef<SectionKey | null>(ROTA_INICIAL.secao);
+  const conteineres = useRef(new Map<TelaKey, HTMLDivElement>());
+  const registrar = useMemo(() => {
+    const r = {} as Record<TelaKey, (el: HTMLDivElement | null) => void>;
+    for (const t of TELAS) {
+      r[t.key] = (el) => {
+        if (el) conteineres.current.set(t.key, el);
+        else conteineres.current.delete(t.key);
+      };
+    }
+    return r;
+  }, []);
 
+  /**
+   * Leva uma pilha até a seção que a rota pede, sem animação.
+   *
+   * Seca de propósito: abrir `#profile/contact` precisa **posicionar** a tela, não
+   * desfilar por tudo o que vem antes na frente de quem chegou. A tela pode estar
+   * escondida quando isso acontece (a troca de tela vem no mesmo passo), e tudo
+   * bem: escondida por `visibility`, ela continua tendo layout e rolagem.
+   */
+  const posicionar = useCallback((r: Rota, suave = false) => {
+    const alvo = telaPorChave(r.tela);
+    const el = conteineres.current.get(r.tela);
+    const i = alvo.partes.indexOf(r.parte);
+    if (!el || i < 0) return;
+    const secao = el.children[i] as HTMLElement | undefined;
+    const topo = i === 0 || !secao ? 0 : secao.offsetTop;
+    const semMovimento = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (suave && !semMovimento) el.scrollTo({ top: topo, behavior: 'smooth' });
+    else el.scrollTop = topo;
+  }, []);
+
+  // na abertura as telas ainda não existiam quando a rota foi lida
   useLayoutEffect(() => {
-    const destino = destinoRef.current;
-    if (destino === null) return;
-    destinoRef.current = null;
-    const i = secoes.indexOf(destino);
-    // não achou, ou é o próprio Início: começa do começo
-    irPara(i > 0 ? i : 0, false);
-  }, [secoes, irPara]);
+    posicionar(ROTA_INICIAL);
+  }, [posicionar]);
 
-  // um lugar só para persistir o lado, qualquer que tenha sido o caminho até ele
-  useEffect(() => {
-    salvarModo(modo);
-  }, [modo]);
+  /**
+   * Chegar por endereço (voltar, avançar, hash editado na barra). O
+   * posicionamento é feito aqui, e não num efeito: uma rota dentro da mesma tela
+   * não muda estado nenhum quando a seção pedida é a que já está registrada, e o
+   * efeito nunca rodaria.
+   */
+  /**
+   * A tela em vigor, lida pelos caminhos de navegação sem entrar nas
+   * dependências deles (ver `react.md`): é ela que decide se houve troca, e só
+   * troca de tela dispara o salto da câmera.
+   */
+  const telaRef = useRef(tela);
+  useLayoutEffect(() => {
+    telaRef.current = tela;
+  });
 
-  const trocarModo = useCallback(
-    (alvo: ModoKey) => {
-      if (alvo === modo) return;
-      destinoRef.current = chaveAtiva;
-      setModo(alvo);
-    },
-    [modo, chaveAtiva],
-  );
-
-  const rota = useMemo<Rota>(() => ({ modo, secao: chaveAtiva }), [modo, chaveAtiva]);
-  const aoNavegar = useCallback(
+  const irPara = useCallback(
     (r: Rota) => {
-      if (r.modo !== modo) {
-        destinoRef.current = r.secao;
-        setModo(r.modo);
-        return;
-      }
-      const i = secoes.indexOf(r.secao);
-      if (i >= 0) irPara(i, false);
+      if (r.tela !== telaRef.current) trocouDeTela(r.tela);
+      setTela(r.tela);
+      posicionar(r);
     },
-    [modo, secoes, irPara],
+    [posicionar],
   );
-  useHashRoute(rota, aoNavegar);
-  useDocumentTitle(modo, chaveAtiva);
+
+  const irParaTela = useCallback((t: TelaKey) => {
+    if (t === telaRef.current) return;
+    trocouDeTela(t);
+    setTela(t);
+  }, []);
+
+  /**
+   * Uma subseção escolhida no cabeçalho. Na mesma tela a rolagem até ela é
+   * suave, porque é a câmera andando até lá; para outra tela é seca, porque o
+   * salto da troca já é o movimento.
+   */
+  const irParaParte = useCallback(
+    (t: TelaKey, parte: SectionKey) => {
+      const mesma = t === telaRef.current;
+      if (!mesma) trocouDeTela(t);
+      setTela(t);
+      posicionar({ tela: t, parte }, mesma);
+    },
+    [posicionar],
+  );
+
+  /**
+   * A rolagem de cada tela move a câmera do céu, e na tela que abre com o buraco
+   * negro ela também o leva embora.
+   *
+   * O buraco negro encolhe pela **perspectiva** da viagem, `1 / (1 + 3,5·p)`: rápido
+   * no começo, devagar depois, e no fim da tela ele ainda está lá, com um quinto do
+   * tamanho, distante. Ele acompanha a viagem pelas estrelas pela tela inteira, e
+   * não só enquanto o Início está à vista. Numa tela que não abre com ele a
+   * presença é zero (ver `trocouDeTela`).
+   */
+  const aoRolar = useMemo(() => {
+    const r = {} as Record<TelaKey, (p: number) => void>;
+    for (const t of TELAS) {
+      const temBuraco = abreComBuraco(t.key);
+      r[t.key] = (p) => {
+        camera.rolar(p);
+        if (temBuraco) camera.buraco(1 / (1 + 3.5 * p));
+      };
+    }
+    return r;
+  }, []);
+
+  const aoMudarParte = useMemo(() => {
+    const r = {} as Record<TelaKey, (p: SectionKey) => void>;
+    for (const t of TELAS) r[t.key] = (p) => setNasPilhas((n) => ({ ...n, [t.key]: p }));
+    return r;
+  }, []);
+
+  const rota = useMemo<Rota>(() => ({ tela, parte }), [tela, parte]);
+  useHashRoute(rota, irPara);
+  useDocumentTitle(tela, parte);
 
   const [nova, setNova] = useState({ disparo: 0, recarga: NOVA_NIVEIS[0].recarga });
   const aoAcender = useCallback((nivel: number) => {
@@ -149,41 +222,24 @@ export function App() {
 
   return (
     <div className={styles.palco}>
-      <SpaceCanvas secao={chaveAtiva} onNova={aoAcender} />
-      <Hud ativo={chaveAtiva === 'inicio'} />
-      <ModeHeader modo={modo} trocar={trocarModo} />
+      <SpaceCanvas secao={parte} onNova={aoAcender} />
+      <Hud ativo={parte === 'inicio'} />
+      <Canais ativo={parte === 'inicio'} />
+      <SectionNav tela={tela} parte={parte} irPara={irParaTela} irParaParte={irParaParte} />
       <LanguageToggle />
 
-      <div ref={ref} className={styles.rolagem}>
-        {/**
-         * Nunca um elemento de embrulho: as seções precisam ser **filhas diretas**
-         * de `.rolagem` para o `scroll-snap` valer, e o filtro da supernova exige
-         * que o alvo do toque seja a caixa de uma `<section>` — uma `<div>` no meio
-         * quebraria os dois de uma vez, sem erro nenhum. A `key` fica no próprio
-         * componente, que renderiza a `<section>` direto.
-         */}
-        {secoes.map((key, i) => {
-          const Secao = MONTAR[key];
-          return (
-            <Secao
-              key={key}
-              ativo={chaveAtiva === key}
-              // a posição na ordem do modo; o Início é o 00 e não mostra número
-              indice={String(i).padStart(2, '0')}
-              modo={modo}
-            />
-          );
-        })}
-      </div>
+      {TELAS.map((t) => (
+        <Tela
+          key={t.key}
+          config={t}
+          ativa={t.key === tela}
+          aoMudarParte={aoMudarParte[t.key]}
+          montar={MONTAR}
+          registrar={registrar[t.key]}
+          aoRolar={aoRolar[t.key]}
+        />
+      ))}
 
-      <NavMenu
-        secoes={secoes}
-        indice={indice}
-        irPara={irPara}
-        seguirFracao={seguirFracao}
-        soltarFracao={soltarFracao}
-      />
-      <Credit />
       <Version />
       <NovaGauge disparo={nova.disparo} segundos={nova.recarga} />
     </div>
