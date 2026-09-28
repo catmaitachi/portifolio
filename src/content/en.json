@@ -126,7 +126,7 @@
 
   "jogos": {
     "titulo": "Games",
-    "intro": "What I have been playing lately.",
+    "intro": "What I've been playing lately.",
     "jogando": "Playing now",
     "ultimo": "Played last",
     "recentes": "Last two weeks",
@@ -139,7 +139,7 @@
 
   "filmes": {
     "titulo": "Films",
-    "intro": "A bit of my interests as a cinephile.",
+    "intro": "The films I love most and what I watched last.",
     "favoritos": "Favourites",
     "recentes": "Watched recently",
     "posicao": "#{n} on the list",
@@ -149,7 +149,7 @@
 
   "remoto": {
     "carregando": "Fetching…",
-    "erro": "Could not fetch this right now.",
+    "erro": "Couldn't fetch this right now.",
     "vazio": "Nothing here yet."
   },
 
@@ -173,7 +173,7 @@
         "url": "https://clinplay.com",
         "periodo": "2026.06",
         "tipo": "extensao",
-        "texto": "A gamified, accessible physiotherapy platform that follows the patient outside the clinic. As Scrum Master, I led the team through requirements elicitation and the backlog, and closed the scope of each sprint. I also worked as a full-stack developer: I did the design and much of the implementation of the front end and the back end, and modeled the data the platform runs on.",
+        "texto": "A gamified, accessible physiotherapy platform that follows the patient outside the clinic. As Scrum Master, I led the team through requirements elicitation and the backlog, and set the scope of each sprint. I also worked as a full-stack developer: I did the design and much of the implementation of the front end and the back end, and modeled the data the platform runs on.",
         "stack": ["React", "TypeScript", "Java", "Spring Boot"],
         "logo": "clinplay"
       }
@@ -181,7 +181,7 @@
   },
 
   "contato": {
-    "titulo": "Let us talk",
+    "titulo": "Let's talk",
     "email": "lukasspiazzi@gmail.com",
     "copiar": "click to copy",
     "copiado": "copied",
@@ -189,8 +189,8 @@
     "enviar": "transmit",
     "enviando": "opening mail…",
     "erro": "write a message before sending",
-    "assunto": "Portfolio — message from {nome}",
-    "assuntoSemNome": "Portfolio — message",
+    "assunto": "Message from {nome} via luuspz.dev",
+    "assuntoSemNome": "Message via luuspz.dev",
     "assinatura": "— {nome}",
     "campos": {
       "frase": { "antes": "Hi Lucas, this is", "depois": "." },
@@ -203,7 +203,7 @@
     "secoes": "Sections",
     "idioma": "Switch language between Portuguese and English",
     "previa": "The {nome} website",
-    "experiencia": "Career — use the arrow keys to move through the years",
+    "experiencia": "Career: use the arrow keys to move through the years",
     "canais": "Contact channels",
     "retrato": "Portrait",
     "emBreve": "{rede} (coming soon)",

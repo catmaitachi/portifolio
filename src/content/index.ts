@@ -51,7 +51,7 @@ export const isLang = (v: unknown): v is Lang => v === 'pt' || v === 'en';
  * Interpola `{marcadores}` de um texto do dicionário.
  *
  * Existe para que a ordem das palavras venha do próprio idioma:
- * `"Contato pelo portfólio — {nome}"` em PT e `"Portfolio contact — {nome}"` em
+ * `"Mensagem de {nome} pelo luuspz.dev"` em PT e `"Message from {nome} via luuspz.dev"` em
  * EN produzem frases corretas sem nenhuma concatenação no código.
  */
 export function format(template: string, vars: Record<string, string>): string {

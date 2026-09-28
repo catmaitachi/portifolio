@@ -139,7 +139,7 @@
 
   "filmes": {
     "titulo": "Filmes",
-    "intro": "Um pouco dos meus interesses como cinéfilo.",
+    "intro": "Os filmes de que mais gosto e o que vi por último.",
     "favoritos": "Favoritos",
     "recentes": "Vistos por último",
     "posicao": "{n}º na lista",
@@ -173,7 +173,7 @@
         "url": "https://clinplay.com",
         "periodo": "2026.06",
         "tipo": "extensao",
-        "texto": "Uma plataforma de fisioterapia gamificada e acessível, que acompanha o paciente fora do consultório. Como Scrum Master, conduzi o time na elicitação de requisitos e no backlog, e fechei o escopo de cada sprint. Também atuei como dev fullstack: fiz o design e boa parte da implementação do front e do back, e modelei os dados que sustentam a plataforma.",
+        "texto": "Uma plataforma de fisioterapia gamificada e acessível, que acompanha o paciente fora do consultório. Como Scrum Master, conduzi o time na elicitação de requisitos e no backlog, e fechei o escopo de cada sprint. Também fui dev fullstack: fiz o design e boa parte da implementação do front e do back, e modelei os dados da plataforma.",
         "stack": ["React", "TypeScript", "Java", "Spring Boot"],
         "logo": "clinplay"
       }
@@ -189,8 +189,8 @@
     "enviar": "transmitir",
     "enviando": "abrindo e-mail…",
     "erro": "escreva uma mensagem antes de enviar",
-    "assunto": "Portfólio — contato de {nome}",
-    "assuntoSemNome": "Portfólio — contato",
+    "assunto": "Mensagem de {nome} pelo luuspz.dev",
+    "assuntoSemNome": "Mensagem pelo luuspz.dev",
     "assinatura": "— {nome}",
     "campos": {
       "frase": { "antes": "Oi, Lucas. Aqui é", "depois": "." },
@@ -203,7 +203,7 @@
     "secoes": "Seções",
     "idioma": "Alternar idioma entre português e inglês",
     "previa": "O site de {nome}",
-    "experiencia": "Carreira — use as setas para percorrer os anos",
+    "experiencia": "Carreira: use as setas para percorrer os anos",
     "canais": "Canais de contato",
     "retrato": "Retrato",
     "emBreve": "{rede} (em breve)",
