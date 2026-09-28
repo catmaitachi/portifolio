@@ -1,32 +1,35 @@
-import { useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { format } from '~/content';
 import type { Filme, Filmes } from '~/data/types';
-import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
-import { useInclinacao } from '~/hooks/useInclinacao';
+import { useReducedMotion } from '~/hooks/useReducedMotion';
 import { useRemoto } from '~/hooks/useRemoto';
-import { useT } from '~/i18n/useLanguage';
+import { useLanguage, useT } from '~/i18n/useLanguage';
 import { EstadoRemoto } from '../EstadoRemoto';
-import { Faixa } from '../Faixa';
 import { PerfilExterno } from '../PerfilExterno';
 import comum from '../section.module.css';
 import type { SectionProps } from '../types';
 import styles from './FilmsSection.module.css';
 
-/** Quantas marcas a nota tem. O Letterboxd vai de 0 a 5, com meias. */
 const MARCAS = 5;
 
+/** Quanto o pôster se afasta do ponteiro, em px: ao lado dele, e não embaixo. */
+const AO_LADO = { x: 110, y: -60 };
+/** O giro máximo, em graus, e quanto da velocidade do ponteiro vira giro. */
+const GIRO_MAX = 14;
+const GIRO_POR_PX = 0.6;
+
+type Aba = 'favoritos' | 'recentes';
+
 /**
- * A nota, desenhada.
+ * A nota do Letterboxd, desenhada: cinco marcas de 1px preenchidas pela fração.
  *
- * Cinco marcas de 1px preenchidas pela fração cabem na régua da página melhor
- * que um glifo de estrela, que traria uma forma que não existe em nenhum outro
- * lugar aqui; e a meia estrela do Letterboxd fica exata, em vez de arredondada
- * para o glifo mais próximo. Quem usa leitor de tela recebe o número no
- * `aria-label` — a marca é desenho.
+ * A meia estrela sai exata em vez de arredondada, e quem usa leitor de tela
+ * recebe o número no `aria-label`: a marca é desenho.
  */
 function Nota({ nota }: { nota: number }) {
   return (
-    <span className={styles.nota} aria-label={`${nota}/${MARCAS}`}>
+    <span className={styles.nota} role="img" aria-label={`${nota}/${MARCAS}`}>
       {Array.from({ length: MARCAS }, (_, m) => (
         <span
           key={m}
@@ -45,106 +48,127 @@ function Nota({ nota }: { nota: number }) {
 }
 
 /**
- * Um filme: pôster, nome, ano e, no pé, a nota ou o lugar na lista.
+ * O pôster que acompanha o ponteiro pela lista, inclinado pela velocidade dele.
  *
- * É o mesmo cartão nos dois carrosséis, e a única diferença é essa última peça.
- * Nos **favoritos** a nota não diz nada: uma lista de favoritos é feita de
- * cincos, e cinco marcas cheias em todos os cartões seriam a mesma informação
- * repetida doze vezes. O que distingue um favorito do outro ali é a **posição**,
- * que é a única coisa que a lista afirma, então é ela que aparece.
- *
- * Nos **vistos por último** é o contrário: a ordem é cronológica e não é
- * julgamento nenhum, e o que distingue um do outro é a nota.
+ * A posição é escrita **direto no `style`** num rAF, como a inclinação do
+ * retrato: um `setState` por `pointermove` re-renderizaria a lista inteira. O
+ * laço só existe enquanto há um pôster à vista; sem ele, nenhum quadro roda.
+ * Sem hover (toque) ele não aparece, e cada linha mostra o pôster pequeno.
  */
-function Cartao({ filme, posicao }: { filme: Filme; posicao?: number }) {
-  const t = useT();
-  /**
-   * Quem inclina é o **pôster**, não o cartão inteiro: o nome e o rodapé ficam
-   * onde estão, legíveis, e a moldura da imagem já é o `position: relative` com
-   * `overflow: hidden` que o brilho pede. Os graus são discretos porque um
-   * pôster de 104px inclinado como um retrato de 270 vira um losango.
-   */
-  const { alvoRef, brilhoRef } = useInclinacao<HTMLSpanElement>({
-    grauX: 10,
-    grauY: 12,
-    escala: 1.05,
-    perspectiva: 600,
-  });
+function PosterFlutuante({
+  poster,
+  ponteiro,
+}: {
+  poster: string | null;
+  ponteiro: React.RefObject<{ x: number; y: number }>;
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const reduzido = useReducedMotion();
+  const visivel = Boolean(poster);
 
-  return (
-    <a className={styles.cartao} href={filme.url} target="_blank" rel="noreferrer">
-      <span ref={alvoRef} className={styles.poster}>
-        {filme.poster ? (
-          <img
-            src={filme.poster}
-            alt=""
-            loading="lazy"
-            onError={(e) => {
-              e.currentTarget.hidden = true;
-            }}
-          />
-        ) : null}
-        {filme.revisita && (
-          <span className={styles.revisita} title={t.filmes.revisita}>
-            {t.filmes.revisita}
-          </span>
-        )}
-        <span ref={brilhoRef} className={comum.brilho} aria-hidden="true" />
-      </span>
+  useEffect(() => {
+    const el = ref.current;
+    if (!visivel || !el) return;
+    let antes = ponteiro.current.x;
+    let giro = 0;
+    let quadro = 0;
+    const passo = () => {
+      const { x, y } = ponteiro.current;
+      // o giro segue a velocidade do ponteiro e volta a zero quando ele para
+      const vx = x - antes;
+      antes = x;
+      giro += (Math.max(-GIRO_MAX, Math.min(GIRO_MAX, vx * GIRO_POR_PX)) - giro) * 0.12;
+      const r = reduzido ? 0 : giro;
+      el.style.transform = `translate(${x + AO_LADO.x}px, ${y + AO_LADO.y}px) translate(-50%, -50%) rotate(${r}deg)`;
+      quadro = requestAnimationFrame(passo);
+    };
+    passo();
+    return () => cancelAnimationFrame(quadro);
+  }, [visivel, reduzido, ponteiro]);
 
-      <span className={styles.nome}>{filme.titulo}</span>
-      <span className={styles.rodape}>
-        <span className={styles.ano}>{filme.ano}</span>
-        {posicao !== undefined ? (
-          <span
-            className={styles.posto}
-            aria-label={format(t.filmes.posicao, { n: String(posicao) })}
-          >
-            {String(posicao).padStart(2, '0')}
-          </span>
-        ) : filme.nota === null ? (
-          /* sem nota é diferente de nota zero: cinco marcas vazias afirmariam um
-             julgamento que ninguém fez */
-          <span className={styles.semNota}>{t.filmes.semNota}</span>
-        ) : (
-          <Nota nota={filme.nota} />
-        )}
-      </span>
-    </a>
+  // no `body`: as telas se movem por `transform`, e um `position: fixed` dentro
+  // delas passaria a medir a tela, e não a janela
+  return createPortal(
+    <span ref={ref} className={styles.flutuante} data-visivel={visivel || undefined} aria-hidden="true">
+      {poster ? <img src={poster} alt="" /> : null}
+    </span>,
+    document.body,
   );
 }
 
 /**
- * Uma faixa de filmes.
+ * Uma lista de filmes, como créditos: o título em contorno gigante, que se enche
+ * ao ser apontado.
  *
- * A mecânica da rolagem toda mora em `sections/Faixa`, compartilhada com os
- * recentes de Jogos: as duas seções são vizinhas no mesmo lado do site e
- * mostram a mesma fileira de cartões, e mecânicas diferentes ali leem como
- * descuido. O que sobra aqui é o que é de Filmes, que é o cartão.
- *
- * `base` é o atraso de onde a entrada desta faixa começa: as duas listas chegam
- * uma depois da outra, e não ao mesmo tempo.
+ * À esquerda fica o que distingue um filme do outro **naquela lista**: nos
+ * favoritos a posição, que é a única coisa que a lista afirma (a nota ali é
+ * sempre cinco); nos recentes, o dia em que foi visto. À direita, o ano e, nos
+ * recentes, a nota. **Sem nota é diferente de nota zero**: quem marcou como
+ * visto sem avaliar recebe o rótulo, e não cinco marcas vazias.
  */
-function Carrossel({
-  titulo,
+function Creditos({
   filmes,
-  base,
-  ranqueada,
+  aba,
+  apontar,
+  ponteiro,
 }: {
-  titulo: string;
   filmes: Filme[];
-  base: number;
-  /** a ordem da lista **é** o ranking, e cada cartão mostra o próprio lugar */
-  ranqueada?: boolean;
+  aba: Aba;
+  apontar: (poster: string | null) => void;
+  ponteiro: React.RefObject<{ x: number; y: number }>;
 }) {
+  const { t, lang } = useLanguage();
+  // um formatador por idioma, e não um por render
+  const dia = useMemo(
+    () => new Intl.DateTimeFormat(lang, { day: '2-digit', month: '2-digit', timeZone: 'UTC' }),
+    [lang],
+  );
+  const ranqueada = aba === 'favoritos';
+
   return (
-    <Faixa titulo={titulo} base={base} total={filmes.length}>
+    <ol className={styles.lista} onPointerLeave={() => apontar(null)}>
       {filmes.map((f, i) => (
-        <li key={f.id} style={{ '--ordem': i } as React.CSSProperties}>
-          <Cartao filme={f} posicao={ranqueada ? i + 1 : undefined} />
+        <li key={f.id} style={{ '--ordem': Math.min(i, 12) } as React.CSSProperties}>
+          <a
+            className={styles.linha}
+            href={f.url}
+            target="_blank"
+            rel="noreferrer"
+            onPointerEnter={(e) => {
+              if (e.pointerType !== 'mouse') return;
+              // o pôster nasce onde o ponteiro entrou, e não onde o último saiu
+              ponteiro.current = { x: e.clientX, y: e.clientY };
+              apontar(f.poster);
+            }}
+          >
+            {ranqueada ? (
+              <span className={styles.marcador} aria-label={format(t.filmes.posicao, { n: String(i + 1) })}>
+                {String(i + 1).padStart(2, '0')}
+              </span>
+            ) : (
+              <span className={styles.marcador}>
+                {f.assistidoEm ? dia.format(new Date(f.assistidoEm)) : null}
+              </span>
+            )}
+
+            {/* sem hover, o pôster mora na linha; com hover, ele segue o ponteiro */}
+            {f.poster ? <img className={styles.miniatura} src={f.poster} alt="" loading="lazy" /> : null}
+
+            <span className={styles.titulo}>{f.titulo}</span>
+
+            <span className={styles.lado}>
+              <span className={styles.ano}>{f.ano}</span>
+              {f.revisita && <span className={styles.revisita}>{t.filmes.revisita}</span>}
+              {ranqueada ? null : f.nota === null ? (
+                <span className={styles.semNota}>{t.filmes.semNota}</span>
+              ) : (
+                <Nota nota={f.nota} />
+              )}
+            </span>
+          </a>
         </li>
       ))}
-    </Faixa>
+    </ol>
   );
 }
 
@@ -152,29 +176,38 @@ function Carrossel({
  * Filmes: uma lista escolhida a dedo, e os últimos assistidos.
  *
  * O dado vem de `api/letterboxd`, e **não se repete**: um feed de filmes vistos
- * não muda enquanto alguém olha para ele, e repetir a busca gastaria requisição
- * para redesenhar o mesmo.
+ * não muda enquanto alguém olha para ele.
  *
  * **Os favoritos vêm antes, e podem não vir.** Eles são uma escolha, e os
- * recentes são um registro — a escolha diz mais sobre quem escreveu a página, e
- * por isso abre a seção. Mas eles saem do HTML de uma lista do Letterboxd, que
- * não tem RSS, então a função os devolve vazios sem chamar isso de falha (ver
- * `dados.md`): sem lista, a seção é só o segundo bloco, e continua inteira.
+ * recentes são um registro: a escolha diz mais sobre quem escreveu a página, e
+ * por isso abre a seção. Eles saem do HTML de uma lista do Letterboxd, que não
+ * tem RSS, então a função os devolve vazios sem chamar isso de falha (ver
+ * `dados.md`): sem lista, as abas somem e a seção é só a dos recentes.
  */
 export function FilmsSection({ ativo, indice }: SectionProps) {
   const t = useT();
-  const secaoRef = useRef<HTMLElement>(null);
-  useEscalaQueCabe(secaoRef);
   const filmes = useRemoto<Filmes>('api/letterboxd', ativo);
+  const [escolhida, setEscolhida] = useState<Aba>('favoritos');
+  const [poster, setPoster] = useState<string | null>(null);
 
   const favoritos = filmes.dados?.favoritos ?? [];
   const recentes = filmes.dados?.recentes ?? [];
+  const abas = (['favoritos', 'recentes'] as const).filter((a) =>
+    a === 'favoritos' ? favoritos.length > 0 : recentes.length > 0,
+  );
+  const aba = abas.includes(escolhida) ? escolhida : abas[0];
+
+  const apontar = useCallback((p: string | null) => setPoster(p), []);
+  // onde o ponteiro está, para o pôster; um ref, e não estado: muda a cada quadro
+  const ponteiro = useRef({ x: 0, y: 0 });
 
   return (
     <section
-      ref={secaoRef}
       className={`${comum.secao} ${comum.rolavel} ${styles.secao}`}
       aria-label={t.nav.filmes}
+      onPointerMove={(e) => {
+        ponteiro.current = { x: e.clientX, y: e.clientY };
+      }}
     >
       <div className={`${comum.bloco} ${styles.bloco}`} data-ativo={ativo || undefined}>
         <p className={comum.indice}>
@@ -192,23 +225,44 @@ export function FilmsSection({ ativo, indice }: SectionProps) {
 
         {filmes.estado !== 'pronto' ? (
           <EstadoRemoto estado={filmes.estado} />
-        ) : recentes.length === 0 && favoritos.length === 0 ? (
+        ) : !aba ? (
           <EstadoRemoto estado="vazio" />
         ) : (
-          <>
-            {favoritos.length > 0 && (
-              <Carrossel titulo={t.filmes.favoritos} filmes={favoritos} base={0} ranqueada />
-            )}
-            {recentes.length > 0 && (
-              <Carrossel
-                titulo={t.filmes.recentes}
-                filmes={recentes}
-                base={favoritos.length > 0 ? 220 : 0}
-              />
-            )}
-          </>
+          <div className={styles.creditos}>
+            {/* com uma lista só não há o que escolher: o nome dela vira o rótulo */}
+            <div className={styles.abas} role={abas.length > 1 ? 'group' : undefined}>
+              {abas.map((a) =>
+                abas.length > 1 ? (
+                  <button
+                    key={a}
+                    type="button"
+                    className={styles.aba}
+                    aria-pressed={a === aba}
+                    onClick={() => setEscolhida(a)}
+                  >
+                    {t.filmes[a]}
+                  </button>
+                ) : (
+                  <span key={a} className={styles.aba} aria-current="true">
+                    {t.filmes[a]}
+                  </span>
+                ),
+              )}
+            </div>
+
+            {/* a `key` refaz a lista ao trocar de aba, e a cascata de entrada corre de novo */}
+            <Creditos
+              key={aba}
+              filmes={aba === 'favoritos' ? favoritos : recentes}
+              aba={aba}
+              apontar={apontar}
+              ponteiro={ponteiro}
+            />
+          </div>
         )}
       </div>
+
+      <PosterFlutuante poster={ativo ? poster : null} ponteiro={ponteiro} />
     </section>
   );
 }

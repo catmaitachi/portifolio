@@ -1,0 +1,187 @@
+/**
+ * Entrada: o anel chega do fundo e os corpos acendem atrás dele, um a um.
+ *
+ * Pendurada em `data-ativo` (o do `.bloco` da seção), como as outras entradas:
+ * volta a correr cada vez que a Carreira entra em cena. O anel anima o SVG, e
+ * cada corpo anima o ponto de dentro, porque a posição do botão é da órbita.
+ */
+@keyframes anelChega {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: scale(0.8);
+  }
+}
+
+@keyframes corpoAcende {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+}
+
+@keyframes anelPulsa {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+
+  50% {
+    opacity: 0.9;
+  }
+}
+
+.orbita {
+  position: relative;
+  width: 100%;
+}
+
+.aneis {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+[data-ativo] .aneis {
+  animation: anelChega 0.9s var(--ease-entrada) 300ms backwards;
+}
+
+.aneis path {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+/* a metade de trás é mais apagada que a da frente: é o que dá o lado de cá ao anel */
+.tras {
+  stroke: var(--linha);
+}
+
+.frente {
+  stroke: var(--linha-acesa);
+}
+
+.fora {
+  stroke: var(--linha-sutil);
+  stroke-dasharray: 2 6;
+}
+
+/* ---------- o centro: qual corpo, de quantos ---------- */
+
+.centro {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  transform: translate(-50%, -50%);
+  color: var(--tx-rotulo);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.2em;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.centro b {
+  color: var(--tx-titulo);
+  font-size: clamp(24px, 4.6vmin, 44px);
+  font-weight: 300;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- os corpos ---------- */
+
+/**
+ * Um corpo: a área de toque de 38px, centrada **no ponto da linha** que a
+ * órbita escreve em `left`/`top`. `--z` é a profundidade (0 atrás, 1 na
+ * frente), e dela saem o tamanho e o brilho do ponto e do rótulo.
+ */
+.corpo {
+  position: absolute;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  appearance: none;
+  transform: translate(-50%, -50%);
+}
+
+.ponto {
+  display: block;
+  width: calc(6px + var(--z, 1) * 8px);
+  height: calc(6px + var(--z, 1) * 8px);
+  border-radius: 50%;
+  background: var(--tx-titulo);
+  opacity: calc(0.3 + var(--z, 1) * 0.7);
+  transition: box-shadow var(--dur-hover);
+}
+
+[data-ativo] .ponto {
+  animation: corpoAcende 0.6s var(--ease-entrada) backwards;
+  animation-delay: calc(900ms + var(--ordem, 0) * 90ms);
+}
+
+/* o escolhido leva o anel do nó ativo, e o brilho; o anel respira devagar */
+.corpo[aria-current] .ponto {
+  opacity: 1;
+  box-shadow:
+    0 0 0 6px rgb(255 255 255 / 6%),
+    0 0 0 7px var(--linha-acesa),
+    0 0 16px 2px rgb(255 255 255 / 45%);
+}
+
+.corpo:hover .ponto {
+  box-shadow: 0 0 0 5px var(--linha-forte);
+}
+
+.corpo[aria-current]::after {
+  position: absolute;
+  inset: 3px;
+  border: 1px solid var(--linha-acesa);
+  border-radius: 50%;
+  animation: anelPulsa 2.6s ease-in-out infinite;
+  content: '';
+}
+
+.rotulo {
+  position: absolute;
+  top: 34px;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: center;
+  transform: translateX(-50%);
+  color: var(--tx-apoio);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  opacity: calc(0.25 + var(--z, 1) * 0.75);
+  pointer-events: none;
+}
+
+.corpo[aria-current] .rotulo {
+  color: var(--tx-titulo);
+  opacity: 1;
+}
+
+.tipo {
+  color: var(--tx-rotulo);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .corpo[aria-current]::after {
+    animation: none;
+  }
+}

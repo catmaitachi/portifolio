@@ -7,31 +7,19 @@
  */
 
 /**
- * Contrato do rodapé do mobile.
+ * Contrato do topo.
  *
- * No layout de celular (`≤640px`, ou tablet em pé até 1024px) o HUD ocupa a
- * faixa de baixo: a barra de seções e, abaixo dela, a
- * versão. As seções precisam reservar esse espaço no `padding-bottom`, e nenhuma
- * delas conhece o `NavMenu` — então o número mora aqui, uma vez, e as duas
- * pontas derivam dele.
- *
- * Ele estava duplicado em valores soltos (`bottom: 56px` na faixa contra
- * `--pb: 116px` nas seções), e foi assim que saíram de sincronia: bastou uma
- * media query de altura baixar o `--pb` para 70px que o conteúdo passou a correr
- * por baixo da barra em qualquer celular de tela curta.
+ * O cabeçalho e o seletor de idioma ocupam a primeira linha da tela, e as telas
+ * reservam esse espaço antes do conteúdo. Nenhuma delas conhece o cabeçalho,
+ * então o número mora aqui, uma vez, e as duas pontas derivam dele. Já houve um
+ * contrato igual para o rodapé do celular, quando a barra de seções morava lá; ela
+ * saiu, e o rodapé voltou a ser livre.
  */
 :root {
-  /* onde a barra de seções começa, medindo do fundo da tela */
-  --hud-nav-base: 56px;
-  /* rótulo + risco + o respiro vertical da faixa */
-  --hud-nav-altura: 44px;
-  /* topo do rodapé: abaixo disso é território do HUD */
-  --hud-rodape: calc(var(--hud-nav-base) + var(--hud-nav-altura));
-
   /* onde a primeira linha do topo começa, medindo da borda */
   --hud-topo-base: max(2.4vh, 20px);
   /**
-   * A altura de uma linha do topo: o seletor de idioma, ou o cabeçalho de modo.
+   * A altura de uma linha do topo: o seletor de idioma, ou o cabeçalho.
    * Era 21px, e com a moldura do cabeçalho o texto de 10px ficava encostado nos
    * dois fios. Os dois se centram nesta altura, então mudar o número mexe nos
    * dois juntos e nas seções, que reservam o topo a partir dele.
@@ -39,21 +27,19 @@
   --hud-topo-linha: 26px;
   /**
    * Quanto o HUD ocupa no topo: uma linha só, em qualquer tela. No desktop o
-   * idioma fica à direita e o cabeçalho de modo no centro; no celular o idioma
-   * continua à direita e o cabeçalho vai para a esquerda. O menu aberto e a frase do
-   * hover **não** entram aqui, porque os dois são transitórios e passam por cima
-   * do conteúdo.
+   * idioma fica à direita e o cabeçalho no centro; no celular o idioma continua
+   * à direita e o cabeçalho vai para a esquerda.
    */
   --hud-topo-altura: var(--hud-topo-linha);
   /* base do topo: acima disso é território do HUD */
   --hud-topo: calc(var(--hud-topo-base) + var(--hud-topo-altura));
-  /* o que separa o conteúdo do cabeçalho, espelhando o respiro do rodapé */
+  /* o que separa o conteúdo do cabeçalho */
   --hud-topo-respiro: clamp(10px, 2svh, 18px);
 
   /**
    * O recuo lateral de todas as peças do HUD, e a linha de base das de baixo.
    *
-   * Menu, idioma, versão, cabeçalho e medidor da supernova se alinham pelas
+   * Idioma, versão, cabeçalho e medidor da supernova se alinham pelas
    * bordas da tela, e cada um escrevia o próprio `max(3.2vw, 26px)`. O medidor
    * tinha 20px fixos no mobile enquanto o cabeçalho tinha `max(3.2vw, 20px)`, e
    * num tablet em pé os dois ficavam desalinhados por seis pixels.
@@ -174,9 +160,7 @@
   --abertura-etiqueta: 1.2s;
   --abertura-nome: 1.35s;
   --abertura-legenda: 1.85s;
-  --abertura-menu: 2.15s;
   --abertura-cabecalho: 2.2s;
-  --abertura-credito: 2.3s;
   --abertura-idioma: 2.4s;
   --abertura-versao: 2.5s;
   /* a última peça assentou: daqui em diante só o brilho do nome se move */

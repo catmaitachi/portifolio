@@ -16,6 +16,13 @@ interface BlackHoleOptions {
 export interface BlackHoleLayer extends FadableLayer {
   /** presença 0..1: encolhe o raio, apaga o desenho e corta a gravidade */
   strength: number;
+  /**
+   * Um alvo para `strength`, seguido a cada quadro com inércia curta; `null`
+   * desliga. É o caminho da rolagem: ela muda o valor dezenas de vezes por
+   * segundo, e um `tween` novo a cada evento recomeçava a curva do zero, saindo
+   * devagar, e o buraco negro só assentava quando a rolagem parava.
+   */
+  alvo: number | null;
   /** raio atual em px, já com força e câmera aplicadas */
   radiusPx(env: StageEnv): number;
 }
@@ -69,6 +76,7 @@ export function BlackHole({
     name,
     z,
     strength,
+    alvo: null,
     radiusPx(env) {
       return R0 * this.strength * env.camera.k;
     },
@@ -76,6 +84,10 @@ export function BlackHole({
       R0 = Math.min(env.W, env.H) * radius;
     },
     update(env) {
+      if (this.alvo !== null) {
+        const falta = this.alvo - this.strength;
+        this.strength = Math.abs(falta) < 0.0005 ? this.alvo : this.strength + falta * Math.min(1, env.dt * 12);
+      }
       if (this.strength <= 0.001) {
         env.bus.gravity = null;
         return;

@@ -1,89 +1,52 @@
-/** Tokens da Trajetória. */
+/** Tokens da Carreira: a ficha (`JourneyEntry`) lê os `--exp-*`. */
 .secao {
-  --exph: 238px; /* altura do palco das fichas */
   --exp-cargo: clamp(15px, 2.6vmin, 26px);
-  --exp-per: 9px; /* rótulo de período nos nós */
-  --exp-curva: 132px;
   --exp-rail: 26px; /* coluna do trilho da ficha */
   --exp-marca-w: 96px; /* largura máxima da marca, ao lado do cabeçalho */
   --exp-gap: clamp(16px, 2.6vmin, 30px);
-  --exp-txt: 78%; /* largura do texto, que é medida de leitura */
-  --exp-topo: clamp(14px, 4.2vh, 54px);
+  --exp-txt: 100%; /* a ficha já divide a largura com a órbita */
+  --orbita-col: minmax(0, 1fr);
 }
 
 .bloco {
-  max-width: 900px;
+  max-width: 1100px;
 }
 
-.palco {
-  position: relative;
-  width: 100%;
-  height: var(--exph);
-  margin-top: var(--exp-topo);
+.cena {
+  display: grid;
+  grid-template-columns: var(--orbita-col) minmax(0, 1.15fr);
+  gap: clamp(24px, 4vw, 56px);
+  align-items: center;
+}
+
+/* a órbita e os passos embaixo dela; o rótulo do corpo da frente precisa de folga */
+.lado {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+  min-width: 0;
 }
 
 .controles {
   display: flex;
-  flex: none;
   gap: 10px;
-  align-items: center;
-  justify-content: flex-end;
-  width: 100%;
-}
-
-.seta {
-  display: flex;
-  flex: none;
-  width: 38px;
-  height: 38px;
-  align-items: center;
   justify-content: center;
-  margin: 0;
-  padding: 0;
-  border: 1px solid var(--linha-acesa);
-  border-radius: 2px;
-  background: rgb(255 255 255 / 6%);
-  color: var(--tx-hover);
-
-  /* a ponta é desenhada (ver `.ponta` em `section.module.css`), não escrita */
-  --ponta: 9px;
-  cursor: pointer;
-  appearance: none;
-  transition:
-    border-color var(--dur-hover),
-    background-color var(--dur-hover),
-    color var(--dur-hover),
-    opacity var(--dur-hover);
 }
 
-/* chanfro dos dois cantos opostos — ver "Cantos chanfrados" no CLAUDE.md */
-@supports (corner-shape: bevel) {
-  .seta {
-    corner-shape: bevel;
-    border-radius: 9px 2px;
-  }
-}
-
-.seta:hover:not(:disabled) {
-  border-color: var(--linha-cheia);
-  background: rgb(255 255 255 / 12%);
-  color: var(--tx-titulo);
-}
-
-/* nas pontas o botão apaga em vez de sumir: a posição continua legível.
-   com a base mais forte, o apagado precisa descer junto para continuar lendo
-   como "aqui acabou" e não como um botão comum */
-.seta:disabled {
-  opacity: 0.22;
-  cursor: default;
+/**
+ * O palco: todas as fichas na mesma célula da grade, e só a escolhida aparece.
+ * A altura é a da ficha maior, então trocar de experiência não mexe no que
+ * está em volta. Antes era uma altura fixa (`--exph`) com as fichas em
+ * `position: absolute`, e um texto mais longo passava do palco.
+ */
+.palco {
+  display: grid;
+  min-width: 0;
 }
 
 @media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .secao {
-    --exph: 322px;
     --exp-cargo: 16px;
-    --exp-per: 8px;
-    --exp-curva: 76px;
     --exp-rail: 22px;
     --exp-marca-w: 72px;
     --exp-gap: 14px;
@@ -91,16 +54,9 @@
        a marca ao lado para separá-los, e com o gap de desktop liam como um bloco só */
     --exp-cab-gap: 13px;
     --exp-bloco-gap: 16px;
-    --exp-txt: 100%;
-    --exp-topo: 16px;
   }
-}
 
-/* paisagem curta; no mobile os valores acima já se adaptam sozinhos */
-@media (width > 640px) and (height <= 720px) and (orientation: landscape) {
-  .secao {
-    --exph: 210px;
-    --exp-curva: 80px;
-    --exp-topo: 12px;
+  .cena {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

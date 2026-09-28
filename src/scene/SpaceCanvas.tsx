@@ -1,7 +1,8 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { SectionKey } from '~/content';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
-import { CEUS, DURACAO, nomeDoCeu, NOVA_NIVEIS, SECAO_DO_BURACO_NEGRO } from './scenePlan';
+import { ligarCamera } from './camera';
+import { CEUS, DURACAO, nomeDoCeu, NOVA_NIVEIS } from './scenePlan';
 import styles from './SpaceCanvas.module.css';
 
 interface SpaceCanvasProps {
@@ -127,13 +128,6 @@ export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
       const aplicar = (alvo: SectionKey) => {
         const instantaneo = semMovimentoRef.current ? 0 : 1;
 
-        const bh = stage.layer<import('~/engine').BlackHoleLayer>('blackhole');
-        if (bh) {
-          const presente = alvo === SECAO_DO_BURACO_NEGRO;
-          const dur = presente ? DURACAO.buracoNegroEntrada : DURACAO.buracoNegroSaida;
-          tween(bh, 'strength', presente ? 1 : 0, dur * instantaneo);
-        }
-
         for (const [key, ceu] of Object.entries(CEUS)) {
           const camada = stage.layer<import('~/engine').ConstellationsLayer>(
             nomeDoCeu(key as SectionKey),
@@ -222,8 +216,44 @@ export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
       window.addEventListener('pointercancel', aoCancelar, { passive: true, signal: sinal });
       window.addEventListener('blur', aoCancelar, { passive: true, signal: sinal });
 
+      /**
+       * A câmera que anda no céu (ver `scene/camera.ts`). Com menos movimento ela
+       * fica parada: nem a rolagem nem a troca de tela a movem, e o céu é o de
+       * repouso, como o zoom da abertura, que também não acontece.
+       */
+      const bh = stage.layer<import('~/engine').BlackHoleLayer>('blackhole');
+      const desligarCamera = ligarCamera({
+        avancar: (p) => stage.camera.avancar(semMovimentoRef.current ? 0 : p),
+        /**
+         * O buraco negro segue a rolagem, e não a seção: a presença vira o raio
+         * dele (`strength`), então ele encolhe enquanto o Início sai de vista.
+         * Um passo pequeno (rolagem) é seguido em 0,3s, que só suaviza a roda do
+         * mouse; um salto de presença (trocar de tela, abrir por endereço) usa a
+         * entrada e a saída de sempre, porque ali ele chega ou vai embora inteiro.
+         */
+        buraco: (v) => {
+          if (!bh) return;
+          const atual = bh.alvo ?? bh.strength;
+          if (semMovimentoRef.current || Math.abs(v - atual) <= 0.5) {
+            // a rolagem: o motor segue o alvo a cada quadro (ver `BlackHoleLayer.alvo`),
+            // e um tween que estivesse correndo é cancelado no lugar
+            tween(bh, 'strength', bh.strength, 0);
+            bh.alvo = v;
+            return;
+          }
+          // chegar ou ir embora inteiro: a entrada e a saída de sempre
+          bh.alvo = null;
+          tween(bh, 'strength', v, v > bh.strength ? DURACAO.buracoNegroEntrada : DURACAO.buracoNegroSaida);
+        },
+        saltar: () => {
+          if (!semMovimentoRef.current) stage.camera.saltar();
+        },
+      });
+      stage.camera.derivar(!semMovimentoRef.current);
+
       destruirStage = () => {
         aplicarRef.current = null;
+        desligarCamera();
         stage.destroy();
       };
 

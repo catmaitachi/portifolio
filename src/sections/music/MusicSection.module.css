@@ -1,28 +1,16 @@
 /**
- * Entrada da seção: as linhas chegam da esquerda, uma depois da outra.
+ * Entrada da seção: tudo chega da profundidade, pequeno, fora de foco e apagado,
+ * e assenta (a regra da direção, ver `direcao-visual.md`): primeiro o destaque,
+ * depois as capas uma a uma, e os retratos por último.
  *
- * `--ordem` é a posição na lista, e é a mesma gramática dos cartões de projeto e
- * dos canais de contato. `backwards`, nunca `forwards`: o estado final já é o
- * estado natural do elemento, e o que precisa ser coberto é o atraso.
+ * `--ordem` é a posição na lista. `backwards`, nunca `forwards`: o estado final
+ * já é o estado natural do elemento, e o que precisa ser coberto é o atraso.
  */
-@keyframes linhaEntra {
+@keyframes chega {
   from {
     opacity: 0;
-    transform: translateX(-18px);
-  }
-}
-
-/**
- * O destaque sobe, e é o último a chegar.
- *
- * Ele fica no pé da seção, então subir é entrar por onde ele está — o contrário
- * das linhas das listas, que chegam da esquerda. O atraso o põe depois delas:
- * a seção se monta de cima para baixo, e o que está tocando é o remate.
- */
-@keyframes destaqueEntra {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
+    filter: blur(6px);
+    transform: scale(0.9);
   }
 }
 
@@ -80,8 +68,23 @@
   }
 }
 
+/* o equalizador: quatro traços de 1px, cada um no seu tempo */
+@keyframes sobeDesce {
+  0%,
+  100% {
+    transform: scaleY(0.25);
+  }
+
+  50% {
+    transform: scaleY(1);
+  }
+}
+
 .secao {
-  --capa: clamp(78px, 11vmin, 116px);
+  --capa: 150px;
+  /* as colunas da parede de capas e da fileira de retratos */
+  --capas-cols: 4;
+  --artistas-cols: 8;
 }
 
 .bloco {
@@ -89,71 +92,55 @@
 }
 
 /**
- * O destaque: capa à esquerda, o resto à direita.
- *
- * Chanfro nos dois cantos opostos, como todo retângulo de conteúdo com borda
- * (ver `direcao-visual.md`). Os 14px acompanham o tamanho da caixa, entre o
- * cartão de canal e o de projeto.
+ * O destaque abre a seção: a capa grande à esquerda, o resto à direita, sem
+ * caixa em volta. Ele já foi o pé da seção, numa caixa chanfrada como a de
+ * Jogos, quando o resto eram duas listas de texto; numa vitrine de capas, o que
+ * está tocando é a primeira capa, e ela abre a parede.
  */
-/* a mesma caixa do destaque de Jogos, que é a seção vizinha: mesmo respiro e chanfro */
 .destaque {
   display: flex;
-  gap: clamp(14px, 2.2vmin, 24px);
-  align-items: center;
-  padding: clamp(12px, 1.8vmin, 18px);
-  border: 1px solid var(--linha);
-  border-radius: 2px;
+  gap: clamp(16px, 2.6vmin, 28px);
+  align-items: flex-end;
 }
 
 /**
- * As entradas ficam **penduradas em `data-ativo`**, não no mount.
- *
- * O atributo aparece quando a seção vira a ativa e some quando ela sai, e é isso
- * que faz o `animation-name` sair de `none` e a animação recomeçar do zero — o
- * mesmo mecanismo dos nós da Trajetória, sem `key` e sem remontar nada. Presas ao
- * mount, elas rodavam uma vez só, no instante em que a resposta do Spotify
- * chegava, e voltar para a seção mostrava um bloco que já estava montado.
+ * As entradas ficam **penduradas em `data-ativo`**, não no mount: o atributo
+ * aparece quando a seção vira a ativa e a animação recomeça do zero, sem `key`
+ * (ver `entradas.md`).
  */
 .bloco[data-ativo] .destaque {
-  animation: destaqueEntra 0.6s var(--ease-entrada) 0.42s backwards;
+  animation: chega 0.7s var(--ease-entrada) 0.2s backwards;
 }
 
-.bloco[data-ativo] .item {
-  animation: linhaEntra 0.5s var(--ease-entrada) backwards;
-  animation-delay: calc(var(--ordem, 0) * 55ms);
+.bloco[data-ativo] .faixa {
+  animation: chega 0.6s var(--ease-entrada) backwards;
+  animation-delay: calc(0.45s + var(--ordem, 0) * 60ms);
+}
+
+.bloco[data-ativo] .artistas li {
+  animation: chega 0.6s var(--ease-entrada) backwards;
+  animation-delay: calc(0.9s + var(--ordem, 0) * 45ms);
 }
 
 /**
  * Calado, o bloco se apaga e a capa perde a cor.
  *
- * Ele continua ali, e continua dizendo o que foi a última faixa — mas a seção
+ * Ele continua ali, e continua dizendo o que foi a última faixa, mas a seção
  * inteira é sobre o que está tocando **agora**, e um bloco em cor cheia
- * afirmaria isso mesmo com o rótulo dizendo o contrário. A cor é o que separa o
- * agora do passado: a capa é a única cor da seção, e tirá-la é a diferença mais
- * visível que existe aqui sem escrever nada.
+ * afirmaria isso mesmo com o rótulo dizendo o contrário.
  */
-.destaque:not([data-vivo]) {
-  opacity: 0.52;
-  border-color: var(--linha-sutil);
-}
-
 .destaque:not([data-vivo]) .capa {
-  filter: grayscale(1);
+  filter: grayscale(1) brightness(0.75);
 }
 
-@supports (corner-shape: bevel) {
-  .destaque {
-    border-radius: 14px 2px;
-    corner-shape: bevel;
-  }
+.destaque:not([data-vivo]) .faixaNome {
+  color: var(--tx-forte);
 }
 
 /**
- * A capa é a única cor da seção, e fica colorida.
- *
- * É identidade de terceiro, como as artes de Jogos e os pôsteres de Filmes: capa de álbum não se
- * repinta. Sem capa, o quadrado vazio de 1px é a mesma
- * moldura de espaço reservado que o resto da página usa.
+ * A capa é a única cor da seção, e fica colorida: é identidade de terceiro, como
+ * as artes de Jogos e os pôsteres de Filmes. Sem capa, o quadrado vazio de 1px é
+ * a mesma moldura de espaço reservado que o resto da página usa.
  */
 .capa {
   /* âncora do brilho especular, que é `position: absolute` */
@@ -167,17 +154,18 @@
   border-radius: 2px;
 
   /* o clarão acompanha a capa, não os 240px do retrato */
-  --brilho-r: 150px;
+  --brilho-r: 170px;
 
   /* a inclinação é escrita pelo JS (ver `useInclinacao`); daqui sai o retorno */
-  transition: transform var(--inclina-t, var(--dur-retorno)) var(--ease-saida);
+  transition:
+    transform var(--inclina-t, var(--dur-retorno)) var(--ease-saida),
+    filter 0.8s var(--ease-saida);
 }
 
-/* chanfro dos dois cantos opostos, na escala de uma capa de 64 a 116px */
 @supports (corner-shape: bevel) {
   .capa {
     corner-shape: bevel;
-    border-radius: 10px 2px;
+    border-radius: 12px 2px;
   }
 }
 
@@ -213,16 +201,16 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
+  padding-bottom: 4px;
   min-width: 0;
 }
 
 /**
  * **Uma linha, sempre.** O rótulo troca de texto conforme o estado ("tocando
  * agora" contra "nada tocando agora"), e num celular estreito o mais longo dos
- * dois quebrava em duas linhas. Isso muda a altura da seção em degrau, e é
- * justamente o degrau que faz a escala que cabe oscilar (ver
- * `useEscalaQueCabe`).
+ * dois quebrava em duas linhas, e a troca de estado mudava a altura da seção
+ * em degrau.
  */
 .rotulo {
   overflow: hidden;
@@ -247,6 +235,37 @@
   border-radius: 50%;
   background: var(--tx-titulo);
   animation: pulsaVivo 2.2s ease-in-out infinite;
+}
+
+.equalizador {
+  display: flex;
+  flex: none;
+  gap: 2px;
+  align-items: flex-end;
+  height: 9px;
+}
+
+.equalizador i {
+  width: 1px;
+  height: 100%;
+  background: var(--tx-forte);
+  transform-origin: bottom;
+  animation: sobeDesce 1.1s ease-in-out infinite;
+}
+
+.equalizador i:nth-child(2) {
+  animation-duration: 0.8s;
+  animation-delay: -0.3s;
+}
+
+.equalizador i:nth-child(3) {
+  animation-duration: 1.3s;
+  animation-delay: -0.6s;
+}
+
+.equalizador i:nth-child(4) {
+  animation-duration: 0.95s;
+  animation-delay: -0.15s;
 }
 
 .faixaNome {
@@ -348,6 +367,11 @@
     brilhoBarra 8.4s linear infinite;
 }
 
+/* máquina modesta: o brilho da barra para, porque repinta a barra a cada quadro (ver `motor.md`) */
+:global(:root:has(canvas[data-qualidade='0'])) .progresso {
+  animation: correFaixa var(--resta, 0ms) linear both;
+}
+
 /**
  * A cabeça da barra: um traço curto e mais aceso na ponta que avança.
  *
@@ -364,24 +388,21 @@
   content: '';
 }
 
-.colunas {
-  display: grid;
-  grid-template-columns: 1.35fr 1fr;
-  gap: clamp(20px, 4vmin, 54px);
-}
+/* ---------- as mais tocadas e os mais ouvidos ---------- */
 
-.coluna {
+.grupo {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
   min-width: 0;
 }
 
-/* é um `<h3>`: o sub-título da lista, que o leitor de tela alcança por título */
+/* é um `<h3>`: o sub-título da grade, que o leitor de tela alcança por título */
 .tituloLista {
+  display: flex;
+  gap: 14px;
+  align-items: center;
   margin: 0;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--linha-sutil);
   color: var(--tx-rotulo);
   font-size: var(--fs-rotulo);
   font-weight: 400;
@@ -389,53 +410,177 @@
   text-transform: uppercase;
 }
 
-.lista {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
+.tituloLista::after {
+  flex: 1;
+  height: 1px;
+  background: var(--linha);
+  content: '';
+}
+
+/**
+ * A parede de capas. **Apontar uma a traz para o foco**: as outras apagam, perdem
+ * a cor e desfocam de leve, e o nome sobe de dentro da capa apontada. O
+ * mecanismo é o do `focus-cards` da Aceternity, refeito com `:has()`, sem
+ * JavaScript: a grade pergunta a si mesma se alguém dentro dela está apontado.
+ */
+.capas {
+  display: grid;
+  grid-template-columns: repeat(var(--capas-cols), minmax(0, 1fr));
+  gap: 14px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.item {
-  display: flex;
-  gap: 10px;
-  align-items: baseline;
+.faixa {
   min-width: 0;
+  transition:
+    opacity 0.45s,
+    filter 0.45s var(--ease-saida),
+    transform 0.45s var(--ease-saida);
+}
+
+.capas:has(.faixa:hover, .faixa:focus-within) .faixa:not(:hover, :focus-within) {
+  opacity: 0.35;
+  filter: blur(2px) grayscale(1);
+  transform: scale(0.97);
+}
+
+.faixaLink {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid var(--linha);
+  color: inherit;
+  text-decoration: none;
+}
+
+@supports (corner-shape: bevel) {
+  .faixaLink {
+    corner-shape: bevel;
+    border-radius: 12px 2px;
+  }
+}
+
+/* a moldura de espaço reservado, como em toda imagem da página */
+.faixaLink:has(img) {
+  border-color: transparent;
+}
+
+.faixaLink img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .numero {
-  flex: none;
-  color: var(--tx-marcador);
+  position: absolute;
+  top: 8px;
+  left: 9px;
+  color: var(--tx-titulo);
   font-size: var(--fs-meta);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.2em;
   font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 6px #000;
 }
 
-.link {
+/* o nome sobe de dentro da capa, sobre um degradê que só existe com ele */
+.legenda {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  gap: 3px;
+  padding: 26px 11px 10px;
+  background: linear-gradient(transparent, rgb(0 0 0 / 88%));
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 0.35s,
+    transform 0.45s var(--ease-saida);
+}
+
+.faixaLink:hover .legenda,
+.faixaLink:focus-visible .legenda {
+  opacity: 1;
+  transform: none;
+}
+
+.legendaTitulo,
+.legendaArtista {
   overflow: hidden;
-  color: var(--tx-forte);
-  font-size: var(--fs-lista);
   text-overflow: ellipsis;
-  text-decoration: none;
   white-space: nowrap;
+}
+
+.legendaTitulo {
+  color: var(--tx-titulo);
+  font-size: var(--fs-pequeno);
+}
+
+.legendaArtista {
+  color: var(--tx-apoio);
+  font-size: var(--fs-meta);
+}
+
+/* os mais ouvidos: retratos redondos, sem cor até serem apontados */
+.artistas {
+  display: grid;
+  grid-template-columns: repeat(var(--artistas-cols), minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.artistaCartao {
+  display: grid;
+  gap: 9px;
+  justify-items: center;
+  color: var(--tx-apoio);
+  font-size: var(--fs-meta);
+  text-align: center;
+  text-decoration: none;
   transition: color var(--dur-hover);
 }
 
-.link:hover {
+.retrato {
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid var(--linha);
+  border-radius: 50%;
+}
+
+.retrato:has(img) {
+  border-color: transparent;
+}
+
+.retrato img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) brightness(0.85);
+  transition: filter 0.5s var(--ease-saida);
+}
+
+.artistaCartao:hover,
+.artistaCartao:focus-visible {
   color: var(--tx-titulo);
 }
 
-/* o artista da faixa cede espaço primeiro: o nome dela é o que se procura */
-.secundario {
-  flex: 1;
-  min-width: 0;
+.artistaCartao:hover img,
+.artistaCartao:focus-visible img {
+  filter: none;
+}
+
+.artistaNome {
+  max-width: 100%;
   overflow: hidden;
-  color: var(--tx-apagado);
-  font-size: var(--fs-meta);
-  font-weight: 300;
-  text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -455,60 +600,42 @@
 }
 
 /**
- * Mobile: as duas listas empilham, e o **destaque não muda de forma**.
- *
- * Empilhar a capa sobre o texto foi a primeira versão, e estava errada: ela
- * dobrava a altura do bloco justamente na tela onde ela é mais disputada, e o
- * que está tocando deixava de ser reconhecível de relance por ter virado outro
- * desenho. Aqui quem cede é o texto — o nome da faixa e o do artista já cortam
- * com reticências, e cortar um título é mais barato que reorganizar o bloco.
+ * Sem hover (toque), a legenda não teria como aparecer: ela vai para baixo da
+ * capa, sempre à vista, e a parede fica em duas colunas para o nome caber.
  */
+@media (hover: none) {
+  .secao {
+    --capas-cols: 2;
+  }
+
+  .faixaLink {
+    overflow: visible;
+    aspect-ratio: auto;
+  }
+
+  .faixaLink img {
+    aspect-ratio: 1;
+    height: auto;
+  }
+
+  .legenda {
+    position: static;
+    padding: 8px 0 0;
+    background: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .secao {
-    --capa: 64px;
+    --capa: 96px;
+    --artistas-cols: 4;
   }
 
-  /**
-   * No estreito o respiro **sobe**, em vez de descer com a tela.
-   *
-   * Os tokens da página encolhem os espaçamentos quando falta largura, e aqui
-   * isso saiu pela culatra: as duas listas deixam de ser duas colunas e viram
-   * uma pilha só, então o que antes era separado pelo espaço horizontal passa a
-   * depender só do vertical. Com os valores de tela larga a seção lia como um
-   * bloco só de texto.
-   *
-   * A escala que cabe (`useEscalaQueCabe`) é quem paga a conta se isso não
-   * couber, e é para isso que ela existe.
-   */
+  /* no estreito o respiro sobe: o que era separado por largura passa a depender da altura */
   .secao .bloco {
-    gap: 28px;
-  }
-
-  /**
-   * **Cinco de cada lista, não oito.** Empilhadas, as duas davam dezesseis linhas
-   * iguais antes do destaque, e a seção lia como uma planilha. O corte é aqui e
-   * não na função: no desktop as oito cabem em duas colunas lado a lado, e a
-   * resposta do Spotify é a mesma para as duas telas.
-   */
-  .item:nth-child(n + 6) {
-    display: none;
-  }
-
-  .colunas {
-    grid-template-columns: 1fr;
-    gap: 28px;
-  }
-
-  .coluna {
-    gap: 14px;
-  }
-
-  .lista {
-    gap: 12px;
-  }
-
-  .destaque {
-    gap: 16px;
+    gap: 30px;
   }
 }
 

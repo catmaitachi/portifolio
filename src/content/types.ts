@@ -15,7 +15,6 @@ export type Lang = 'pt' | 'en';
 export type SectionKey =
   | 'inicio'
   | 'sobre'
-  | 'formacao'
   | 'projetos'
   | 'experiencia'
   | 'musica'
@@ -24,14 +23,13 @@ export type SectionKey =
   | 'contato';
 
 /**
- * Os dois lados do site.
+ * As telas do site, que são o que o cabeçalho navega.
  *
- * Cada modo traz as seções que tem e os canais de contato que mostra (ver
- * `modos` em `shared.json`). O Início é comum aos dois e só troca de texto:
- * `modos.<key>` no dicionário carrega a etiqueta e a legenda dele, e o nome
- * continuando em `hero`, porque o nome não muda de lado nenhum.
+ * Uma tela é uma área que rola por dentro e **empilha** as seções dela, uma
+ * embaixo da outra, como partes de um documento. Quem diz qual seção mora em
+ * qual tela é `shared.json → telas`.
  */
-export type ModoKey = 'pessoal' | 'profissional';
+export type TelaKey = 'dossie' | 'hobbies' | 'trajetoria';
 
 export type EstadoFormacao = 'concluido' | 'cursando' | 'pretensao';
 
@@ -88,6 +86,17 @@ export interface Formacao {
  * chegou em inglês. `key` existe para o `check:i18n` ligar os dois lados da
  * lista, como faz com projetos e formações.
  */
+/**
+ * Uma seção de texto do dossiê: um título e os parágrafos dela. Sem parágrafo, o
+ * dossiê mostra o marcador de reservado: é um campo que existe e ainda não foi
+ * escrito, e não pode ser preenchido com texto inventado.
+ */
+export interface SecaoDossie {
+  key: string;
+  titulo: string;
+  paragrafos: string[];
+}
+
 export interface DadoPessoal {
   key: string;
   rotulo: string;
@@ -122,45 +131,36 @@ export interface Experiencia {
 
 export interface Dictionary {
   nav: Record<SectionKey, string>;
-  /**
-   * Rótulo de cada modo no cabeçalho, mais a etiqueta e a legenda que ele dá ao
-   * Início. `Record` total: um modo novo quebra o build nos dois dicionários.
-   */
-  modos: Record<
-    ModoKey,
-    {
-      /** o nome no cabeçalho */
-      rotulo: string;
-      /** uma linha sobre o que tem daquele lado, revelada ao apontar o nome */
-      descricao: string;
-      etiqueta: string;
-      legenda: string;
-    }
-  >;
-  hero: { nome: string };
+  /** o nome de cada tela no cabeçalho; `Record` total, então uma tela nova quebra o build */
+  telas: Record<TelaKey, string>;
+  hero: { nome: string; etiqueta: string; legenda: string };
   /**
    * O título da aba, com `{nome}` e `{parte}`.
    *
-   * A parte é o nome da seção, ou a etiqueta do modo quando o visitante está no
-   * Início — que é onde não existe seção para nomear.
+   * A parte é o nome da seção, ou o da tela quando o visitante está no Início,
+   * que é onde não existe seção para nomear.
    */
   documento: string;
   /**
-   * A bio muda de lado, e os dois fatos embaixo dela não.
-   *
-   * `paragrafos` é `Record` **total** por modo: um lado novo do site quebra o
-   * build até ter o próprio texto, porque um Sobre que não fala do lado em que o
-   * visitante está é pior que um Sobre curto. `dados` são os fatos que ficaram
-   * no lugar do carrossel de formação, que virou seção (ver `secoes.md`).
+   * A bio e os fatos embaixo dela. `dados` são os fatos que ficaram no lugar do
+   * carrossel de formação quando ela virou seção (ver `secoes.md`).
+   */
+  /**
+   * O dossiê: a ficha ao lado do retrato (os `rotulos` de campos que vêm de
+   * outros lugares, mais os `dados`) e as seções de texto embaixo dela.
    */
   sobre: {
     titulo: string;
-    paragrafos: Record<ModoKey, string[]>;
+    rotulos: { nome: string; ocupacao: string; formacao: string };
+    /** o nome inteiro, no campo Nome da ficha; o do `hero` é o nome de uso */
+    nomeCompleto: string;
+    /** o marcador de campo que existe e ainda não tem valor */
+    reservado: string;
     dados: DadoPessoal[];
+    secoes: SecaoDossie[];
   };
   formacoes: {
     titulo: string;
-    intro: string;
     estados: Record<EstadoFormacao, string>;
     /**
      * Os rótulos do dado que cada estado produz, no pé do diploma: a data de
@@ -182,9 +182,16 @@ export interface Dictionary {
     vazio: string;
     codigo: string;
     aoVivo: string;
-    /** a legenda do código de barras de commits, entre as duas datas da janela */
+    /** a legenda do código de barras de commits, na janela de quem não tem site */
     atividade: string;
     arquivado: string;
+    linguagens: string;
+    /** o estado na legenda da janela: com site, e só com código */
+    noAr: string;
+    soCodigo: string;
+    /** o botão da janela: troca a foto pelo site rodando, e volta */
+    rodar: string;
+    parar: string;
     rotulos: { commits: string; estrelas: string; forks: string; desde: string; atualizado: string };
   };
   /**
@@ -215,6 +222,9 @@ export interface Dictionary {
     horas: string;
     duasSemanas: string;
     total: string;
+    /** os dois passos do deque */
+    anterior: string;
+    proximo: string;
   };
   filmes: {
     titulo: string;
@@ -254,40 +264,40 @@ export interface Dictionary {
   };
   contato: {
     titulo: string;
-    intro: string;
     email: string;
-    ou: string;
+    copiar: string;
+    copiado: string;
+    /** a legenda do ponto que pulsa ao lado do envio */
+    sinal: string;
     enviar: string;
     enviando: string;
     erro: string;
-    emBreve: string;
     /** aceita `{nome}` */
     assunto: string;
     assuntoSemNome: string;
     /** aceita `{nome}` */
     assinatura: string;
     campos: {
+      /**
+       * A frase que o nome completa: "Oi, Lucas. Aqui é ___." O campo mora no
+       * meio dela, então são duas metades, e a ordem das palavras é do idioma.
+       */
+      frase: { antes: string; depois: string };
+      /** `rotulo` é o nome acessível do campo, que não tem rótulo à vista */
       nome: { rotulo: string; dica: string };
       mensagem: { rotulo: string; dica: string };
     };
   };
-  credito: string;
   a11y: {
     secoes: string;
-    modos: string;
-    modosAbrir: string;
     idioma: string;
-    projetos: string;
+    /** o nome acessível da foto do site; aceita `{nome}` */
+    previa: string;
     experiencia: string;
     canais: string;
     retrato: string;
-    /**
-     * Os dois botões de rolagem das faixas, e o `{lista}` deles é o título da
-     * faixa em que estão: "anterior" sozinho não diz anterior do quê numa seção
-     * com duas faixas, e é justamente ali que a pergunta aparece.
-     */
-    faixaAntes: string;
-    faixaDepois: string;
+    /** o canal que ainda não tem endereço; aceita `{rede}` */
+    emBreve: string;
     /** aceita `{rede}` — o nome do serviço vem de `perfis`, não do dicionário */
     perfil: string;
   };
@@ -313,7 +323,7 @@ export interface Canal {
   icone: string;
   rotulo: string;
   identificador: string;
-  /** vazio = cartão tracejado, apagado e fora da navegação */
+  /** vazio = ícone apagado no rodapé, sem link (ver `hud/Canais`) */
   url: string;
 }
 
@@ -322,23 +332,17 @@ export interface Secao {
 }
 
 /**
- * Um modo: as seções que ele tem, na ordem em que rolam, e os canais que a
- * seção Contato mostra nele.
- *
- * `secoes` é a ordem de rolagem **em vigor**, e `Shared.secoes` passa a ser só a
- * ordem canônica, contra a qual estas listas são conferidas por `check:i18n`.
- * Os canais são chaves de `canais`, não os objetos: o cartão de um canal é o
- * mesmo dos dois lados, muda só quem aparece.
+ * Uma tela e as seções dela, na ordem em que aparecem, de cima para baixo. A
+ * primeira é a que abre quando o endereço não pede nenhuma.
  */
-export interface Modo {
-  key: ModoKey;
-  secoes: SectionKey[];
-  canais: string[];
+export interface Tela {
+  key: TelaKey;
+  partes: SectionKey[];
 }
 
 export interface Shared {
   secoes: Secao[];
-  modos: Modo[];
+  telas: Tela[];
   /** só as seções que leem dado de fora têm perfil; as outras não têm de onde */
   perfis: Partial<Record<SectionKey, Perfil>>;
   /**

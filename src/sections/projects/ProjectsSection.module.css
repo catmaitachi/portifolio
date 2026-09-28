@@ -1,122 +1,28 @@
-/** Tokens do palco da órbita. */
+/** Tokens da vitrine de projetos: as colunas de uma linha (janela e texto) e o respiro entre elas. */
 .secao {
-  --pcw: 560px; /* largura do bilhete */
-  --pch: 280px; /* altura do bilhete */
-  --pcanhoto: 150px; /* largura do canhoto, a peça menor do bilhete */
-  --pfolga: 10px; /* o espaço entre o corpo e o canhoto */
-  --pbarras: 34px; /* altura do código de barras de commits */
-  --ph: 312px; /* altura do palco */
-  --pr: 300px; /* raio da órbita */
-  --pperspectiva: 1600px;
-  --pcard: 18px; /* padding interno do cartão */
+  --proj-cols: minmax(0, 1.35fr) minmax(0, 1fr);
+  --proj-gap: clamp(24px, 4vw, 52px);
+  /* entre um projeto e o seguinte */
+  --proj-entre: clamp(56px, 9vh, 96px);
 }
 
 .bloco {
   max-width: 1040px;
 }
 
-.palco {
-  position: relative;
-  width: 100%;
-  height: var(--ph);
-  /* origem acima do centro: o anel é visto levemente de cima */
-  perspective: var(--pperspectiva);
-  perspective-origin: 50% 46%;
-  /* sem `outline: none`: o palco entra na tabulação, e o contorno de foco global
-     é o único sinal de onde o teclado está quando as setas passam a girar a órbita */
-  /* o arraste horizontal é nosso; o vertical continua rolando a página */
-  touch-action: pan-y;
-  /**
-   * Sem `cursor: grab` aqui: o arraste começa na faixa do cartão da frente (ver
-   * `useOrbit`), e uma mão aberta sobre a largura toda do palco prometeria um
-   * gesto que a maior parte dessa área não atende. Quem arrasta e quem clica é
-   * o cartão, e é ele que carrega o cursor.
-   */
-}
-
-.anel {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-}
-
-.tracos {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  justify-content: center;
-}
-
-.traco {
-  display: block;
-  /**
-   * `content-box` é deliberado: o reset global usa `border-box`, e com ele o
-   * `height: 1px` absorveria o padding, zerando a caixa de conteúdo — o
-   * `background-clip` não teria o que pintar. Aqui o padding é área de toque,
-   * fora do traço visível.
-   */
-  box-sizing: content-box;
-  width: 12px;
-  height: 1px;
+.lista {
+  display: grid;
+  gap: var(--proj-entre);
   margin: 0;
-  padding: 9px 0;
-  border: 0;
-  background: var(--linha-forte);
-  background-clip: content-box;
-  cursor: pointer;
-  appearance: none;
-  transition:
-    width 0.6s var(--ease-saida),
-    background var(--dur-hover);
+  padding: 0;
+  list-style: none;
 }
 
-.traco[data-ativo] {
-  width: 30px;
-  background: var(--tx-titulo);
-  background-clip: content-box;
-}
-
-/**
- * Fecha a órbita para os cartões não passarem por baixo do menu fixo à direita.
- *
- * Deitado, o bilhete é largo, e o lateral aparece além da borda do da frente
- * por uma faixa, e não mais por inteiro: o raio é o que decide o tamanho dessa
- * faixa, e o limite dele é o menu.
- */
-@media (901px <= width <= 1200px) {
-  .secao {
-    --pcw: 480px;
-    --pr: 220px;
-  }
-}
-
-@media (641px <= width <= 900px) {
-  .secao {
-    --pcw: 420px;
-    --pcanhoto: 124px;
-    --pr: 200px;
-    --px: 40px;
-  }
-}
-
-/* no celular o bilhete fica em pé (ver o módulo do cartão), e os tokens voltam a ser de coluna */
+/* celular: uma coluna só, a janela em cima do texto */
 @media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .secao {
-    --pcw: 300px;
-    --pch: 420px;
-    --ph: 436px;
-    --pr: 150px;
-    --pperspectiva: 900px;
-    --pcard: 15px;
-  }
-}
-
-/* paisagem curta; no mobile os valores acima já se adaptam sozinhos */
-@media (width > 640px) and (height <= 720px) and (orientation: landscape) {
-  .secao {
-    --pch: 252px;
-    --pbarras: 26px;
-    --ph: 280px;
-    --pcard: 14px;
+    --proj-cols: minmax(0, 1fr);
+    --proj-gap: 18px;
+    --proj-entre: 56px;
   }
 }

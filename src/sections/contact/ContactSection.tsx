@@ -1,41 +1,55 @@
-import { useMemo, useRef } from 'react';
-import { canaisDoModo } from '~/content';
-import { useEscalaQueCabe } from '~/hooks/useEscalaQueCabe';
+import { useEffect, useState } from 'react';
 import { useT } from '~/i18n/useLanguage';
 import comum from '../section.module.css';
 import type { SectionProps } from '../types';
-import { ChannelCard } from './ChannelCard';
 import styles from './ContactSection.module.css';
 import { useMailto } from './useMailto';
 
+/** Quanto tempo o "copiado" fica no lugar da dica, em ms. */
+const DURACAO_COPIADO = 1800;
+
 /**
- * Contato: e-mail como link gigante, formulário de uma linha e canais.
- *
- * Sem moldura e sem back-end — o e-mail em tamanho de título é o caminho
- * principal, e o formulário só monta um `mailto:` para quem prefere digitar ali.
- *
- * O `<form>` com `onSubmit` é deliberado: dá o Enter de graça em qualquer campo,
- * que é como se envia um formulário de uma linha.
+ * Quantos caracteres enchem o título: o bastante para uma primeira mensagem.
+ * Passar disso não enche mais, e escrever menos não é erro nenhum.
  */
-export function ContactSection({ ativo, indice, modo }: SectionProps) {
+const CHEIO = 280;
+
+/**
+ * Contato: o fim do dossiê, como um cartaz.
+ *
+ * De um lado, "Vamos conversar" em contorno gigante, que **se enche de baixo
+ * para cima conforme a mensagem cresce**: o título é o medidor, e não há outro.
+ * Embaixo dele, o endereço, que copia ao ser clicado. Do outro lado, o
+ * formulário é uma frase para completar ("Oi, Lucas. Aqui é ___.") e a
+ * mensagem logo abaixo. Sem back-end, o envio monta um `mailto:`.
+ *
+ * O `<form>` com `onSubmit` dá o Enter no campo do nome; na mensagem o Enter
+ * quebra a linha, e Ctrl/⌘+Enter envia.
+ */
+export function ContactSection({ ativo, indice }: SectionProps) {
   const t = useT();
-  /**
-   * Os canais são os do modo: Instagram e TikTok no pessoal, GitHub e LinkedIn no
-   * profissional. O cartão é o mesmo dos dois lados, muda só quem aparece.
-   *
-   * O `useMemo` não é por custo — a lista tem dois itens — e sim por identidade:
-   * `canaisDoModo` monta um array novo a cada chamada, e uma lista nova por render
-   * faria os cartões perderem a chance de ser comparados.
-   */
-  const canais = useMemo(() => canaisDoModo(modo), [modo]);
-  const secaoRef = useRef<HTMLElement>(null);
-  // o conteúdo encolhe até caber na altura que a tela tem
-  useEscalaQueCabe(secaoRef);
   const form = useMailto(t);
+  const [copiado, setCopiado] = useState(false);
+
+  useEffect(() => {
+    if (!copiado) return;
+    const id = window.setTimeout(() => setCopiado(false), DURACAO_COPIADO);
+    return () => window.clearTimeout(id);
+  }, [copiado]);
+
+  const copiar = async () => {
+    try {
+      await navigator.clipboard.writeText(t.contato.email);
+      setCopiado(true);
+    } catch {
+      // sem permissão de área de transferência o endereço continua à vista e selecionável
+    }
+  };
+
+  const cheio = Math.min(1, form.mensagem.length / CHEIO) * 100;
 
   return (
     <section
-      ref={secaoRef}
       className={`${comum.secao} ${comum.rolavel} ${styles.secao}`}
       aria-label={t.nav.contato}
     >
@@ -45,70 +59,84 @@ export function ContactSection({ ativo, indice, modo }: SectionProps) {
           <span className={comum.indiceRisco} aria-hidden="true" />
         </p>
 
-        <div className={comum.cabecalho}>
-          <h2 className={comum.titulo}>{t.contato.titulo}</h2>
-          <p className={comum.intro}>{t.contato.intro}</p>
-        </div>
+        <div className={styles.grade}>
+          <div className={styles.chamada}>
+            <h2 className={styles.grito} style={{ '--cheio': `${cheio}%` } as React.CSSProperties}>
+              {t.contato.titulo}
+            </h2>
+            <button
+              type="button"
+              className={styles.endereco}
+              aria-describedby="contato-dica"
+              onClick={copiar}
+            >
+              {t.contato.email}
+            </button>
+            {/* a dica vira a confirmação: é o mesmo lugar, e `aria-live` a anuncia */}
+            <span
+              id="contato-dica"
+              className={styles.dica}
+              data-ok={copiado || undefined}
+              aria-live="polite"
+            >
+              {copiado ? t.contato.copiado : t.contato.copiar}
+            </span>
+          </div>
 
-        <a className={styles.email} href={`mailto:${t.contato.email}`}>
-          <span>{t.contato.email}</span>
-          <span className={styles.risco} aria-hidden="true" />
-        </a>
+          <form
+            className={styles.carta}
+            onSubmit={(e) => {
+              e.preventDefault();
+              form.enviar();
+            }}
+          >
+            <p className={styles.frase}>
+              {t.contato.campos.frase.antes}{' '}
+              <input
+                className={styles.nome}
+                type="text"
+                name="nome"
+                autoComplete="name"
+                aria-label={t.contato.campos.nome.rotulo}
+                value={form.nome}
+                placeholder={t.contato.campos.nome.dica}
+                // o campo cresce com o nome, para a frase continuar lendo como frase
+                size={Math.max(t.contato.campos.nome.dica.length, form.nome.length + 1)}
+                onChange={(e) => form.setNome(e.target.value)}
+              />
+              {t.contato.campos.frase.depois}
+            </p>
 
-        <form
-          className={styles.form}
-          onSubmit={(e) => {
-            e.preventDefault();
-            form.enviar();
-          }}
-        >
-          <label className={styles.campo}>
-            <span className={styles.rotulo}>{t.contato.campos.nome.rotulo}</span>
-            <input
-              className={styles.entrada}
-              type="text"
-              name="nome"
-              autoComplete="name"
-              value={form.nome}
-              placeholder={t.contato.campos.nome.dica}
-              onChange={(e) => form.setNome(e.target.value)}
-            />
-          </label>
-
-          <label className={styles.campo}>
-            <span className={styles.rotulo}>{t.contato.campos.mensagem.rotulo}</span>
-            <input
-              className={styles.entrada}
-              type="text"
+            <textarea
+              className={styles.mensagem}
               name="mensagem"
+              rows={5}
+              aria-label={t.contato.campos.mensagem.rotulo}
               value={form.mensagem}
               placeholder={t.contato.campos.mensagem.dica}
               onChange={(e) => form.setMensagem(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) e.currentTarget.form?.requestSubmit();
+              }}
             />
-          </label>
 
-          <button type="submit" className={styles.enviar}>
-            <span>{t.contato.enviar}</span>
-            {/* dois elementos porque são dois `transform`: o de fora leva o avanço
-                do hover e o de dentro, a rotação da ponta (ver `section.module.css`) */}
-            <span className={styles.seta} aria-hidden="true">
-              <span className={comum.ponta} data-lado="depois" />
-            </span>
-          </button>
-        </form>
-
-        {/* `aria-live` anuncia o erro e a confirmação a quem não vê a mensagem aparecer */}
-        <span className={styles.status} data-visivel={form.status ? true : undefined} role="status" aria-live="polite">
-          {form.status || ' '}
-        </span>
-
-        <div className={styles.canais}>
-          <span className={styles.ou}>{t.contato.ou}</span>
-          <div className={styles.grade} role="group" aria-label={t.a11y.canais}>
-            {canais.map((c, i) => (
-              <ChannelCard key={c.key} canal={c} entrando={ativo} indice={i} total={canais.length} />
-            ))}
-          </div>
+            <div className={styles.pe}>
+              {/* o status toma o lugar do sinal enquanto existe; `aria-live` o anuncia
+                  a quem não o vê aparecer */}
+              <span className={styles.sinal} role="status" aria-live="polite">
+                <i aria-hidden="true" />
+                {form.status || t.contato.sinal}
+              </span>
+              <button type="submit" className={styles.enviar}>
+                <span className={styles.enviarTexto}>{t.contato.enviar}</span>
+                {/* dois elementos porque são dois `transform`: o de fora leva o avanço
+                    do hover e o de dentro, a rotação da ponta (ver `section.module.css`) */}
+                <span className={styles.seta} aria-hidden="true">
+                  <span className={comum.ponta} data-lado="depois" />
+                </span>
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </section>

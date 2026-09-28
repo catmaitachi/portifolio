@@ -2,7 +2,7 @@ import { LOGOS, urlExterna, type Experiencia } from '~/content';
 import { useT } from '~/i18n/useLanguage';
 import styles from './JourneyEntry.module.css';
 
-/** Chips exibidos por ficha. Além disso a ficha estoura a altura fixa do palco. */
+/** Chips exibidos por ficha: mais que isso vira uma segunda linha de chips. */
 const MAX_STACK = 5;
 
 interface JourneyEntryProps {
@@ -30,7 +30,7 @@ interface JourneyEntryProps {
  * organiza alguma coisa; na ficha ela só repetia o rótulo do nó, e a marca diz
  * de quem era o trabalho.
  *
- * Todas as fichas ficam sobrepostas (`inset: 0`) num palco de altura fixa e só a
+ * Todas as fichas ficam sobrepostas na mesma célula do palco e só a
  * ativa aparece — trocar de evento é uma transição de opacidade, sem rAF e sem
  * o palco mudando de altura a cada navegação.
  *

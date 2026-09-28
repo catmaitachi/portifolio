@@ -749,9 +749,13 @@ export function Supernova({
 
           // o halo aperta em volta do corpo: a 2,6 raios, com a supermassiva em
           // 110px, ele virava uma bola difusa de 570px sem forma nenhuma
-          const halo = Re * 2;
-          ctx.globalAlpha = Math.min(1, 0.28 * estrelaFade * saida * aperto);
-          ctx.drawImage(disco, cx - halo, cy - halo, halo * 2, halo * 2);
+          // no modo leve ele sai: é o maior blit da cena, um quadrado de 440px
+          // somado por `lighter`, e o corpo com o limbo continua lendo como estrela
+          if (!env.leve) {
+            const halo = Re * 2;
+            ctx.globalAlpha = Math.min(1, 0.28 * estrelaFade * saida * aperto);
+            ctx.drawImage(disco, cx - halo, cy - halo, halo * 2, halo * 2);
+          }
 
           ctx.globalAlpha = Math.min(1, 0.6 * estrelaFade * saida * queima * aperto);
           ctx.drawImage(disco, cx - Re, cy - Re, Re * 2, Re * 2);

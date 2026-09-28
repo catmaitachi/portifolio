@@ -45,10 +45,6 @@ export const CEUS: Partial<Record<SectionKey, Ceu>> = {
    * `pegasus` era a única figura do catálogo sem uso, e o Grande Quadrado é
    * grande o bastante para sustentar uma borda inteira sem canto para se apoiar.
    */
-  formacao: {
-    entrada: 1.3,
-    placements: [{ key: 'pegasus', x: 0.12, y: 0.62, size: 0.22, rotate: -9 }],
-  },
   projetos: {
     entrada: 1.4,
     placements: [{ key: 'crux', x: 0.89, y: 0.21, size: 0.16, rotate: 8 }],

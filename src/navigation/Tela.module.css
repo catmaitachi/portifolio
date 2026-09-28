@@ -1,0 +1,120 @@
+/**
+ * Uma tela: ocupa a janela inteira, rola por dentro, e só a ativa aparece.
+ *
+ * **A troca é um salto** (ver `navegacao.md`): enquanto as estrelas viram riscos
+ * na cena, a tela que sai acelera em direção à câmera (cresce, desfoca e some) e a
+ * que chega vem do fundo, pequena e fora de foco, e pousa. A saída é transição, e
+ * a chegada é animação (`data-veio`), porque as duas partem de estados diferentes:
+ * uma vai para perto, a outra vem de longe.
+ *
+ * A visibilidade sai **depois** da saída (o atraso na transição): some de uma
+ * vez, e a tela desapareceria num quadro em vez de passar pela câmera. O `inert`
+ * do componente é quem a tira do clique e do foco, então aqui não precisa de
+ * `pointer-events`.
+ */
+.tela {
+  position: absolute;
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* a barra existe, e fina: agora rolar é ler, e ela diz quanto falta */
+  scrollbar-color: var(--linha-forte) transparent;
+  scrollbar-width: thin;
+  /* a mesma folga do outro lado: sem ela o conteúdo centra na tela menos a barra,
+     e o nome do Início saía meia barra à esquerda do buraco negro e dos canais,
+     que centram na janela */
+  scrollbar-gutter: stable both-edges;
+  opacity: 0;
+  visibility: hidden;
+  filter: blur(6px);
+  transform: scale(1.35);
+  /**
+   * O conteúdo se apaga ao passar por baixo do HUD, nas duas pontas.
+   *
+   * As telas rolam, e o cabeçalho e o seletor de idioma ficam fixos no topo, a
+   * versão e o medidor da supernova no rodapé: sem isto, uma linha de texto
+   * passaria atrás deles. A máscara apaga as duas faixas em vez de cortá-las, e
+   * só a faixa que o HUD ocupa. O rodapé espelha o topo, porque as peças de
+   * baixo ficam à mesma distância da borda que as de cima.
+   */
+  mask-image: linear-gradient(
+    to bottom,
+    transparent calc(var(--hud-topo-base) + var(--hud-topo-linha) * 0.5),
+    #000 calc(var(--hud-topo) + var(--hud-topo-respiro)),
+    #000 calc(100% - var(--hud-topo) - var(--hud-topo-respiro)),
+    transparent calc(100% - var(--hud-topo-base) - var(--hud-topo-linha) * 0.5)
+  );
+  /* a saída acelera, como quem é deixado para trás por um salto */
+  transition:
+    opacity 0.5s cubic-bezier(0.7, 0, 0.84, 0),
+    transform 0.5s cubic-bezier(0.7, 0, 0.84, 0),
+    filter 0.5s cubic-bezier(0.7, 0, 0.84, 0),
+    visibility 0s linear 0.5s;
+}
+
+.tela[data-ativa] {
+  opacity: 1;
+  visibility: visible;
+  filter: none;
+  transform: none;
+  transition: none;
+}
+
+/* a chegada começa no meio do salto, quando os riscos estão no auge */
+.tela[data-veio] {
+  animation: pousa 0.8s var(--ease-entrada) 0.4s both;
+}
+
+@keyframes pousa {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: scale(0.7);
+  }
+}
+
+/**
+ * As seções se seguem como partes de um documento: cada uma tem a altura do
+ * conteúdo, e não uma tela inteira. A primeira guarda o respiro do topo, que é o
+ * do HUD, e o Início tem a própria regra de altura.
+ *
+ * **Entre uma subseção e a seguinte o respiro é largo**, o que separava o Sobre
+ * do Contato: cada uma é outra conversa, e não a mesma continuando. A última
+ * guarda o respiro do rodapé, que é o do HUD.
+ */
+.tela > * {
+  --secao-min: 0;
+  --secao-pb: clamp(12px, 2vh, 24px);
+}
+
+.tela > * + * {
+  --secao-pt: clamp(140px, 24vh, 280px);
+}
+
+.tela > :last-child {
+  --secao-pb: clamp(84px, 13vh, 120px);
+}
+
+/**
+ * **A última subseção precisa poder chegar ao topo.** Ir a ela leva a tela até o
+ * começo dela (`posicionar`, no `App`), mas uma última seção mais curta que a
+ * tela esgotava a rolagem antes: o Contato ficava encostado embaixo, com o Sobre
+ * ainda à vista. Com a altura da tela e o respiro de baixo igual ao de cima, ela
+ * alcança o topo, e o `.rolavel` põe o conteúdo no meio. Uma última seção mais
+ * alta que a tela (Filmes, Projetos) só ganha o respiro de baixo.
+ */
+.tela > :last-child:not(:first-child) {
+  --secao-min: 100svh;
+  --secao-pb: var(--secao-pt);
+}
+
+/**
+ * O contêiner recebe o foco por programa, quando a tela abre, para o teclado
+ * rolar a tela (ver o componente). Ele não entra na tabulação, e o contorno ali
+ * seria uma moldura em volta da janela inteira a cada troca de tela.
+ */
+.tela:focus {
+  outline: none;
+}
+

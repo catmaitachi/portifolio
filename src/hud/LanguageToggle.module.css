@@ -11,7 +11,7 @@
 }
 
 /**
- * No celular ele continua à direita, como no desktop, e o cabeçalho de modo vai
+ * No celular ele continua à direita, como no desktop, e o cabeçalho vai
  * para a esquerda: os dois dividem a linha do topo em vez de se empilharem no
  * centro. O recuo é o `--hud-borda` de todo o HUD, que já encolhe no mobile, e é
  * isso que faz os dois espelharem um ao outro sem uma faixa aqui.
@@ -29,7 +29,7 @@
   display: flex;
   gap: 10px;
   align-items: center;
-  /* a mesma linha do cabeçalho de modo: no desktop os dois dividem o topo, e
+  /* a mesma linha do cabeçalho: no desktop os dois dividem o topo, e
      centrados na mesma altura ficam na mesma linha de base */
   height: var(--hud-topo-linha);
   margin: 0;

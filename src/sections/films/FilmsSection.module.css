@@ -1,153 +1,146 @@
 /**
- * Entrada: os pôsteres se acendem, um depois do outro.
+ * Entrada: os títulos chegam da profundidade, um depois do outro.
  *
- * Só opacidade e uma escala mínima, sem deslocamento: são duas faixas cheias de
- * pôsteres, e trinta coisas deslizando ao mesmo tempo viram agitação. Elas
- * acendem em cascata dentro de cada faixa, e a segunda faixa começa depois da
- * primeira (`--base`): o olho segue a leitura em vez de escolher por onde
- * começar. `backwards`, nunca `forwards`, pela regra de sempre.
+ * Pequenos, fora de foco e apagados, e assentam: a mesma chegada das letras do
+ * nome, sem deslizar de baixo. A entrada fica **pendurada em `data-ativo`**, não
+ * no mount, como em Música e Jogos; trocar de aba refaz a lista (`key`) e a
+ * cascata corre de novo. A ordem é a posição na lista, com teto em doze: numa
+ * lista de vinte, o último não pode esperar dois segundos para existir.
+ * `backwards`, nunca `forwards`, pela regra de sempre.
  */
-@keyframes posterAcende {
+@keyframes tituloChega {
   from {
     opacity: 0;
+    filter: blur(6px);
     transform: scale(0.94);
   }
 }
 
-/**
- * O pôster tem o mesmo tamanho do cartão de Jogos.
- *
- * Ele já foi menor, e o motivo era altura: esta seção tem **duas** faixas
- * empilhadas numa tela, 2:3 é a proporção mais alta da página, e cada linha
- * custa a largura vezes 1,5 mais o nome e o rodapé. Com 118px as duas passavam
- * do crédito no rodapé.
- *
- * O que mudou foi haver uma seção vizinha com a mesma faixa: duas fileiras de
- * cartões lado a lado no mesmo lado do site, em tamanhos diferentes, leem como
- * dois desenhos e não como um. Quem cobre a diferença de altura é o
- * `useEscalaQueCabe`, que é medida e não estimativa — foi justamente para isso
- * que ele existe, e um número escolhido a dedo aqui erra na primeira tradução
- * mais longa.
- */
 .secao {
-  /* a largura do item da faixa comum (ver `sections/Faixa.module.css`) */
-  --faixa-item: clamp(88px, 11.5vmin, 124px);
+  /* a coluna do marcador (posição ou dia) e o tamanho do título */
+  --marcador-col: clamp(40px, 6vmin, 64px);
+  --credito-fs: clamp(22px, 4.6vmin, 50px);
 }
 
 .bloco {
   max-width: 1000px;
 }
 
-.cartao {
+.creditos {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 14px;
+}
+
+/* ---------- as abas ---------- */
+
+.abas {
+  display: flex;
+  gap: 22px;
+}
+
+.aba {
+  margin: 0;
+  padding: 0 0 6px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-controle);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+  appearance: none;
+  transition:
+    color var(--dur-hover),
+    border-color var(--dur-hover);
+}
+
+button.aba {
+  cursor: pointer;
+}
+
+button.aba:hover {
+  color: var(--tx-hover);
+}
+
+.aba[aria-pressed='true'],
+.aba[aria-current] {
+  border-color: var(--tx-titulo);
+  color: var(--tx-titulo);
+}
+
+/* ---------- a lista ---------- */
+
+.lista {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--linha);
+  list-style: none;
+}
+
+.bloco[data-ativo] .lista li {
+  animation: tituloChega 0.7s var(--ease-entrada) backwards;
+  animation-delay: calc(300ms + var(--ordem, 0) * 55ms);
+}
+
+.linha {
+  display: grid;
+  grid-template-columns: var(--marcador-col) minmax(0, 1fr) auto;
+  gap: clamp(12px, 2vw, 22px);
+  align-items: baseline;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--linha-sutil);
   color: inherit;
   text-decoration: none;
 }
 
-/**
- * A entrada fica **pendurada em `data-ativo`**, não no mount.
- *
- * O atributo aparece quando a seção vira a ativa e some quando ela sai, e é isso
- * que tira o `animation-name` de `none` e recomeça a cascata — o mesmo mecanismo
- * dos nós da Trajetória. Presa ao mount, ela rodava uma vez só, no instante em
- * que o feed chegava.
- */
-.bloco[data-ativo] .cartao {
-  animation: posterAcende 0.5s var(--ease-entrada) backwards;
-  animation-delay: calc(var(--base, 0ms) + var(--ordem, 0) * 45ms);
+.marcador {
+  color: var(--tx-rotulo);
+  font-size: var(--fs-lista);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
 }
 
 /**
- * A moldura reserva o lugar do pôster, e o pôster fica colorido.
+ * O título em contorno, que se enche da esquerda ao ser apontado.
  *
- * Arte de filme é identidade de terceiro, como as artes de Jogos: não se
- * repinta. Quando o feed não trouxe imagem, o que sobra é um retângulo de 1px na
- * proporção certa, que é o espaço reservado de sempre.
+ * É o mesmo corte seco do Contato (branco ou transparente, sem degradê de cor),
+ * num texto só: `background-clip: text`, e não uma cópia por cima.
  */
-.poster {
-  position: relative;
-  display: block;
-  aspect-ratio: 2 / 3;
-  overflow: hidden;
-  border: 1px solid var(--linha);
-  border-radius: 2px;
-  background: var(--fundo-sutil);
-  opacity: 0.84;
-
-  /* o clarão acompanha a largura do pôster, não os 240px do retrato */
-  --brilho-r: 120px;
-
-  /* a inclinação é escrita pelo JS (ver `useInclinacao`); daqui sai o retorno */
-  transition:
-    opacity var(--dur-hover),
-    border-color var(--dur-hover),
-    transform var(--inclina-t, var(--dur-retorno)) var(--ease-saida);
+.titulo {
+  background: linear-gradient(90deg, var(--tx-titulo) 50%, transparent 50%) 100% 0 / 200% 100%
+    no-repeat;
+  background-clip: text;
+  color: transparent;
+  font-size: var(--credito-fs);
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  -webkit-text-stroke: 1px var(--linha-acesa);
+  transition: background-position var(--dur-retorno) var(--ease-saida);
 }
 
-@supports (corner-shape: bevel) {
-  .poster {
-    border-radius: 12px 2px;
-    corner-shape: bevel;
-  }
+.linha:hover .titulo,
+.linha:focus-visible .titulo {
+  background-position: 0 0;
 }
 
-.cartao:hover .poster {
-  opacity: 1;
+.lado {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+  color: var(--tx-apoio);
+  font-size: var(--fs-lista);
+  font-variant-numeric: tabular-nums;
 }
 
-.poster img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* revisita é fato sobre a sessão, não sobre o filme: fica no canto, discreto */
 .revisita {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  padding: 2px 5px;
-  border: 1px solid var(--linha-forte);
-  border-radius: 2px;
-  background: rgb(0 0 0 / 62%);
-  color: var(--tx-corpo);
+  color: var(--tx-rotulo);
   font-size: var(--fs-micro);
   letter-spacing: 0.18em;
   text-transform: uppercase;
-}
-
-/* é uma etiqueta com borda como o selo de posto: chanfro na escala de 13px de altura */
-@supports (corner-shape: bevel) {
-  .revisita {
-    corner-shape: bevel;
-    border-radius: 4px 2px;
-  }
-}
-
-.nome {
-  overflow: hidden;
-  color: var(--tx-forte);
-  font-size: var(--fs-lista);
-  line-height: 1.35;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.rodape {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.ano {
-  color: var(--tx-apagado);
-  font-size: var(--fs-meta);
-  letter-spacing: 0.1em;
-  font-variant-numeric: tabular-nums;
 }
 
 .semNota {
@@ -158,41 +151,11 @@
 }
 
 /**
- * O lugar na lista de favoritos, no lugar onde os recentes mostram a nota.
- *
- * Numa lista de favoritos a nota é sempre cinco, e cinco marcas cheias em doze
- * cartões seriam a mesma informação repetida doze vezes. O que a lista afirma é
- * a **ordem**, e é ela que aparece aqui.
- *
- * É um selo, e não um número solto: dois algarismos ao lado do ano, na mesma
- * linha, leriam como parte da data. A moldura é o que separa um do outro, e o
- * chanfro é o de sempre, num raio proporcional a uma caixa deste tamanho.
- */
-.posto {
-  flex: none;
-  padding: 3px 6px;
-  border: 1px solid var(--linha-forte);
-  border-radius: 2px;
-  color: var(--tx-forte);
-  font-size: var(--fs-rotulo);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.12em;
-}
-
-@supports (corner-shape: bevel) {
-  .posto {
-    corner-shape: bevel;
-    border-radius: 6px 2px;
-  }
-}
-
-/**
  * A nota: cinco marcas de 1px, preenchidas pela fração.
  *
  * Cada marca é uma trilha vazia com um preenchimento de largura `--cheio`, então
  * a meia estrela do Letterboxd sai exata em vez de arredondada. É a mesma
- * gramática do medidor das formações e do estado dos projetos, que já é uma
- * barra de 1px com preenchimento.
+ * gramática do medidor das formações e do estado dos projetos.
  */
 .nota {
   display: flex;
@@ -203,7 +166,7 @@
 .marca {
   position: relative;
   display: block;
-  width: 7px;
+  width: 9px;
   height: 3px;
   overflow: hidden;
   background: var(--linha);
@@ -217,25 +180,77 @@
   content: '';
 }
 
+/* ---------- o pôster ---------- */
+
 /**
- * **A moldura só existe quando não há imagem.**
- *
- * Ela nasceu como espaço reservado: sem arte, o que sobra é um retângulo de 1px
- * na proporção certa, e sem ele sobraria o ícone de imagem quebrada do
- * navegador, a única coisa fora da paleta na página inteira. Sobre a arte, ela
- * não estava reservando nada — era um fio branco em volta de toda imagem da
- * página, e num conjunto de artes coloridas isso lê como recorte mal feito.
- *
- * A borda continua declarada e só perde a cor, então a caixa não muda de tamanho
- * e nada em volta se mexe. O fundo sai junto: com `background-clip: border-box`,
- * que é o padrão, ele pintaria a faixa de 1px que a borda transparente deixou
- * ver, e o fio voltaria mais fraco.
- *
- * `:has` é o que permite perguntar isso ao próprio elemento. O estado que
- * interessa é "a imagem chegou", e ele não existe no React: quem o produz é o
- * `onError` da `<img>`, escrevendo `hidden` no nó.
+ * Com hover, o pôster segue o ponteiro (`.flutuante`); a miniatura na linha é
+ * só para quem não tem hover. Pôster é identidade de terceiro e fica colorido.
  */
-.poster:has(img:not([hidden])) {
-  border-color: transparent;
-  background: none;
+.miniatura {
+  display: none;
+}
+
+.flutuante {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  /* fora da seção (é um portal no `body`), então o tamanho mora aqui, e não num token dela */
+  width: clamp(130px, 16vmin, 170px);
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: 2px;
+  opacity: 0;
+  pointer-events: none;
+  scale: 0.85;
+  transition:
+    opacity 0.25s var(--ease-saida),
+    scale 0.25s var(--ease-saida);
+  will-change: transform;
+}
+
+@supports (corner-shape: bevel) {
+  .flutuante {
+    border-radius: 12px 2px;
+    corner-shape: bevel;
+  }
+}
+
+.flutuante[data-visivel] {
+  opacity: 1;
+  scale: 1;
+}
+
+.flutuante img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* sem hover (toque), o pôster mora na linha, pequeno, ao lado do título */
+@media (hover: none) {
+  .flutuante {
+    display: none;
+  }
+
+  .linha {
+    grid-template-columns: var(--marcador-col) 34px minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .miniatura {
+    display: block;
+    width: 34px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 2px;
+  }
+}
+
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
+  .secao {
+    --marcador-col: 30px;
+    --credito-fs: clamp(18px, 6vw, 28px);
+  }
 }

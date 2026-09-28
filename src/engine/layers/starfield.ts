@@ -50,7 +50,7 @@ export function Starfield({
   name = 'stars',
   z = 10,
   density = 2600,
-  max = 900,
+  max = 2600,
   buckets = 8,
   repel = 110,
   twinkleAmount = 0.22,
@@ -65,6 +65,15 @@ export function Starfield({
   let sspd!: Float32Array;
   let sdx!: Float32Array;
   let sdy!: Float32Array;
+  /** profundidade, entre `Z_PERTO` e `Z_LONGE` */
+  let szz!: Float32Array;
+  /** onde a projeção põe a estrela neste quadro, antes de mola, gravidade e onda */
+  let bx!: Float32Array;
+  let by!: Float32Array;
+  /** quanto a estrela está maior que em repouso (1 = repouso) */
+  let sesc!: Float32Array;
+  /** 0..1: apaga nas duas pontas da profundidade, onde a estrela dá a volta */
+  let sfad!: Float32Array;
   let bucket!: Int32Array;
   const count = new Int32Array(buckets);
 
@@ -94,12 +103,61 @@ export function Starfield({
    */
   let temGrav = false;
   let temPoco = false;
+  /**
+   * Quanto da metade ímpar do céu está acesa, de 0 a 1, seguindo `env.densidade`.
+   *
+   * Ela anda devagar (`SOBE_DENS` por segundo), e as estrelas ímpares acendem
+   * **uma a uma**, na ordem do índice, cada uma com o próprio fade (`FADE_DENS`
+   * da fração): o céu vai ficando mais fundo sem que se veja um conjunto chegar.
+   * As posições são sorteadas, então a ordem do índice é espalhada pela tela.
+   */
+  let dens = 0;
+  const SOBE_DENS = 0.06;
+  const DESCE_DENS = 0.4;
+  const FADE_DENS = 0.12;
+
+  /**
+   * A profundidade, e a câmera que anda nela.
+   *
+   * As estrelas moram num **volume**, e não na tela: cada uma tem `x`, `y` em
+   * px de mundo (`sx`, `sy`, contados a partir do centro) e um `z`, e a posição do
+   * quadro é a projeção em perspectiva, `centro + mundo / zAtual`, com
+   * `zAtual = z − env.camera.avanco`.
+   *
+   * **O volume é mais largo que a tela na mesma proporção do fundo** (`Z_LONGE`),
+   * e é isso que mantém o céu uniforme durante a viagem. Cada fatia de
+   * profundidade, projetada, cobre a tela inteira de ponta a ponta, então a soma
+   * das fatias também cobre, com a mesma densidade em todo lugar. A primeira
+   * versão sorteava a posição na tela e derivava o mundo dela: em repouso o céu
+   * era o de antes, mas quem renascia no fundo caía perto do centro e as bordas
+   * esvaziavam conforme a câmera andava.
+   *
+   * O preço é que só uma parte do volume está na tela a cada momento (`VISIVEL`,
+   * a média de `(z / Z_LONGE)²` na faixa), então há mais estrelas no total para
+   * a mesma densidade de antes na tela, e a que está fora pula a física e o
+   * desenho, que é o que custa.
+   *
+   * Quem passa da câmera dá a volta e renasce no fundo. A volta é um `mod`, e não
+   * um contador, para a conta ser **reversível**: rolar de volta ao topo devolve
+   * cada estrela ao lugar exato de onde saiu. As duas pontas da faixa apagam a
+   * estrela, senão a volta seria um pulo visível.
+   */
+  const Z_PERTO = 0.1;
+  const Z_LONGE = Z_PERTO + 1;
+  const VISIVEL = 0.37;
+  /** a profundidade em que o brilho tem o tamanho de sempre; mais perto é maior */
+  const Z_REF = 0.55;
+  /** teto e piso do tamanho relativo de quem passa perto ou está no fundo */
+  const ESC_MAX = 2.4;
+  const ESC_MIN = 0.45;
+  /** folga fora da tela antes de uma estrela deixar de contar: o halo entra antes do centro */
+  const FORA = 70;
 
   return {
     name,
     z,
     resize(env: StageEnv) {
-      N = Math.min(max, Math.round((env.W * env.H) / density));
+      N = Math.min(max, Math.round((env.W * env.H) / density / VISIVEL));
       bucket = new Int32Array(N * buckets);
       sx = new Float32Array(N);
       sy = new Float32Array(N);
@@ -109,9 +167,18 @@ export function Starfield({
       sspd = new Float32Array(N);
       sdx = new Float32Array(N);
       sdy = new Float32Array(N);
+      szz = new Float32Array(N);
+      bx = new Float32Array(N);
+      by = new Float32Array(N);
+      sesc = new Float32Array(N);
+      sfad = new Float32Array(N);
+      // o volume: cada fatia de profundidade cobre a tela inteira quando projetada
+      const meiaL = (env.W / 2) * Z_LONGE * 1.04;
+      const meiaA = (env.H / 2) * Z_LONGE * 1.04;
       for (let i = 0; i < N; i++) {
-        sx[i] = Math.random() * env.W;
-        sy[i] = Math.random() * env.H;
+        szz[i] = Z_PERTO + Math.random();
+        sx[i] = (Math.random() * 2 - 1) * meiaL;
+        sy[i] = (Math.random() * 2 - 1) * meiaA;
         // 82% pequenas: um céu de pontos uniformes não lê como céu
         ssz[i] = Math.random() < 0.82 ? 0.55 + Math.random() * 0.5 : 1.1 + Math.random() * 0.9;
         sbase[i] = 0.3 + Math.random() * 0.7;
@@ -121,6 +188,10 @@ export function Starfield({
     },
     update(env) {
       const { dt, t, mouse } = env;
+      dens =
+        env.densidade > dens
+          ? Math.min(env.densidade, dens + dt * SOBE_DENS)
+          : Math.max(env.densidade, dens - dt * DESCE_DENS);
       const moving = env.camera.moving;
       // durante o zoom da intro, repulsão e gravidade ficam desligadas
       const useMouse = mouse.active && !moving;
@@ -132,13 +203,42 @@ export function Starfield({
 
       for (let b = 0; b < buckets; b++) count[b] = 0;
 
+      const { cx, cy } = env;
+      const avanco = env.camera.avanco;
+      // no salto o campo de visão abre, e as estrelas fogem do centro
+      const fov = 1 + env.camera.salto * 0.6;
+      const { W, H } = env;
+
       for (let i = 0; i < N; i++) {
+        /* a projeção (ver `Z_PERTO`) */
+        let ze = (szz[i] - avanco - Z_PERTO) % 1;
+        if (ze < 0) ze += 1;
+        ze += Z_PERTO;
+        const px0 = cx + (sx[i] / ze) * fov;
+        const py0 = cy + (sy[i] / ze) * fov;
+        bx[i] = px0;
+        by[i] = py0;
+        // fora da tela não há física para ver nem brilho para desenhar: só a mola
+        // devolve o deslocamento que sobrou, e a estrela fica fora dos baldes
+        if (px0 < -FORA || px0 > W + FORA || py0 < -FORA || py0 > H + FORA) {
+          sdx[i] -= sdx[i] * dt * 2.6;
+          sdy[i] -= sdy[i] * dt * 2.6;
+          continue;
+        }
+        let e = Z_REF / ze;
+        if (e > ESC_MAX) e = ESC_MAX;
+        else if (e < ESC_MIN) e = ESC_MIN;
+        sesc[i] = e;
+        const entra = (ze - Z_PERTO) / 0.08;
+        const sai = (Z_LONGE - ze) / 0.14;
+        sfad[i] = entra < 1 ? (entra > 0 ? entra : 0) : sai < 1 ? (sai > 0 ? sai : 0) : 1;
+
         let ox = sdx[i];
         let oy = sdy[i];
 
         if (useMouse) {
-          const dx = sx[i] + ox - mouse.x;
-          const dy = sy[i] + oy - mouse.y;
+          const dx = px0 + ox - mouse.x;
+          const dy = py0 + oy - mouse.y;
           const d2 = dx * dx + dy * dy;
           if (d2 < R2 && d2 > 0.01) {
             const d = Math.sqrt(d2);
@@ -154,14 +254,14 @@ export function Starfield({
         if (temGrav) {
           puxao.x = 0;
           puxao.y = 0;
-          puxar(campo, sx[i] + ox, sy[i] + oy, dt, puxao);
+          puxar(campo, px0 + ox, py0 + oy, dt, puxao);
           ox += puxao.x;
           oy += puxao.y;
         }
         if (temPoco) {
           puxao.x = 0;
           puxao.y = 0;
-          puxar(poco, sx[i] + ox, sy[i] + oy, dt, puxao);
+          puxar(poco, px0 + ox, py0 + oy, dt, puxao);
           ox += puxao.x;
           oy += puxao.y;
           /**
@@ -174,13 +274,13 @@ export function Starfield({
            */
           puxao.x = 0;
           puxao.y = 0;
-          capturar(poco, sx[i] + ox, sy[i] + oy, dt, puxao);
+          capturar(poco, px0 + ox, py0 + oy, dt, puxao);
           ox += puxao.x;
           oy += puxao.y;
         }
         if (onda) {
-          const wx = sx[i] + ox - onda.x;
-          const wy = sy[i] + oy - onda.y;
+          const wx = px0 + ox - onda.x;
+          const wy = py0 + oy - onda.y;
           const w2 = wx * wx + wy * wy;
           // só o anel da frente de onda empurra; o miolo já foi varrido
           if (w2 < onda.outer2 && w2 > onda.inner2) {
@@ -220,15 +320,18 @@ export function Starfield({
        */
       const derivaK = zooming ? env.camera.fade : 1;
       const temLente = temGrav || temPoco;
+      const salto = env.camera.salto;
       /**
-       * Modo leve: metade do céu (ver o corte de qualidade em `stage.ts`).
+       * A metade ímpar do céu acende pela densidade (ver `dens`).
        *
        * A metade é pela paridade do índice, e não da posição no balde: o balde de
        * uma estrela muda a cada quadro com o cintilar, e cortar por ele faria as
-       * estrelas piscarem entre desenhadas e não. O índice é fixo, e as posições
-       * são sorteadas, então a metade que fica continua espalhada pela tela.
+       * estrelas piscarem entre desenhadas e não. Uma estrela ímpar de ordem `r`
+       * (0 a 1) está acesa em `(frente - r) / FADE_DENS`, e as que ainda não
+       * chegaram nem são visitadas, que é o que a densidade baixa economiza.
        */
-      const leve = env.leve;
+      const frente = dens * (1 + FADE_DENS);
+      const ordemPor = 2 / Math.max(1, N);
 
       for (let b = 0; b < buckets; b++) {
         const n = count[b];
@@ -238,9 +341,16 @@ export function Starfield({
 
         for (let k = 0; k < n; k++) {
           const i = bucket[off + k];
-          if (leve && (i & 1) === 1) continue;
-          let px = sx[i] + sdx[i];
-          let py = sy[i] + sdy[i];
+          const impar = (i & 1) === 1;
+          let acesa = 1;
+          if (impar) {
+            acesa = (frente - (i >> 1) * ordemPor) / FADE_DENS;
+            if (acesa <= 0) continue;
+            if (acesa > 1) acesa = 1;
+          }
+          if (sfad[i] === 0) continue;
+          let px = bx[i] + sdx[i];
+          let py = by[i] + sdy[i];
           if (zooming) {
             px = cx + (px - cx) * zk;
             py = cy + (py - cy) * zk;
@@ -260,7 +370,9 @@ export function Starfield({
           px += derivaEmX(t, sph[i]) * dk;
           py += derivaEmY(t, sph[i]) * dk;
 
-          const ext = extensaoDe(ssz[i]);
+          // quem está mais perto da câmera é maior, mas não na mesma proporção do
+          // avanço: o brilho é um halo, e crescer inteiro viraria uma mancha
+          const ext = extensaoDe(ssz[i]) * Math.sqrt(sesc[i]);
           // a margem é a extensão do brilho: um halo de 54px entra em cena bem
           // antes do seu centro, e cortar pelo centro faria a estrela piscar
           const margem = ext;
@@ -282,7 +394,7 @@ export function Starfield({
             const mag2 = dxi * dxi + dyi * dyi;
             if (
               temAlongamento(mag2) &&
-              dentroDoAlcance(sx[i], sy[i], campo, poco, temGrav, temPoco)
+              dentroDoAlcance(bx[i], by[i], campo, poco, temGrav, temPoco)
             ) {
               const mag = Math.sqrt(mag2);
               s = 1 + (alongamentoDe(mag) - 1) * (1 - preso);
@@ -291,7 +403,25 @@ export function Starfield({
             }
           }
 
-          desenharEstrela(ctx, dpr, px, py, ext, alfa, flareDe(ssz[i], t, sph[i]), s, ux, uy);
+          /**
+           * O salto: a estrela vira um risco radial, apontando para longe do centro.
+           *
+           * É o mesmo esticamento da lente, com outra direção e outro tamanho, e
+           * não um desenho novo: o risco continua sendo o brilho da estrela,
+           * esticado, e herda dele a queda de alfa que impede o risco de acender.
+           * Quem está mais perto estica mais, que é o que dá a velocidade.
+           */
+          if (salto > 0.02) {
+            const rx = px - cx;
+            const ry = py - cy;
+            const r = Math.sqrt(rx * rx + ry * ry) || 1;
+            s = 1 + salto * 16 * sesc[i];
+            ux = rx / r;
+            uy = ry / r;
+          }
+
+          const a = alfa * acesa * sfad[i];
+          desenharEstrela(ctx, dpr, px, py, ext, a, flareDe(ssz[i], t, sph[i]), s, ux, uy);
         }
       }
 

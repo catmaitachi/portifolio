@@ -172,6 +172,14 @@ export function Constellations({
   let N = 0;
   let px_!: Float32Array;
   let py_!: Float32Array;
+  /**
+   * A profundidade da figura: um pouco mais perto que o fundo do campo, para ela
+   * andar como as estrelas de trás e não como as que passam rente à câmera.
+   */
+  const Z_FIGURA = 0.85;
+  /** a rolagem no instante em que a figura apareceu, e a escala do quadro */
+  let ancora = 0;
+  let escala = 1;
   let vx_!: Float32Array; // posições do quadro, reaproveitadas
   let vy_!: Float32Array;
   let sz!: Float32Array;
@@ -306,20 +314,36 @@ export function Constellations({
        * e não precisa saber que existe uma animação de traçado aqui dentro.
        */
       const aparecendo = this.opacity > 0.002;
-      if (aparecendo && !visivel) formT0 = env.t;
+      if (aparecendo && !visivel) {
+        formT0 = env.t;
+        ancora = env.camera.rolagem;
+      }
       visivel = aparecendo;
+      /**
+       * A figura está no céu, e a câmera anda nele: ela cresce e se abre a partir
+       * do centro conforme a rolagem avança, como as estrelas em volta, e encolhe
+       * de volta quando a rolagem recua. A âncora é o ponto da rolagem em que ela
+       * apareceu, então ela sempre surge no lugar e no tamanho do `placement`.
+       * O teto impede a divisão de explodir perto da câmera: a figura sai da tela
+       * antes de chegar lá.
+       */
+      let delta = env.camera.rolagem - ancora;
+      if (delta > Z_FIGURA - 0.12) delta = Z_FIGURA - 0.12;
+      escala = Z_FIGURA / (Z_FIGURA - delta);
 
       if (!N || !aparecendo) return; // camada invisível custa zero
       const { dt, t, mouse } = env;
       const useMouse = mouse.active && !env.camera.moving;
       for (let b = 0; b < buckets; b++) count[b] = 0;
+      const { cx, cy } = env;
 
       for (let i = 0; i < N; i++) {
         let ox = dx_[i];
         let oy = dy_[i];
         if (useMouse) {
-          const ddx = px_[i] + ox - mouse.x;
-          const ddy = py_[i] + oy - mouse.y;
+          // o ponteiro empurra a estrela onde ela está desenhada, já projetada
+          const ddx = cx + (px_[i] - cx) * escala + ox - mouse.x;
+          const ddy = cy + (py_[i] - cy) * escala + oy - mouse.y;
           const d2 = ddx * ddx + ddy * ddy;
           if (d2 < R2 && d2 > 0.01) {
             const d = Math.sqrt(d2);
@@ -360,9 +384,10 @@ export function Constellations({
           vy_[i] = cy + (py_[i] + dy_[i] - cy) * zk;
         }
       } else {
+        // a profundidade (ver `Z_FIGURA`): em repouso `escala` é 1 e isto é o de antes
         for (let i = 0; i < N; i++) {
-          vx_[i] = px_[i] + dx_[i];
-          vy_[i] = py_[i] + dy_[i];
+          vx_[i] = cx + (px_[i] - cx) * escala + dx_[i];
+          vy_[i] = cy + (py_[i] - cy) * escala + dy_[i];
         }
       }
 
@@ -416,7 +441,7 @@ export function Constellations({
         for (let k = 0; k < n; k++) {
           const i = bucket[off + k];
           const flare = flareDe(sz[i], env.t, ph[i]);
-          desenharEstrela(ctx, dpr, vx_[i], vy_[i], extensaoDe(sz[i]), alfa, flare, 1, 1, 0);
+          desenharEstrela(ctx, dpr, vx_[i], vy_[i], extensaoDe(sz[i]) * Math.sqrt(escala), alfa, flare, 1, 1, 0);
         }
       }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);

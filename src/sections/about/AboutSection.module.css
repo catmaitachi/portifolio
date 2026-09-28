@@ -1,290 +1,450 @@
 /**
- * Tokens da seção Sobre. Cada faixa responsiva só os redefine — os valores base
- * ficam todos aqui.
+ * O dossiê, em duas colunas (ver o componente). Tokens na própria regra, e as
+ * faixas responsivas só os redefinem.
  */
 .secao {
-  /* largura da coluna do retrato, em % do corpo — `--coluna-max` reusa o número */
-  --retrato-col: 28;
-  /* altura ÷ largura do retrato; o `PortraitCard` monta o `aspect-ratio` com ele */
+  /* largura da coluna da ficha, e a proporção que o `PortraitCard` usa no `aspect-ratio` */
+  --lado: 250px;
+  --retrato: 100%;
   --retrato-ar: 1.25;
+  --colunas-gap: clamp(32px, 5vw, 64px);
+  /* entre uma seção do relatório e a seguinte */
+  --parte-gap: clamp(30px, 4.4vmin, 44px);
+  --texto-fs: clamp(12px, 1.5vmin, 14px);
+  /* a caixa do logo na lista: o logo cabe nela pela escala óptica de cada um */
+  --logo-caixa: 56px;
+  /* a coluna do trilho em onda, e o respiro entre ela e a lista */
+  --onda-w: 40px;
+  --onda-folga: 28px;
 
-  --cols: minmax(180px, calc(var(--retrato-col) * 1%)) 1fr;
-  --corpo-gap: clamp(24px, 3.4vmin, 44px);
   /**
-   * Largura do retrato em `cqw`, e não nos 100% de antes: assim ela é um
-   * comprimento, e `--coluna-max` sai dela por multiplicação. Onde as faixas
-   * responsivas trocam `--retrato` por um valor fixo, o teto da coluna
-   * acompanha sozinho — não há um segundo número para manter em dia.
+   * Nada é cortado aqui: a ficha fica presa por `position: sticky`, que só prende
+   * em relação ao contêiner que rola, e o `overflow-x: hidden` comum às seções
+   * faria desta seção um contêiner de rolagem, e a ficha deixaria de prender.
    */
-  --retrato: calc(var(--retrato-col) * 1cqw);
-  --coluna-max: calc(var(--retrato) * var(--retrato-ar));
-  --txt: min(34vh, 320px);
-  --pfs: clamp(12px, 1.6vmin, 16px);
-  --plh: 1.95;
-  --fatos-gap: clamp(28px, 5vmin, 64px);
-  --fatos-pt: clamp(16px, 2.4vmin, 26px);
-  --fatos-fs: clamp(11px, 1.4vmin, 13px);
+  overflow: visible;
 }
 
 .bloco {
-  max-width: 960px;
-}
-
-/**
- * `container-type: inline-size` existe para o `--coluna-max`: `cqw` mede a
- * largura deste grid, e é dela que sai a altura do retrato — 28% da largura,
- * vezes a proporção 4/5. Sem o contêiner não há como chegar a esse número, já
- * que o bloco tem `max-width` e a coluna não é fração da viewport.
- */
-.corpo {
-  container-type: inline-size;
   display: grid;
-  grid-template-columns: var(--cols);
-  gap: var(--corpo-gap);
+  grid-template-columns: var(--lado) 1fr;
+  gap: var(--colunas-gap);
   align-items: start;
+  max-width: 1000px;
 }
 
-/**
- * A coluna não passa da base do retrato: o texto rola dentro do que sobra
- * depois do título, em vez de descer sozinho ao lado de uma imagem que já
- * acabou. Quem cede altura é `.texto` (`flex: 1` com `min-height: 0`), então o
- * título continua inteiro qualquer que seja o corpo do texto.
- */
-.coluna {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(14px, 2.2vmin, 22px);
-  min-width: 0;
-  max-height: var(--coluna-max, none);
+/* ---------- a ficha, presa à esquerda ---------- */
+
+.lado {
+  position: sticky;
+  top: calc(var(--hud-topo) + var(--hud-topo-respiro) + 12px);
+  display: grid;
+  gap: 22px;
 }
 
-/**
- * Biografia com rolagem própria. `overscroll-behavior: contain` impede que o fim
- * do texto encadeie a rolagem para a seção — sem isso, ler a bio até o fim
- * empurraria o visitante para a próxima seção.
- */
-.texto {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 0;
-  /**
-   * `min-height: 0` é o que deixa o texto encolher abaixo do próprio conteúdo
-   * quando a coluna bate no teto do retrato — sem ele, o `flex-shrink` padrão
-   * para no tamanho mínimo do conteúdo e a base transborda de novo. Não precisa
-   * de `flex-grow`: o texto cede altura, nunca reivindica.
-   */
-  min-height: 0;
-  max-height: var(--txt);
-  padding-right: 14px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: var(--linha-forte) transparent;
+.retrato {
+  width: 100%;
 }
 
-.texto::-webkit-scrollbar {
-  width: 3px;
-}
-
-.texto::-webkit-scrollbar-track {
-  background: var(--linha-sutil);
-}
-
-.texto::-webkit-scrollbar-thumb {
-  background: var(--linha-forte);
-}
-
-/**
- * Os dois fatos sob a bio, no lugar onde ficava o carrossel de formação.
- *
- * É uma linha de rótulo em cima e valor embaixo, com a mesma régua dos rótulos
- * de lista das seções de dado remoto: 8,5px em versalete espaçado para o rótulo,
- * e o valor no corpo do texto. Eles ficam separados do corpo por um risco de
- * 1px, que é a única moldura da seção.
- *
- * **Eles se alinham nos extremos do bloco**, o primeiro à esquerda e o último à
- * direita, com o risco de 1px ligando os dois. Encostados um no outro eles leem
- * como uma legenda só; nas pontas, cada um é um dado.
- *
- * `wrap` porque o rótulo em inglês é mais curto e o valor mais longo, e numa
- * tela estreita os dois pares descem um sobre o outro em vez de espremerem. É
- * ele que faz o alinhamento à direita ser do **último** filho e não do segundo:
- * quebrado em duas linhas, quem fecha a linha de baixo é que precisa fechar a
- * borda.
- */
-.fatos {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 10px var(--fatos-gap);
+.campos {
+  display: grid;
+  gap: 13px;
   margin: 0;
-  padding: var(--fatos-pt) 0 0;
-  border-top: 1px solid var(--linha-sutil);
-  list-style: none;
 }
 
-.fato {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 0;
+/* rótulo em versalete sobre o valor, como a legenda de uma ficha de registro */
+.campo {
+  display: grid;
+  gap: 3px;
 }
 
-.fato:last-child {
-  align-items: flex-end;
-  text-align: right;
-}
-
-/**
- * A entrada acompanha a decifragem da bio em vez de chegar junto com ela.
- *
- * O bloco inteiro já entra por opacidade e 26px (`comum.bloco`); o que estes
- * atrasos fazem é deixar os fatos chegarem **depois** do texto começar a se
- * resolver, que é a ordem em que a seção se lê. `backwards`, nunca `forwards`,
- * pela regra de sempre.
- */
-@keyframes fatoEntra {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-}
-
-.bloco[data-ativo] .fato {
-  animation: fatoEntra 0.5s var(--ease-entrada) backwards;
-  animation-delay: calc(360ms + var(--ordem, 0) * 110ms);
-}
-
-.fatoRotulo {
+.campo dt {
   color: var(--tx-rotulo);
   font-size: var(--fs-rotulo);
   letter-spacing: var(--ls-rotulo);
   text-transform: uppercase;
 }
 
-.fatoValor {
-  overflow: hidden;
+.campo dd {
+  margin: 0;
   color: var(--tx-forte);
-  font-size: var(--fatos-fs);
-  font-weight: 300;
+  font-size: var(--fs-pequeno);
   letter-spacing: 0.06em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
+  user-select: text;
 }
 
-.paragrafo {
+/* o que ainda não foi preenchido: apagado, e sem pedir desculpa por isso */
+.campo[data-reservado] dd,
+.reservado {
+  color: var(--tx-marcador);
+  letter-spacing: var(--ls-etiqueta);
+}
+
+/* ---------- o relatório, à direita ---------- */
+
+.relatorio {
+  display: grid;
+  gap: var(--parte-gap);
+  min-width: 0;
+}
+
+.cabecalho {
+  display: grid;
+  gap: 8px;
+}
+
+.arquivo {
   margin: 0;
-  color: var(--tx-corpo);
-  font-size: var(--pfs);
-  font-weight: 300;
-  line-height: var(--plh);
-  letter-spacing: 0.05em;
-  text-wrap: pretty;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-rotulo);
+  text-align: left;
+  text-transform: uppercase;
+  hyphens: manual;
+}
+
+.nome {
+  margin: 0;
+  color: var(--tx-titulo);
+  font-size: var(--titulo-fs);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.parte {
+  display: grid;
+  gap: 16px;
 }
 
 /**
- * Mobile: diagramado como jornal.
+ * O título de uma seção: o número grande e apagado, e o nome em versalete ao
+ * lado dele, centrado na altura do número (na linha de base, o nome pequeno
+ * ficava rente ao pé do número e lia desalinhado). O número é o que dá ritmo ao relatório: ele se lê
+ * de relance descendo a página, antes do nome.
+ */
+.parteTitulo {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin: 0;
+  color: var(--tx-apoio);
+  font-size: var(--fs-controle);
+  font-weight: 400;
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+
+.parteTitulo span {
+  color: var(--tx-marcador);
+  font-size: clamp(22px, 3vmin, 28px);
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.texto {
+  display: grid;
+  gap: 12px;
+}
+
+.texto p {
+  margin: 0;
+  color: var(--tx-corpo);
+  font-size: var(--texto-fs);
+  font-weight: 300;
+  line-height: 1.9;
+  letter-spacing: 0.04em;
+}
+
+.reservado {
+  margin: 0;
+  font-size: var(--fs-pequeno);
+}
+
+/* ---------- a formação: a lista e o trilho em onda ---------- */
+
+/**
+ * O trilho é a curva da Trajetória em pé (ver `Onda` no componente): a coluna
+ * da esquerda leva a onda, e cada formação é uma linha da lista, com o nó no
+ * eixo da onda. As linhas têm a mesma altura (`1fr`) e nenhum `gap`, porque a
+ * onda cruza o eixo a intervalos iguais e o nó precisa cair nesse cruzamento.
+ */
+.formacao {
+  position: relative;
+  padding-left: calc(var(--onda-w) + var(--onda-folga));
+}
+
+.onda {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--onda-w);
+  height: 100%;
+  overflow: visible;
+  /* as pontas da onda somem em vez de acabar num corte */
+  mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent);
+}
+
+/** a onda inversa: a mesma curva espelhada no eixo, sem caminho novo */
+.inversa {
+  transform-box: view-box;
+  transform-origin: 20px 0;
+  transform: scaleX(-1);
+}
+
+/**
+ * A entrada da Trajetória, em pé: lá as duas ondas correm em sentidos opostos e
+ * param; aqui elas se desenham em sentidos opostos, a principal de cima para
+ * baixo e a inversa de baixo para cima. Deslizar a onda no próprio eixo
+ * descobriria as pontas, que aqui são curtas; a revelação por `clip-path` não.
+ */
+.onda[data-entrada] .giro {
+  animation: desenha 1.2s cubic-bezier(0.05, 0.8, 0.16, 1) backwards;
+}
+
+.onda[data-entrada] .giro[data-lado='inverso'] {
+  animation-name: desenhaInversa;
+}
+
+@keyframes desenha {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
+@keyframes desenhaInversa {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
+.lista {
+  display: grid;
+  grid-auto-rows: 1fr;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.passo {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--logo-caixa) 1fr;
+  gap: 18px;
+  align-items: center;
+  padding: 14px 0;
+}
+
+/**
+ * O nó da Trajetória: um ponto pequeno no eixo da onda, e o anel no que está em
+ * curso. A caixa tem o tamanho do maior ponto e se centra no eixo por
+ * `translate`; numa caixa de 0×0 o ponto não se centrava e caía meio ponto
+ * abaixo e à direita do cruzamento da onda.
+ */
+.no {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--onda-w) / -2 - var(--onda-folga));
+  display: grid;
+  place-items: center;
+  width: 9px;
+  height: 9px;
+  transform: translate(-50%, -50%);
+}
+
+.onda[data-entrada] + .lista .no {
+  animation: noAcende 0.62s ease-out calc(700ms + var(--i, 0) * 120ms) backwards;
+}
+
+.ponto {
+  grid-area: 1 / 1;
+  width: 5px;
+  height: 5px;
+  border: 1px solid var(--linha-acesa);
+  border-radius: 50%;
+  background: #000;
+}
+
+.passo[data-estado='concluido'] .ponto {
+  background: var(--tx-apoio);
+}
+
+.passo[data-estado='cursando'] .ponto {
+  width: 9px;
+  height: 9px;
+  border-color: var(--tx-titulo);
+  background: var(--tx-titulo);
+}
+
+.passo[data-estado='pretensao'] .ponto {
+  border-style: dashed;
+}
+
+.pulso {
+  grid-area: 1 / 1;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--linha-foco);
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.passo[data-estado='cursando'] .pulso {
+  animation: pulsoNo 2.9s ease-out infinite;
+}
+
+@keyframes pulsoNo {
+  0% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(2.8);
+  }
+}
+
+/* os nós acendem atrás da onda, com a oscilação da Trajetória antes de firmar */
+@keyframes noAcende {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  42% {
+    opacity: 0.12;
+  }
+  58% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.35;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/**
+ * O logo da instituição, numa caixa de tamanho fixo e na escala óptica de cada
+ * um (`shared.json → logos`), porque os desenhos têm pesos diferentes. Os
+ * arquivos já são brancos sobre transparente, então entram como imagem, sem
+ * máscara (ver `conteudo.md`, sobre o traço fino do brasão da PUC). Apagados: em
+ * branco cheio eles eram a coisa mais forte do relatório.
+ */
+.logo {
+  height: var(--logo-caixa);
+  background: var(--logo, none) center / calc(100% * var(--logo-escala, 1)) auto no-repeat;
+  opacity: 0.72;
+}
+
+.passoTexto {
+  display: grid;
+  gap: 3px;
+}
+
+.estado {
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+
+.passo[data-estado='cursando'] .estado {
+  color: var(--tx-forte);
+}
+
+.curso {
+  color: var(--tx-forte);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.passo[data-estado='pretensao'] .curso {
+  color: var(--tx-apagado);
+}
+
+/**
+ * O medidor, embaixo do curso: uma linha simples por período, e as dos períodos
+ * feitos se preenchem da esquerda para a direita, uma depois da outra, quando o
+ * dossiê entra. Linhas, e não uma barra contínua, porque o que se conta aqui são
+ * períodos, e a unidade precisa estar à vista.
  *
- * O retrato fica no canto esquerdo, o título ao lado dele, e o texto começa sob o
- * título e **continua por baixo da foto** quando ela acaba. Empilhado, o retrato
- * ocupava uma linha inteira da tela para uma imagem de 96px, com vazio dos dois
- * lados; ao lado do texto, ele divide a largura em vez de gastá-la.
- *
- * Quem faz o texto contornar a foto é `float`, e isso decide o resto do bloco:
- * uma caixa que forma contexto de formatação próprio fica **ao lado** do float,
- * sem contornar. Grid, flex e `overflow` diferente de `visible` formam, então o
- * corpo vira `flow-root`, a coluna e o texto viram bloco comum, e **a bio perde a
- * rolagem própria**. Com uma rolagem interna ela voltaria a ser uma coluna
- * estreita ao lado da foto. A bio é curta, e se ela não couber quem responde é a
- * escala que cabe e, abaixo do piso dela, a rolagem da seção.
+ * O preenchimento pende de `data-ativo` do bloco, como as entradas das seções:
+ * volta a correr a cada vez que o dossiê entra em cena (ver `entradas.md`).
+ */
+.medidor {
+  display: grid;
+  grid-template-columns: repeat(var(--segmentos, 8), 1fr);
+  gap: 6px;
+  max-width: 280px;
+  margin: 7px 0 3px;
+}
+
+.medidor i {
+  position: relative;
+  height: 1px;
+  background: var(--linha);
+}
+
+.medidor i[data-aceso]::after {
+  position: absolute;
+  inset: 0;
+  background: var(--tx-corpo);
+  content: '';
+  transform-origin: left;
+}
+
+[data-ativo] .medidor i[data-aceso]::after {
+  animation: enche 0.5s var(--ease-entrada) calc(900ms + var(--k, 0) * 110ms) backwards;
+}
+
+@keyframes enche {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.detalhe {
+  color: var(--tx-apoio);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-etiqueta);
+  text-transform: uppercase;
+}
+
+/**
+ * Celular: uma coluna só. A ficha deixa de ficar presa e vira uma linha, com o
+ * retrato pequeno ao lado dos campos, e o relatório vem embaixo.
  */
 @media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .secao {
-    /* o respiro entre a foto e o texto que corre ao lado dela */
-    --corpo-gap: 18px;
-
-    /* a foto não tem base para a coluna respeitar: o texto passa por baixo dela */
-    --coluna-max: none;
-    --pfs: 11px;
-    --plh: 1.7;
-    /* a altura de uma linha da bio: a régua que a foto e os parágrafos seguem */
-    --linha: calc(var(--pfs) * var(--plh));
-    /* entre o título e a primeira linha do texto */
-    --titulo-respiro: 12px;
-
-    /**
-     * **A base da foto é a linha de base da última linha ao lado dela.**
-     *
-     * A altura é o título, o respiro dele e um número inteiro de linhas da bio,
-     * menos o trecho entre a linha de base e o fundo da caixa de linha. Com uma
-     * altura qualquer, a base da foto caía no meio de uma linha, que ia inteira
-     * para depois da foto e deixava um vão de até uma linha entre a imagem e o
-     * texto. Encostada no fundo da caixa de linha, ela ficava colada no texto de
-     * baixo. Na linha de base, a foto termina junto com as letras ao lado, e o
-     * que a separa do texto de baixo é a mesma distância que separa duas linhas.
-     *
-     * `--ate-base` é a distância do fundo da caixa de linha até a linha de base:
-     * `(--plh − (ascendente − descendente)) / 2`, em `em`. O 0,522 é a diferença
-     * entre ascendente e descendente da IBM Plex Mono **como o navegador a usa**,
-     * medida no DOM com um marcador `inline-block` na linha de base. As métricas
-     * publicadas da fonte davam 0,75, e com elas a foto passava 1,3px da linha
-     * de base. Trocar de fonte pede medir de novo.
-     *
-     * A largura sai da altura pela proporção: seis linhas dão ~113px.
-     */
-    --ate-base: calc(var(--pfs) * (var(--plh) - 0.522) / 2);
-    --linhas-foto: 6;
-    --retrato-h: calc(
-      var(--titulo-fs) + var(--titulo-respiro) + var(--linhas-foto) * var(--linha) -
-        var(--ate-base)
-    );
-    --retrato: calc(var(--retrato-h) / var(--retrato-ar));
-
-    --fatos-gap: 24px;
-    --fatos-pt: 14px;
+    --logo-caixa: 44px;
   }
 
-  /* `flow-root` contém o float: sem ele, uma bio curta deixaria a foto vazar
-     por cima dos fatos */
-  .corpo {
-    display: flow-root;
+  .bloco {
+    grid-template-columns: 1fr;
   }
 
-  /* sem margem embaixo: quem separa a foto do texto abaixo é a entrelinha */
-  .retrato {
-    float: left;
-    margin: 0 var(--corpo-gap) 0 0;
-  }
-
-  .coluna {
-    display: block;
-  }
-
-  .texto {
-    display: block;
-    max-height: none;
-    margin-top: var(--titulo-respiro);
-    padding-right: 0;
-    overflow: visible;
-  }
-
-  /* uma linha inteira entre parágrafos, para uma quebra ao lado da foto não
-     tirar o texto da régua e devolver o vão */
-  .paragrafo + .paragrafo {
-    margin-top: var(--linha);
+  .lado {
+    position: static;
+    grid-template-columns: 112px 1fr;
+    gap: 18px;
+    align-items: start;
   }
 }
 
-/**
- * Telas baixas: vem depois na cascata de propósito. Em paisagem curta ela ganha
- * dos tokens do mobile, que é o que se quer — o gargalo ali é a altura.
- */
-/* paisagem curta; no mobile os valores acima já se adaptam sozinhos */
-@media (width > 640px) and (height <= 720px) and (orientation: landscape) {
-  .secao {
-    --retrato: 150px;
-    --txt: 22vh;
+@media (prefers-reduced-motion: reduce) {
+  .passo[data-estado='cursando'] .pulso {
+    animation: none;
   }
 }

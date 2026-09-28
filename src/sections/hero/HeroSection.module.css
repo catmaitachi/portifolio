@@ -1,8 +1,8 @@
 /**
  * `@keyframes` mora **no mesmo módulo** que o usa: CSS Modules escopa tanto o
  * nome declarado quanto o nome escrito em `animation`, e um keyframe global
- * nunca casaria com o nome reescrito aqui dentro. `fina` se repete no NavMenu e
- * no LanguageToggle pelo mesmo motivo — quatro linhas duplicadas custam menos
+ * nunca casaria com o nome reescrito aqui dentro. `fina` se repete no SectionNav,
+ * no LanguageToggle e na Version pelo mesmo motivo — quatro linhas duplicadas custam menos
  * que uma animação que não roda.
  */
 
@@ -18,19 +18,34 @@
   }
 }
 
-/** o nome se materializa: o letter-spacing fecha enquanto o borrão sai */
-@keyframes tituloIn {
+/**
+ * Cada letra chega da profundidade: grande, fora de foco e apagada, e assenta.
+ *
+ * Só o `from`: o fim é o estado natural da letra, e com `backwards` a animação
+ * não segura nada depois de terminar. Isso não é detalhe aqui: uma letra com
+ * `transform` ou `filter` aplicados cria contexto de empilhamento e sai do recorte
+ * do `background-clip: text` do nome, e o brilho deixaria de passar por ela.
+ */
+@keyframes letraChega {
   from {
     opacity: 0;
-    filter: blur(10px);
-    letter-spacing: 0.42em;
-    transform: scale(1.06);
+    filter: blur(14px);
+    transform: scale(1.9);
   }
+}
+
+/**
+ * A tinta da letra enquanto ela chega.
+ *
+ * O nome é pintado pelo degradê do `<h1>` recortado no texto, e uma letra
+ * transformada escapa desse recorte: sem tinta própria ela seria invisível
+ * durante a chegada. A cor é a base do degradê (`#a6a6a6`), então a troca para o
+ * recorte, no fim, não se vê. Também só vale enquanto corre (`backwards`).
+ */
+@keyframes letraTinta {
+  from,
   to {
-    opacity: 1;
-    filter: blur(0);
-    letter-spacing: 0.14em;
-    transform: scale(1);
+    -webkit-text-fill-color: #a6a6a6;
   }
 }
 
@@ -90,6 +105,7 @@
   --hero-legenda: var(--abertura-legenda);
   --hero-brilho: var(--abertura-fim);
 
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 2.4vmin;
@@ -98,7 +114,6 @@
   height: 100%;
   padding-right: clamp(22px, 7vw, 120px);
   padding-left: clamp(22px, 7vw, 120px);
-  scroll-snap-align: start;
   text-align: center;
   /* sai de cena apagando, como o `.bloco` das outras seções */
   transition: opacity 0.9s ease;
@@ -108,8 +123,8 @@
   --hero-etiqueta: 0s;
   --hero-nome: 0.15s;
   --hero-legenda: 0.65s;
-  /* quando o `tituloIn` termina */
-  --hero-brilho: calc(var(--hero-nome) + 1.2s);
+  /* quando a última letra assenta: a do canto, a ~6 de distância do meio */
+  --hero-brilho: calc(var(--hero-nome) + 1.9s);
 }
 
 /**
@@ -238,10 +253,10 @@
  * (`section.module.css`), e aqui ela sai de graça: a animação só existe com o
  * atributo.
  *
- * Na abertura o brilho espera a **abertura inteira**, não só o `tituloIn` do
- * próprio nome: começa em `--abertura-fim`, quando a última peça do HUD
+ * Na abertura o brilho espera a **abertura inteira**, não só a chegada das
+ * letras do próprio nome: começa em `--abertura-fim`, quando a última peça do HUD
  * assentou. Correndo antes, a primeira passada, que é a única que alguém vê
- * chegando, disputava atenção com o crédito, o idioma e a versão ainda entrando.
+ * chegando, disputava atenção com o cabeçalho, o idioma e a versão ainda entrando.
  * Numa volta não há nada entrando, e ele começa assim que o nome se forma.
  */
 .secao[data-ativo] .etiqueta {
@@ -253,9 +268,30 @@
 }
 
 .secao[data-ativo] .nome {
+  animation: brilhoNome 8.4s linear var(--hero-brilho) infinite;
+}
+
+/**
+ * Máquina modesta: o brilho para. Ele anda `background-position` num texto, e
+ * isso repinta o nome a cada quadro. A qualidade vem do canvas do céu
+ * (`data-qualidade`, escrito pelo palco; ver `motor.md`), lida por `:has()`.
+ */
+:global(:root:has(canvas[data-qualidade='0'])) .secao[data-ativo] .nome {
+  animation: none;
+}
+
+.letra {
+  display: inline-block;
+  white-space: pre;
+}
+
+/* 70ms por passo de distância ao centro do nome: o meio primeiro, as pontas por último */
+.secao[data-ativo] .letra {
+  --letra-atraso: calc(var(--hero-nome) + var(--d) * 70ms);
+
   animation:
-    tituloIn 1.2s var(--ease-saida) var(--hero-nome) both,
-    brilhoNome 8.4s linear var(--hero-brilho) infinite;
+    letraChega 1.4s var(--ease-entrada) var(--letra-atraso) backwards,
+    letraTinta calc(1.4s + var(--letra-atraso)) linear backwards;
 }
 
 .secao[data-ativo] .legenda {

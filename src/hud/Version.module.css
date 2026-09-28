@@ -37,22 +37,18 @@
    * existe apenas dentro de uma animação some junto com ela.
    */
   transform: translateX(var(--ver-tx));
-  /* a última peça da abertura, depois do crédito e do idioma (`--abertura-*`) */
+  /* a última peça da abertura, depois do cabeçalho e do idioma (`--abertura-*`) */
   animation: fina var(--abertura-fina) ease-out var(--abertura-versao) both;
 }
 
 /**
- * Mobile: a faixa da direita é do menu, então a versão vai para o centro,
- * abaixo da barra de seções.
- *
- * Ela sobe um pouco em relação à borda: encostada no rodapé ficava espremida
- * contra o limite da tela, e em aparelhos com barra de gestos chegava a
- * disputar espaço com ela. Os 34px ainda deixam folga até a base da faixa
- * (`--hud-nav-base`, 56px), que é o que a mantém legível como linha própria.
+ * Mobile: a versão vai para o centro do rodapé, a uma distância da borda igual à
+ * do cabeçalho no topo, e os dois espelham um ao outro. O canto esquerdo é do
+ * medidor da supernova, na mesma linha.
  */
 @media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .versao {
-    --ver-bottom: max(4.2vh, 34px);
+    --ver-bottom: var(--hud-topo-base);
     --ver-left: 50%;
     --ver-right: auto;
     --ver-tx: -50%;

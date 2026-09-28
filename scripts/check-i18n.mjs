@@ -42,6 +42,7 @@ const listas = [
   ['experiencia.lista', (d) => d.experiencia.lista, 'key'],
   ['formacoes.lista', (d) => d.formacoes.lista, 'slot'],
   ['sobre.dados', (d) => d.sobre.dados, 'key'],
+  ['sobre.secoes', (d) => d.sobre.secoes, 'key'],
 ];
 
 for (const [rotulo, pegar, id] of listas) {
@@ -74,16 +75,16 @@ for (const [rotulo, pegar, id] of listas) {
 }
 
 /**
- * `sobre.paragrafos` não tem chave; compara-se só a contagem, agora por modo.
- *
- * O `caminhos()` acima já pega um modo presente em só um idioma (a lista vira
- * `sobre.paragrafos.<modo>[]`), mas para numa lista e não conta os itens dela.
+ * Os parágrafos de cada seção do dossiê não têm chave; compara-se a contagem. Uma
+ * seção vazia num idioma e escrita no outro mostraria o texto de um lado e o
+ * marcador de reservado do outro.
  */
-for (const modo of Object.keys(pt.sobre?.paragrafos ?? {})) {
-  const a = pt.sobre.paragrafos[modo] ?? [];
-  const b = en.sobre.paragrafos[modo] ?? [];
-  if (a.length !== b.length) {
-    problemas.push(`sobre.paragrafos.${modo}: ${a.length} em pt, ${b.length} em en`);
+for (const [i, secao] of (pt.sobre?.secoes ?? []).entries()) {
+  const outra = en.sobre?.secoes?.[i];
+  if (outra && secao.paragrafos.length !== outra.paragrafos.length) {
+    problemas.push(
+      `sobre.secoes[${secao.key}]: ${secao.paragrafos.length} parágrafo(s) em pt, ${outra.paragrafos.length} em en`,
+    );
   }
 }
 
@@ -98,34 +99,26 @@ for (const chave of ['assunto', 'assinatura']) {
 }
 
 /**
- * Os modos referenciam seções e canais por chave, e chave é `string` no JSON.
+ * Cada seção mora em **uma** tela, e só as que existem.
  *
- * O TypeScript pega `secoes` (é `SectionKey[]`) mas não pega `canais`, que é
- * `string[]` porque a chave de canal não é união fechada. Um erro de digitação
- * ali não quebra nada: o canal simplesmente **não aparece** naquele lado do site,
- * sem erro de build e sem nada no console. É o mesmo tipo de defeito silencioso
- * que este script existe para pegar.
+ * O TypeScript pega uma chave que não é `SectionKey`, mas não pega a mesma seção
+ * em duas telas nem uma seção esquecida fora de todas: a primeira seria montada
+ * duas vezes, a segunda simplesmente não apareceria, e nenhuma das duas dá erro
+ * de build ou aviso no console.
  */
 const secoesConhecidas = new Set(shared.secoes.map((s) => s.key));
-const canaisConhecidos = new Set(shared.canais.map((c) => c.key));
-for (const k of Object.keys(pt.modos ?? {})) {
-  if (!shared.modos.some((m) => m.key === k)) {
-    problemas.push(`pt.json modos.${k}: modo que não está em shared.json`);
+const ondeMora = new Map();
+for (const tela of shared.telas ?? []) {
+  if (!tela.partes?.length) problemas.push(`telas.${tela.key}: sem seção nenhuma`);
+  if (!pt.telas?.[tela.key]) problemas.push(`telas.${tela.key}: sem nome nos dicionários`);
+  for (const k of tela.partes ?? []) {
+    if (!secoesConhecidas.has(k)) problemas.push(`telas.${tela.key}: "${k}" não está em secoes`);
+    if (ondeMora.has(k)) problemas.push(`"${k}" está em ${ondeMora.get(k)} e em ${tela.key}`);
+    ondeMora.set(k, tela.key);
   }
 }
-for (const modo of shared.modos ?? []) {
-  if (!modo.secoes?.length) problemas.push(`modos.${modo.key}: sem seção nenhuma`);
-  if (!pt.modos?.[modo.key]) problemas.push(`modos.${modo.key}: sem textos nos dicionários`);
-  for (const k of modo.secoes ?? []) {
-    if (!secoesConhecidas.has(k)) {
-      problemas.push(`modos.${modo.key}.secoes: "${k}" não está em secoes`);
-    }
-  }
-  for (const k of modo.canais ?? []) {
-    if (!canaisConhecidos.has(k)) {
-      problemas.push(`modos.${modo.key}.canais: "${k}" não está em canais`);
-    }
-  }
+for (const k of secoesConhecidas) {
+  if (!ondeMora.has(k)) problemas.push(`"${k}" não está em tela nenhuma`);
 }
 
 if (problemas.length) {

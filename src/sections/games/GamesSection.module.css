@@ -1,53 +1,28 @@
 /**
- * Entrada: o destaque sobe, e as capas da faixa sobem depois dele.
+ * Entrada: as capas chegam do fundo, uma atrás da outra, a da frente primeiro.
  *
- * Sobem, como os cartões de projeto: a seção é uma pilha de cima para baixo, e
- * nela um deslocamento vertical lê como assentamento. `backwards`, nunca
- * `forwards`, pela regra de sempre. `--sobe` é a distância, que muda com o
- * tamanho de quem entra.
+ * É a física do deque: nada sobe, tudo vem da profundidade (pequeno, fora de
+ * foco e apagado), como as letras do nome. Quem anima é o miolo (`.arte`),
+ * porque o `transform` da capa é escrito pela mola, e uma animação no mesmo
+ * elemento o apagaria.
+ *
+ * As entradas ficam **penduradas em `data-ativo`**, não no mount, como em Música
+ * e Filmes: o atributo aparece quando a seção vira a ativa, o `animation-name`
+ * sai de `none` e a cascata recomeça. **Ela começa depois de o bloco assentar**
+ * (520ms): o `.bloco` inteiro entra em 0,9s, e uma entrada sem atraso se somaria
+ * a ele e sumiria (ver `entradas.md`).
  */
-@keyframes capaSobe {
+@keyframes capaChega {
   from {
     opacity: 0;
-    transform: translateY(var(--sobe, 14px));
+    filter: blur(8px);
+    transform: scale(0.72);
   }
 }
 
-/**
- * As entradas ficam **penduradas em `data-ativo`**, não no mount, como em Música
- * e Filmes: o atributo aparece quando a seção vira a ativa, o `animation-name`
- * sai de `none` e a cascata recomeça. Presas ao mount, elas rodavam uma vez só,
- * no instante em que a resposta da Steam chegava.
- *
- * **O destaque sobe primeiro**, e a faixa vem atrás dele: é ele que a seção
- * existe para mostrar, e uma cascata que começa no que está aberto agora lê como
- * ordem, e não como um monte de capas chegando junto.
- *
- * **A cascata começa depois de o bloco assentar.** O `.bloco` inteiro entra
- * subindo 26px em 0,9s (`section.module.css`), e uma entrada no mesmo sentido
- * sem atraso se soma a ele: o movimento menor termina antes do maior e a seção
- * aparece sem entrada nenhuma.
- *
- * As distâncias seguem o tamanho: 40px no destaque, que é o bloco mais alto da
- * seção, e só 14px nas capas, que moram dentro do `overflow-x` da faixa e seriam
- * cortadas no eixo Y além do recuo dela.
- *
- * Estas duas regras já se perderam uma vez, quando a grade de recentes virou a
- * faixa: elas miravam a grade e saíram junto com ela, e a seção ficou sem
- * entrada sem erro nenhum. O keyframe continuou declarado, sem ninguém que o
- * usasse.
- */
-.bloco[data-ativo] .destaque {
-  --sobe: 40px;
-
-  animation: capaSobe 0.7s var(--ease-entrada) 520ms backwards;
-}
-
-.bloco[data-ativo] .cartao {
-  --sobe: 14px;
-
-  animation: capaSobe 0.6s var(--ease-entrada) backwards;
-  animation-delay: calc(820ms + var(--ordem, 0) * 90ms);
+.bloco[data-ativo] .arte {
+  animation: capaChega 0.8s var(--ease-entrada) backwards;
+  animation-delay: calc(520ms + var(--ordem, 0) * 90ms);
 }
 
 @keyframes pulsaVivo {
@@ -64,110 +39,35 @@
 }
 
 .secao {
-  --arte-w: clamp(150px, 24vmin, 232px);
-  /* a proporção do header.jpg da Steam é 460x215 */
-  --arte-ar: 0.467;
-
-  /**
-   * A largura do cartão da faixa, **entre** o pôster de Filmes e o cartão maior
-   * que esta seção já teve.
-   *
-   * Filmes é pequeno porque tem duas faixas empilhadas numa seção de uma tela de
-   * altura; Jogos tem uma só, com o destaque acima dela, e ali sobra altura para
-   * o cartão ser maior sem passar do rodapé. Igual aos dois seria errado pelos
-   * dois lados: no tamanho de Filmes a arte não aproveita o espaço que existe, e
-   * no tamanho anterior as duas seções vizinhas deixariam de se parecer.
-   */
-  --faixa-item: clamp(88px, 11.5vmin, 124px);
+  /* a largura da capa da frente, e a altura do palco que a contém em pé */
+  --capa-w: clamp(150px, 24vmin, 220px);
+  --deque-h: clamp(300px, 44vmin, 420px);
 }
 
 .bloco {
-  max-width: 940px;
+  max-width: 1000px;
 }
 
-/* a mesma caixa do destaque de Música, que é a seção vizinha: mesmo respiro e chanfro */
-.destaque {
-  display: flex;
-  gap: clamp(14px, 2.2vmin, 24px);
+.cena {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
+  gap: clamp(20px, 3vw, 40px);
   align-items: center;
-  padding: clamp(12px, 1.8vmin, 18px);
-  border: 1px solid var(--linha);
-  border-radius: 2px;
-  color: inherit;
-  text-decoration: none;
-  transition:
-    border-color var(--dur-hover),
-    background var(--dur-hover);
 }
 
-.destaque:hover {
-  border-color: var(--linha-acesa);
-  background: var(--fundo-sutil);
-}
+/* ---------- o painel do jogo escolhido ---------- */
 
-@supports (corner-shape: bevel) {
-  .destaque {
-    border-radius: 14px 2px;
-    corner-shape: bevel;
-  }
-}
-
-/**
- * A arte deitada do destaque, com a moldura de espaço reservado.
- *
- * O endereço é perguntado à loja a cada resposta e pode não vir (ver
- * `dados.md`). Sem arte, o que sobra é um retângulo vazio de 1px, que é o mesmo
- * espaço reservado de toda imagem da página; sem ele seria o ícone de imagem
- * quebrada do navegador, a única coisa fora da paleta na página.
- */
-.arte {
-  /* âncora do brilho especular, que é `position: absolute` */
-  position: relative;
-  display: block;
-  flex: none;
-  width: var(--arte-w);
-  aspect-ratio: 1 / var(--arte-ar);
-  overflow: hidden;
-  border: 1px solid var(--linha);
-  border-radius: 2px;
-  background: var(--fundo-sutil);
-
-  /* o clarão acompanha a largura da arte, não os 240px do retrato */
-  --brilho-r: 160px;
-
-  /* a inclinação é escrita pelo JS (ver `useInclinacao`); daqui sai o retorno */
-  transition: transform var(--inclina-t, var(--dur-retorno)) var(--ease-saida);
-}
-
-@supports (corner-shape: bevel) {
-  .arte {
-    corner-shape: bevel;
-    border-radius: 12px 2px;
-  }
-}
-
-/* arte de jogo é identidade de terceiro: fica colorida, como as capas e os pôsteres */
-.arte img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.corpo {
+.painel {
   display: flex;
-  flex: 1;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
   min-width: 0;
 }
 
 /**
- * **Uma linha, sempre.** O rótulo troca de texto conforme o estado ("tocando
- * agora" contra "nada tocando agora"), e num celular estreito o mais longo dos
- * dois quebrava em duas linhas. Isso muda a altura da seção em degrau, e é
- * justamente o degrau que faz a escala que cabe oscilar (ver
- * `useEscalaQueCabe`).
+ * **Uma linha, sempre.** O rótulo troca de texto conforme o estado e a posição,
+ * e num celular estreito o mais longo quebrava em duas linhas, mudando a altura
+ * da seção em degrau.
  */
 .rotulo {
   overflow: hidden;
@@ -191,133 +91,151 @@
   animation: pulsaVivo 2.2s ease-in-out infinite;
 }
 
+/* duas linhas de altura reservadas: trocar de jogo não pode mexer no que vem embaixo */
 .nome {
+  display: -webkit-box;
+  min-height: 2.3em;
   overflow: hidden;
   color: var(--tx-titulo);
-  font-size: var(--fs-destaque);
-  letter-spacing: 0.02em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: clamp(18px, 3.4vmin, 34px);
+  line-height: 1.15;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  transition: color var(--dur-hover);
+}
+
+.nome:hover {
+  color: var(--tx-hover);
 }
 
 .tempos {
   display: flex;
-  gap: 14px;
-  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 18px;
   color: var(--tx-apoio);
-  font-size: clamp(9px, 1.2vmin, 11px);
+  font-size: var(--fs-lista);
   font-weight: 300;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   font-variant-numeric: tabular-nums;
 }
 
-.total {
-  color: var(--tx-apagado);
+.tempos b {
+  color: var(--tx-titulo);
+  font-weight: 400;
 }
 
-.cartao {
+.controles {
   display: flex;
-  flex-direction: column;
-  gap: 7px;
-  color: inherit;
-  text-decoration: none;
+  gap: 10px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.posicao {
+  margin-left: 6px;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.2em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- o deque ---------- */
+
+.deque {
+  position: relative;
+  height: var(--deque-h);
+  perspective: 1300px;
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.deque:active {
+  cursor: grabbing;
 }
 
 /**
- * A moldura da arte existe mesmo sem arte, e a arte fica colorida.
- *
- * Identidade de terceiro não se repinta, como os pôsteres de Filmes. Quando a
- * Steam não tem a arte em pé, o que sobra é um retângulo de 1px na proporção
- * certa, que é o espaço reservado de sempre; sem ele seria o ícone de imagem
- * quebrada do navegador, a única coisa fora da paleta na página inteira.
- *
- * É a mesma peça do pôster de Filmes, com o mesmo 2:3 e a mesma inclinação: as
- * duas faixas precisam ter a mesma silhueta para as seções vizinhas não lerem
- * como dois desenhos diferentes.
+ * Uma capa. A posição inteira (lado, profundidade, giro, brilho e foco) é
+ * escrita pela mola (`GamesSection.tsx`); daqui sai só o lugar de onde ela
+ * parte, um pouco à esquerda do centro, para as de trás terem para onde ir.
  */
 .capa {
-  position: relative;
-  display: block;
+  position: absolute;
+  top: 50%;
+  left: 30%;
+  width: var(--capa-w);
   aspect-ratio: 2 / 3;
+  will-change: transform, opacity, filter;
+}
+
+/**
+ * O miolo, com a moldura de espaço reservado.
+ *
+ * Arte de jogo é identidade de terceiro e fica colorida (quem a apaga é a
+ * distância, e não um filtro de paleta). **A moldura de 1px só existe quando a
+ * imagem não veio**, que é o espaço reservado de toda imagem da página (ver
+ * `direcao-visual.md`).
+ */
+.arte {
+  display: block;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
   border: 1px solid var(--linha);
   border-radius: 2px;
   background: var(--fundo-sutil);
-  opacity: 0.84;
-
-  /* o clarão acompanha a largura da capa, não os 240px do retrato */
-  --brilho-r: 130px;
-
-  /* a inclinação é escrita pelo JS (ver `useInclinacao`); daqui sai o retorno */
-  transition:
-    opacity var(--dur-hover),
-    border-color var(--dur-hover),
-    transform var(--inclina-t, var(--dur-retorno)) var(--ease-saida);
 }
 
 @supports (corner-shape: bevel) {
-  .capa {
+  .arte {
     border-radius: 12px 2px;
     corner-shape: bevel;
   }
 }
 
-.cartao:hover .capa {
-  opacity: 1;
+.arte:has(img:not([hidden])) {
+  border-color: transparent;
+  background: none;
 }
 
-.capa img {
+.arte img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  pointer-events: none;
 }
 
-.nomePequeno {
-  overflow: hidden;
-  color: var(--tx-forte);
-  font-size: var(--fs-lista);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+/* o chão do trilho: uma linha só, para o deque ter onde pousar */
+.chao {
+  position: absolute;
+  right: 0;
+  bottom: 4%;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--linha-forte), transparent);
 }
 
-.horasPequenas {
-  color: var(--tx-apagado);
-  font-size: var(--fs-meta);
-  font-weight: 300;
-  letter-spacing: 0.1em;
-  font-variant-numeric: tabular-nums;
-}
-
+/* celular: o deque em cima, o painel embaixo */
 @media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
-  .destaque {
-    flex-direction: column;
-    align-items: flex-start;
+  .cena {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .destaque .arte {
-    width: 100%;
-  }
-
-  .corpo {
-    width: 100%;
+  .deque {
+    order: -1;
   }
 
   .secao {
-    --faixa-item: clamp(84px, 26vw, 104px);
+    --capa-w: clamp(130px, 38vw, 180px);
+    --deque-h: clamp(260px, 64vw, 340px);
   }
 }
 
-/**
- * **A moldura só existe quando não há imagem**, nas duas artes da seção.
- *
- * A borda continua declarada e só perde a cor, então a caixa não muda de
- * tamanho; o fundo sai junto, senão ele pintaria a faixa de 1px que a borda
- * transparente deixou ver. Quem diz se a imagem chegou é o `onError` da
- * `<img>`, escrevendo `hidden` no nó (ver `direcao-visual.md`).
- */
-.capa:has(img:not([hidden])),
-.arte:has(img:not([hidden])) {
-  border-color: transparent;
-  background: none;
+@media (prefers-reduced-motion: reduce) {
+  .pulso {
+    animation: none;
+  }
 }

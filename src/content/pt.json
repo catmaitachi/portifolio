@@ -1,59 +1,68 @@
 {
   "nav": {
     "inicio": "Início",
-    "sobre": "Sobre",
-    "formacao": "Formação",
-    "projetos": "Projetos",
-    "experiencia": "Trajetória",
+    "sobre": "Sobre mim",
+    "projetos": "Projetos pessoais",
+    "experiencia": "Carreira",
     "musica": "Música",
     "jogos": "Jogos",
     "filmes": "Filmes",
     "contato": "Contato"
   },
 
-  "modos": {
-    "pessoal": {
-      "rotulo": "Pessoal",
-      "descricao": "Conheça um pouco dos meus hobbies e interesses",
-      "etiqueta": "Diário de Bordo",
-      "legenda": "Desenvolvedor de Software"
-    },
-    "profissional": {
-      "rotulo": "Profissional",
-      "descricao": "Veja meus projetos e experiências profissionais",
-      "etiqueta": "Portfólio",
-      "legenda": "Desenvolvedor de Software"
-    }
-  },
+  "telas": { "dossie": "Identidade", "hobbies": "Interesses", "trajetoria": "Trajetória" },
 
   "hero": {
-    "nome": "Lucas Spiazzi"
+    "nome": "Lucas Spiazzi",
+    "etiqueta": "Identidade",
+    "legenda": "Desenvolvedor de Software"
   },
 
   "documento": "{nome} - {parte}",
 
   "sobre": {
-    "titulo": "Sobre Mim",
-    "paragrafos": {
-      "profissional": [
-        "Sou um projetista de software na era da IA. Enquanto os modelos generativos aceleram a codificação, meu papel é o que vem antes: idealizar, estruturar e planejar sistemas sólidos, guiados pelas melhores práticas de Engenharia de Software.",
-        "Acredito que todo projeto nasce de uma necessidade humana que merece ser explorada, compreendida e tratada com responsabilidade, pois os impactos refletem, a longo prazo, no indivíduo e na sociedade.",
-        "Como dev, me comprometo a evoluir constantemente minhas soluções em prol de um futuro mais sustentável e humanitário."
-      ],
-      "pessoal": [
-        "Eu penso demais, e às vezes isso é bom. Sou crítico, tenho boas ideias de vez em quando e absorvo muito bem o que consumo. Amo a arte que mora em músicas, filmes, jogos e livros. Mais do que isso, amo natureza, viagens e paisagens: coisas que lembram que a vida não é só rotina.",
-        "Aprecio muito minhas amizades, ao mesmo tempo que sou péssimo pra socializar em certos dias. Tento ser sensato, engraçado, atencioso, e às vezes tento até ser quem não sou. Mas sempre volto a ser eu."
-      ]
+    "titulo": "Arquivo pessoal",
+    "rotulos": {
+      "nome": "Nome",
+      "ocupacao": "Ocupação",
+      "formacao": "Formação"
     },
+    "nomeCompleto": "Lucas Moraes Rocha Spiazzi",
+    "reservado": "[ reservado ]",
     "dados": [
       { "key": "residencia", "rotulo": "Residência", "valor": "Belo Horizonte, MG, Brasil" },
       { "key": "aniversario", "rotulo": "Aniversário", "valor": "7 Jul, 2005" }
+    ],
+    "secoes": [
+      {
+        "key": "perfil",
+        "titulo": "Perfil",
+        "paragrafos": [
+          "Eu penso demais, e às vezes isso é bom. Aprecio muito minhas amizades, mesmo sendo péssimo pra socializar em certos dias. Com as pessoas, tento ser sensato e bem-humorado, e gosto que fiquem à vontade perto de mim. Às vezes tento até ser quem não sou, mas sempre acabo voltando a ser eu. Quando a situação complica, procuro aliviar a tensão pra que ainda dê pra conversar.",
+          "Amo a arte que encontro em músicas, filmes, jogos e livros. Viajar e ficar perto da natureza me tiram da rotina e me fazem bem. São essas horas que me lembram o que é ser humano, e que aumentam meu carinho pelo lugar em que a gente vive."
+        ]
+      },
+      {
+        "key": "proposito",
+        "titulo": "Propósito",
+        "paragrafos": [
+          "Quero construir minha carreira em iniciativas que se preocupem com o bem-estar das pessoas, e dedicar meu esforço a projetos que combatam a desigualdade e os problemas ambientais.",
+          "Quero crescer como um desenvolvedor que trabalha junto com a IA, aprendendo com ela e criando soluções melhores. Me interessa entender o que um projeto precisa e pensar o sistema desde a concepção. Também quero entender melhor o impacto ambiental dessa tecnologia e ajudar a desenvolvê-la com esse cuidado."
+        ]
+      },
+      {
+        "key": "valores",
+        "titulo": "Valores",
+        "paragrafos": [
+          "Valorizo a solidariedade e tento ajudar quem precisa. Hoje esse cuidado aparece mais com as pessoas próximas de mim, e quero estendê-lo pra além do meu convívio.",
+          "Me importo com as consequências das minhas escolhas, até das pequenas que podem prejudicar o ambiente. Quero que o mundo continue sendo um bom lugar pra viver e pretendo levar essa preocupação pros projetos de que participo. Conforme eu crescer na carreira e tiver mais peso nas decisões, quero que minha responsabilidade com as pessoas e com o meio ambiente cresça junto."
+        ]
+      }
     ]
   },
 
   "formacoes": {
     "titulo": "Formação",
-    "intro": "Minha constante linha acadêmica.",
     "rotulos": {
       "conclusao": "Conclusão",
       "periodos": "Períodos"
@@ -64,11 +73,6 @@
       "pretensao": "Pretensão"
     },
     "lista": [
-      {
-        "slot": "mestrado",
-        "nivel": "Mestrado",
-        "estado": "pretensao"
-      },
       {
         "slot": "puc",
         "instituicao": "PUC Minas",
@@ -89,13 +93,18 @@
   },
 
   "projetos": {
-    "titulo": "Projetos",
+    "titulo": "Projetos pessoais",
     "intro": "Alguns dos meus projetinhos pessoais.",
     "vazio": "Nenhum projeto selecionado ainda.",
     "codigo": "ver código",
     "aoVivo": "ver ao vivo",
     "atividade": "Um traço por commit",
     "arquivado": "Arquivado",
+    "linguagens": "Linguagens",
+    "noAr": "no ar",
+    "soCodigo": "só código",
+    "rodar": "rodar aqui",
+    "parar": "voltar à foto",
     "rotulos": {
       "commits": "Commits",
       "estrelas": "Estrelas",
@@ -109,7 +118,7 @@
     "titulo": "Música",
     "intro": "O que anda tocando no meu Spotify.",
     "tocando": "Tocando agora",
-    "silencio": "Nada tocando agora",
+    "silencio": "Tocou por último",
     "faixas": "Mais tocadas no mês",
     "artistas": "Mais ouvidos no mês",
     "recentes": "Ouvidas há pouco"
@@ -123,7 +132,9 @@
     "recentes": "Duas últimas semanas",
     "horas": "h",
     "duasSemanas": "nas 2 semanas",
-    "total": "no total"
+    "total": "no total",
+    "anterior": "Jogo anterior",
+    "proximo": "Próximo jogo"
   },
 
   "filmes": {
@@ -143,7 +154,7 @@
   },
 
   "experiencia": {
-    "titulo": "Trajetória",
+    "titulo": "Carreira",
     "intro": "Minhas responsabilidades ao longo do tempo.",
     "tipos": {
       "extensao": "Extensão",
@@ -171,35 +182,31 @@
 
   "contato": {
     "titulo": "Vamos conversar",
-    "intro": "Sempre aberto para novas conversas.",
     "email": "lukasspiazzi@gmail.com",
-    "ou": "ou me encontre em",
-    "enviar": "enviar",
+    "copiar": "clique para copiar",
+    "copiado": "copiado",
+    "sinal": "canal aberto",
+    "enviar": "transmitir",
     "enviando": "abrindo e-mail…",
     "erro": "escreva uma mensagem antes de enviar",
-    "emBreve": "em breve",
     "assunto": "Portfólio — contato de {nome}",
     "assuntoSemNome": "Portfólio — contato",
     "assinatura": "— {nome}",
     "campos": {
-      "nome": { "rotulo": "nome", "dica": "como devo te chamar" },
-      "mensagem": { "rotulo": "mensagem", "dica": "por onde começamos?" }
+      "frase": { "antes": "Oi, Lucas. Aqui é", "depois": "." },
+      "nome": { "rotulo": "seu nome, opcional", "dica": "seu nome" },
+      "mensagem": { "rotulo": "mensagem", "dica": "Por onde começamos?" }
     }
   },
 
-  "credito": "Feito com Claude",
-
   "a11y": {
     "secoes": "Seções",
-    "modos": "Alternar entre o site pessoal e o portfólio profissional",
-    "modosAbrir": "Escolher o lado do site",
     "idioma": "Alternar idioma entre português e inglês",
-    "projetos": "Projetos — use as setas para percorrer os cartões",
-    "experiencia": "Trajetória — use as setas para percorrer os anos",
+    "previa": "O site de {nome}",
+    "experiencia": "Carreira — use as setas para percorrer os anos",
     "canais": "Canais de contato",
     "retrato": "Retrato",
-    "faixaAntes": "Anterior em {lista}",
-    "faixaDepois": "Próximo em {lista}",
+    "emBreve": "{rede} (em breve)",
     "perfil": "Meu perfil no {rede}"
   }
 }

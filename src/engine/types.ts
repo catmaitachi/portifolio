@@ -66,6 +66,21 @@ export interface CameraState {
   progress: number;
   /** 0..1, entra entre 35% e 85% do trajeto — controla a entrada da nebulosa */
   fade: number;
+  /**
+   * Quanto a câmera andou para dentro do céu, em unidades de profundidade: a
+   * rolagem da tela, uma deriva lenta e o que os saltos somaram. Só o campo de
+   * estrelas a lê; em 0 o céu é exatamente o de repouso.
+   */
+  avanco: number;
+  /**
+   * Só a parte do avanço que vem da rolagem, sem a deriva e sem os saltos. É o que
+   * as figuras seguem: elas não dão a volta como as estrelas, então a deriva as
+   * faria crescer para fora da tela de quem fica parado lendo, e um salto as
+   * jogaria longe logo ao aparecer.
+   */
+  rolagem: number;
+  /** 0..1..0 durante um salto entre telas; as estrelas viram riscos radiais */
+  salto: number;
 }
 
 /** Tudo o que uma camada pode ler em `update`/`draw`/`resize`. */
@@ -84,11 +99,17 @@ export interface StageEnv {
   camera: CameraState;
   bus: StageBus;
   /**
-   * A máquina não sustentou o quadro nem sem HiDPI (ver o corte de qualidade em
-   * `stage.ts`). As camadas caras podem desenhar menos: o campo de estrelas
-   * desenha metade delas. Uma vez ligado, fica ligado.
+   * O degrau mais baixo da qualidade (ver `stage.ts`): a cena começa nele e só
+   * sai quando a máquina prova que aguenta, e volta a ele se deixar de aguentar.
+   * As camadas caras desenham menos: o campo de estrelas desenha metade delas, e
+   * a supernova tira o halo da estrela.
    */
   leve: boolean;
+  /**
+   * Quanto do céu opcional está aceso, de 0 a 1 (ver `stage.ts`): o `Starfield`
+   * acende a metade ímpar das estrelas uma a uma conforme ele sobe.
+   */
+  densidade: number;
 }
 
 /**

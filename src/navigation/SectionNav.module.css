@@ -1,0 +1,209 @@
+/** ver `HeroSection.module.css`: keyframe e uso precisam morar no mesmo módulo */
+@keyframes fina {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/**
+ * O cabeçalho fica **centrado** no topo no desktop, e à esquerda no celular, na
+ * mesma linha do seletor de idioma (ver a faixa no fim do módulo). A posição é
+ * token pela regra de sempre: a faixa só redefine os valores.
+ *
+ * A altura que ele reserva é `--hud-topo-altura`, em `reset.css`, e é de lá que
+ * as telas derivam o respiro do topo. A linha das subseções **não** entra nessa
+ * conta: ela é transitória e passa por cima do conteúdo, como qualquer menu.
+ */
+.nav {
+  --cab-left: 50%;
+  --cab-tx: -50%;
+  --cab-fs: var(--fs-controle);
+  --cab-gap: clamp(22px, 3vw, 40px);
+  --cab-ls: 0.3em;
+
+  position: absolute;
+  z-index: 4;
+  top: var(--hud-topo-base);
+  left: var(--cab-left);
+  transform: translateX(var(--cab-tx));
+  animation: fina var(--abertura-fina) ease-out var(--abertura-cabecalho) both;
+}
+
+/**
+ * No desktop as duas pontas têm a mesma largura (`1fr auto 1fr`), e o nome do
+ * meio cai no eixo da tela, o do buraco negro e dos canais. Com os nomes lado a
+ * lado num `flex`, o conjunto ficava centrado, mas Hobbies ficava 18px à
+ * esquerda do eixo, porque Dossiê é mais curto que Trajetória, e o cabeçalho lia
+ * torto contra tudo o que está centrado embaixo dele.
+ */
+.lista {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--cab-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lista > :first-child {
+  justify-self: end;
+}
+
+.lista > :last-child {
+  justify-self: start;
+}
+
+/**
+ * Um nome por tela, sem caixa em volta. O recuo da esquerda leva o
+ * `letter-spacing` a mais, que entra também depois da última letra e deslocaria
+ * o nome para a esquerda em relação ao próprio risco.
+ */
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: var(--hud-topo-linha);
+  margin: 0;
+  padding: 0 0 0 var(--cab-ls);
+  border: 0;
+  background: none;
+  color: var(--tx-apagado);
+  font: inherit;
+  font-size: var(--cab-fs);
+  letter-spacing: var(--cab-ls);
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--dur-hover);
+}
+
+.item:hover,
+.item[aria-expanded='true'] {
+  color: var(--tx-hover);
+}
+
+.item[aria-current] {
+  color: var(--tx-titulo);
+}
+
+/* o risco da tela em vigor: 1px na base do nome, crescendo do centro */
+.item::after {
+  position: absolute;
+  right: var(--cab-ls);
+  bottom: 2px;
+  left: var(--cab-ls);
+  height: 1px;
+  background: currentcolor;
+  content: '';
+  transform: scaleX(0);
+  transition: transform 0.45s var(--ease-saida);
+}
+
+.item[aria-current]::after {
+  transform: scaleX(1);
+}
+
+/* a âncora da lista de cada tela */
+.tela {
+  position: relative;
+}
+
+/**
+ * As subseções de uma tela, numa lista embaixo do nome, e só no hover (ou com o
+ * foco, ou com o toque no nome da tela em que se está). Em pé, uma por linha,
+ * centradas sob o nome, na gramática do próprio cabeçalho.
+ *
+ * `padding-top` e não `margin`: a folga entre o nome e a lista faz parte da
+ * caixa dela, então o cursor atravessa sem sair do `<li>` e a lista não fecha no
+ * caminho.
+ */
+.subsecoes {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  display: grid;
+  gap: 2px;
+  min-width: 100%;
+  margin: 0;
+  padding: 10px 0 0;
+  list-style: none;
+  opacity: 0;
+  pointer-events: none;
+  /* `--lado` é a distância em índices até a lista aberta: 0 nela, ±1, ±2 nas outras */
+  transform: translateX(calc(-50% + var(--lado, 0) * 14px));
+  transition:
+    opacity 0.28s ease,
+    transform 0.34s var(--ease-saida);
+}
+
+.subsecoes[data-visivel] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.subsecao {
+  display: block;
+  width: 100%;
+  margin: 0;
+  /* o recuo da esquerda leva o `letter-spacing` que sobra depois da última letra,
+     senão o nome sairia meio espaço à esquerda do centro */
+  padding: 5px 0 5px var(--ls-etiqueta);
+  border: 0;
+  background: none;
+  color: var(--tx-rotulo);
+  font: inherit;
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-etiqueta);
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--dur-hover);
+}
+
+.subsecao:hover,
+.subsecao:focus-visible {
+  color: var(--tx-hover);
+}
+
+/* a subseção que ocupa a tela em vigor: acesa, como o nome dela lá em cima */
+.subsecao[aria-current] {
+  color: var(--tx-titulo);
+}
+
+/**
+ * No celular ele encosta à esquerda, espelhando o seletor de idioma à direita
+ * com o mesmo recuo de borda, com o espaçamento encolhido para os três nomes
+ * caberem ao lado dele.
+ */
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
+  .nav {
+    --cab-left: var(--hud-borda);
+    --cab-tx: 0;
+    --cab-fs: var(--fs-meta);
+    --cab-gap: 16px;
+    --cab-ls: 0.2em;
+  }
+
+  /* no celular os nomes encostam à esquerda, em fila */
+  .lista {
+    display: flex;
+  }
+}
+
+/**
+ * Celular estreito (360px): os três nomes de dez letras com o espaçamento acima
+ * somam ~253px, e o seletor de idioma começa em ~270px. Encosta nele. O espaço
+ * entre letras e entre nomes aperta até caber com folga.
+ */
+@media (width <= 400px) {
+  .nav {
+    --cab-gap: 12px;
+    --cab-ls: 0.1em;
+  }
+}

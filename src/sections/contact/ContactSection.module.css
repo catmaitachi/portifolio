@@ -1,114 +1,235 @@
+/**
+ * O quanto o título está cheio, de 0% a 100%, escrito pelo componente a partir
+ * do tamanho da mensagem. Registrado para poder transicionar: sem o `@property`
+ * o degradê saltaria de um degrau para o outro a cada tecla.
+ */
+@property --cheio {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
 .secao {
-  --form-cols: minmax(0, 1fr) minmax(0, 1.7fr) auto;
-  --enviar-just: start;
+  /* o tipo da frase e da mensagem: é o corpo do cartaz, e não um campo de formulário */
+  --carta-fs: clamp(16px, 2.6vmin, 26px);
+  --carta-gap: clamp(18px, 3vmin, 26px);
 }
 
+/* mais largo que o dossiê: o cartaz precisa das duas colunas */
 .bloco {
-  max-width: 840px;
+  max-width: 1100px;
 }
 
-/** O e-mail é o caminho principal: tamanho de título, com risco que acende. */
-.email {
-  position: relative;
-  align-self: flex-start;
-  padding-bottom: 9px;
-  color: var(--tx-titulo);
-  font-size: clamp(14px, 3.1vmin, 34px);
-  font-weight: 300;
-  letter-spacing: 0.02em;
-  /* endereços longos não podem estourar a largura da seção */
-  word-break: break-all;
-  /* o endereço existe para ser copiado — é a exceção que a seção não pode perder */
-  user-select: text;
-}
-
-.email:hover {
-  color: var(--tx-titulo);
-}
-
-.risco {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: var(--linha-forte);
-  transition: background var(--dur-hover);
-}
-
-.email:hover .risco {
-  background: var(--tx-titulo);
-}
-
-.form {
+.grade {
   display: grid;
-  grid-template-columns: var(--form-cols);
-  gap: clamp(14px, 2.4vmin, 26px);
-  align-items: end;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: clamp(28px, 5vw, 72px);
+  align-items: start;
 }
 
-.campo {
+/* ---------- a chamada: o título que enche e o endereço ---------- */
+
+.chamada {
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  align-items: flex-start;
+  min-width: 0;
+
+  /* o título mede a coluna, e não a tela: "conversar" tem que caber inteiro nela */
+  container-type: inline-size;
+}
+
+/**
+ * O contorno é o título vazio; o preenchimento sobe de baixo conforme a
+ * mensagem cresce. É `background-clip: text` num degradê de corte seco, e não
+ * uma cópia do texto por cima: um texto só, que o leitor de tela lê uma vez.
+ */
+.grito {
+  margin: 0;
+  color: transparent;
+  font-size: min(17cqi, 132px);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  background: linear-gradient(0deg, var(--tx-titulo) var(--cheio), transparent var(--cheio));
+  background-clip: text;
+  -webkit-text-stroke: 1px var(--linha-acesa);
+  transition: --cheio var(--dur-retorno) var(--ease-saida);
+}
+
+/**
+ * O endereço é um botão que copia. Em contorno, e o apontar o enche da
+ * esquerda para a direita, na mesma gramática do título.
+ */
+.endereco {
+  margin: 26px 0 0;
+  padding: 0;
+  border: 0;
+  background: linear-gradient(90deg, var(--tx-titulo) 50%, transparent 50%) 100% 0 / 200% 100%
+    no-repeat;
+  background-clip: text;
+  color: transparent;
+  font-size: clamp(15px, 2.4vmin, 24px);
+  letter-spacing: 0.04em;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: copy;
+  appearance: none;
+  -webkit-text-stroke: 0.6px var(--linha-cheia);
+  transition: background-position var(--dur-retorno) var(--ease-saida);
+}
+
+.endereco:hover,
+.endereco:focus-visible {
+  background-position: 0 0;
+}
+
+.dica {
+  margin-top: 10px;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
+  letter-spacing: var(--ls-etiqueta);
+  text-transform: uppercase;
+  transition: color var(--dur-hover);
+}
+
+.dica[data-ok] {
+  color: var(--tx-titulo);
+}
+
+/* ---------- a carta: a frase para completar e a mensagem ---------- */
+
+.carta {
+  display: grid;
+  gap: var(--carta-gap);
   min-width: 0;
 }
 
-.rotulo {
-  color: var(--tx-rotulo);
-  font-size: var(--fs-meta);
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
+.frase {
+  margin: 0;
+  /* uma frase com um campo no meio, e não texto corrido: não justifica nem hifeniza */
+  text-align: left;
+  hyphens: manual;
+  color: var(--tx-apoio);
+  font-size: var(--carta-fs);
+  font-weight: 300;
+  line-height: 1.55;
 }
 
-/* sublinhado de 1px que clareia no foco — sem caixa, sem preenchimento */
-.entrada {
-  width: 100%;
-  padding: 7px 1px;
+/* sem caixa: o risco embaixo é o campo, e o foco acende o risco */
+.nome,
+.mensagem {
+  padding: 0;
   border: 0;
-  border-bottom: 1px solid var(--linha-forte);
   border-radius: 0;
   background: none;
   color: var(--tx-titulo);
-  font-size: var(--fs-corpo);
+  font: inherit;
+  font-size: var(--carta-fs);
   font-weight: 300;
-  letter-spacing: 0.05em;
+  caret-color: var(--tx-titulo);
   appearance: none;
+}
+
+.nome {
+  max-width: 100%;
+  border-bottom: 1px solid var(--linha-acesa);
   transition: border-color var(--dur-hover);
 }
 
-.entrada::placeholder {
-  color: var(--tx-apagado);
+.mensagem {
+  width: 100%;
+  min-height: 6em;
+  /* cresce com a mensagem até um teto, em vez de rolar por dentro desde a quarta linha */
+  max-height: 16em;
+  field-sizing: content;
+  padding-left: 16px;
+  border-left: 1px solid var(--linha-forte);
+  line-height: 1.55;
+  resize: none;
+  transition: border-color var(--dur-hover);
 }
 
-/* o sublinhado que acende é o sinal de foco do campo, e substitui o contorno */
-.entrada:focus {
-  border-color: var(--linha-foco);
+.nome::placeholder,
+.mensagem::placeholder {
+  color: var(--tx-marcador);
+}
+
+/* o risco que acende é o sinal de foco do campo, e substitui o contorno */
+.nome:focus,
+.mensagem:focus {
   outline: none;
+  border-color: var(--linha-cheia);
+}
+
+/* ---------- o pé: o sinal e o envio ---------- */
+
+.pe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sinal {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
+  letter-spacing: var(--ls-etiqueta);
+  text-transform: uppercase;
+}
+
+/* o ponto que pulsa: o canal está aberto */
+.sinal i {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tx-forte);
+  animation: pulsa 2.4s ease-in-out infinite;
+}
+
+@keyframes pulsa {
+  50% {
+    opacity: 0.25;
+  }
 }
 
 .enviar {
   display: flex;
-  gap: 10px;
+  flex: none;
+  gap: 12px;
   align-items: center;
-  justify-self: var(--enviar-just);
   margin: 0;
-  padding: 7px 1px;
+  padding: 4px 0;
   border: 0;
-  border-bottom: 1px solid var(--linha-acesa);
-  border-radius: 0;
   background: none;
-  color: var(--tx-titulo);
-  font-size: var(--fs-controle);
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
+  color: var(--tx-forte);
   cursor: pointer;
   appearance: none;
-  transition: border-color var(--dur-hover);
 }
 
-.enviar:hover {
-  border-color: var(--tx-titulo);
+/* o rótulo do envio enche como o endereço */
+.enviarTexto {
+  background: linear-gradient(90deg, var(--tx-titulo) 50%, transparent 50%) 100% 0 / 200% 100%
+    no-repeat;
+  background-clip: text;
+  color: transparent;
+  font-size: clamp(18px, 3vmin, 32px);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  -webkit-text-stroke: 1px var(--linha-cheia);
+  transition: background-position var(--dur-retorno) var(--ease-saida);
+}
+
+.enviar:hover .enviarTexto,
+.enviar:focus-visible .enviarTexto {
+  background-position: 0 0;
 }
 
 .seta {
@@ -116,11 +237,8 @@
   align-items: center;
 
   /* a ponta é desenhada (ver `.ponta` em `section.module.css`), não escrita */
-  --ponta: 6px;
-  color: var(--tx-corpo);
-  transition:
-    transform var(--dur-hover) var(--ease-saida),
-    color var(--dur-hover);
+  --ponta: 9px;
+  transition: transform var(--dur-hover) var(--ease-saida);
 }
 
 .enviar:hover .seta {
@@ -128,48 +246,19 @@
   transform: translateX(5px);
 }
 
-/**
- * A altura mínima é reservada mesmo sem status: sem ela, a mensagem de erro
- * empurraria os cartões de canal para baixo ao aparecer.
- */
-.status {
-  min-height: 12px;
-  color: var(--tx-apoio);
-  font-size: var(--fs-meta);
-  font-weight: 300;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  opacity: 0;
-  transition: opacity var(--dur-hover);
+/* celular: o cartaz vira uma coluna, o título em cima */
+@media (width <= 760px), (orientation: portrait) and (width <= 1024px) {
+  .grade {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .grito {
+    font-size: min(15cqi, 96px);
+  }
 }
 
-.status[data-visivel] {
-  opacity: 1;
-}
-
-.canais {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(12px, 1.8vmin, 18px);
-}
-
-.ou {
-  color: var(--tx-apagado);
-  font-size: var(--fs-meta);
-  letter-spacing: 0.34em;
-  text-transform: uppercase;
-}
-
-.grade {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: clamp(10px, 1.6vmin, 16px);
-}
-
-/* coluna única antes do mobile: os três campos lado a lado ficam estreitos demais */
-@media (width <= 760px) {
-  .secao {
-    --form-cols: 1fr;
-    --enviar-just: end;
+@media (prefers-reduced-motion: reduce) {
+  .sinal i {
+    animation: none;
   }
 }
