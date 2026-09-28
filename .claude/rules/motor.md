@@ -147,8 +147,9 @@ uma **deriva** lenta (`DERIVA`, ligada por `camera.derivar`) e o que os saltos s
 até 1,6× e as estrelas viram **riscos radiais**: é o mesmo esticamento da lente, com direção radial e
 `s` até 17, e não um desenho novo, então o risco herda a queda de alfa do brilho esticado. O salto
 empurra a câmera 0,9 para a frente, que **não** volta com a rolagem: depois de um salto o céu é
-outro lugar. No auge o palco pinta um véu branco de no máximo 12% (ao cubo, então quase sempre abaixo
-de 3%).
+outro lugar. No auge o palco pinta um véu branco de no máximo 5% (ao cubo, então quase sempre abaixo
+de 1,5%), e os riscos perdem até 40% do alfa. Já foram 12% e riscos no alfa cheio, e a troca de
+tela lia como um clarão: é risco para quem tem fotossensibilidade. Com movimento reduzido não há salto.
 
 Conferido em Node com o palco e o campo empacotados e um canvas falso: nada vira NaN; com a câmera
 avançada 0,3 as estrelas se reorganizam, e de volta a 0 todas as 177 do começo voltam para até a

@@ -409,8 +409,11 @@ export function Starfield({
            * É o mesmo esticamento da lente, com outra direção e outro tamanho, e
            * não um desenho novo: o risco continua sendo o brilho da estrela,
            * esticado, e herda dele a queda de alfa que impede o risco de acender.
-           * Quem está mais perto estica mais, que é o que dá a velocidade.
+           * Quem está mais perto estica mais, que é o que dá a velocidade. No
+           * auge os riscos perdem até 40% do alfa: centenas deles cruzando a tela
+           * ao mesmo tempo clareiam o céu inteiro, e isso é clarão também.
            */
+          let apagar = 1;
           if (salto > 0.02) {
             const rx = px - cx;
             const ry = py - cy;
@@ -418,9 +421,10 @@ export function Starfield({
             s = 1 + salto * 16 * sesc[i];
             ux = rx / r;
             uy = ry / r;
+            apagar = 1 - salto * 0.4;
           }
 
-          const a = alfa * acesa * sfad[i];
+          const a = alfa * acesa * sfad[i] * apagar;
           desenharEstrela(ctx, dpr, px, py, ext, a, flareDe(ssz[i], t, sph[i]), s, ux, uy);
         }
       }

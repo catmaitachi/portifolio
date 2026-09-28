@@ -285,12 +285,12 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
 
     /**
      * O clarão do salto: um véu branco que só existe no auge, fraco e curto.
-     * Ao cubo, ele fica abaixo de 3% em quase todo o salto e passa de 10% só no
-     * meio: um clarão de tela cheia forte é risco para quem tem fotossensibilidade.
+     * Ao cubo e com teto de 5%, ele fica abaixo de 1,5% em quase todo o salto:
+     * um clarão de tela cheia forte é risco para quem tem fotossensibilidade.
      */
     const s = env.camera.salto;
     if (s > 0.3) {
-      ctx.fillStyle = `rgba(255,255,255,${(0.12 * s * s * s).toFixed(3)})`;
+      ctx.fillStyle = `rgba(255,255,255,${(0.05 * s * s * s).toFixed(3)})`;
       ctx.fillRect(0, 0, env.W, env.H);
     }
 
