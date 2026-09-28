@@ -136,6 +136,11 @@
   text-transform: uppercase;
 }
 
+.parteTitulo:has(+ .texto, + .reservado) {
+  color: var(--tx-corpo);
+  font-size: var(--fs-pequeno);
+}
+
 .parteTitulo span {
   color: var(--tx-marcador);
   font-size: clamp(22px, 3vmin, 28px);

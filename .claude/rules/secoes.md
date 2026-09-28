@@ -63,6 +63,11 @@ Trajetória com uma ficha por vez, que escondia a lista.
 **Os títulos das seções centram o nome na altura do número.** Na linha de base, o versalete de 10px
 ficava rente ao pé do número de 28px e lia desalinhado.
 
+**Perfil, Propósito e Valores têm destaque sutil**: os nomes usam `--fs-pequeno` (11px) e
+`--tx-corpo`, com peso 400. A regra `.parteTitulo:has(+ .texto, + .reservado)` identifica as
+seções de texto também quando estão vazias; os números continuam em `--tx-marcador` e o título
+de Formação usa os valores base.
+
 **O retrato não tem cantos de mira.** Eles existiram, em L, e saíram.
 
 - Retrato (`PortraitCard`): inclina seguindo o ponteiro com brilho especular (`hooks/useInclinacao`,
