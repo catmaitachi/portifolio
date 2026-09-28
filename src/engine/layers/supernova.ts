@@ -249,6 +249,20 @@ export function Supernova({
   /* deslocamento em px sobre a posição de repouso, como no campo de estrelas */
   const dx = new Float32Array(pool);
   const dy = new Float32Array(pool);
+  /**
+   * A profundidade, a mesma das figuras (`Z_FIGURA` em `constellations.ts`).
+   *
+   * A estrela acesa está no céu, e a câmera anda nele com a rolagem: ela se
+   * afasta do centro e cresce quando a rolagem avança, e volta quando recua,
+   * como as estrelas em volta. Como as figuras, segue só a rolagem, ancorada no
+   * ponto em que nasceu: a deriva e os saltos a levariam para fora da tela de
+   * quem a acendeu e ficou parado olhando.
+   */
+  const Z_ACESA = 0.85;
+  const ancora = new Float32Array(pool);
+  /** a escala do quadro, que o `update` calcula e o `draw` lê */
+  const esc = new Float32Array(pool);
+  let rolagem = 0;
 
   /* o mesmo puxão que o campo de estrelas sente, do mesmo módulo */
   const campo = campoVazio();
@@ -381,6 +395,8 @@ export function Supernova({
       brilho[i] = nivel.brilho;
       fx[i] = cfx;
       fy[i] = cfy;
+      ancora[i] = rolagem;
+      esc[i] = 1;
       // o slot pode estar sendo reciclado: a estrela nova nasce no repouso
       dx[i] = 0;
       dy[i] = 0;
@@ -395,6 +411,7 @@ export function Supernova({
 
     update(env: StageEnv) {
       const { dt } = env;
+      rolagem = env.camera.rolagem;
       if (restante > 0) restante = Math.max(0, restante - dt);
 
       /**
@@ -525,11 +542,16 @@ export function Supernova({
       for (let i = 0; i < pool; i++) {
         if (!viva[i]) continue;
         idade[i] += dt;
+        // o teto impede a divisão de explodir perto da câmera, como nas figuras
+        let delta = rolagem - ancora[i];
+        if (delta > Z_ACESA - 0.12) delta = Z_ACESA - 0.12;
+        const e = Z_ACESA / (Z_ACESA - delta);
+        esc[i] = e;
         const ganho = Math.min(1, Math.max(0, (idade[i] - settle) / SOLTA));
         // sem gravidade, sem poço e sem ponteiro, uma estrela em repouso não custa nada
         if (!ganho && !temGrav && !temPoco && !dx[i] && !dy[i]) continue;
-        const px = fx[i] * env.W;
-        const py = fy[i] * env.H;
+        const px = env.cx + (fx[i] * env.W - env.cx) * e;
+        const py = env.cy + (fy[i] * env.H - env.cy) * e;
 
         let ox = dx[i];
         let oy = dy[i];
@@ -606,12 +628,16 @@ export function Supernova({
           if (!viva[i]) continue;
           const a = idade[i];
           const nivel = brilho[i] || 1;
-          const ex = fx[i] * W + dx[i];
-          const ey = fy[i] * H + dy[i];
+          const e = esc[i];
+          const rx = env.cx + (fx[i] * W - env.cx) * e;
+          const ry = env.cy + (fy[i] * H - env.cy) * e;
+          const ex = rx + dx[i];
+          const ey = ry + dy[i];
 
-          // nasce grande e assenta em ~1,2s, como antes; o nível dá o tamanho de repouso
+          // nasce grande e assenta em ~1,2s, como antes; o nível dá o tamanho de repouso,
+          // e a profundidade o faz crescer pela raiz, como no campo
           const cresc = a < 1.2 ? 1 - a / 1.2 : 0;
-          const ext = extensaoDe(1.15 * nivel) * (1 + cresc * cresc * 0.7);
+          const ext = extensaoDe(1.15 * nivel) * (1 + cresc * cresc * 0.7) * Math.sqrt(e);
           const cintila = 0.82 + 0.18 * fastSin(t * 0.9 + fase[i]);
           const alfa = Math.min(1, Math.min(1, a / 0.12) * cintila * GLOW_ALPHA * 1.4);
           // a estrela acesa mostra as pontas por ser o que é, não por tamanho:
@@ -627,7 +653,7 @@ export function Supernova({
             const mag2 = ox * ox + oy * oy;
             if (
               temAlongamento(mag2) &&
-              dentroDoAlcance(fx[i] * W, fy[i] * H, campo, campoPoco, temGrav, temPoco)
+              dentroDoAlcance(rx, ry, campo, campoPoco, temGrav, temPoco)
             ) {
               const mag = Math.sqrt(mag2);
               s = alongamentoDe(mag);

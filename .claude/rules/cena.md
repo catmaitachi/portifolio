@@ -269,6 +269,12 @@ dedo que a acendeu pareceria um erro. A repulsão entra por uma rampa de 0,9s, n
 interruptor, o que leva a força total a ~2,9s, e a mesma mola do `Starfield` devolve a estrela ao
 repouso quando o ponteiro sai.
 
+**Ela está no céu, e a rolagem a leva junto.** Tem a profundidade das figuras (`Z_ACESA`, 0,85) e,
+como elas, segue só a rolagem, ancorada no ponto em que nasceu: rolar para a frente a afasta do centro
+e a faz crescer (o brilho pela raiz da escala, como no campo), rolar de volta a devolve. Antes ela
+ficava presa à tela enquanto o campo inteiro viajava, e lia como um adesivo no vidro. A deriva e os
+saltos ficam de fora pelo mesmo motivo das figuras: levariam a estrela embora de quem a acendeu.
+
 **"Como as outras" inclui cair para o horizonte** e sentir o poço da carga seguinte. O puxão vem do
 mesmo `engine/gravity.ts` que o campo usa, e entra **depois da mola**, como lá: a mola puxa de volta
 para o repouso e o puxão é somado por cima do que sobrou. Invertida, a mola comeria o puxão do mesmo

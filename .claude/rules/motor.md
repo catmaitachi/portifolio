@@ -131,7 +131,7 @@ raiz), então mesmo parado o céu tem estrelas perto e longe.
 **rolagem** (`env.camera.rolagem`), ancoradas no ponto em que apareceram: elas não dão a volta como as
 estrelas, e seguindo a deriva cresceriam para fora da tela de quem fica parado lendo, e um salto as
 jogaria longe logo ao aparecer. Assim elas surgem no lugar e no tamanho do `placement` e crescem com a
-rolagem, como as estrelas em volta.
+rolagem, como as estrelas em volta. A estrela acesa da supernova usa a mesma conta (ver `cena.md`).
 
 - **a volta é um `mod`, não um contador.** Quem passa da câmera renasce no fundo, perto do centro, e
   a conta é reversível: rolar de volta ao topo devolve cada estrela ao lugar exato. As duas pontas
