@@ -24,8 +24,6 @@ export interface Stage {
     ler(): MedidaQualidade;
     /** fixa o nível que quem visita escolheu; `null` devolve a decisão à cena */
     fixar(v: number | null): void;
-    /** troca os pisos e força a taxa de 30, para calibrar (o painel de `?pisos`) */
-    calibrar(c: { densidade?: number; escala?: number; trinta?: boolean }): void;
     /**
      * A medição de uma visita anterior nesta máquina: a cena começa no ideal dela,
      * em vez de subir do zero, e a régua a mostra enquanto mede de novo.
@@ -89,14 +87,13 @@ const SALTO_VOO = 0.9;
  * que quem olha menos sente**: primeiro a densidade do céu, depois a resolução,
  * e a taxa de quadros só por último.
  *
- * - de `Q_RES` a 1, só a densidade anda: `env.densidade` vai do `pisoDensidade`
+ * - de `Q_RES` a 1, só a densidade anda: `env.densidade` vai do `PISO_DENSIDADE`
  *   até 1 (as estrelas opcionais acendem uma a uma), com a resolução cheia;
  * - de 0 a `Q_RES`, a densidade fica no piso e a resolução anda, do
- *   `pisoEscala` ao DPR do aparelho (teto 2);
+ *   `PISO_ESCALA` ao DPR do aparelho (teto 2);
  * - abaixo de 0 não há mais o que tirar, e a taxa cai de 60 para 30 (`economia`).
  *
- * O halo da supernova sai abaixo de `Q_LEVE` (`env.leve`). Os dois pisos são
- * calibráveis ao vivo (`qualidade.calibrar`, o painel de `?pisos`).
+ * O halo da supernova sai abaixo de `Q_LEVE` (`env.leve`).
  *
  * A cada janela o palco mede quanto de CPU a cena gasta (o trabalho de cada
  * quadro desenhado vezes os quadros por segundo, em fração de um núcleo), e
@@ -140,7 +137,7 @@ const Q_RES = 0.5;
 const Q_LEVE = 0.35;
 /**
  * O piso da densidade, em fração do céu inteiro: metade das estrelas. Escolhido
- * pelo Lucas no painel de `?pisos` (29/09/2026); o `Starfield` não desce de um
+ * pelo Lucas num painel de calibragem que existiu (29/09/2026); o `Starfield` não desce de um
  * quarto, que é o céu fixo dele.
  */
 const PISO_DENSIDADE = 0.5;
@@ -188,7 +185,6 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
     bus: {},
     leve: true,
     densidade: 0,
-    calibrando: false,
   };
 
   // ordem do array = ordem de update; `z` = ordem de desenho
@@ -282,25 +278,22 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
   let salvo: Medicao | null = null;
   let aoMedir: ((m: Medicao) => void) | null = null;
 
-  let pisoDensidade = PISO_DENSIDADE;
-  let pisoEscala = PISO_ESCALA;
   const dprMax = () => Math.min(window.devicePixelRatio || 1, MAX_DPR);
   // em degraus de 1/8, para a resolução não trocar a cada passo pequeno de `q`
   const escalaDe = (v: number) => {
-    const piso = Math.min(pisoEscala, dprMax());
-    // no piso, o valor exato: é o que o painel de `?pisos` calibra, e o degrau o esconderia
+    const piso = Math.min(PISO_ESCALA, dprMax());
+    // no piso, o valor exato do piso escolhido, sem o degrau
     if (v <= 0) return piso;
     return Math.round((piso + (dprMax() - piso) * Math.min(1, v / Q_RES)) * 8) / 8;
   };
   const densidadeDe = (v: number) =>
-    v <= Q_RES ? pisoDensidade : pisoDensidade + ((1 - pisoDensidade) * (v - Q_RES)) / (1 - Q_RES);
+    v <= Q_RES ? PISO_DENSIDADE : PISO_DENSIDADE + ((1 - PISO_DENSIDADE) * (v - Q_RES)) / (1 - Q_RES);
   /** o consumo da última janela medida, em fração de um núcleo */
   let consumoMedido: number | null = null;
   /**
    * 60fps sempre, e a intro com eles: o primeiro contato é o que mais sente. Só
    * uma máquina que passa da meta com resolução e densidade no piso cai para 30
-   * (`economia`), e fica ali na visita. O painel de `?pisos` também a liga, para
-   * ver como a cena fica a 30.
+   * (`economia`), revista quando o teto se solta.
    */
   let economia = false;
   const intervaloAlvo = () => (economia ? 1 / 30 : 1 / 60);
@@ -321,12 +314,12 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
     for (const l of layers) l.resize?.(env);
   };
 
-  const aplicar = (novo: number, forcar = false) => {
+  const aplicar = (novo: number) => {
     const escalaAntes = escalaDe(q);
     q = Math.min(1, Math.max(0, novo));
     env.leve = q < Q_LEVE;
     env.densidade = densidadeDe(q);
-    if (forcar || escalaDe(q) !== escalaAntes) dimensionar();
+    if (escalaDe(q) !== escalaAntes) dimensionar();
     canvas.dataset.qualidade = economia || q < Q_LEVE ? '0' : q < Q_RES ? '1' : '2';
     canvas.dataset.q = q.toFixed(2);
     julgarApos = parede + ASSENTA;
@@ -590,26 +583,6 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
         fps: economia ? 30 : 60,
         consumo: consumoMedido,
       }),
-      calibrar(c) {
-        env.calibrando = true;
-        /**
-         * Mexer num piso põe a cena nele, senão não se vê nada: numa máquina que
-         * aguenta, o nível fica perto de 1, onde a densidade e a resolução estão
-         * cheias e os pisos não valem. O da densidade vai a `Q_RES` (densidade no
-         * piso, resolução cheia) e o da resolução a 0 (os dois no piso).
-         */
-        if (c.densidade !== undefined) {
-          pisoDensidade = Math.min(1, Math.max(0, c.densidade));
-          manual = Q_RES;
-        }
-        if (c.escala !== undefined) {
-          pisoEscala = Math.min(MAX_DPR, Math.max(0.25, c.escala));
-          manual = 0;
-        }
-        if (c.trinta !== undefined) economia = c.trinta;
-        anterior = null;
-        aplicar(manual ?? q, true);
-      },
       fixar(v) {
         manual = v === null ? null : Math.min(1, Math.max(0, v));
         anterior = null;

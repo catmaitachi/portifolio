@@ -187,20 +187,16 @@ primeira a ceder.
 | de 0 a 0,5 | a resolução, do `PISO_ESCALA` (px de canvas por px de layout) ao DPR, em degraus de 1/8 para não redimensionar a cada passo | a densidade, no piso |
 | abaixo de 0 | a taxa: **30 só como último recurso** (`economia`), revista quando o teto se solta | tudo no piso |
 
-O halo da supernova sai abaixo de 0,35 (`env.leve`). **Os pisos foram escolhidos pelo Lucas** no painel
-(29/09/2026): metade do céu (`PISO_DENSIDADE` 0,5) e 0,6 px por px (`PISO_ESCALA`). O céu fixo do
-`Starfield` era metade das estrelas, e por isso o piso não descia de 50%; hoje é um quarto
-(`CEU_FIXO`), e o painel testa até 25%. O painel de `?pisos` (`hud/Pisos`,
-carregado só com o parâmetro no endereço) troca os dois ao vivo, liga os 30fps e mostra o que o nível
-virou e quanto consome; "copiar os pisos" leva os números escolhidos para `stage.ts`. O que ele troca
-não fica guardado.
+O halo da supernova sai abaixo de 0,35 (`env.leve`). **Os pisos foram escolhidos pelo Lucas**
+(29/09/2026): metade do céu (`PISO_DENSIDADE` 0,5) e 0,6 px por px (`PISO_ESCALA`), e no nível 0 a
+resolução é o piso exato, sem o degrau de 1/8. O céu fixo do `Starfield` era metade das estrelas, e
+por isso o piso não descia de 50%; hoje é um quarto (`CEU_FIXO`), e a densidade pode descer até 25%.
 
-**Mexer num piso põe a cena nele**, senão não se vê nada: numa máquina que aguenta, o nível fica perto
-de 1, com densidade e resolução cheias, e ali os pisos não valem. O da densidade leva a qualidade a
-0,5 (densidade no piso, resolução cheia) e o da resolução a 0 (os dois no piso). Com o painel aberto
-(`env.calibrando`) a densidade muda na hora em vez de subir a 0,06 por segundo, e no nível 0 a
-resolução é o piso exato, sem o degrau de 1/8, que fazia vários pontos do controle darem o mesmo
-valor. A primeira versão do painel não fazia nada disso e parecia quebrada.
+Existiu um painel de calibragem, aberto com `?pisos` no endereço, que trocava os pisos ao vivo e
+mostrava o tempo de quadro; ele saiu depois de os pisos serem escolhidos. Se voltar, duas lições dele:
+mexer num piso precisa pôr a cena nele (numa máquina que aguenta, o nível fica perto de 1, onde os
+pisos não valem), e a densidade precisa mudar na hora durante a calibragem, em vez de subir a 0,06 por
+segundo, senão o controle parece quebrado.
 
 **Quem visita pode escolher o nível** na régua do menu de opções (ver `hud.md`), e aí a cena para de
 decidir: continua medindo, mas não sobe nem desce, e não cai para 30fps sozinha. A escolha fica no

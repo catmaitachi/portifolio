@@ -109,11 +109,6 @@ export interface StageEnv {
    * quarto sempre aceso e acende as outras estrelas uma a uma conforme ele sobe.
    */
   densidade: number;
-  /**
-   * O painel de `?pisos` está calibrando: a densidade muda na hora em vez de
-   * subir devagar, para o piso escolhido aparecer enquanto se mexe nele.
-   */
-  calibrando: boolean;
 }
 
 /**

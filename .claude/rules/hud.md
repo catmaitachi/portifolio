@@ -112,18 +112,6 @@ presença é dos ícones, que se apagam fora do Início e voltam sem esperar a a
 - **O recorte aberto passa da borda** (`inset(-6px)`), para não cortar o contorno de foco, que é o
   motivo de o chanfro do site não ser `clip-path` (ver `direcao-visual.md`).
 
-### O painel de `?pisos`
-
-`hud/Pisos` calibra os pisos da qualidade (ver `motor.md`) e só existe com `?pisos` no endereço: o
-`App` o carrega por `lazy`, e quem não o pede não baixa o código. É ferramenta de quem escreve a
-página, não conteúdo, e por isso é **a única peça com texto literal fora do dicionário**. O que ele
-muda não fica guardado.
-
-Ele também mostra o **tempo de quadro da página inteira** (mediana e p95 dos últimos 120 quadros, e
-quantos passaram de 20ms), medido por rAF. É a medida que importa para travamento: o consumo do motor
-só conta o canvas, e um tranco que vem do navegador (compor camadas, filtros, a máscara da tela) não
-aparece nele.
-
 ### Versão
 
 Mora no menu de opções, na última linha. O número **não é uma string escrita no componente nem uma chave de dicionário**: vem do `version` do

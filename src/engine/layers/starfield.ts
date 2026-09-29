@@ -113,8 +113,8 @@ export function Starfield({
    * conjunto chegar. As posições são sorteadas, então a ordem do índice é
    * espalhada pela tela.
    *
-   * O fixo era metade do céu, e o piso mais baixo que o painel de `?pisos` chegava
-   * era 50%. Com um quarto, dá para testar até 25%.
+   * O fixo era metade do céu, e o piso da densidade não descia de 50%. Com um
+   * quarto, ele pode ir até 25%.
    */
   let dens = 0;
   /** no primeiro quadro o céu já nasce na densidade pedida, sem subir do fixo */
@@ -196,7 +196,7 @@ export function Starfield({
     },
     update(env) {
       const { dt, t, mouse } = env;
-      dens = env.calibrando || primeiro
+      dens = primeiro
         ? env.densidade
         : env.densidade > dens
           ? Math.min(env.densidade, dens + dt * SOBE_DENS)

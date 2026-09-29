@@ -15,16 +15,8 @@ import type { Medicao, MedidaQualidade } from '~/engine';
 export interface FonteQualidade {
   ler(): MedidaQualidade;
   fixar(v: number | null): void;
-  calibrar(c: Calibragem): void;
   comecar(m: Medicao): void;
   aoMedir(fn: (m: Medicao) => void): void;
-}
-
-/** os pisos da degradação e a taxa de 30, para o painel de `?pisos` (ver `stage.ts`) */
-export interface Calibragem {
-  densidade?: number;
-  escala?: number;
-  trinta?: boolean;
 }
 
 export type { MedidaQualidade };
@@ -44,8 +36,6 @@ function medicaoSalva(): Medicao | null {
 }
 
 let fonte: FonteQualidade | null = null;
-/** o painel de `?pisos` pediu calibragem antes de o motor chegar */
-let calibrando = false;
 
 function salva(): number | null {
   try {
@@ -71,11 +61,6 @@ export const qualidade = {
     }
     fonte?.fixar(v);
   },
-  /** não fica guardado: é para testar, e a próxima visita volta aos pisos do código */
-  calibrar(c: Calibragem): void {
-    calibrando = true;
-    fonte?.calibrar(c);
-  },
 };
 
 /** Liga o motor ao canal; devolve quem o desliga. */
@@ -93,7 +78,6 @@ export function ligarQualidade(f: FonteQualidade): () => void {
   });
   const v = salva();
   if (v !== null) f.fixar(v);
-  if (calibrando) f.calibrar({});
   return () => {
     if (fonte === f) fonte = null;
   };
