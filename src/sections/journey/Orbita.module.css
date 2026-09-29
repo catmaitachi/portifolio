@@ -75,9 +75,9 @@
  * para baixo, entre os passos (`JourneySection`).
  *
  * Todas as marcas moram na mesma célula e só a escolhida aparece, chegando da
- * profundidade quando a escolha muda. É pintada **por máscara**, como na ficha:
- * o arquivo pode ser o logo colorido da empresa e o que chega à tela é a
- * silhueta, na paleta. Aqui ela é mais acesa que na ficha, porque é o centro.
+ * profundidade quando a escolha muda. É pintada **por máscara**: o arquivo pode
+ * ser o logo colorido da empresa e o que chega à tela é a silhueta, na paleta.
+ * Ela ficava também no canto da ficha, e saiu de lá: as duas repetiam o logo.
  */
 .centro {
   position: absolute;

@@ -2,7 +2,6 @@
 .secao {
   --exp-cargo: clamp(15px, 2.6vmin, 26px);
   --exp-rail: 26px; /* coluna do trilho da ficha */
-  --exp-marca-w: 96px; /* largura máxima da marca, ao lado do cabeçalho */
   --exp-gap: clamp(16px, 2.6vmin, 30px);
   --exp-txt: 100%; /* a ficha já divide a largura com a órbita */
   --orbita-col: minmax(0, 1fr);
@@ -64,10 +63,9 @@
   .secao {
     --exp-cargo: 16px;
     --exp-rail: 22px;
-    --exp-marca-w: 72px;
     --exp-gap: 14px;
-    /* no celular o cargo, o subtítulo e o texto correm na largura inteira e sem
-       a marca ao lado para separá-los, e com o gap de desktop liam como um bloco só */
+    /* no celular o cargo, o subtítulo e o texto correm na largura inteira, e com
+       o gap de desktop liam como um bloco só */
     --exp-cab-gap: 13px;
     --exp-bloco-gap: 16px;
   }

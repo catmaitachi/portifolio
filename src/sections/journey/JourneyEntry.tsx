@@ -1,4 +1,4 @@
-import { LOGOS, urlExterna, type Experiencia } from '~/content';
+import { urlExterna, type Experiencia } from '~/content';
 import { useT } from '~/i18n/useLanguage';
 import styles from './JourneyEntry.module.css';
 
@@ -24,11 +24,9 @@ interface JourneyEntryProps {
  * sublinhado. É o lugar natural para ele: o nome é a pergunta que o link
  * responde.
  *
- * **No canto de cima à direita fica a marca da empresa ou do projeto**, bem
- * apagada e com a altura do cargo e do subtítulo, no lugar do período que ficava
- * na ficha como número fantasma. A data continua na curva, que é onde ela
- * organiza alguma coisa; na ficha ela só repetia o rótulo do nó, e a marca diz
- * de quem era o trabalho.
+ * **A marca da empresa não mora aqui.** Ela ficou um tempo no canto de cima à
+ * direita, e foi para o centro da órbita (`Orbita`): as duas juntas repetiam o
+ * mesmo logo lado a lado.
  *
  * Todas as fichas ficam sobrepostas na mesma célula do palco e só a
  * ativa aparece — trocar de evento é uma transição de opacidade, sem rAF e sem
@@ -41,7 +39,6 @@ interface JourneyEntryProps {
 export function JourneyEntry({ entrada, indice, ativa }: JourneyEntryProps) {
   const t = useT();
   const stack = entrada.stack.slice(0, MAX_STACK);
-  const marca = entrada.logo ? LOGOS[entrada.logo] : undefined;
   const endereco = urlExterna(entrada.url);
 
   return (
@@ -53,15 +50,6 @@ export function JourneyEntry({ entrada, indice, ativa }: JourneyEntryProps) {
       </div>
 
       <div className={styles.conteudo}>
-        {/* a marca é desenho: o nome dela já está escrito logo abaixo do cargo */}
-        {marca ? (
-          <span
-            className={styles.marca}
-            style={{ '--marca': `url("${marca}")` } as React.CSSProperties}
-            aria-hidden="true"
-          />
-        ) : null}
-
         <div className={styles.cabecalho}>
           <h3 className={styles.cargo}>{entrada.cargo}</h3>
           <span className={styles.org}>

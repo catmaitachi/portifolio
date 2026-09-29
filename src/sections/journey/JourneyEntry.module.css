@@ -52,43 +52,20 @@
 }
 
 /**
- * O conteúdo é uma grade: o cabeçalho e a marca dividem a primeira linha, e o
- * texto e os chips ocupam a largura inteira embaixo. A última linha fica com a
+ * O conteúdo é uma grade: o cabeçalho na primeira linha, e o texto e os chips
+ * embaixo. A marca da empresa, que dividia a primeira linha com o cabeçalho, foi
+ * para o centro da órbita (ver `Orbita`). A última linha fica com a
  * sobra da ficha, e a stack assenta no pé dela, qualquer que seja o tamanho do
  * texto.
  */
 .conteudo {
   display: grid;
   grid-template-rows: auto auto 1fr;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   /* entre o cabeçalho, o texto e os chips */
   gap: var(--exp-bloco-gap, clamp(11px, 1.9vmin, 19px));
   column-gap: 16px;
   min-width: 0;
-}
-
-/**
- * A marca da empresa ou do projeto, no canto de cima à direita da ficha.
- *
- * Ela divide a primeira linha da grade com o cargo e o subtítulo e estica até a
- * altura dos dois; a largura é um teto (`--exp-marca-w`) dentro do qual o logo
- * cabe por `contain`. Ela já foi um fundo grande à direita, centrado na altura da
- * ficha, e no celular o texto passava por cima dela; depois foi o pé da ficha,
- * onde o tamanho era a folga que o texto deixava. Ao lado do cabeçalho o tamanho
- * não depende do texto, e o lugar é o mesmo em qualquer tela.
- *
- * A cor é `--tx-marcador`, o degrau mais apagado da régua de texto. Como fundo
- * grande ela ficava a 5%, fora da régua, e nesse tamanho, ao lado do cargo, os
- * 5% a deixavam quase invisível. É pintada **por máscara**, então o arquivo pode ser o logo
- * colorido de terceiro e a ficha continua na paleta: o que chega à tela é só a
- * silhueta, e nenhuma empresa precisa de uma versão branca do próprio logo.
- */
-.marca {
-  grid-area: 1 / 2;
-  width: var(--exp-marca-w, 96px);
-  background: var(--tx-marcador);
-  mask: var(--marca) right center / contain no-repeat;
-  pointer-events: none;
 }
 
 .cabecalho {
