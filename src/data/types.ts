@@ -58,6 +58,32 @@ export interface Musica {
   medidoEm: number;
 }
 
+/**
+ * O último ano no GitHub de quem é dono do token (ver `api/atividade`), já
+ * contado: a seção desenha, não calcula.
+ */
+export interface Atividade {
+  /** um par por dia, do mais antigo ao mais novo: a data (AAAA-MM-DD) e as contribuições */
+  dias: [string, number][];
+  /** contribuições no ano, com as de repositório privado, que só entram como número */
+  total: number;
+  commits: number;
+  diasAtivos: number;
+  /** o maior número de dias seguidos com contribuição */
+  maiorSequencia: number;
+  pico: { data: string; contribuicoes: number };
+  /** repositórios que receberam commits no ano */
+  repositorios: number;
+  /** o ano em que a conta foi criada */
+  desde: string;
+  /**
+   * O peso de cada linguagem nos repositórios públicos, as maiores primeiro, com
+   * o ícone dela: o SVG que o Devicon tem (preto, a nuvem o pinta de branco), ou
+   * `null`, e aí a seção desenha a sigla.
+   */
+  linguagens: { nome: string; fracao: number; icone: string | null }[];
+}
+
 export interface Jogo {
   id: string;
   nome: string;

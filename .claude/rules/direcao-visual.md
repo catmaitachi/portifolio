@@ -84,6 +84,20 @@ vier depois:
 - **uma última seção curta precisa poder chegar ao topo** (ver `navegacao.md`): o Contato ficava
   encostado embaixo quando era o foco.
 
+### Padrões escolhidos na rodada de 29/09/2026 (GitHub e menu de opções)
+
+| Onde | Padrão | Referências |
+|---|---|---|
+| GitHub, o ano | céu de estrelas que um feixe de luz acende; apontar mostra o dia com um risco-guia | reactbits/DotGrid, cultui/lightboard, animata/animated-beam |
+| GitHub, os números | um número grande em contorno que se enche de luz enquanto conta, e a ficha pontilhada ao lado | animata/metis-text, magicui/number-ticker |
+| GitHub, as linguagens | nuvem de ícones (Devicon) numa esfera que gira, a escolhida vem para a frente e acende; ao lado, um cabeçalho fixo e uma grade de chips iguais; sem ícone, sigla num círculo fino | magicui/icon-cloud, reactbits/GlideSelect |
+| menu de opções | ver `hud.md` | |
+
+Quatro regras gerais saíram das observações da rodada: **arrastar gira na direção da mão**, **o item
+escolhido se destaca no próprio lugar** (e não só num painel ao lado), **um painel de detalhe tem
+medida fixa**, sem mudar de largura a cada escolha, e **os blocos empilhados de uma seção têm a mesma
+largura**: o que cresce para preencher é o espaço interno, e não o objeto.
+
 ### Tokens: a régua é uma só
 
 Cor, tipo e tempo moram em `:root`, no `reset.css`, e os módulos escolhem um degrau. Antes cada

@@ -17,6 +17,7 @@ export type SectionKey =
   | 'sobre'
   | 'projetos'
   | 'experiencia'
+  | 'github'
   | 'musica'
   | 'jogos'
   | 'filmes'
@@ -253,6 +254,37 @@ export interface Dictionary {
     carregando: string;
     erro: string;
     vazio: string;
+  };
+  /** a seção GitHub, na Trajetória (ver `secoes.md`) */
+  github: {
+    titulo: string;
+    intro: string;
+    /** o rótulo do número grande */
+    commits: string;
+    rotulos: {
+      contribuicoes: string;
+      diasAtivos: string;
+      maiorSequencia: string;
+      pico: string;
+      repositorios: string;
+      desde: string;
+    };
+    /** aceita `{n}` */
+    dias: string;
+    /** a legenda do céu, e as duas pontas da escala de brilho */
+    ano: string;
+    menos: string;
+    mais: string;
+    /** o rótulo de um dia apontado; aceita `{data}` e `{n}` */
+    dia: string;
+    /** o resumo do céu para quem não o vê; aceita `{n}` e `{dias}` */
+    ceuA11y: string;
+    linguagens: string;
+    /** aceita `{n}` */
+    doCodigo: string;
+    /** o cabeçalho da legenda sem nada em foco; `quantas` aceita `{n}` */
+    quantas: string;
+    aponte: string;
   };
   experiencia: {
     titulo: string;

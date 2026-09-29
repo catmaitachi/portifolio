@@ -1,0 +1,407 @@
+/**
+ * GitHub. Responsivo por tokens: os valores base moram aqui e a faixa do celular
+ * só os redefine.
+ *
+ * `@keyframes` mora no módulo que o usa (ver `hud.md`).
+ */
+@keyframes chega {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+    transform: scale(0.94);
+  }
+}
+
+@keyframes varre {
+  from {
+    transform: translateX(-60px);
+  }
+}
+
+.secao {
+  /* o lado da nuvem de linguagens; quem ocupa a largura é a legenda ao lado dela */
+  --gh-nuvem: 360px;
+  --gh-grande: clamp(80px, 13vw, 164px);
+}
+
+.bloco {
+  max-width: 1100px;
+}
+
+/* a coluna é a largura da seção, e não a do conteúdo: o céu rola por dentro no celular */
+.conteudo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(44px, 7vh, 80px);
+}
+
+/* ---------- o cartaz ---------- */
+
+.cartaz {
+  display: grid;
+  grid-template-columns: auto minmax(0, 420px);
+  gap: clamp(28px, 5vw, 64px);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.grande {
+  display: grid;
+  margin: 0;
+  text-align: left;
+}
+
+/**
+ * O número em contorno que se enche de baixo para cima enquanto conta: a posição
+ * do corte (`--gh-cheio`) é escrita pelo componente a cada quadro. É o corte seco
+ * do título do Contato (ver `direcao-visual.md`), com um nome próprio: o do
+ * Contato é registrado por `@property`, que é global.
+ */
+.grandeNumero {
+  --gh-cheio: 0%;
+
+  background-image: linear-gradient(0deg, var(--tx-titulo) var(--gh-cheio), transparent var(--gh-cheio));
+  background-clip: text;
+  color: transparent;
+  font-size: var(--gh-grande);
+  font-variant-numeric: tabular-nums;
+  font-weight: 300;
+  line-height: 0.85;
+  letter-spacing: -0.02em;
+  -webkit-text-stroke: 1px var(--linha-acesa);
+}
+
+.grandeRotulo {
+  margin-top: 12px;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+
+.ficha {
+  display: grid;
+  gap: 11px;
+  margin: 0;
+}
+
+/* rótulo e valor ligados por um pontilhado, como numa ficha */
+.fichaLinha {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: var(--fs-controle);
+  letter-spacing: 0.14em;
+}
+
+.fichaLinha::after {
+  content: '';
+  order: 1;
+  flex: 1;
+  border-bottom: 1px dotted var(--linha-forte);
+  transform: translateY(-3px);
+}
+
+.fichaLinha dt {
+  color: var(--tx-apoio);
+}
+
+.fichaLinha dd {
+  order: 2;
+  margin: 0;
+  color: var(--tx-titulo);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* a ficha chega depois de o bloco assentar, uma linha depois da outra */
+.bloco[data-ativo] .fichaLinha {
+  animation: chega 0.6s var(--ease-entrada) calc(0.45s + var(--i) * 0.08s) backwards;
+}
+
+/* ---------- o céu do ano ---------- */
+
+.ceu {
+  min-width: 0;
+  margin: 0;
+}
+
+.ceuQuadro {
+  position: relative;
+}
+
+/* corta o que sai do céu: é onde o feixe descansa antes e depois de passar */
+.ceuSvg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+}
+
+.ceuDia {
+  fill: #fff;
+  opacity: 0;
+  transition: opacity 0.9s var(--ease-entrada);
+}
+
+/* o céu acende atrás do feixe: a coluna de cada semana espera a vez dela */
+.ceu[data-aceso] .ceuDia {
+  opacity: var(--a);
+  transition-delay: calc(0.3s + var(--s) * 22ms);
+}
+
+/* o feixe descansa fora do céu, à direita, e só passa na entrada */
+.ceuFeixe {
+  pointer-events: none;
+  transform: translateX(900px);
+}
+
+.ceu[data-aceso] .ceuFeixe {
+  animation: varre 1.3s cubic-bezier(0.45, 0, 0.3, 1) 0.3s backwards;
+}
+
+.ceuMes {
+  fill: var(--tx-rotulo);
+  font-family: inherit;
+  font-size: 7.5px;
+  letter-spacing: 0.22em;
+}
+
+.ceuColuna {
+  fill: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s var(--ease-saida);
+}
+
+.ceuColuna[data-visivel] {
+  opacity: 0.05;
+}
+
+/* o dia apontado, com um risco até a estrela */
+.ceuRotulo {
+  position: absolute;
+  color: var(--tx-forte);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, calc(-100% - 12px));
+  transition: opacity 0.2s var(--ease-saida);
+}
+
+.ceuRotulo::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 1px;
+  height: 9px;
+  background: var(--linha-acesa);
+}
+
+.ceuRotulo[data-visivel] {
+  opacity: 1;
+}
+
+.ceuLegenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+
+.ceuEscala {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.ceuEscala i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--tx-titulo);
+}
+
+/* ---------- as linguagens ---------- */
+
+/**
+ * A nuvem no tamanho dela, e a legenda crescendo até a borda: o bloco tem a mesma
+ * largura do cartaz e do céu, sem a nuvem inchar para preencher o vão.
+ */
+.linguagens {
+  display: grid;
+  grid-template-columns: var(--gh-nuvem) minmax(0, 1fr);
+  gap: clamp(28px, 5vw, 64px);
+  align-items: center;
+}
+
+.nuvem {
+  display: block;
+  width: var(--gh-nuvem);
+  aspect-ratio: 1;
+  cursor: grab;
+  /* no toque, o arraste vertical continua rolando a tela; o horizontal gira */
+  touch-action: pan-y;
+}
+
+.nuvem:active {
+  cursor: grabbing;
+}
+
+.bloco[data-ativo] .nuvem {
+  animation: chega 0.9s var(--ease-entrada) 0.5s backwards;
+}
+
+.linguagensTitulo {
+  margin: 0 0 12px;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
+  font-weight: 400;
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+
+/* o cabeçalho da legenda: altura fixa, e trocar de linguagem só troca o texto */
+.foco {
+  display: grid;
+  align-content: end;
+  gap: 6px;
+  height: 96px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--linha);
+}
+
+.focoLinha {
+  color: var(--tx-apoio);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+
+.focoNome {
+  overflow: hidden;
+  color: var(--tx-titulo);
+  font-size: var(--fs-destaque);
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* o peso da linguagem em foco, relativo à maior */
+.focoBarra {
+  display: block;
+  height: 1px;
+  background: var(--linha-cheia);
+  transform: scaleX(var(--f));
+  transform-origin: left;
+  transition: transform var(--dur-retorno) var(--ease-saida);
+}
+
+/* uma grade de chips iguais: quatro por linha, e nada muda de tamanho ao escolher */
+.chips {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--linha-sutil);
+  background: none;
+  color: var(--tx-apagado);
+  font: inherit;
+  font-size: var(--fs-controle);
+  letter-spacing: 0.1em;
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+  transition:
+    color var(--dur-hover) var(--ease-saida),
+    border-color var(--dur-hover) var(--ease-saida);
+}
+
+.chip[data-destaque],
+.chip[aria-pressed='true'] {
+  border-color: var(--linha-acesa);
+  color: var(--tx-titulo);
+}
+
+.chipNome {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chipPct {
+  font-variant-numeric: tabular-nums;
+}
+
+/* os chips chegam depois da nuvem, um depois do outro */
+.bloco[data-ativo] .chips li {
+  animation: chega 0.6s var(--ease-entrada) calc(0.6s + var(--ordem) * 0.06s) backwards;
+}
+
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
+  .secao {
+    --gh-nuvem: min(340px, 86vw);
+  }
+
+  .cartaz,
+  .linguagens {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .nuvem {
+    justify-self: center;
+  }
+
+  .chips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* no celular o ano não cabe legível na largura: ele rola de lado, e abre no fim, que é o agora */
+  .ceuQuadro {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .ceuQuadro::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ceuSvg {
+    min-width: 680px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ceuFeixe {
+    display: none;
+  }
+
+  .ceuDia,
+  .ceu[data-aceso] .ceuDia {
+    transition: none;
+  }
+}

@@ -15,6 +15,7 @@ import { AboutSection } from '~/sections/about/AboutSection';
 import { ContactSection } from '~/sections/contact/ContactSection';
 import { FilmsSection } from '~/sections/films/FilmsSection';
 import { GamesSection } from '~/sections/games/GamesSection';
+import { GithubSection } from '~/sections/github/GithubSection';
 import { HeroSection } from '~/sections/hero/HeroSection';
 import { JourneySection } from '~/sections/journey/JourneySection';
 import { MusicSection } from '~/sections/music/MusicSection';
@@ -41,6 +42,7 @@ const MONTAR: Record<SectionKey, React.ComponentType<SectionProps>> = {
   sobre: memo(AboutSection),
   projetos: memo(ProjectsSection),
   experiencia: memo(JourneySection),
+  github: memo(GithubSection),
   musica: memo(MusicSection),
   jogos: memo(GamesSection),
   filmes: memo(FilmsSection),

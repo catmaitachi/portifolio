@@ -17,6 +17,7 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | `ProjectsSection` (e `Projeto`) | `--proj-cols --proj-gap --proj-entre` |
 | `GamesSection` | `--capa-w --deque-h` |
 | `FilmsSection` | `--marcador-col --credito-fs` |
+| `GithubSection` | `--gh-nuvem --gh-grande` (no celular o céu do ano rola de lado, com 680px de largura mínima, e os chips de linguagem passam de quatro para dois por linha) |
 | `ContactSection` | `--carta-fs --carta-gap` (o título mede a coluna, por `cqi`, e não a tela) |
 | `SectionNav` | `--cab-left --cab-tx --cab-fs --cab-px --cab-ls` |
 | `Opcoes` | nenhum: fica no canto direito nas duas faixas, e o painel mede `min(264px, 100vw − 2·--hud-borda)` |

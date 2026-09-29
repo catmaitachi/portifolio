@@ -20,7 +20,7 @@ inteira, rola por dentro e **empilha** as seções dela, uma embaixo da outra, c
 |---|---|
 | Identidade | Início, Sobre mim, Contato |
 | Interesses | Música, Jogos, Filmes |
-| Trajetória | Carreira, Projetos pessoais |
+| Trajetória | Carreira, GitHub, Projetos pessoais |
 
 **Os nomes das telas têm todos dez letras** em português (e sete em inglês), escolha de quem escreve
 a página: no cabeçalho eles ocupam a mesma largura. Eles já foram Dossiê, Hobbies e Trajetória, e a

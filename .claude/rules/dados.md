@@ -29,6 +29,19 @@ projeto que roda fora do navegador.
 | `api/steam.ts` | `STEAM_API_KEY`, `STEAM_ID` | 60s | jogando agora e os das duas últimas semanas |
 | `api/letterboxd.ts` | `LETTERBOXD_USER`, `LETTERBOXD_LIST` (opcional) | 30min | últimos assistidos com a nota, e uma lista escolhida a dedo |
 | `api/github.ts` | `GITHUB_TOKEN` | 1h | os repositórios de `shared.json → projetos`, com atividade, linguagens e números |
+| `api/atividade.ts` | `GITHUB_TOKEN` | 1h | o último ano no GitHub (calendário, contagens, sequência, pico) e o peso das linguagens |
+
+**A conta de `api/atividade` é a do token (`viewer`)**, nunca um parâmetro: com o login na query,
+qualquer um usaria o token do site para consultar qualquer perfil. O que é privado entra só como
+número (o calendário conta sem dizer onde), e as linguagens vêm só dos repositórios públicos que não
+são fork. O número depende das permissões do token: um *fine-grained* só de leitura pública conta menos
+contribuição privada que um token pessoal completo (401 contra 471 em 29/09/2026).
+
+**Ela também busca os ícones das linguagens**, no Iconify (`api.iconify.design`, sem chave), uma
+chamada por conjunto da cascata com todos os nomes de uma vez e 4s de limite: o Devicon simplificado,
+depois o original. Os nomes do Linguist que o Devicon escreve diferente estão em `APELIDOS` (CSS →
+`css3`, Shell → `bash`...); o resto se acha pelo próprio nome. Falhar ali não derruba a resposta: a
+linguagem só vem sem ícone, e a seção desenha a sigla.
 
 **O League of Legends ficou de fora, e não por falta de tentativa.** Não existe API de terceiro
 legítima para histórico de partidas: todo rastreador usa a chave própria dele na API da Riot, e a

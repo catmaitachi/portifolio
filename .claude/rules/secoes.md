@@ -208,6 +208,62 @@ desenho próprio e não dependia dos arquivos que saíram.
 
 ---
 
+## Seção "GitHub"
+
+**O que o GitHub registrou do último ano**, na Trajetória, entre a Carreira e os Projetos. Os Projetos
+mostram cada repositório; esta seção mostra o ano de trabalho inteiro. O dado vem de `api/atividade`
+(ver `dados.md`), uma vez por entrada, e a seção só desenha: as contas moram na função.
+
+Escolhida numa rodada do /inspiration (29/09/2026, modo hard), misturando as direções: o **Céu** para
+o ano, o **cartaz** para os números e a **nuvem de ícones** para as linguagens, que foi sugestão do
+Lucas (o Icon Cloud do Magic UI). As três foram harmonizadas numa física só, **tudo se acende**:
+
+- **o cartaz**: um número grande só, os commits do ano, em contorno, que se enche de luz de baixo para
+  cima enquanto conta (o corte seco do título do Contato, com a variável própria `--gh-cheio`, sem
+  `@property`, ver `direcao-visual.md`). As outras contas ficam numa ficha pontilhada ao lado:
+  contribuições, dias com código, maior sequência, dia mais cheio, repositórios com commits e desde
+  quando. Na vitrine o céu tinha o próprio total em destaque, e dois números gigantes brigavam; o total
+  foi para a ficha;
+- **o céu do ano** (`CeuDoAno`): 53 semanas por 7 dias, cada dia uma estrela com tamanho e brilho pela
+  raiz do número do dia, e os dias vazios como pontos quase apagados. Ao entrar, um feixe de luz
+  atravessa as semanas e o céu acende atrás dele. Apontar um dia mostra a data e o número com um risco
+  até a estrela, e acende a coluna da semana, escrevendo direto nos nós. **No celular o céu rola de
+  lado** (largura mínima de 680px) e abre no fim, que é o agora: espremidas em 390px as 53 semanas
+  ficavam ilegíveis;
+- **as linguagens** (`NuvemDeLinguagens`): uma esfera de Fibonacci girando, com estrelas entre os
+  ícones, e cada ícone do tamanho do peso da linguagem. O bloco tem a largura do cartaz e do céu, mas
+  **quem cresce é a legenda, não a nuvem**: ela fica em 360px (`--gh-nuvem`) e a legenda vai até a
+  borda. Uma versão esticou a nuvem até 520px para preencher o vão, e ficou desproporcional. Ícones e
+  estrelas acompanham o tamanho da nuvem (as medidas são de uma de 300px, multiplicadas pela escala).
+  O título diz de onde vem o dado, "Linguagens de todo o código que publiquei": sozinho, "Linguagens"
+  não dizia se era do ano, de um projeto ou do perfil.
+- **os ícones das linguagens são do Devicon e não moram no projeto.** `api/atividade` procura cada
+  linguagem que o GitHub devolve no Iconify, numa cascata (o Devicon simplificado em uma cor, depois o
+  original, que a nuvem pinta de branco), e entrega o SVG junto com o dado; sem ícone, a nuvem desenha
+  a sigla num círculo fino, como um elemento da tabela periódica. Uma linguagem nova amanhã ganha
+  ícone sozinha. Escolhido numa terceira vitrine contra o File Icons e as siglas puras; antes eram
+  arquivos do Simple Icons guardados em `assets/`, que cobriam só as linguagens de hoje. O SVG só vira
+  imagem no canvas, nunca entra no DOM como marcação. Os ícones são do Simple Icons (CC0), guardados
+  em `assets/linguagens/` e pintados de branco no canvas; linguagem sem ícone aparece pela sigla.
+
+Três ajustes da nuvem saíram das observações da vitrine e valem para o que vier:
+
+- **arrastar gira na direção da mão**: a face da frente acompanha o ponteiro. Na demo ela ia ao
+  contrário;
+- **a escolhida se destaca na própria nuvem**: vem para a frente pelo menor giro, cresce, ganha um
+  anel, e as outras recuam. A nuvem para de girar enquanto há uma escolhida;
+- **a legenda ao lado tem medida fixa** (a Legenda compacta, escolhida numa segunda vitrine contra
+  uma régua de peso e um anel de rótulos): um cabeçalho de altura fixa diz a linguagem em foco (posição,
+  peso, o nome e um risco do tamanho do peso) e uma grade de chips iguais, quatro por linha (dois no
+  celular), lista todas com a escolhida acesa. Na demo era um nome grande que mudava de largura a cada
+  escolha. Os chips são também o caminho do teclado e do leitor de tela (`aria-pressed`, e o cabeçalho
+  é uma região `aria-live`); o canvas é desenho.
+
+O laço da nuvem só roda com a seção ativa, na tela e com a aba visível. No toque, o arraste vertical
+continua rolando a página (`touch-action: pan-y`) e o horizontal gira.
+
+---
+
 ## Seções "Música", "Jogos" e "Filmes"
 
 As três do lado pessoal, e as únicas da página que mostram dado que não é do projeto. De onde ele

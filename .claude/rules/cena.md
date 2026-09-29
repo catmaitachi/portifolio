@@ -31,7 +31,9 @@ próprio no build; nada da primeira pintura depende dele.
   conteúdo, que é o que a página existe para mostrar; o campo de estrelas já dá densidade ao fundo.
   Com uma só, o canto passa a ser a identidade da seção, e os quatro estão ocupados: Sobre no
   inferior direito (`cancer`), Projetos no superior direito (`crux`), Trajetória no superior esquerdo
-  (`ursaMajor`) e Contato no inferior esquerdo (`phoenix`);
+  (`ursaMajor`) e Contato no inferior esquerdo (`phoenix`). GitHub, entre Carreira e Projetos, fica no
+  inferior direito com o `pegasus`, a última figura do catálogo que sobrava: a troca que chega a ele
+  atravessa a tela na diagonal;
 - **os lugares abaixo foram escolhidos para o site de dois lados**, e continuam valendo enquanto a
   cena for esta. A regra que os escolheu é a que importa, e as trocas agora são outras: a cena muda
   conforme a rolagem passa de uma seção para a seguinte, em qualquer tela;

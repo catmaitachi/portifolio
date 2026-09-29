@@ -4,6 +4,7 @@
     "sobre": "Sobre mim",
     "projetos": "Projetos pessoais",
     "experiencia": "Carreira",
+    "github": "GitHub",
     "musica": "Música",
     "jogos": "Jogos",
     "filmes": "Filmes",
@@ -94,7 +95,7 @@
 
   "projetos": {
     "titulo": "Projetos pessoais",
-    "intro": "Alguns dos meus projetinhos pessoais.",
+    "intro": "Feitos por conta própria.",
     "vazio": "Nenhum projeto selecionado ainda.",
     "codigo": "ver código",
     "aoVivo": "ver ao vivo",
@@ -151,6 +152,30 @@
     "carregando": "Buscando…",
     "erro": "Não consegui buscar isso agora.",
     "vazio": "Nada por aqui ainda."
+  },
+
+  "github": {
+    "titulo": "GitHub",
+    "intro": "O que o GitHub registrou do meu último ano.",
+    "commits": "commits no último ano",
+    "rotulos": {
+      "contribuicoes": "contribuições",
+      "diasAtivos": "dias com código",
+      "maiorSequencia": "maior sequência",
+      "pico": "dia mais cheio",
+      "repositorios": "repositórios com commits",
+      "desde": "no GitHub desde"
+    },
+    "dias": "{n} dias",
+    "ano": "o último ano, um ponto por dia",
+    "menos": "menos",
+    "mais": "mais",
+    "dia": "{data} · {n}",
+    "ceuA11y": "{n} contribuições em {dias} dias com código no último ano",
+    "linguagens": "Linguagens de todo o código que publiquei",
+    "doCodigo": "{n}% do código",
+    "quantas": "{n} linguagens",
+    "aponte": "aponte ou escolha uma"
   },
 
   "experiencia": {
