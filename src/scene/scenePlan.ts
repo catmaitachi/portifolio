@@ -54,6 +54,16 @@ export const CEUS: Partial<Record<SectionKey, Ceu>> = {
     placements: [{ key: 'ursaMajor', x: 0.14, y: 0.14, size: 0.32, rotate: -8 }],
   },
   /**
+   * GitHub fica entre Carreira (superior esquerdo) e Projetos (superior direito),
+   * no **inferior direito**: a troca que chega atravessa a tela na diagonal. É o
+   * canto do Sobre, em outra tela e noutro ponto, e com o Pégaso, a última figura
+   * do catálogo que sobrava.
+   */
+  github: {
+    entrada: 1.35,
+    placements: [{ key: 'pegasus', x: 0.83, y: 0.78, size: 0.24, rotate: 6 }],
+  },
+  /**
    * As três do lado pessoal.
    *
    * No modo pessoal a sequência é Sobre (inferior direito), Música, Jogos,

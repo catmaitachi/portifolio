@@ -29,6 +29,15 @@
         ],
         "createdAt": "2026-09-29T10:18:05.973Z",
         "reason": "sanctioned project exception: preenchimento de corte seco (direcao-visual.md), idioma-B chosen by the user in the inspiration vitrine"
+      },
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "src/sections/github/GithubSection.module.css"
+        ],
+        "createdAt": "2026-09-29T11:56:25.272Z",
+        "reason": "sanctioned project exception: preenchimento de corte seco (direcao-visual.md); numeros-B chosen by the user in the inspiration vitrine"
       }
     ]
   }

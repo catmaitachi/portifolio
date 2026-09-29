@@ -22,6 +22,7 @@
     { "key": "sobre" },
     { "key": "projetos" },
     { "key": "experiencia" },
+    { "key": "github" },
     { "key": "musica" },
     { "key": "jogos" },
     { "key": "filmes" },
@@ -31,7 +32,7 @@
   "telas": [
     { "key": "dossie", "partes": ["inicio", "sobre", "contato"] },
     { "key": "hobbies", "partes": ["musica", "jogos", "filmes"] },
-    { "key": "trajetoria", "partes": ["experiencia", "projetos"] }
+    { "key": "trajetoria", "partes": ["experiencia", "github", "projetos"] }
   ],
 
   "perfis": {
@@ -49,6 +50,11 @@
       "icone": "letterboxd",
       "rotulo": "Letterboxd",
       "url": "https://letterboxd.com/catmaitachi/"
+    },
+    "github": {
+      "icone": "github",
+      "rotulo": "GitHub",
+      "url": "https://github.com/catmaitachi"
     },
     "projetos": {
       "icone": "github",

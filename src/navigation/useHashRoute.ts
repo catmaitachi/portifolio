@@ -48,6 +48,7 @@ const SLUG_SECAO: Record<SectionKey, string> = {
   sobre: 'about',
   projetos: 'projects',
   experiencia: 'career',
+  github: 'github',
   musica: 'music',
   jogos: 'games',
   filmes: 'films',

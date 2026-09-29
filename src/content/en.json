@@ -4,6 +4,7 @@
     "sobre": "About me",
     "projetos": "Side projects",
     "experiencia": "Career",
+    "github": "GitHub",
     "musica": "Music",
     "jogos": "Games",
     "filmes": "Films",
@@ -151,6 +152,28 @@
     "carregando": "Fetching…",
     "erro": "Couldn't fetch this right now.",
     "vazio": "Nothing here yet."
+  },
+
+  "github": {
+    "titulo": "GitHub",
+    "intro": "What GitHub recorded of my last year.",
+    "commits": "commits in the last year",
+    "rotulos": {
+      "contribuicoes": "contributions",
+      "diasAtivos": "days with code",
+      "maiorSequencia": "longest streak",
+      "pico": "busiest day",
+      "repositorios": "repositories with commits",
+      "desde": "on GitHub since"
+    },
+    "dias": "{n} days",
+    "ano": "the last year, one dot per day",
+    "menos": "less",
+    "mais": "more",
+    "dia": "{data} · {n}",
+    "ceuA11y": "{n} contributions across {dias} days with code in the last year",
+    "linguagens": "Languages",
+    "doCodigo": "{n}% of the code"
   },
 
   "experiencia": {

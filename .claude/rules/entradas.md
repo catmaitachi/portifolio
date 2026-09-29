@@ -26,6 +26,7 @@ a cada volta*).
 | Música | tudo chega da profundidade: o destaque, depois as capas uma a uma e os retratos por último | `MusicSection.module.css` |
 | Jogos | as capas do deque chegam do fundo, a da frente primeiro | `GamesSection.module.css` |
 | Filmes | os títulos chegam da profundidade, um depois do outro, e de novo a cada troca de aba | `FilmsSection.module.css` |
+| GitHub | o número grande conta e se enche de luz, a ficha chega linha a linha, um feixe atravessa o céu do ano e o acende, e a nuvem e a lista de linguagens chegam depois | `GithubSection.module.css`, `GithubSection` |
 
 O cartão de projeto anda **72px**, e não é exagero: ele tem 280px de altura, e um pulo de 30px nele
 mal se lê. Distância de entrada acompanha o tamanho do elemento.

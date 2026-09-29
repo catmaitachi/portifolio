@@ -9,6 +9,25 @@ import clinplay from '~/assets/logos/clinplay.svg';
 import puc from '~/assets/logos/puc.png';
 import senac from '~/assets/logos/senac.png';
 import retrato from '~/assets/retrato.jpg';
+import lgTypescript from '~/assets/linguagens/typescript.svg';
+import lgJava from '~/assets/linguagens/openjdk.svg';
+import lgCss from '~/assets/linguagens/css.svg';
+import lgC from '~/assets/linguagens/c.svg';
+import lgPython from '~/assets/linguagens/python.svg';
+import lgJavascript from '~/assets/linguagens/javascript.svg';
+import lgHtml from '~/assets/linguagens/html5.svg';
+import lgTex from '~/assets/linguagens/latex.svg';
+import lgGo from '~/assets/linguagens/go.svg';
+import lgRust from '~/assets/linguagens/rust.svg';
+import lgCpp from '~/assets/linguagens/cplusplus.svg';
+import lgCsharp from '~/assets/linguagens/csharp.svg';
+import lgPhp from '~/assets/linguagens/php.svg';
+import lgRuby from '~/assets/linguagens/ruby.svg';
+import lgKotlin from '~/assets/linguagens/kotlin.svg';
+import lgSwift from '~/assets/linguagens/swift.svg';
+import lgDart from '~/assets/linguagens/dart.svg';
+import lgShell from '~/assets/linguagens/shell.svg';
+import lgLua from '~/assets/linguagens/lua.svg';
 
 /**
  * Registro de imagens.
@@ -44,6 +63,33 @@ export const ICONES: Record<string, string> = {
   spotify,
   steam,
   letterboxd,
+};
+
+/**
+ * Os ícones das linguagens da seção GitHub, pela chave que o GitHub usa (o nome
+ * que o Linguist dá à linguagem). Vêm do Simple Icons (CC0), pretos: a nuvem os
+ * pinta de branco no canvas. Linguagem sem ícone aparece pela sigla.
+ */
+export const LINGUAGENS: Record<string, string> = {
+  TypeScript: lgTypescript,
+  Java: lgJava,
+  CSS: lgCss,
+  C: lgC,
+  Python: lgPython,
+  JavaScript: lgJavascript,
+  HTML: lgHtml,
+  TeX: lgTex,
+  Go: lgGo,
+  Rust: lgRust,
+  'C++': lgCpp,
+  'C#': lgCsharp,
+  PHP: lgPhp,
+  Ruby: lgRuby,
+  Kotlin: lgKotlin,
+  Swift: lgSwift,
+  Dart: lgDart,
+  Shell: lgShell,
+  Lua: lgLua,
 };
 
 /**
