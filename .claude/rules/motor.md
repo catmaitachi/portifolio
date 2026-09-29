@@ -1,6 +1,8 @@
 ---
 paths:
   - "src/engine/**"
+  - "src/scene/qualidade.ts"
+  - "scripts/check-qualidade.mjs"
 ---
 
 ## Motor de cena (`src/engine/`)
@@ -183,7 +185,7 @@ primeira a ceder.
 |---|---|---|
 | de `Q_RES` (0,5) a 1 | `env.densidade` (a fração do céu acesa), do `PISO_DENSIDADE` a 1: o `Starfield` mantém uma estrela em cada quatro sempre acesa e acende as outras **uma a uma**, cada uma com o próprio fade | a resolução, cheia (o DPR do aparelho, teto 2) |
 | de 0 a 0,5 | a resolução, do `PISO_ESCALA` (px de canvas por px de layout) ao DPR, em degraus de 1/8 para não redimensionar a cada passo | a densidade, no piso |
-| abaixo de 0 | a taxa: **30 só como último recurso** (`economia`), e fica ali na visita | tudo no piso |
+| abaixo de 0 | a taxa: **30 só como último recurso** (`economia`), revista quando o teto se solta | tudo no piso |
 
 O halo da supernova sai abaixo de 0,35 (`env.leve`). **Os pisos foram escolhidos pelo Lucas** no painel
 (29/09/2026): metade do céu (`PISO_DENSIDADE` 0,5) e 0,6 px por px (`PISO_ESCALA`). O céu fixo do
@@ -205,33 +207,54 @@ decidir: continua medindo, mas não sobe nem desce, e não cai para 30fps sozinh
 `localStorage` (`portfolio.qualidade`) e volta na próxima visita; "auto" a apaga e devolve a decisão à
 cena, sem o teto de antes. O canal é `scene/qualidade.ts`, no desenho de `scene/camera.ts`.
 
-A medição vira duas marcas na régua. O **limite** é o nível em que o consumo chegaria a `LIMITE`,
-pela mesma proporção que guia os passos (`q · LIMITE / consumo`), e o **ideal** é `MARGEM` dele,
-onde a cena para sozinha. **As duas são a média das primeiras 20 janelas (`AMOSTRAS`) e ficam fixas na
-visita**: seguindo cada janela, elas andavam o tempo todo, e uma referência que se mexe não serve de
-referência. Antes de fechar a média, a régua diz que está medindo. Janelas com o nível abaixo de
-0,05 que não passaram do limite ficam fora da média: ali o custo fixo da cena pesa mais que o nível. Proporção pura: perto de 0 o custo fixo da cena a
-deixa conservadora, e o limite só fica fiel depois de a cena subir ou de alguém escolher um nível.
+A medição vira duas marcas na régua: o **limite**, o nível em que o consumo chegaria a `LIMITE`, e o
+**ideal**, onde ele fica na meta, que é onde o automático para. **As duas saem de uma reta ajustada às
+primeiras 20 janelas (`AMOSTRAS`), `consumo = fixo + variável · nível`, e ficam fixas na visita.**
+Seguindo cada janela, elas andavam o tempo todo, e uma referência que se mexe não serve de referência.
+
+A primeira versão usava a proporção pura (`q · LIMITE / consumo`), e ela atribuía ao nível todo o
+custo fixo da cena (buraco negro, poeira, o laço das estrelas): o limite saía baixo, o ideal também, e
+o automático parava longe do que a máquina aguentava. A subida da abertura dá níveis variados para a
+reta; janelas atrasadas ficam de fora, porque o atraso pode ser da página. Se o nível mal variou (a
+cena começou num ideal guardado, ou ficou no piso), vale a medição guardada, ou a proporção no nível
+médio.
+
+**A medição fica guardada** (`portfolio.medicao`, pelo canal de `scene/qualidade.ts`), e a visita
+seguinte começa no ideal dela em vez de subir de 10%, com as marcas já na régua. Ao fechar a medição
+nova, as duas se juntam pela média: as marcas convergem entre visitas e se mexem no máximo uma vez
+por visita. Antes de haver qualquer medição, a régua diz que está medindo.
 
 **O que se mede é consumo, e não taxa de quadros**: o trabalho de cada quadro desenhado vezes os
 quadros por segundo, em fração de um núcleo, numa janela de 0,6s de relógio de parede. O limite
 aceitável é `LIMITE` (25% de um núcleo) e **a meta é 85% dele** (`MARGEM`): a cena para 15% abaixo
-do que a máquina aguentaria. Quadro atrasado (intervalo 35% acima do alvo, porque a GPU ou o
-navegador não acompanham) conta como passar da meta ali mesmo.
+do que a máquina aguentaria. Quadro atrasado é o intervalo 35% acima do alvo, porque a GPU ou o
+navegador não acompanham.
 
-- **subir é um passo pequeno por janela** (0,08), e só até onde a proporção prevê que a meta ainda
-  cabe, para a troca não se ver;
-- **um passo que passa da meta volta ao nível de antes e trava ali.** A proporção não prevê saltos
-  (um degrau de resolução é um salto de pixels), e descer só na proporção do excesso caía muito
-  abaixo do nível que estava bom;
-- **sem passo recente, consumo acima da meta desce na proporção do excesso** e fixa o teto. É o caso
-  da supernova carregada, que soma blits grandes em `lighter` e cresce com os pixels;
-- **descer fixa o teto** na mesma visita, e a cena não oscila;
-- a intro (zoom da câmera), os 0,3s depois de cada troca e engasgos acima de 250ms (coleta de lixo, a
-  aba que volta) ficam de fora da conta. Ao voltar de uma aba oculta, o relógio do quadro recomeça.
+**As regras foram reescritas em 29/09/2026**, porque a antiga levava qualquer máquina ao mínimo numa
+visita longa: qualquer janela ruim descia, e descer fixava o teto para sempre, então cada tranco
+passageiro da página (rolagem, uma seção entrando, coleta de lixo) tirava um degrau que não voltava. A
+simulação `npm run check:qualidade` reproduz isso: com um tranco de 1s a cada 8s numa máquina boa, a
+regra antiga terminava em 0,00 e a nova termina perto de 1.
+
+- **o alvo é o ideal.** Antes de a medição fechar, a cena sobe um passo pequeno por janela (0,04), só
+  até onde a proporção prevê que a meta cabe; fechada, vai direto ao ideal e para ali;
+- **faixa de tolerância**: sobe só com o consumo abaixo da meta, e só desce acima do `LIMITE`. No
+  meio, fica;
+- **só desce diante de um problema que dura**: 3 janelas ruins seguidas (`RUINS`, ~2s) acima do limite
+  ou atrasadas, e nunca mais que 0,2 de uma vez (`QUEDA`);
+- **um passo para cima que passou da meta volta na hora**, porque foi a própria cena que o pediu (um
+  degrau de resolução é um salto de pixels que a proporção não prevê). Só pelo consumo do canvas: um
+  atraso logo depois do passo pode ser da página, e segue a regra das janelas seguidas;
+- **o teto é temporário.** Descer segura o nível por 20s (`ESPERA`), e depois a cena tenta subir de
+  novo; cair logo depois de uma tentativa dobra a espera, até 160s (`ESPERA_MAX`), e ela não fica
+  oscilando. Os 30fps de último recurso também são revistos quando o teto se solta;
+- **momentos pesados conhecidos ficam fora da conta**: o salto entre telas, a carga e a explosão da
+  supernova (`bus.well`, `bus.shock`), o zoom da abertura, os 0,3s depois de cada troca e engasgos
+  acima de 250ms (coleta de lixo, a aba que volta). Ao voltar de uma aba oculta, o relógio do quadro
+  recomeça.
 
 **A densidade sobe devagar e estrela a estrela.** O `Starfield` segue `env.densidade` a no máximo
-0,06 por segundo (desce mais depressa, 0,4), e uma estrela ímpar de ordem `r` (o índice, que é
+0,06 por segundo (desce mais depressa, 0,4), e uma estrela opcional de ordem `r = i/N` (o índice, que é
 espalhado pela tela porque as posições são sorteadas) tem alfa `(frente − r) / 0,12`: o céu vai
 ficando mais fundo sem que se veja um conjunto chegar. As que ainda não chegaram nem são visitadas. A troca de resolução é seca, mas ela só
 afina o que já está desenhado, e as camadas trabalham em px de layout e não passam por `resize`.
@@ -244,17 +267,12 @@ página: na faixa 0 param o brilho do nome no Início e o da barra de Música, q
 `background-position` num texto e repintam a cada quadro. A órbita da Carreira, que gira em rAF,
 pinta a 30fps enquanto só gira (um décimo de grau por quadro) e a 60 só no deslize de escolher.
 
-Conferido em Node com o palco empacotado por `esbuild`, um canvas falso e um custo por quadro de
-`base + k·dpr²` ms, a 1280×720 (a simulação não modela a densidade, que só baixa o custo). **Os
-números são da calibragem anterior** (meta de 70% e resolução caindo primeiro), e ficam como ordem de
-grandeza até os pisos novos serem escolhidos:
-
-| Máquina (base, k, DPR) | Assenta em | Quadros | Consumo |
-|---|---|---|---|
-| 0,5 ms, 0,8 ms, DPR 1 | sobe até 0,86 aos 18s, e continua | 60 | 8% de um núcleo |
-| 1 ms, 2 ms, DPR 2 | 0,18 | 60 | 15% |
-| 2 ms, 6 ms, DPR 2 | 0, em economia | 30 | 16% |
-| 4 ms, 14 ms, DPR 1 | 0, em economia | 30 | 36%: o piso, acima da meta |
+**As regras têm um teste que roda**: `npm run check:qualidade` (`scripts/check-qualidade.mjs`)
+empacota o palco com esbuild e o roda em Node, com um canvas falso e um relógio de mentira em que cada
+quadro custa o que a máquina da simulação diz pela resolução e pela densidade. Ele confere que uma
+máquina boa chega perto do ideal e fica, que trancos periódicos da página não a levam ao mínimo, que
+uma máquina fraca vai a 0 e a 30fps, e que uma medição guardada é o ponto de partida. Mexer nas regras
+do automático é rodar isto antes.
 
 **No navegador controlado pela extensão isso não se cronometra**: enquanto a ferramenta executa, o
 rAF da aba congela, e a página mede quadros longos.

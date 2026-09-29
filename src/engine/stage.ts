@@ -26,6 +26,13 @@ export interface Stage {
     fixar(v: number | null): void;
     /** troca os pisos e força a taxa de 30, para calibrar (o painel de `?pisos`) */
     calibrar(c: { densidade?: number; escala?: number; trinta?: boolean }): void;
+    /**
+     * A medição de uma visita anterior nesta máquina: a cena começa no ideal dela,
+     * em vez de subir do zero, e a régua a mostra enquanto mede de novo.
+     */
+    comecar(m: Medicao): void;
+    /** chamado uma vez por visita, quando a medição fecha, para guardá-la */
+    aoMedir(fn: (m: Medicao) => void): void;
   };
   /** busca uma camada pelo nome; `undefined` se ela não estiver montada */
   layer<T extends Layer = Layer>(name: string): T | undefined;
@@ -33,12 +40,18 @@ export interface Stage {
   destroy(): void;
 }
 
+/** o que a cena mede de uma máquina: os níveis do limite e do ideal */
+export interface Medicao {
+  limite: number;
+  ideal: number;
+}
+
 export interface MedidaQualidade {
   /** o nível em vigor, de 0 a 1 */
   q: number;
   /**
    * O nível em que o consumo chegaria a `LIMITE`, e o `ideal`, onde ele fica na
-   * meta. `null` até fechar a média das primeiras janelas; depois, fixos na visita.
+   * meta. `null` até fechar a medição das primeiras janelas; depois, fixos na visita.
    */
   limite: number | null;
   ideal: number | null;
@@ -85,20 +98,34 @@ const SALTO_VOO = 0.9;
  * O halo da supernova sai abaixo de `Q_LEVE` (`env.leve`). Os dois pisos são
  * calibráveis ao vivo (`qualidade.calibrar`, o painel de `?pisos`).
  *
- * Ela começa baixa e sobe devagar, **sem nunca procurar o limite da máquina**.
  * A cada janela o palco mede quanto de CPU a cena gasta (o trabalho de cada
  * quadro desenhado vezes os quadros por segundo, em fração de um núcleo), e
  * **a meta é `MARGEM` do limite**: a cena para 15% abaixo do consumo que a
- * máquina aguentaria. Cada passo para cima vai só até onde a proporção prevê que
- * a meta ainda cabe; se mesmo assim passar (um degrau de resolução é um salto de
- * pixels), a cena volta ao nível de antes e para ali. Sem passo recente, um
- * consumo acima da meta (a supernova carregada) desce na proporção do excesso.
+ * máquina aguentaria. As regras, reescritas em 29/09/2026 porque a antiga
+ * levava qualquer máquina ao mínimo numa visita longa:
  *
- * Quadro atrasado (o intervalo passou do alvo, porque a GPU ou o navegador não
- * acompanham) conta como o limite alcançado ali mesmo.
+ * - **o alvo é o ideal.** Enquanto a média do limite não fecha, a cena sobe em
+ *   passos pequenos; fechada, ela vai direto ao ideal (`MARGEM` do limite) e para
+ *   ali. O limite medido fica guardado (`aoMedir`), e a visita seguinte já começa
+ *   no ideal dele (`comecar`) em vez de 10%;
+ * - **faixa de tolerância.** Sobe só com o consumo abaixo da meta, e só desce
+ *   acima do `LIMITE`. No meio, fica: antes as duas decisões usavam o mesmo
+ *   número, e qualquer oscilação empurrava para baixo;
+ * - **só desce diante de um problema que dura**: `RUINS` janelas seguidas acima
+ *   do limite ou com quadros atrasados, e nunca mais que `QUEDA` de uma vez. As
+ *   janelas de um momento pesado conhecido (salto entre telas, carga e explosão
+ *   da supernova, o zoom da abertura) ficam fora da conta: um tranco que passa
+ *   não é regime, e baixar o céu não o resolveria. O passo para cima que acabou
+ *   de ser dado é a exceção: passou da meta, volta na hora, porque foi a própria
+ *   cena que o pediu;
+ * - **o teto é temporário.** Descer segura o nível por `ESPERA` segundos; depois
+ *   a cena tenta subir de novo. Se voltar a cair logo, a espera dobra (até
+ *   `ESPERA_MAX`), e ela não fica oscilando. Antes, descer fixava o teto na
+ *   visita, e cada tropeço passageiro baixava um degrau para sempre.
  *
- * **Descer fixa o teto**: quem desceu não volta a subir na mesma visita, e a
- * cena não oscila. Subir é um passo pequeno por janela, para a troca não se ver.
+ * Quadro atrasado (o intervalo passou do alvo por três janelas, porque a GPU ou
+ * o navegador não acompanham) conta como o limite alcançado. No nível 0, o último
+ * recurso é a taxa de 30, que também é revista quando o teto se solta.
  *
  * **Quem visita pode escolher o nível** (`qualidade.fixar`, a régua do menu de
  * opções), e aí a cena para de decidir: continua medindo, mas não sobe nem
@@ -135,6 +162,13 @@ const ASSENTA = 0.3;
  * referência que se mexe não serve de referência.
  */
 const AMOSTRAS = 20;
+/** quantas janelas ruins seguidas (acima do limite, ou atrasadas) fazem a cena descer */
+const RUINS = 3;
+/** o máximo que uma descida tira do nível de uma vez */
+const QUEDA = 0.2;
+/** quanto o teto segura depois de uma descida, em segundos, e até quanto a espera dobra */
+const ESPERA = 20;
+const ESPERA_MAX = 160;
 
 export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
   // `alpha: false` deixa o compositor pular a mesclagem com o fundo da página.
@@ -213,8 +247,14 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
 
   /* a qualidade (ver o topo do arquivo) */
   let q = Q_INICIO;
+  /** o nível acima do qual a cena não sobe enquanto `soltarTeto` não passa */
   let teto = 1;
-  let desceu = false;
+  let soltarTeto = 0;
+  let espera = ESPERA;
+  /** a última descida, para saber se a tentativa de subir falhou logo */
+  let ultimaQueda = -Infinity;
+  /** janelas ruins seguidas */
+  let ruins = 0;
   /** o nível de antes do último passo para cima, enquanto ele ainda não foi julgado */
   let anterior: number | null = null;
   let trabalho = 0;
@@ -224,10 +264,23 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
   let julgarApos = 0;
   /** o nível que quem visita escolheu, ou `null` */
   let manual: number | null = null;
-  /** a média das estimativas; `null` até fechar as `AMOSTRAS` */
+  /**
+   * O limite e o ideal, em nível: onde o consumo chegaria a `LIMITE` e à meta.
+   * `null` até fechar as `AMOSTRAS`; depois, fixos na visita.
+   */
   let limite: number | null = null;
-  let somaLimite = 0;
-  let nLimite = 0;
+  let ideal: number | null = null;
+  /** a medição desta visita já fechou */
+  let medido = false;
+  /** as somas da reta `consumo = fixo + variável · nível`, janela a janela */
+  let n = 0;
+  let sq = 0;
+  let sc = 0;
+  let sqq = 0;
+  let sqc = 0;
+  /** a medição de uma visita anterior, e quem guarda a desta */
+  let salvo: Medicao | null = null;
+  let aoMedir: ((m: Medicao) => void) | null = null;
 
   let pisoDensidade = PISO_DENSIDADE;
   let pisoEscala = PISO_ESCALA;
@@ -284,7 +337,15 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
 
   /** `intervalo`: desde o último quadro desenhado; `custo`: o trabalho deste, ambos em segundos */
   const julgar = (intervalo: number, custo: number) => {
-    // um engasgo isolado (coleta de lixo, aba que volta) não é regime
+    // um momento pesado conhecido não é regime: fica fora da conta, e a janela recomeça
+    if (env.camera.salto > 0 || env.bus.well || env.bus.shock) {
+      julgarApos = parede + ASSENTA;
+      trabalho = 0;
+      quadros = 0;
+      decorrido = 0;
+      return;
+    }
+    // um engasgo isolado (coleta de lixo, aba que volta) também não
     if (env.camera.moving || parede < julgarApos || intervalo > 0.25) return;
     trabalho += Math.min(custo, 0.1);
     quadros++;
@@ -300,41 +361,125 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
     consumoMedido = consumo;
     const atrasado = intervaloMedio > intervaloAlvo() * ATRASO;
     const meta = MARGEM * LIMITE;
-    // ponytail: proporção pura (custo ∝ nível), média das primeiras janelas e fixa depois;
-    // uma cena que ficou mais cara no meio da visita (outra tela) não move a marca
     /**
-     * Perto de 0 a proporção só vale quando já passou do limite: ali o custo fixo
-     * da cena pesa mais que o nível, e uma cena leve estimaria um limite baixo
-     * demais. Essas janelas ficam fora da média.
+     * O limite sai de uma **reta ajustada** às janelas medidas, `consumo = fixo +
+     * variável · nível`, e não da proporção pura. A cena tem um custo que não
+     * depende do nível (o buraco negro, a poeira, o laço das estrelas), e a
+     * proporção o atribuía todo ao nível: o limite saía baixo, o ideal também, e
+     * o automático parava longe do que a máquina aguentava. A subida da abertura
+     * dá níveis variados para a reta; janelas atrasadas ficam de fora, porque o
+     * atraso pode ser da página.
      */
-    if (nLimite < AMOSTRAS && (q >= 0.05 || atrasado || consumo >= LIMITE)) {
-      somaLimite += Math.min(1, atrasado ? q * MARGEM : (q * LIMITE) / Math.max(consumo, 1e-4));
-      nLimite++;
-      if (nLimite === AMOSTRAS) limite = somaLimite / AMOSTRAS;
+    let fechou = false;
+    if (!medido) {
+      if (!atrasado) {
+        n++;
+        sq += q;
+        sc += consumo;
+        sqq += q * q;
+        sqc += q * consumo;
+      }
+      if (n >= AMOSTRAS) {
+        medido = true;
+        fechou = medir();
+      }
     }
     if (manual !== null) return;
-    if (atrasado || consumo > meta) {
-      // o passo que acabou de subir passou da meta: volta a ele e para ali. Sem passo
-      // recente, a cena ficou mais cara (a supernova): desce na proporção do excesso
-      const proporcional = atrasado ? q * MARGEM : (q * meta) / consumo;
-      // perto do piso a proporção só se aproxima de zero: arredonda e chega
-      const volta = anterior !== null ? anterior : proporcional < 0.03 ? 0 : proporcional;
-      // no piso não há mais o que tirar da cena: o último recurso é a taxa de quadros
-      if (q === 0 && anterior === null) economia = true;
-      teto = Math.min(teto, volta);
-      desceu = true;
+
+    // o teto solta depois da espera; a taxa de 30, se foi o último recurso, também
+    if (teto < 1 && parede >= soltarTeto) {
+      teto = 1;
+      economia = false;
+    }
+
+    const alvo = ideal ?? 1;
+
+    /**
+     * O passo que acabou de subir passou da meta: volta a ele na hora, e o teto
+     * segura. Só pelo consumo do próprio canvas; um atraso logo depois do passo
+     * pode ser da página, e segue a regra das janelas seguidas.
+     */
+    if (anterior !== null && consumo > meta) {
+      const volta = anterior;
       anterior = null;
-      aplicar(volta);
+      descer(volta);
       return;
     }
     anterior = null;
-    if (desceu || q >= teto) return;
-    // o próximo passo, mas só até onde a proporção prevê que a meta ainda cabe
-    const proximo = Math.min(teto, q + Q_PASSO, (q * meta) / Math.max(consumo, 1e-4));
+
+    if (atrasado || consumo > LIMITE) {
+      ruins++;
+      if (ruins < RUINS) return;
+      ruins = 0;
+      // no piso não há mais o que tirar da cena: o último recurso é a taxa de quadros
+      if (q === 0) {
+        economia = true;
+        descer(0);
+        return;
+      }
+      const proporcional = atrasado ? q * MARGEM : (q * meta) / consumo;
+      // perto do piso a proporção só se aproxima de zero: arredonda e chega
+      const volta = Math.max(q - QUEDA, proporcional < 0.03 ? 0 : proporcional);
+      descer(volta);
+      return;
+    }
+    ruins = 0;
+
+    // entre a meta e o limite, fica
+    if (consumo > meta) return;
+    const topo = Math.min(teto, alvo);
+    if (q >= topo - 0.005) return;
+    // a média acabou de fechar: vai direto ao ideal, julgado como um passo qualquer
+    const proximo = fechou
+      ? topo
+      : Math.min(topo, q + Q_PASSO, (q * meta) / Math.max(consumo, 1e-4));
     if (proximo > q + 0.01) {
       anterior = q;
       aplicar(proximo);
     }
+  };
+
+  /**
+   * Fecha a medição: a reta pelas janelas, ou, se o nível mal variou (a cena
+   * começou num ideal guardado, ou a máquina ficou no piso), a proporção pura no
+   * nível médio. Com uma medição guardada e sem variação, fica a guardada.
+   */
+  const medir = (): boolean => {
+    const qm = sq / n;
+    const cm = sc / n;
+    const variancia = sqq / n - qm * qm;
+    const meta = MARGEM * LIMITE;
+    const entre = (v: number) => Math.min(1, Math.max(0, v));
+    let m: Medicao;
+    if (variancia > 0.05 * 0.05) {
+      const variavel = (sqc / n - qm * cm) / variancia;
+      const fixo = cm - variavel * qm;
+      m =
+        variavel > 1e-6
+          ? { limite: entre((LIMITE - fixo) / variavel), ideal: entre((meta - fixo) / variavel) }
+          : { limite: fixo < LIMITE ? 1 : 0, ideal: fixo < meta ? 1 : 0 };
+    } else if (salvo) {
+      m = salvo;
+      salvo = null;
+    } else {
+      const l = qm > 0 ? entre((qm * LIMITE) / Math.max(cm, 1e-4)) : cm < LIMITE ? 1 : 0;
+      m = { limite: l, ideal: l * MARGEM };
+    }
+    // com uma medição guardada, a média das duas: as marcas convergem entre visitas
+    if (salvo) m = { limite: (m.limite + salvo.limite) / 2, ideal: (m.ideal + salvo.ideal) / 2 };
+    limite = m.limite;
+    ideal = m.ideal;
+    aoMedir?.(m);
+    return true;
+  };
+
+  /** desce e segura o teto ali; cair logo depois de uma tentativa dobra a espera */
+  const descer = (volta: number) => {
+    espera = parede - ultimaQueda < espera * 2 ? Math.min(ESPERA_MAX, espera * 2) : ESPERA;
+    ultimaQueda = parede;
+    teto = volta;
+    soltarTeto = parede + espera;
+    aplicar(volta);
   };
 
   let raf: number | null = null;
@@ -438,7 +583,7 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
       ler: () => ({
         q,
         limite,
-        ideal: limite === null ? null : limite * MARGEM,
+        ideal,
         manual: manual !== null,
         densidade: env.densidade,
         escala: env.dpr,
@@ -476,8 +621,18 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
         }
         // de volta à cena: ela recomeça a julgar do nível em que está, sem o teto de antes
         teto = 1;
-        desceu = false;
+        ruins = 0;
+        espera = ESPERA;
         aplicar(q);
+      },
+      comecar(m) {
+        salvo = m;
+        limite = m.limite;
+        ideal = m.ideal;
+        if (manual === null) aplicar(m.ideal);
+      },
+      aoMedir(fn) {
+        aoMedir = fn;
       },
     },
     layer<T extends Layer = Layer>(name: string) {

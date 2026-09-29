@@ -93,8 +93,9 @@ presença é dos ícones, que se apagam fora do Início e voltam sem esperar a a
 
 - **A régua mostra o que o motor sabe da máquina**: um ponto no **ideal**, onde a cena para sozinha,
   e um risco tracejado no **limite recomendado**, com os traços de depois dele apagados. As duas
-  marcas são a média das primeiras medições e ficam paradas na visita (ver `motor.md`); até lá, a
-  legenda diz "medindo este computador…".
+  marcas saem da medição das primeiras janelas, ficam paradas na visita e guardadas para a próxima
+  (ver `motor.md`); sem nenhuma medição ainda, a legenda diz "medindo este computador…". O ideal é
+  também onde o automático para.
 - **A régua para no limite recomendado.** Pedir mais que ele segura a marca no limite e abre, na
   própria linha, um aviso de que a cena pode travar, com o botão "passar mesmo assim". Passado uma
   vez, fica solto na visita. O aviso mora numa região viva (`role="status"`) que existe sempre, para

@@ -11,6 +11,7 @@ npm run dev          # servidor de desenvolvimento
 npm run build        # tsc -b && vite build
 npm run lint         # só a checagem de tipos
 npm run check:i18n   # confere se pt.json e en.json continuam paralelos
+npm run check:qualidade   # simula o modo automático da qualidade em três máquinas
 npx react-doctor@latest --verbose   # revisão de qualidade periódica
 ```
 
