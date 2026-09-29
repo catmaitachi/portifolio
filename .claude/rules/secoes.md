@@ -166,7 +166,10 @@ na linha); antes era a curva em onda com uma janela deslizante (ver *A curva sai
   pôr no `style` seria ler ref no render (ver `react.md`).
 - **Os corpos são botões** de 38px, com o cargo, a empresa e o período no `aria-label`; o escolhido
   leva `aria-current` e o anel do nó ativo, que respira devagar. O rótulo embaixo de cada um é o
-  período (**ano.mês**) e o tipo. No centro, qual é e de quantos (`01 / 03`).
+  período (**ano.mês**) e o tipo. **No centro fica a marca da escolhida**, pintada por máscara (o
+  arquivo pode ser o logo colorido; o que chega à tela é a silhueta, em `--tx-apoio`), trocando da profundidade quando a escolha muda; sem marca, o nome da
+  organização. O centro já mostrou qual é e de quantos (`01 / 03`), e no meio do desenho aquilo lia
+  como placar: a contagem foi para **entre os passos**, e some com eles quando há uma experiência só.
 - Navegação: clicar num corpo, as setas ←/→ (sem foco, enquanto a seção está ativa) ou os passos de
   38px embaixo da órbita (`.passo`, em `section.module.css`, o mesmo de Jogos), que apagam nas pontas.
   **A navegação não é circular**, mesmo com a órbita dando voltas: as pontas da lista são pontas.
@@ -188,12 +191,10 @@ empresa ou o projeto como subtítulo, um parágrafo de texto e a stack em chips 
 - **No celular o cabeçalho e o texto se afastam um pouco mais** (`--exp-cab-gap` e
   `--exp-bloco-gap`): ali o texto corre na largura inteira, e com o espaçamento de desktop cargo,
   subtítulo e parágrafo liam como um bloco só.
-- **No canto de cima à direita fica a marca da empresa ou do projeto**, ao lado do cargo e do
-  subtítulo e com a altura dos dois. A data mora na órbita, onde organiza alguma coisa; na ficha ela
-  só repetiria o rótulo do corpo. A marca é pintada **por máscara**, em `--tx-marcador`, então o
-  arquivo pode ser o logo colorido da empresa e o que chega à tela é só a silhueta. Ela já foi um
-  fundo grande à direita (no celular o texto passava por cima) e o pé da ficha (onde um parágrafo
-  longo a reduzia a quase nada); ao lado do cabeçalho o tamanho não depende do texto.
+- **A marca da empresa não fica na ficha.** Ela já foi um fundo grande à direita (no celular o texto
+  passava por cima), o pé da ficha (onde um parágrafo longo a reduzia a quase nada) e o canto de cima
+  à direita, ao lado do cargo. Hoje mora no centro da órbita, e as duas juntas repetiam o mesmo logo
+  lado a lado. A data também não: ela mora na órbita, onde organiza alguma coisa.
 
 ### A curva saiu
 

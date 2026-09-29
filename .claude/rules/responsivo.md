@@ -12,7 +12,7 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 |---|---|
 | `section.module.css` | `--pt --pb --px --gap` |
 | `AboutSection` | `--lado --retrato --retrato-ar --colunas-gap --parte-gap --texto-fs --logo-caixa --onda-w --onda-folga` |
-| `JourneySection` | `--exp-cargo --exp-rail --exp-marca-w --exp-gap --exp-cab-gap --exp-bloco-gap --exp-txt` (a órbita não tem token: a proporção é a do `viewBox`) |
+| `JourneySection` | `--exp-cargo --exp-rail --exp-gap --exp-cab-gap --exp-bloco-gap --exp-txt` (a órbita não tem token: a proporção é a do `viewBox`) |
 | `MusicSection` | `--capa --capas-cols --artistas-cols` |
 | `ProjectsSection` (e `Projeto`) | `--proj-cols --proj-gap --proj-entre` |
 | `GamesSection` | `--capa-w --deque-h` |
