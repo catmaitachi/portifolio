@@ -95,13 +95,13 @@
 
   "projetos": {
     "titulo": "Projetos pessoais",
-    "intro": "Escolhidos a dedo entre o que eu faço por conta própria.",
+    "intro": "Feitos por conta própria.",
     "vazio": "Nenhum projeto selecionado ainda.",
     "codigo": "ver código",
     "aoVivo": "ver ao vivo",
     "atividade": "Um traço por commit",
     "arquivado": "Arquivado",
-    "linguagens": "Linguagens",
+    "linguagens": "Linguagens de todo o código que publiquei",
     "noAr": "no ar",
     "soCodigo": "só código",
     "rodar": "rodar aqui",

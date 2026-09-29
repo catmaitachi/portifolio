@@ -95,13 +95,13 @@
 
   "projetos": {
     "titulo": "Side projects",
-    "intro": "Hand-picked from what I build on my own.",
+    "intro": "Made on my own.",
     "vazio": "No project selected yet.",
     "codigo": "see the code",
     "aoVivo": "see it live",
     "atividade": "One line per commit",
     "arquivado": "Archived",
-    "linguagens": "Languages",
+    "linguagens": "Languages across all the code I've published",
     "noAr": "live",
     "soCodigo": "code only",
     "rodar": "run here",
