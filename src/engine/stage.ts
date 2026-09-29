@@ -172,7 +172,10 @@ const ESPERA = 20;
 const ESPERA_MAX = 160;
 
 export interface OpcoesStage {
-  /** o consumo aceitável, em fração de um núcleo; sem ele, `LIMITE` */
+  /**
+   * O consumo aceitável, em fração de um núcleo; sem ele, `LIMITE`. `Infinity`
+   * tira o teto: a qualidade passa a ser julgada só pelo compasso dos quadros.
+   */
   consumo?: number;
 }
 
@@ -370,9 +373,13 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[], opcoes: 
      * chegam num compasso regular de 33ms com a cena gastando pouco. Contados como
      * atrasados, eles levavam a qualidade ao mínimo sem melhorar nada, porque o teto
      * não é da cena. Aqui a cena passa a mirar 30, e a qualidade fica.
+     *
+     * "Gastando pouco" é menos de 45% de um núcleo, e não uma fração da meta: uma
+     * cena que atrasa sozinha a 60 gasta mais de 16,7ms, mais da metade dos 33ms, e
+     * o toque, sem teto de consumo, não tem meta para dividir.
      */
     // ponytail: fica em 30 na visita; se o navegador soltar o teto no meio dela, ninguém nota
-    if (atrasado && !economia && consumo < meta * 0.5 && Math.abs(intervaloMedio - 1 / 30) < 0.004) {
+    if (atrasado && !economia && consumo < 0.45 && Math.abs(intervaloMedio - 1 / 30) < 0.004) {
       economia = true;
       ruins = 0;
       return;
@@ -504,6 +511,7 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[], opcoes: 
   let desenhado = performance.now();
 
   const frame = (now: number) => {
+    const inicio = performance.now();
     raf = requestAnimationFrame(frame);
     parede += (now - last) / 1000;
     last = now;
@@ -538,7 +546,8 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[], opcoes: 
       ctx.fillRect(0, 0, env.W, env.H);
     }
 
-    julgar(intervalo, (performance.now() - now) / 1000);
+    // do começo deste callback, não do vsync: o que roda antes dele é da página
+    julgar(intervalo, (performance.now() - inicio) / 1000);
   };
 
   const onMove = (e: PointerEvent) => {
