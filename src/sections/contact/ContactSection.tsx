@@ -61,7 +61,7 @@ export function ContactSection({ ativo, indice }: SectionProps) {
 
         <div className={styles.grade}>
           <div className={styles.chamada}>
-            <h2 className={styles.grito} style={{ '--cheio': `${cheio}%` } as React.CSSProperties}>
+            <h2 className={styles.grito} style={{ '--grito-cheio': `${cheio}%` } as React.CSSProperties}>
               {t.contato.titulo}
             </h2>
             <button

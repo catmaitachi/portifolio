@@ -2,8 +2,14 @@
  * O quanto o título está cheio, de 0% a 100%, escrito pelo componente a partir
  * do tamanho da mensagem. Registrado para poder transicionar: sem o `@property`
  * o degradê saltaria de um degrau para o outro a cada tecla.
+ *
+ * **O nome precisa ser único no site.** `@property` é global, o CSS Modules não o
+ * escopa, e o registro vale para todo elemento da página. Chamado `--cheio`, ele
+ * pegava também a nota de Filmes, que passa o mesmo nome da marca para o
+ * preenchimento: com `inherits: false` o preenchimento parava de herdar, e toda
+ * nota aparecia vazia.
  */
-@property --cheio {
+@property --grito-cheio {
   syntax: '<percentage>';
   inherits: false;
   initial-value: 0%;
@@ -53,10 +59,10 @@
   letter-spacing: -0.01em;
   text-transform: uppercase;
   overflow-wrap: anywhere;
-  background: linear-gradient(0deg, var(--tx-titulo) var(--cheio), transparent var(--cheio));
+  background: linear-gradient(0deg, var(--tx-titulo) var(--grito-cheio), transparent var(--grito-cheio));
   background-clip: text;
   -webkit-text-stroke: 1px var(--linha-acesa);
-  transition: --cheio var(--dur-retorno) var(--ease-saida);
+  transition: --grito-cheio var(--dur-retorno) var(--ease-saida);
 }
 
 /**
