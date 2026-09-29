@@ -24,10 +24,10 @@ export type { MedidaQualidade };
 const CHAVE = 'portfolio.qualidade';
 /**
  * O que a cena mediu nesta máquina (ver `stage.ts`): a próxima visita começa no
- * ideal. O sufixo muda quando a conta muda: a de antes do limite por aparelho
- * guardou, no celular, um ideal medido contra o limite do computador.
+ * ideal. O sufixo muda quando a conta muda: as de antes guardaram, no celular,
+ * um ideal medido contra um teto de consumo que o toque não tem mais.
  */
-const CHAVE_MEDICAO = 'portfolio.medicao-2';
+const CHAVE_MEDICAO = 'portfolio.medicao-3';
 
 function medicaoSalva(): Medicao | null {
   try {

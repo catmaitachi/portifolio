@@ -9,8 +9,10 @@
  * - boa, com um tranco de 1s a cada 8s (a página, não o canvas): não pode cair
  *   para o mínimo, que era o defeito da regra antiga;
  * - fraca: no piso ainda passa do limite, e tem que ir a 0 e à taxa de 30;
- * - celular: núcleo lento, que com o limite do computador ia ao mínimo e com o do
- *   toque (40%) tem que ficar no meio da escala;
+ * - celular: a base da cena passa do limite do computador e quase não muda com o
+ *   nível; com o limite do computador ia ao mínimo, e sem teto (o toque) tem que
+ *   subir ao topo. E um celular que não aguenta o topo tem que descer só até os
+ *   quadros voltarem ao tempo, sem ir ao mínimo;
  * - navegador preso a 30 quadros (modo de economia do celular): a cena é leve, e
  *   tem que mirar 30 sem baixar a qualidade.
  *
@@ -122,13 +124,18 @@ const boa = (px, dens) => 0.8 + 1.2 * px + 0.9 * dens;
   conferir(trinta, 'fraca: usa a taxa de 30 como último recurso');
 }
 
-// celular: o piso já custa ~27% de um núcleo, acima do limite do computador e folgado no do toque
+// celular: a base (~7ms, 42% de um núcleo) passa de qualquer teto, e o nível quase não pesa
 {
-  const celular = (px, dens) => 3.5 + 1 * px + 1 * dens;
+  const celular = (px, dens) => 7 + 0.3 * px + 0.3 * dens;
   const comum = simular({ custo: celular, segundos: 90 }).final;
-  const toque = simular({ custo: celular, segundos: 90, opcoes: { consumo: 0.4 } }).final;
+  const toque = simular({ custo: celular, segundos: 90, opcoes: { consumo: Infinity } }).final;
   conferir(comum.q < 0.15, `celular com o limite do computador: fica embaixo (${f2(comum.q)})`);
-  conferir(toque.q >= 0.3 && toque.fps === 60, `celular com o limite do toque: ${f2(toque.q)} a ${toque.fps}fps`);
+  conferir(toque.q >= 0.95 && toque.fps === 60, `celular sem teto de consumo: ${f2(toque.q)} a ${toque.fps}fps`);
+  // no topo o quadro passa de 16,7ms; no piso cabe com folga
+  const lento = (px, dens) => 6 + 5 * px + 6 * dens;
+  const { final, historico } = simular({ custo: lento, segundos: 120, opcoes: { consumo: Infinity } });
+  const minimo = Math.min(...historico.slice(40).map((h) => h.q));
+  conferir(final.q < 1 && minimo > 0 && final.fps === 60, `celular que não aguenta o topo: desce até ${f2(final.q)}, não ao mínimo (${f2(minimo)}), a ${final.fps}fps`);
 }
 
 // navegador preso a 30 quadros, com a cena leve
