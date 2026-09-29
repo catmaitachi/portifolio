@@ -30,7 +30,23 @@
 .controles {
   display: flex;
   gap: 10px;
+  align-items: center;
   justify-content: center;
+}
+
+/* entre os passos: qual experiência, de quantas */
+.contagem {
+  min-width: 7ch;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-meta);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.2em;
+  text-align: center;
+}
+
+.contagem b {
+  color: var(--tx-titulo);
+  font-weight: 400;
 }
 
 /**

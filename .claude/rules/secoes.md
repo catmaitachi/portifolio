@@ -166,7 +166,10 @@ na linha); antes era a curva em onda com uma janela deslizante (ver *A curva sai
   pôr no `style` seria ler ref no render (ver `react.md`).
 - **Os corpos são botões** de 38px, com o cargo, a empresa e o período no `aria-label`; o escolhido
   leva `aria-current` e o anel do nó ativo, que respira devagar. O rótulo embaixo de cada um é o
-  período (**ano.mês**) e o tipo. No centro, qual é e de quantos (`01 / 03`).
+  período (**ano.mês**) e o tipo. **No centro fica a marca da escolhida**, pintada por máscara como
+  na ficha e mais acesa que lá, trocando da profundidade quando a escolha muda; sem marca, o nome da
+  organização. O centro já mostrou qual é e de quantos (`01 / 03`), e no meio do desenho aquilo lia
+  como placar: a contagem foi para **entre os passos**, e some com eles quando há uma experiência só.
 - Navegação: clicar num corpo, as setas ←/→ (sem foco, enquanto a seção está ativa) ou os passos de
   38px embaixo da órbita (`.passo`, em `section.module.css`, o mesmo de Jogos), que apagam nas pontas.
   **A navegação não é circular**, mesmo com a órbita dando voltas: as pontas da lista são pontas.

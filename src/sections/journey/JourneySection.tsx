@@ -67,6 +67,10 @@ export function JourneySection({ ativo, indice }: SectionProps) {
                 >
                   <span className={comum.ponta} data-lado="antes" aria-hidden="true" />
                 </button>
+                {/* qual é, de quantas: morava no centro da órbita, onde hoje fica a marca */}
+                <span className={styles.contagem}>
+                  <b>{String(ativa + 1).padStart(2, '0')}</b> / {String(lista.length).padStart(2, '0')}
+                </span>
                 <button
                   type="button"
                   className={comum.passo}

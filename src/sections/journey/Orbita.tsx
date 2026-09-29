@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { Experiencia } from '~/content';
+import { LOGOS, type Experiencia } from '~/content';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
 import { useT } from '~/i18n/useLanguage';
 import styles from './Orbita.module.css';
@@ -167,9 +167,23 @@ export function Orbita({ lista, ativa, escolher, ativo }: OrbitaProps) {
         <path className={styles.frente} d={ANEL.frente} />
       </svg>
 
+      {/* no centro, a marca da escolhida; a contagem mora embaixo, entre os passos */}
       <div className={styles.centro} aria-hidden="true">
-        <b>{String(ativa + 1).padStart(2, '0')}</b>
-        <span>/ {String(n).padStart(2, '0')}</span>
+        {lista.map((e, i) => {
+          const marca = e.logo ? LOGOS[e.logo] : undefined;
+          return marca ? (
+            <span
+              key={e.key}
+              className={styles.logo}
+              data-ativa={i === ativa || undefined}
+              style={{ '--marca': `url("${marca}")` } as React.CSSProperties}
+            />
+          ) : (
+            <span key={e.key} className={styles.semLogo} data-ativa={i === ativa || undefined}>
+              {e.org}
+            </span>
+          );
+        })}
       </div>
 
       {lista.map((e, i) => (

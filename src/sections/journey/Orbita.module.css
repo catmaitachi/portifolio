@@ -67,28 +67,65 @@
   stroke-dasharray: 2 6;
 }
 
-/* ---------- o centro: qual corpo, de quantos ---------- */
+/* ---------- o centro: a marca da escolhida ---------- */
 
+/**
+ * A marca da experiência escolhida, no meio da órbita. Era o número dela e o
+ * total ("01 / 03"), que no centro de um desenho lia como placar; a contagem foi
+ * para baixo, entre os passos (`JourneySection`).
+ *
+ * Todas as marcas moram na mesma célula e só a escolhida aparece, chegando da
+ * profundidade quando a escolha muda. É pintada **por máscara**, como na ficha:
+ * o arquivo pode ser o logo colorido da empresa e o que chega à tela é a
+ * silhueta, na paleta. Aqui ela é mais acesa que na ficha, porque é o centro.
+ */
 .centro {
   position: absolute;
   top: 50%;
   left: 50%;
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
+  display: grid;
+  place-items: center;
+  width: 24%;
+  aspect-ratio: 2 / 1;
   transform: translate(-50%, -50%);
-  color: var(--tx-rotulo);
-  font-size: var(--fs-meta);
-  letter-spacing: 0.2em;
-  font-variant-numeric: tabular-nums;
   pointer-events: none;
 }
 
-.centro b {
-  color: var(--tx-titulo);
-  font-size: clamp(24px, 4.6vmin, 44px);
-  font-weight: 300;
-  letter-spacing: 0.02em;
+.logo,
+.semLogo {
+  grid-area: 1 / 1;
+  opacity: 0;
+  filter: blur(4px);
+  transform: scale(0.86);
+  transition:
+    opacity var(--dur-retorno) var(--ease-saida),
+    filter var(--dur-retorno) var(--ease-saida),
+    transform var(--dur-retorno) var(--ease-saida);
+}
+
+.logo {
+  width: 100%;
+  height: 100%;
+  background: var(--tx-apoio);
+  mask: var(--marca) center / contain no-repeat;
+}
+
+/* sem marca, o nome da organização */
+.semLogo {
+  color: var(--tx-apoio);
+  font-size: var(--fs-controle);
+  letter-spacing: var(--ls-rotulo);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.logo[data-ativa],
+.semLogo[data-ativa] {
+  opacity: 1;
+  filter: none;
+  transform: none;
+  transition-duration: 0.8s;
+  transition-timing-function: var(--ease-entrada);
 }
 
 /* ---------- os corpos ---------- */
