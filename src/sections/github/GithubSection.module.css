@@ -19,8 +19,8 @@
 }
 
 .secao {
-  /* o lado da nuvem de linguagens */
-  --gh-nuvem: 300px;
+  /* o lado da nuvem de linguagens: ela ocupa a coluna da esquerda, como o número grande */
+  --gh-nuvem: clamp(320px, 40vw, 520px);
   --gh-grande: clamp(80px, 13vw, 164px);
 }
 
@@ -233,12 +233,13 @@
 
 /* ---------- as linguagens ---------- */
 
+/* a mesma grade do cartaz: a nuvem no lugar do número, a lista no lugar da ficha */
 .linguagens {
   display: grid;
-  grid-template-columns: var(--gh-nuvem) minmax(0, 300px);
-  gap: clamp(28px, 5vw, 72px);
+  grid-template-columns: auto minmax(0, 420px);
+  gap: clamp(28px, 5vw, 64px);
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
 }
 
 .nuvem {
@@ -285,13 +286,13 @@
   gap: 12px;
   align-items: baseline;
   width: 100%;
-  height: 30px;
+  height: 42px;
   padding: 0;
   border: 0;
   background: none;
   color: var(--tx-apagado);
   font: inherit;
-  font-size: var(--fs-controle);
+  font-size: var(--fs-pequeno);
   letter-spacing: 0.12em;
   text-align: left;
   cursor: pointer;
@@ -323,7 +324,7 @@
 .linguagemBarra {
   position: absolute;
   right: 0;
-  bottom: 4px;
+  bottom: 6px;
   left: calc(3ch + 12px);
   height: 1px;
   background: var(--linha-forte);
@@ -344,7 +345,7 @@
 
 @media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .secao {
-    --gh-nuvem: min(280px, 78vw);
+    --gh-nuvem: min(420px, 86vw);
   }
 
   .cartaz,

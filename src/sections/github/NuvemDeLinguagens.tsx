@@ -167,6 +167,8 @@ export function NuvemDeLinguagens({ linguagens, ativo }: { linguagens: Linguagem
       ctx.clearRect(0, 0, lado, lado);
       const c = lado / 2;
       const R = lado * 0.37;
+      // os ícones e as estrelas crescem com a nuvem: as medidas foram tiradas numa de 300px
+      const escala = lado / 300;
       const cy = Math.cos(g.ry);
       const sy = Math.sin(g.ry);
       const cx = Math.cos(g.rx);
@@ -190,13 +192,13 @@ export function NuvemDeLinguagens({ linguagens, ativo }: { linguagens: Linguagem
           ctx.globalAlpha = (0.08 + prof * 0.4) * (foco === null ? 1 : 0.6);
           ctx.fillStyle = '#fff';
           ctx.beginPath();
-          ctx.arc(v.X, v.Y, (0.6 + prof * 0.8) * v.e, 0, Math.PI * 2);
+          ctx.arc(v.X, v.Y, (0.6 + prof * 0.8) * v.e * escala, 0, Math.PI * 2);
           ctx.fill();
           continue;
         }
         const i = v.p.lang;
         const eleito = foco === i;
-        const s = (13 + Math.sqrt(linguagens[i].fracao) * 36) * v.e * (eleito ? 1.35 : 1);
+        const s = (13 + Math.sqrt(linguagens[i].fracao) * 36) * escala * v.e * (eleito ? 1.35 : 1);
         ctx.globalAlpha = eleito ? 1 : (0.15 + prof * 0.85) * (foco === null ? 1 : 0.3);
         const icone = icones[i];
         if (icone) {

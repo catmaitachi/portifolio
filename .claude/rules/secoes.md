@@ -230,7 +230,9 @@ Lucas (o Icon Cloud do Magic UI). As três foram harmonizadas numa física só, 
   lado** (largura mínima de 680px) e abre no fim, que é o agora: espremidas em 390px as 53 semanas
   ficavam ilegíveis;
 - **as linguagens** (`NuvemDeLinguagens`): uma esfera de Fibonacci girando, com estrelas entre os
-  ícones, e cada ícone do tamanho do peso da linguagem. Os ícones são do Simple Icons (CC0), guardados
+  ícones, e cada ícone do tamanho do peso da linguagem. O bloco usa a grade do cartaz, e ocupa a
+  largura como ele: a nuvem no lugar do número (até 520px, `--gh-nuvem`) e a lista no lugar da ficha.
+  Ícones e estrelas crescem com a nuvem (as medidas são de uma de 300px, multiplicadas pela escala). Os ícones são do Simple Icons (CC0), guardados
   em `assets/linguagens/` e pintados de branco no canvas; linguagem sem ícone aparece pela sigla.
 
 Três ajustes da nuvem saíram das observações da vitrine e valem para o que vier:
