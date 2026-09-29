@@ -187,6 +187,13 @@ primeira a ceder.
 | de 0 a 0,5 | a resolução, do `PISO_ESCALA` (px de canvas por px de layout) ao DPR, em degraus de 1/8 para não redimensionar a cada passo | a densidade, no piso |
 | abaixo de 0 | a taxa: **30 só como último recurso** (`economia`), revista quando o teto se solta | tudo no piso |
 
+**A cena começa em `Q_RES`** (resolução cheia, densidade no piso), e não mais em 0,1. Subir só acende
+estrelas, e a resolução só troca quando a máquina pede para descer. Do jeito antigo, a subida da
+abertura passava pelos degraus de 1/8 da resolução, e cada troca piscava (pedido do Lucas, 29/09/2026).
+O piscar tinha uma segunda causa: `aplicar` redimensionava o canvas no fim do quadro, depois do
+desenho, e mudar `canvas.width` apaga o canvas, então o navegador mostrava um quadro preto. Hoje a
+troca fica marcada (`redimensionar`) e acontece no começo do quadro seguinte, antes de desenhar.
+
 O halo da supernova sai abaixo de 0,35 (`env.leve`). **Os pisos foram escolhidos pelo Lucas**
 (29/09/2026): metade do céu (`PISO_DENSIDADE` 0,5) e 0,6 px por px (`PISO_ESCALA`), e no nível 0 a
 resolução é o piso exato, sem o degrau de 1/8. O céu fixo do `Starfield` era metade das estrelas, e

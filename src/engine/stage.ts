@@ -129,10 +129,15 @@ const SALTO_VOO = 0.9;
  * desce. A medição vira duas marcas na régua: o `limite`, onde o consumo chegaria
  * a `LIMITE` pela mesma proporção que guia os passos, e o `ideal`, `MARGEM` dele.
  */
-const Q_INICIO = 0.1;
-const Q_PASSO = 0.04;
 /** onde a resolução chega ao máximo e a densidade começa a subir do piso */
 const Q_RES = 0.5;
+/**
+ * A cena começa na resolução cheia e na densidade do piso: subir só acende
+ * estrelas, e a resolução só troca se a máquina pedir para descer. Começando em
+ * 0,1, a subida trocava a resolução a cada degrau de 1/8, e cada troca piscava.
+ */
+const Q_INICIO = Q_RES;
+const Q_PASSO = 0.04;
 /** abaixo disto, `env.leve` */
 const Q_LEVE = 0.35;
 /**
@@ -311,7 +316,9 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[], opcoes: 
   let economia = false;
   const intervaloAlvo = () => (economia ? 1 / 30 : 1 / 60);
 
+  let redimensionar = false;
   const dimensionar = () => {
+    redimensionar = false;
     env.dpr = Math.min(dprMax(), escalaDe(q));
     canvas.width = Math.round(env.W * env.dpr);
     canvas.height = Math.round(env.H * env.dpr);
@@ -332,7 +339,9 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[], opcoes: 
     q = Math.min(1, Math.max(0, novo));
     env.leve = q < Q_LEVE;
     env.densidade = densidadeDe(q);
-    if (escalaDe(q) !== escalaAntes) dimensionar();
+    // no próximo quadro, antes de desenhar: redimensionar apaga o canvas, e aqui,
+    // depois do desenho, o navegador mostrava um quadro preto
+    if (escalaDe(q) !== escalaAntes) redimensionar = true;
     canvas.dataset.qualidade = economia || q < Q_LEVE ? '0' : q < Q_RES ? '1' : '2';
     canvas.dataset.q = q.toFixed(2);
     julgarApos = parede + ASSENTA;
@@ -522,6 +531,7 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[], opcoes: 
     env.dt = Math.min(MAX_DT, intervalo);
     env.t += env.dt;
     stepCamera(env.dt);
+    if (redimensionar) dimensionar();
 
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, env.W, env.H);
