@@ -35,8 +35,9 @@ paths:
   repetido embaixo deles saiu da tela; sem logo, ele volta a ser escrito.
 - **O menu de opções** tem gatilho com `aria-expanded` e `aria-controls`, e fechado é `inert`. O
   idioma é um `radiogroup` (←/→ trocam, um só na tabulação) e a qualidade um `slider` de 0 a 100 cujo
-  `aria-valuetext` avisa quando o valor passa do limite recomendado (`opcoes.acima`). `Esc` fecha e
-  devolve o foco ao gatilho.
+  `aria-valuetext` avisa quando o valor passa do limite recomendado (`opcoes.acima`). O aviso que
+  segura a régua no limite fica numa região `role="status"` sempre presente. `Esc` fecha e devolve o
+  foco ao gatilho.
 - Foco visível só para navegação por teclado (`:focus-visible`).
 - **Nenhuma região focável apaga o contorno.** A curva do tempo, que existiu na Carreira, tinha
   `outline: none`, e quem chegava pelo teclado não via onde estava. O único `outline: none` que sobra

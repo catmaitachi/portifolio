@@ -305,6 +305,11 @@ export interface Dictionary {
     limite: string;
     /** o valor da régua lido em voz alta, acima do limite; aceita `{n}` */
     acima: string;
+    /** no lugar da legenda, enquanto o motor ainda não fechou a média */
+    medindo: string;
+    /** o aviso que segura a régua no limite recomendado, e o botão que a solta */
+    aviso: string;
+    passar: string;
     versao: string;
   };
   a11y: {

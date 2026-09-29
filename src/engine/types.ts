@@ -101,13 +101,12 @@ export interface StageEnv {
   /**
    * O degrau mais baixo da qualidade (ver `stage.ts`): a cena começa nele e só
    * sai quando a máquina prova que aguenta, e volta a ele se deixar de aguentar.
-   * As camadas caras desenham menos: o campo de estrelas desenha metade delas, e
-   * a supernova tira o halo da estrela.
+   * A supernova tira o halo da estrela (o céu mais ralo é a `densidade`).
    */
   leve: boolean;
   /**
-   * Quanto do céu opcional está aceso, de 0 a 1 (ver `stage.ts`): o `Starfield`
-   * acende a metade ímpar das estrelas uma a uma conforme ele sobe.
+   * Quanto do céu está aceso, de 0 a 1 (ver `stage.ts`): o `Starfield` mantém um
+   * quarto sempre aceso e acende as outras estrelas uma a uma conforme ele sobe.
    */
   densidade: number;
   /**

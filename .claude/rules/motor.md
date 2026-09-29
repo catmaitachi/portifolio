@@ -181,12 +181,14 @@ primeira a ceder.
 
 | Faixa de `q` | O que anda | O que fica parado |
 |---|---|---|
-| de `Q_RES` (0,5) a 1 | `env.densidade`, do `PISO_DENSIDADE` a 1: o `Starfield` acende a metade ímpar das estrelas **uma a uma**, cada uma com o próprio fade | a resolução, cheia (o DPR do aparelho, teto 2) |
+| de `Q_RES` (0,5) a 1 | `env.densidade` (a fração do céu acesa), do `PISO_DENSIDADE` a 1: o `Starfield` mantém uma estrela em cada quatro sempre acesa e acende as outras **uma a uma**, cada uma com o próprio fade | a resolução, cheia (o DPR do aparelho, teto 2) |
 | de 0 a 0,5 | a resolução, do `PISO_ESCALA` (px de canvas por px de layout) ao DPR, em degraus de 1/8 para não redimensionar a cada passo | a densidade, no piso |
 | abaixo de 0 | a taxa: **30 só como último recurso** (`economia`), e fica ali na visita | tudo no piso |
 
-O halo da supernova sai abaixo de 0,35 (`env.leve`). **Os pisos ainda estão em calibragem**: 0,3 da
-metade opcional do céu (65% das estrelas acesas) e 0,7 px por px. O painel de `?pisos` (`hud/Pisos`,
+O halo da supernova sai abaixo de 0,35 (`env.leve`). **Os pisos foram escolhidos pelo Lucas** no painel
+(29/09/2026): metade do céu (`PISO_DENSIDADE` 0,5) e 0,6 px por px (`PISO_ESCALA`). O céu fixo do
+`Starfield` era metade das estrelas, e por isso o piso não descia de 50%; hoje é um quarto
+(`CEU_FIXO`), e o painel testa até 25%. O painel de `?pisos` (`hud/Pisos`,
 carregado só com o parâmetro no endereço) troca os dois ao vivo, liga os 30fps e mostra o que o nível
 virou e quanto consome; "copiar os pisos" leva os números escolhidos para `stage.ts`. O que ele troca
 não fica guardado.
@@ -204,8 +206,11 @@ decidir: continua medindo, mas não sobe nem desce, e não cai para 30fps sozinh
 cena, sem o teto de antes. O canal é `scene/qualidade.ts`, no desenho de `scene/camera.ts`.
 
 A medição vira duas marcas na régua. O **limite** é o nível em que o consumo chegaria a `LIMITE`,
-pela mesma proporção que guia os passos (`q · LIMITE / consumo`, suavizada entre janelas), e o
-**ideal** é `MARGEM` dele, onde a cena para sozinha. Proporção pura: perto de 0 o custo fixo da cena a
+pela mesma proporção que guia os passos (`q · LIMITE / consumo`), e o **ideal** é `MARGEM` dele,
+onde a cena para sozinha. **As duas são a média das primeiras 20 janelas (`AMOSTRAS`) e ficam fixas na
+visita**: seguindo cada janela, elas andavam o tempo todo, e uma referência que se mexe não serve de
+referência. Antes de fechar a média, a régua diz que está medindo. Janelas com o nível abaixo de
+0,05 que não passaram do limite ficam fora da média: ali o custo fixo da cena pesa mais que o nível. Proporção pura: perto de 0 o custo fixo da cena a
 deixa conservadora, e o limite só fica fiel depois de a cena subir ou de alguém escolher um nível.
 
 **O que se mede é consumo, e não taxa de quadros**: o trabalho de cada quadro desenhado vezes os

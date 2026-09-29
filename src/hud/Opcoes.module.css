@@ -311,6 +311,44 @@
   border-left: 1px dashed var(--linha-acesa);
 }
 
+/* o aviso de limite: um risco tracejado à esquerda, como a marca do limite na régua */
+/* vazia, sai do fluxo da grade (o `gap` somaria um vão) sem deixar de ser região viva */
+.avisoRegiao:empty {
+  position: absolute;
+}
+
+.aviso {
+  margin: 2px 0 0;
+  padding-left: 8px;
+  border-left: 1px dashed var(--linha-acesa);
+  color: var(--tx-apoio);
+  font-size: var(--fs-meta);
+  line-height: 1.5;
+  text-align: left;
+  hyphens: manual;
+}
+
+.passar {
+  margin: 4px 0 0;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--linha-forte);
+  background: none;
+  color: var(--tx-forte);
+  font: inherit;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  appearance: none;
+  transition:
+    color var(--dur-hover) var(--ease-saida),
+    border-color var(--dur-hover) var(--ease-saida);
+}
+
+.passar:hover {
+  border-color: var(--linha-foco);
+  color: var(--tx-titulo);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .painel,
   .linha,

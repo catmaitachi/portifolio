@@ -211,6 +211,9 @@
     "ideal": "ideal",
     "limite": "limite",
     "acima": "{n}%, acima do limite recomendado",
+    "medindo": "medindo este computador…",
+    "aviso": "Acima do limite recomendado, a cena pode travar neste computador.",
+    "passar": "Passar mesmo assim",
     "versao": "Versão"
   },
 

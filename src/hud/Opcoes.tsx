@@ -114,8 +114,13 @@ const SEGUE = 0.14;
  *
  * Mostra o que o motor sabe desta máquina (ver `stage.ts`): o ponto `ideal`, onde
  * a cena para sozinha, e o `limite` recomendado, com os traços de depois dele
- * apagados. Arrastar ou usar as setas fixa um nível, e "auto" devolve a decisão à
- * cena. Os traços perto da marca crescem e acendem pela distância a ela, a conta
+ * apagados. As duas marcas são a média das primeiras medições e ficam paradas
+ * na visita; antes disso a legenda diz que está medindo. Arrastar ou usar as
+ * setas fixa um nível, e "auto" devolve a decisão à cena.
+ *
+ * **A régua para no limite recomendado.** Pedir mais que ele segura a marca ali e
+ * mostra um aviso com um botão para passar; passado uma vez, fica solto na visita.
+ * O aviso mora dentro do menu, na linha da régua: não é um pop-up. Os traços perto da marca crescem e acendem pela distância a ela, a conta
  * do `exposure-slider` do SmoothUI.
  *
  * Lê o motor só enquanto o menu está aberto, e a marca anda por `requestAnimationFrame`
@@ -128,6 +133,9 @@ function Regua({ ativa }: { ativa: boolean }) {
   const trilho = useRef<HTMLDivElement>(null);
   const tracos = useRef<(HTMLSpanElement | null)[]>([]);
   const desenhada = useRef<number | null>(null);
+  /** o nível pedido acima do limite, enquanto o aviso espera; `null` sem aviso */
+  const [pedido, setPedido] = useState<number | null>(null);
+  const [liberado, setLiberado] = useState(false);
 
   useEffect(() => {
     if (!ativa) return;
@@ -139,6 +147,7 @@ function Regua({ ativa }: { ativa: boolean }) {
 
   const q = medida?.q ?? null;
   const limite = medida?.limite ?? null;
+  const ideal = medida?.ideal ?? null;
 
   useEffect(() => {
     if (q === null) return;
@@ -170,9 +179,25 @@ function Regua({ ativa }: { ativa: boolean }) {
     return () => cancelAnimationFrame(raf);
   }, [q, limite, reduzido]);
 
-  const escolher = (v: number | null) => {
+  const aplicar = (v: number | null) => {
     qualidade.fixar(v);
     setMedida(qualidade.ler());
+  };
+
+  const escolher = (v: number | null) => {
+    if (v !== null && limite !== null && !liberado && v > limite + 0.001) {
+      setPedido(v);
+      aplicar(limite);
+      return;
+    }
+    setPedido(null);
+    aplicar(v);
+  };
+
+  const passar = () => {
+    setLiberado(true);
+    setPedido(null);
+    aplicar(pedido);
   };
 
   const peloPonteiro = (e: PointerEvent<HTMLDivElement>) => {
@@ -250,7 +275,7 @@ function Regua({ ativa }: { ativa: boolean }) {
         {limite !== null && (
           <>
             <span className={styles.limite} style={{ '--em': limite } as React.CSSProperties} aria-hidden="true" />
-            <span className={styles.ideal} style={{ '--em': limite * 0.85 } as React.CSSProperties} aria-hidden="true" />
+            <span className={styles.ideal} style={{ '--em': ideal ?? 0 } as React.CSSProperties} aria-hidden="true" />
           </>
         )}
       </div>
@@ -259,14 +284,28 @@ function Regua({ ativa }: { ativa: boolean }) {
         <span>{t.opcoes.desempenho}</span>
         <span>{t.opcoes.detalhe}</span>
       </div>
-      {limite !== null && (
+      {limite !== null ? (
         <div className={styles.legenda} aria-hidden="true">
           <i className={styles.legendaIdeal} />
           {t.opcoes.ideal}
           <i className={styles.legendaLimite} />
           {t.opcoes.limite}
         </div>
-      )}
+      ) : q !== null ? (
+        <div className={styles.legenda}>{t.opcoes.medindo}</div>
+      ) : null}
+
+      {/* a região viva existe sempre, para o aviso ser anunciado quando aparece */}
+      <div role="status" className={styles.avisoRegiao}>
+        {pedido !== null && (
+          <p className={styles.aviso}>
+            {t.opcoes.aviso}{' '}
+            <button type="button" className={styles.passar} onClick={passar}>
+              {t.opcoes.passar}
+            </button>
+          </p>
+        )}
+      </div>
     </div>
   );
 }

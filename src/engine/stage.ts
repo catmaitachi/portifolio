@@ -38,13 +38,13 @@ export interface MedidaQualidade {
   q: number;
   /**
    * O nível em que o consumo chegaria a `LIMITE`, e o `ideal`, onde ele fica na
-   * meta. `null` até a primeira janela medida.
+   * meta. `null` até fechar a média das primeiras janelas; depois, fixos na visita.
    */
   limite: number | null;
   ideal: number | null;
   /** o nível foi escolhido por quem visita, e a cena não o mexe */
   manual: boolean;
-  /** o que o nível virou: quanto da metade opcional do céu está acesa, px de canvas por px, e a taxa */
+  /** o que o nível virou: quanto do céu está aceso, px de canvas por px, e a taxa */
   densidade: number;
   escala: number;
   fps: number;
@@ -77,7 +77,7 @@ const SALTO_VOO = 0.9;
  * e a taxa de quadros só por último.
  *
  * - de `Q_RES` a 1, só a densidade anda: `env.densidade` vai do `pisoDensidade`
- *   até 1 (a metade ímpar das estrelas acende uma a uma), com a resolução cheia;
+ *   até 1 (as estrelas opcionais acendem uma a uma), com a resolução cheia;
  * - de 0 a `Q_RES`, a densidade fica no piso e a resolução anda, do
  *   `pisoEscala` ao DPR do aparelho (teto 2);
  * - abaixo de 0 não há mais o que tirar, e a taxa cai de 60 para 30 (`economia`).
@@ -111,10 +111,14 @@ const Q_PASSO = 0.04;
 const Q_RES = 0.5;
 /** abaixo disto, `env.leve` */
 const Q_LEVE = 0.35;
-/** o piso da densidade: quanto da metade opcional do céu fica acesa no mínimo */
-const PISO_DENSIDADE = 0.3;
-/** o piso da resolução, em px de canvas por px de layout */
-const PISO_ESCALA = 0.7;
+/**
+ * O piso da densidade, em fração do céu inteiro: metade das estrelas. Escolhido
+ * pelo Lucas no painel de `?pisos` (29/09/2026); o `Starfield` não desce de um
+ * quarto, que é o céu fixo dele.
+ */
+const PISO_DENSIDADE = 0.5;
+/** o piso da resolução, em px de canvas por px de layout (escolhido com o mesmo painel) */
+const PISO_ESCALA = 0.6;
 /** o consumo aceitável da cena, em fração de um núcleo */
 const LIMITE = 0.25;
 /** o alvo fica em 85% da qualidade em que o consumo chegaria ao limite */
@@ -125,8 +129,12 @@ const ATRASO = 1.35;
 const JANELA = 0.6;
 /** depois de cada troca, o tempo que fica de fora: redimensionar o canvas custa um quadro */
 const ASSENTA = 0.3;
-/** quanto de cada janela nova entra na estimativa do limite, para as marcas não tremerem */
-const SUAVE = 0.3;
+/**
+ * Quantas janelas entram na média do limite. Depois disso ele fica fixo na
+ * visita: seguindo cada janela, as marcas da régua andavam o tempo todo, e uma
+ * referência que se mexe não serve de referência.
+ */
+const AMOSTRAS = 20;
 
 export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
   // `alpha: false` deixa o compositor pular a mesclagem com o fundo da página.
@@ -216,7 +224,10 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
   let julgarApos = 0;
   /** o nível que quem visita escolheu, ou `null` */
   let manual: number | null = null;
+  /** a média das estimativas; `null` até fechar as `AMOSTRAS` */
   let limite: number | null = null;
+  let somaLimite = 0;
+  let nLimite = 0;
 
   let pisoDensidade = PISO_DENSIDADE;
   let pisoEscala = PISO_ESCALA;
@@ -289,10 +300,18 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
     consumoMedido = consumo;
     const atrasado = intervaloMedio > intervaloAlvo() * ATRASO;
     const meta = MARGEM * LIMITE;
-    // ponytail: proporção pura (custo ∝ nível); perto de 0 o custo fixo da cena a deixa
-    // conservadora, e o limite só fica fiel depois de a cena subir ou de alguém escolher
-    const estimado = Math.min(1, atrasado ? q * MARGEM : (q * LIMITE) / Math.max(consumo, 1e-4));
-    limite = limite === null ? estimado : limite + (estimado - limite) * SUAVE;
+    // ponytail: proporção pura (custo ∝ nível), média das primeiras janelas e fixa depois;
+    // uma cena que ficou mais cara no meio da visita (outra tela) não move a marca
+    /**
+     * Perto de 0 a proporção só vale quando já passou do limite: ali o custo fixo
+     * da cena pesa mais que o nível, e uma cena leve estimaria um limite baixo
+     * demais. Essas janelas ficam fora da média.
+     */
+    if (nLimite < AMOSTRAS && (q >= 0.05 || atrasado || consumo >= LIMITE)) {
+      somaLimite += Math.min(1, atrasado ? q * MARGEM : (q * LIMITE) / Math.max(consumo, 1e-4));
+      nLimite++;
+      if (nLimite === AMOSTRAS) limite = somaLimite / AMOSTRAS;
+    }
     if (manual !== null) return;
     if (atrasado || consumo > meta) {
       // o passo que acabou de subir passou da meta: volta a ele e para ali. Sem passo

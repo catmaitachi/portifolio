@@ -104,14 +104,22 @@ export function Starfield({
   let temGrav = false;
   let temPoco = false;
   /**
-   * Quanto da metade ímpar do céu está acesa, de 0 a 1, seguindo `env.densidade`.
+   * Quanto do céu está aceso, de `CEU_FIXO` a 1, seguindo `env.densidade`.
    *
-   * Ela anda devagar (`SOBE_DENS` por segundo), e as estrelas ímpares acendem
-   * **uma a uma**, na ordem do índice, cada uma com o próprio fade (`FADE_DENS`
-   * da fração): o céu vai ficando mais fundo sem que se veja um conjunto chegar.
-   * As posições são sorteadas, então a ordem do índice é espalhada pela tela.
+   * Uma estrela em cada quatro (`i % 4 === 0`) fica sempre acesa; as outras três
+   * são o céu opcional. Ela anda devagar (`SOBE_DENS` por segundo), e as opcionais
+   * acendem **uma a uma**, na ordem do índice, cada uma com o próprio fade
+   * (`FADE_DENS` da fração): o céu vai ficando mais fundo sem que se veja um
+   * conjunto chegar. As posições são sorteadas, então a ordem do índice é
+   * espalhada pela tela.
+   *
+   * O fixo era metade do céu, e o piso mais baixo que o painel de `?pisos` chegava
+   * era 50%. Com um quarto, dá para testar até 25%.
    */
   let dens = 0;
+  /** no primeiro quadro o céu já nasce na densidade pedida, sem subir do fixo */
+  let primeiro = true;
+  const CEU_FIXO = 0.25;
   const SOBE_DENS = 0.06;
   const DESCE_DENS = 0.4;
   const FADE_DENS = 0.12;
@@ -188,11 +196,12 @@ export function Starfield({
     },
     update(env) {
       const { dt, t, mouse } = env;
-      dens = env.calibrando
+      dens = env.calibrando || primeiro
         ? env.densidade
         : env.densidade > dens
           ? Math.min(env.densidade, dens + dt * SOBE_DENS)
           : Math.max(env.densidade, dens - dt * DESCE_DENS);
+      primeiro = false;
       const moving = env.camera.moving;
       // durante o zoom da intro, repulsão e gravidade ficam desligadas
       const useMouse = mouse.active && !moving;
@@ -323,16 +332,17 @@ export function Starfield({
       const temLente = temGrav || temPoco;
       const salto = env.camera.salto;
       /**
-       * A metade ímpar do céu acende pela densidade (ver `dens`).
+       * O céu opcional acende pela densidade (ver `dens`).
        *
-       * A metade é pela paridade do índice, e não da posição no balde: o balde de
-       * uma estrela muda a cada quadro com o cintilar, e cortar por ele faria as
-       * estrelas piscarem entre desenhadas e não. Uma estrela ímpar de ordem `r`
-       * (0 a 1) está acesa em `(frente - r) / FADE_DENS`, e as que ainda não
-       * chegaram nem são visitadas, que é o que a densidade baixa economiza.
+       * Quem é opcional sai do índice, e não da posição no balde: o balde de uma
+       * estrela muda a cada quadro com o cintilar, e cortar por ele faria as
+       * estrelas piscarem entre desenhadas e não. Uma opcional de ordem `r = i/N`
+       * está acesa em `(frente - r) / FADE_DENS`, e as que ainda não chegaram
+       * saem do laço antes de qualquer conta, que é o que a densidade baixa
+       * economiza.
        */
-      const frente = dens * (1 + FADE_DENS);
-      const ordemPor = 2 / Math.max(1, N);
+      const frente = (Math.max(0, dens - CEU_FIXO) / (1 - CEU_FIXO)) * (1 + FADE_DENS);
+      const ordemPor = 1 / Math.max(1, N);
 
       for (let b = 0; b < buckets; b++) {
         const n = count[b];
@@ -342,10 +352,9 @@ export function Starfield({
 
         for (let k = 0; k < n; k++) {
           const i = bucket[off + k];
-          const impar = (i & 1) === 1;
           let acesa = 1;
-          if (impar) {
-            acesa = (frente - (i >> 1) * ordemPor) / FADE_DENS;
+          if ((i & 3) !== 0) {
+            acesa = (frente - i * ordemPor) / FADE_DENS;
             if (acesa <= 0) continue;
             if (acesa > 1) acesa = 1;
           }

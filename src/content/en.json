@@ -211,6 +211,9 @@
     "ideal": "ideal",
     "limite": "limit",
     "acima": "{n}%, above the recommended limit",
+    "medindo": "measuring this computer…",
+    "aviso": "Above the recommended limit, the scene may stutter on this computer.",
+    "passar": "Go past it anyway",
     "versao": "Version"
   },
 

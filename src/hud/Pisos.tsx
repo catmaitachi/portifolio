@@ -3,7 +3,7 @@ import { qualidade, type MedidaQualidade } from '~/scene/qualidade';
 import styles from './Pisos.module.css';
 
 /** os pisos com que o motor começa (ver `stage.ts`); o painel parte deles */
-const INICIAL = { densidade: 0.3, escala: 0.7 };
+const INICIAL = { densidade: 0.5, escala: 0.6 };
 
 /**
  * Painel de calibragem dos pisos da qualidade, aberto com `?pisos` no endereço.
@@ -106,11 +106,11 @@ export default function Pisos() {
 
       <label className={styles.campo}>
         <span>
-          piso da densidade <b>{pct(densidade)}</b> da metade opcional
+          piso da densidade <b>{pct(densidade)}</b> do céu
         </span>
         <input
           type="range"
-          min={0}
+          min={0.25}
           max={1}
           step={0.05}
           value={densidade}
@@ -154,7 +154,7 @@ export default function Pisos() {
 
       <dl className={styles.leitura}>
         <dt>céu aceso</dt>
-        <dd>{m ? pct(0.5 + m.densidade / 2) : '—'}</dd>
+        <dd>{m ? pct(Math.max(0.25, m.densidade)) : '—'}</dd>
         <dt>resolução</dt>
         <dd>{m ? `${m.escala.toFixed(3)} px/px` : '—'}</dd>
         <dt>taxa</dt>
