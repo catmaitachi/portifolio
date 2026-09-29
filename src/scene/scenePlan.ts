@@ -86,6 +86,18 @@ export const nomeDoCeu = (key: SectionKey): string => `ceu-${key}`;
 /** Seção onde o buraco negro existe. Fora dela ele se afasta até sumir. */
 export const SECAO_DO_BURACO_NEGRO: SectionKey = 'inicio';
 
+/**
+ * Quanto de um núcleo a cena pode gastar, por aparelho (o motor mira 85% disto,
+ * ver `motor.md`).
+ *
+ * No celular e no tablet o navegador ocupa a tela inteira e não divide o
+ * processador com outras janelas, e um núcleo de celular é mais lento: com os
+ * 25% do computador, a cena no piso já passava do limite e ficava no mínimo. O
+ * toque pode 40%, que com a margem dá ~34% de um núcleo: mais que no desktop, sem
+ * esquentar o aparelho. "Toque" é quem não tem ponteiro fino nem hover.
+ */
+export const CONSUMO = { padrao: 0.25, toque: 0.4 };
+
 export const DURACAO = {
   /** o buraco negro aparece um pouco mais rápido do que se afasta */
   buracoNegroEntrada: 1.5,

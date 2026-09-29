@@ -3,7 +3,7 @@ import type { SectionKey } from '~/content';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
 import { ligarCamera } from './camera';
 import { ligarQualidade } from './qualidade';
-import { CEUS, DURACAO, nomeDoCeu, NOVA_NIVEIS } from './scenePlan';
+import { CEUS, CONSUMO, DURACAO, nomeDoCeu, NOVA_NIVEIS } from './scenePlan';
 import styles from './SpaceCanvas.module.css';
 
 interface SpaceCanvasProps {
@@ -111,14 +111,19 @@ export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
 
       const nova = Supernova({ niveis: NOVA_NIVEIS });
 
-      const stage = createStage(cv, [
-        Nebula(), // z 0
-        BlackHole(), // z 20 — publica a gravidade
-        nova, // z 14 — publica a onda de choque
-        Starfield(), // z 10 — consome a gravidade e a onda
-        ...ceus, // z 12
-        Meteors(), // z 30
-      ]);
+      const toque = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+      const stage = createStage(
+        cv,
+        [
+          Nebula(), // z 0
+          BlackHole(), // z 20 — publica a gravidade
+          nova, // z 14 — publica a onda de choque
+          Starfield(), // z 10 — consome a gravidade e a onda
+          ...ceus, // z 12
+          Meteors(), // z 30
+        ],
+        { consumo: toque ? CONSUMO.toque : CONSUMO.padrao },
+      );
 
       /**
        * Aplica a cena de uma seção: o buraco negro se afasta ao sair do Início e

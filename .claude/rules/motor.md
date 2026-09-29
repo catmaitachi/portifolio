@@ -244,6 +244,16 @@ regra antiga terminava em 0,00 e a nova termina perto de 1.
 - **o teto é temporário.** Descer segura o nível por 20s (`ESPERA`), e depois a cena tenta subir de
   novo; cair logo depois de uma tentativa dobra a espera, até 160s (`ESPERA_MAX`), e ela não fica
   oscilando. Os 30fps de último recurso também são revistos quando o teto se solta;
+- **o limite depende do aparelho, e quem decide é a cena** (`CONSUMO` em `scene/scenePlan.ts`, passado
+  a `createStage` como `consumo`): 25% de um núcleo no computador e 40% em aparelho de toque (sem
+  hover nem ponteiro fino). No celular o navegador ocupa a tela e não divide o processador com outras
+  janelas, e um núcleo de celular é mais lento: com os 25% do computador a cena ficava no mínimo. Com a
+  margem, o toque mira ~34%, mais que o desktop sem esquentar o aparelho;
+- **um navegador preso a 30 quadros não é cena pesada.** O modo de economia do iPhone e de alguns
+  Androids limita a taxa a 30, e os quadros chegam num compasso regular de 33ms com a cena gastando
+  pouco. Contados como atrasados, eles levavam a qualidade ao mínimo sem ganhar nada. Quadros atrasados
+  com o intervalo em 33ms (±4ms) e consumo abaixo da metade da meta põem a cena a mirar 30, e a
+  qualidade fica;
 - **momentos pesados conhecidos ficam fora da conta**: o salto entre telas, a carga e a explosão da
   supernova (`bus.well`, `bus.shock`), o zoom da abertura, os 0,3s depois de cada troca e engasgos
   acima de 250ms (coleta de lixo, a aba que volta). Ao voltar de uma aba oculta, o relógio do quadro
@@ -267,7 +277,9 @@ pinta a 30fps enquanto só gira (um décimo de grau por quadro) e a 60 só no de
 empacota o palco com esbuild e o roda em Node, com um canvas falso e um relógio de mentira em que cada
 quadro custa o que a máquina da simulação diz pela resolução e pela densidade. Ele confere que uma
 máquina boa chega perto do ideal e fica, que trancos periódicos da página não a levam ao mínimo, que
-uma máquina fraca vai a 0 e a 30fps, e que uma medição guardada é o ponto de partida. Mexer nas regras
+uma máquina fraca vai a 0 e a 30fps, que um celular com o limite do toque fica no meio da escala (com
+o do computador ia a 0), que um navegador preso a 30 quadros não perde qualidade, e que uma medição
+guardada é o ponto de partida. Mexer nas regras
 do automático é rodar isto antes.
 
 **No navegador controlado pela extensão isso não se cronometra**: enquanto a ferramenta executa, o

@@ -22,8 +22,12 @@ export interface FonteQualidade {
 export type { MedidaQualidade };
 
 const CHAVE = 'portfolio.qualidade';
-/** o que a cena mediu nesta máquina (ver `stage.ts`): a próxima visita começa no ideal */
-const CHAVE_MEDICAO = 'portfolio.medicao';
+/**
+ * O que a cena mediu nesta máquina (ver `stage.ts`): a próxima visita começa no
+ * ideal. O sufixo muda quando a conta muda: a de antes do limite por aparelho
+ * guardou, no celular, um ideal medido contra o limite do computador.
+ */
+const CHAVE_MEDICAO = 'portfolio.medicao-2';
 
 function medicaoSalva(): Medicao | null {
   try {

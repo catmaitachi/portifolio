@@ -143,7 +143,11 @@ const Q_LEVE = 0.35;
 const PISO_DENSIDADE = 0.5;
 /** o piso da resolução, em px de canvas por px de layout (escolhido com o mesmo painel) */
 const PISO_ESCALA = 0.6;
-/** o consumo aceitável da cena, em fração de um núcleo */
+/**
+ * O consumo aceitável da cena, em fração de um núcleo, quando quem cria o palco
+ * não diz outro (`OpcoesStage.consumo`): a cena decide quanto cada aparelho pode
+ * gastar, e o motor só obedece.
+ */
 const LIMITE = 0.25;
 /** o alvo fica em 85% da qualidade em que o consumo chegaria ao limite */
 const MARGEM = 0.85;
@@ -167,7 +171,13 @@ const QUEDA = 0.2;
 const ESPERA = 20;
 const ESPERA_MAX = 160;
 
-export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
+export interface OpcoesStage {
+  /** o consumo aceitável, em fração de um núcleo; sem ele, `LIMITE` */
+  consumo?: number;
+}
+
+export function createStage(canvas: HTMLCanvasElement, layers: Layer[], opcoes: OpcoesStage = {}): Stage {
+  const limiteConsumo = opcoes.consumo ?? LIMITE;
   // `alpha: false` deixa o compositor pular a mesclagem com o fundo da página.
   const ctx = canvas.getContext('2d', { alpha: false });
   if (!ctx) throw new Error('canvas 2d indisponível');
@@ -261,7 +271,7 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
   /** o nível que quem visita escolheu, ou `null` */
   let manual: number | null = null;
   /**
-   * O limite e o ideal, em nível: onde o consumo chegaria a `LIMITE` e à meta.
+   * O limite e o ideal, em nível: onde o consumo chegaria a `limiteConsumo` e à meta.
    * `null` até fechar as `AMOSTRAS`; depois, fixos na visita.
    */
   let limite: number | null = null;
@@ -353,7 +363,20 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
     const consumo = porQuadro / Math.max(intervaloMedio, intervaloAlvo());
     consumoMedido = consumo;
     const atrasado = intervaloMedio > intervaloAlvo() * ATRASO;
-    const meta = MARGEM * LIMITE;
+    const meta = MARGEM * limiteConsumo;
+    /**
+     * **Um navegador que só entrega 30 quadros não é uma cena pesada.** O modo de
+     * economia do iPhone e de alguns Androids limita a taxa a 30, e os quadros
+     * chegam num compasso regular de 33ms com a cena gastando pouco. Contados como
+     * atrasados, eles levavam a qualidade ao mínimo sem melhorar nada, porque o teto
+     * não é da cena. Aqui a cena passa a mirar 30, e a qualidade fica.
+     */
+    // ponytail: fica em 30 na visita; se o navegador soltar o teto no meio dela, ninguém nota
+    if (atrasado && !economia && consumo < meta * 0.5 && Math.abs(intervaloMedio - 1 / 30) < 0.004) {
+      economia = true;
+      ruins = 0;
+      return;
+    }
     /**
      * O limite sai de uma **reta ajustada** às janelas medidas, `consumo = fixo +
      * variável · nível`, e não da proporção pura. A cena tem um custo que não
@@ -400,7 +423,7 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
     }
     anterior = null;
 
-    if (atrasado || consumo > LIMITE) {
+    if (atrasado || consumo > limiteConsumo) {
       ruins++;
       if (ruins < RUINS) return;
       ruins = 0;
@@ -441,7 +464,7 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
     const qm = sq / n;
     const cm = sc / n;
     const variancia = sqq / n - qm * qm;
-    const meta = MARGEM * LIMITE;
+    const meta = MARGEM * limiteConsumo;
     const entre = (v: number) => Math.min(1, Math.max(0, v));
     let m: Medicao;
     if (variancia > 0.05 * 0.05) {
@@ -449,13 +472,13 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
       const fixo = cm - variavel * qm;
       m =
         variavel > 1e-6
-          ? { limite: entre((LIMITE - fixo) / variavel), ideal: entre((meta - fixo) / variavel) }
-          : { limite: fixo < LIMITE ? 1 : 0, ideal: fixo < meta ? 1 : 0 };
+          ? { limite: entre((limiteConsumo - fixo) / variavel), ideal: entre((meta - fixo) / variavel) }
+          : { limite: fixo < limiteConsumo ? 1 : 0, ideal: fixo < meta ? 1 : 0 };
     } else if (salvo) {
       m = salvo;
       salvo = null;
     } else {
-      const l = qm > 0 ? entre((qm * LIMITE) / Math.max(cm, 1e-4)) : cm < LIMITE ? 1 : 0;
+      const l = qm > 0 ? entre((qm * limiteConsumo) / Math.max(cm, 1e-4)) : cm < limiteConsumo ? 1 : 0;
       m = { limite: l, ideal: l * MARGEM };
     }
     // com uma medição guardada, a média das duas: as marcas convergem entre visitas
