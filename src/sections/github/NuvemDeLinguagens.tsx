@@ -73,9 +73,11 @@ function carregarBranco(src: string): Promise<HTMLCanvasElement | null> {
  * - **a escolhida se destaca na própria nuvem**: vem para a frente pelo menor
  *   giro, cresce, ganha um anel, e as outras recuam; a nuvem para de girar
  *   enquanto há uma escolhida;
- * - **a lista ao lado tem medida fixa**: uma linha por linguagem, sempre do mesmo
- *   tamanho, com a escolhida acesa. Antes era um nome grande que mudava de largura
- *   a cada escolha. A lista é também o caminho do teclado e do leitor de tela; o
+ * - **a legenda ao lado tem medida fixa**: um cabeçalho de altura fixa diz a
+ *   linguagem em foco (nome, posição, peso e um risco do tamanho do peso) e uma
+ *   grade de chips iguais lista todas, com a escolhida acesa. Escolhida numa
+ *   segunda vitrine (a Legenda compacta), contra uma régua de peso e um anel de
+ *   rótulos. Os chips são também o caminho do teclado e do leitor de tela; o
  *   canvas é desenho.
  *
  * O laço só roda com a seção ativa, na tela e com a aba visível.
@@ -252,6 +254,7 @@ export function NuvemDeLinguagens({ linguagens, ativo }: { linguagens: Linguagem
   };
 
   const maxFracao = linguagens[0]?.fracao ?? 1;
+  const foco = apontada ?? escolhida;
 
   return (
     <div className={styles.linguagens}>
@@ -292,26 +295,36 @@ export function NuvemDeLinguagens({ linguagens, ativo }: { linguagens: Linguagem
         }}
         onPointerLeave={() => setApontada(null)}
       />
-      <div className={styles.linguagensLado}>
+      <div className={styles.legenda}>
         <h3 className={styles.linguagensTitulo}>{t.github.linguagens}</h3>
-        <ol className={styles.linguagensLista}>
+        {/* o cabeçalho tem medida fixa: trocar de linguagem troca o texto, e nada em volta se mexe */}
+        <div className={styles.foco} aria-live="polite">
+          <span className={styles.focoLinha}>
+            {foco === null
+              ? t.github.aponte
+              : `${String(foco + 1).padStart(2, '0')} · ${format(t.github.doCodigo, { n: String(Math.round(linguagens[foco].fracao * 100)) })}`}
+          </span>
+          <b className={styles.focoNome}>
+            {foco === null ? format(t.github.quantas, { n: String(linguagens.length) }) : linguagens[foco].nome}
+          </b>
+          <i className={styles.focoBarra} style={{ '--f': foco === null ? 0 : linguagens[foco].fracao / maxFracao } as React.CSSProperties} />
+        </div>
+        <ol className={styles.chips}>
           {linguagens.map((l, i) => (
             <li key={l.nome} style={{ '--ordem': i } as React.CSSProperties}>
               <button
                 type="button"
-                className={styles.linguagem}
+                className={styles.chip}
                 aria-pressed={escolhida === i}
-                data-destaque={(apontada ?? escolhida) === i || undefined}
+                data-destaque={foco === i || undefined}
                 onClick={() => escolher(escolhida === i ? null : i)}
                 onPointerEnter={() => setApontada(i)}
                 onPointerLeave={() => setApontada(null)}
                 onFocus={() => setApontada(i)}
                 onBlur={() => setApontada(null)}
               >
-                <span className={styles.linguagemPos}>{String(i + 1).padStart(2, '0')}</span>
-                <span className={styles.linguagemNome}>{l.nome}</span>
-                <span className={styles.linguagemPct}>{format(t.github.doCodigo, { n: String(Math.round(l.fracao * 100)) })}</span>
-                <i className={styles.linguagemBarra} style={{ '--f': l.fracao / maxFracao } as React.CSSProperties} />
+                <span className={styles.chipNome}>{l.nome}</span>
+                <span className={styles.chipPct}>{Math.round(l.fracao * 100)}%</span>
               </button>
             </li>
           ))}

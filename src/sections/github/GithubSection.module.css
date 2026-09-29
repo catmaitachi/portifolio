@@ -19,8 +19,8 @@
 }
 
 .secao {
-  /* o lado da nuvem de linguagens: ela ocupa a coluna da esquerda, como o número grande */
-  --gh-nuvem: clamp(320px, 40vw, 520px);
+  /* o lado da nuvem de linguagens; quem ocupa a largura é a legenda ao lado dela */
+  --gh-nuvem: 360px;
   --gh-grande: clamp(80px, 13vw, 164px);
 }
 
@@ -233,13 +233,15 @@
 
 /* ---------- as linguagens ---------- */
 
-/* a mesma grade do cartaz: a nuvem no lugar do número, a lista no lugar da ficha */
+/**
+ * A nuvem no tamanho dela, e a legenda crescendo até a borda: o bloco tem a mesma
+ * largura do cartaz e do céu, sem a nuvem inchar para preencher o vão.
+ */
 .linguagens {
   display: grid;
-  grid-template-columns: auto minmax(0, 420px);
+  grid-template-columns: var(--gh-nuvem) minmax(0, 1fr);
   gap: clamp(28px, 5vw, 64px);
   align-items: center;
-  justify-content: space-between;
 }
 
 .nuvem {
@@ -268,84 +270,101 @@
   text-transform: uppercase;
 }
 
-.linguagensLista {
+/* o cabeçalho da legenda: altura fixa, e trocar de linguagem só troca o texto */
+.foco {
   display: grid;
+  align-content: end;
+  gap: 6px;
+  height: 96px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--linha);
+}
+
+.focoLinha {
+  color: var(--tx-apoio);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+
+.focoNome {
+  overflow: hidden;
+  color: var(--tx-titulo);
+  font-size: var(--fs-destaque);
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* o peso da linguagem em foco, relativo à maior */
+.focoBarra {
+  display: block;
+  height: 1px;
+  background: var(--linha-cheia);
+  transform: scaleX(var(--f));
+  transform-origin: left;
+  transition: transform var(--dur-retorno) var(--ease-saida);
+}
+
+/* uma grade de chips iguais: quatro por linha, e nada muda de tamanho ao escolher */
+.chips {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px 22px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-/**
- * Uma linha por linguagem, sempre do mesmo tamanho: a escolhida acende e as
- * outras ficam onde estão. Nada muda de largura ao escolher.
- */
-.linguagem {
-  position: relative;
-  display: grid;
-  grid-template-columns: 3ch minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: baseline;
+.chip {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
-  height: 42px;
+  height: 30px;
   padding: 0;
   border: 0;
+  border-bottom: 1px solid var(--linha-sutil);
   background: none;
   color: var(--tx-apagado);
   font: inherit;
-  font-size: var(--fs-pequeno);
-  letter-spacing: 0.12em;
+  font-size: var(--fs-controle);
+  letter-spacing: 0.1em;
   text-align: left;
   cursor: pointer;
   appearance: none;
-  transition: color var(--dur-hover) var(--ease-saida);
+  transition:
+    color var(--dur-hover) var(--ease-saida),
+    border-color var(--dur-hover) var(--ease-saida);
 }
 
-.linguagem[data-destaque],
-.linguagem[aria-pressed='true'] {
+.chip[data-destaque],
+.chip[aria-pressed='true'] {
+  border-color: var(--linha-acesa);
   color: var(--tx-titulo);
 }
 
-.linguagemPos {
-  color: var(--tx-marcador);
-  font-variant-numeric: tabular-nums;
-}
-
-.linguagemNome {
+.chipNome {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.linguagemPct {
+.chipPct {
   font-variant-numeric: tabular-nums;
 }
 
-/* o peso, num risco de 1px embaixo da linha, relativo à maior */
-.linguagemBarra {
-  position: absolute;
-  right: 0;
-  bottom: 6px;
-  left: calc(3ch + 12px);
-  height: 1px;
-  background: var(--linha-forte);
-  transform: scaleX(var(--f));
-  transform-origin: left;
-  transition: background-color var(--dur-hover) var(--ease-saida);
-}
-
-.linguagem[data-destaque] .linguagemBarra,
-.linguagem[aria-pressed='true'] .linguagemBarra {
-  background: var(--linha-cheia);
-}
-
-/* a lista chega depois da nuvem, uma linha depois da outra */
-.bloco[data-ativo] .linguagensLista li {
+/* os chips chegam depois da nuvem, um depois do outro */
+.bloco[data-ativo] .chips li {
   animation: chega 0.6s var(--ease-entrada) calc(0.6s + var(--ordem) * 0.06s) backwards;
 }
 
 @media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .secao {
-    --gh-nuvem: min(420px, 86vw);
+    --gh-nuvem: min(340px, 86vw);
   }
 
   .cartaz,
@@ -355,6 +374,10 @@
 
   .nuvem {
     justify-self: center;
+  }
+
+  .chips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   /* no celular o ano não cabe legível na largura: ele rola de lado, e abre no fim, que é o agora */

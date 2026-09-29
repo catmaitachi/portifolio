@@ -230,9 +230,10 @@ Lucas (o Icon Cloud do Magic UI). As três foram harmonizadas numa física só, 
   lado** (largura mínima de 680px) e abre no fim, que é o agora: espremidas em 390px as 53 semanas
   ficavam ilegíveis;
 - **as linguagens** (`NuvemDeLinguagens`): uma esfera de Fibonacci girando, com estrelas entre os
-  ícones, e cada ícone do tamanho do peso da linguagem. O bloco usa a grade do cartaz, e ocupa a
-  largura como ele: a nuvem no lugar do número (até 520px, `--gh-nuvem`) e a lista no lugar da ficha.
-  Ícones e estrelas crescem com a nuvem (as medidas são de uma de 300px, multiplicadas pela escala). Os ícones são do Simple Icons (CC0), guardados
+  ícones, e cada ícone do tamanho do peso da linguagem. O bloco tem a largura do cartaz e do céu, mas
+  **quem cresce é a legenda, não a nuvem**: ela fica em 360px (`--gh-nuvem`) e a legenda vai até a
+  borda. Uma versão esticou a nuvem até 520px para preencher o vão, e ficou desproporcional. Ícones e
+  estrelas acompanham o tamanho da nuvem (as medidas são de uma de 300px, multiplicadas pela escala). Os ícones são do Simple Icons (CC0), guardados
   em `assets/linguagens/` e pintados de branco no canvas; linguagem sem ícone aparece pela sigla.
 
 Três ajustes da nuvem saíram das observações da vitrine e valem para o que vier:
@@ -241,10 +242,12 @@ Três ajustes da nuvem saíram das observações da vitrine e valem para o que v
   contrário;
 - **a escolhida se destaca na própria nuvem**: vem para a frente pelo menor giro, cresce, ganha um
   anel, e as outras recuam. A nuvem para de girar enquanto há uma escolhida;
-- **a lista ao lado tem medida fixa**: uma linha por linguagem, sempre do mesmo tamanho, com a
-  escolhida acesa e o peso num risco de 1px. Na demo era um nome grande que mudava de largura a cada
-  escolha. A lista é também o caminho do teclado e do leitor de tela (`aria-pressed`); o canvas é
-  desenho.
+- **a legenda ao lado tem medida fixa** (a Legenda compacta, escolhida numa segunda vitrine contra
+  uma régua de peso e um anel de rótulos): um cabeçalho de altura fixa diz a linguagem em foco (posição,
+  peso, o nome e um risco do tamanho do peso) e uma grade de chips iguais, quatro por linha (dois no
+  celular), lista todas com a escolhida acesa. Na demo era um nome grande que mudava de largura a cada
+  escolha. Os chips são também o caminho do teclado e do leitor de tela (`aria-pressed`, e o cabeçalho
+  é uma região `aria-live`); o canvas é desenho.
 
 O laço da nuvem só roda com a seção ativa, na tela e com a aba visível. No toque, o arraste vertical
 continua rolando a página (`touch-action: pan-y`) e o horizontal gira.

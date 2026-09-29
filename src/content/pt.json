@@ -173,7 +173,9 @@
     "dia": "{data} · {n}",
     "ceuA11y": "{n} contribuições em {dias} dias com código no último ano",
     "linguagens": "Linguagens",
-    "doCodigo": "{n}% do código"
+    "doCodigo": "{n}% do código",
+    "quantas": "{n} linguagens",
+    "aponte": "aponte ou escolha uma"
   },
 
   "experiencia": {

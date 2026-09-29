@@ -282,6 +282,9 @@ export interface Dictionary {
     linguagens: string;
     /** aceita `{n}` */
     doCodigo: string;
+    /** o cabeçalho da legenda sem nada em foco; `quantas` aceita `{n}` */
+    quantas: string;
+    aponte: string;
   };
   experiencia: {
     titulo: string;
