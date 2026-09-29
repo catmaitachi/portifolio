@@ -188,8 +188,9 @@ export function Starfield({
     },
     update(env) {
       const { dt, t, mouse } = env;
-      dens =
-        env.densidade > dens
+      dens = env.calibrando
+        ? env.densidade
+        : env.densidade > dens
           ? Math.min(env.densidade, dens + dt * SOBE_DENS)
           : Math.max(env.densidade, dens - dt * DESCE_DENS);
       const moving = env.camera.moving;

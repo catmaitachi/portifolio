@@ -288,9 +288,27 @@ export interface Dictionary {
       mensagem: { rotulo: string; dica: string };
     };
   };
+  /** o menu do canto superior direito (ver `hud/Opcoes`) */
+  opcoes: {
+    /** o nome acessível do gatilho */
+    abrir: string;
+    idioma: string;
+    qualidade: string;
+    /** o nome acessível da régua */
+    regua: string;
+    /** as duas pontas da régua */
+    desempenho: string;
+    detalhe: string;
+    auto: string;
+    autoDica: string;
+    ideal: string;
+    limite: string;
+    /** o valor da régua lido em voz alta, acima do limite; aceita `{n}` */
+    acima: string;
+    versao: string;
+  };
   a11y: {
     secoes: string;
-    idioma: string;
     /** o nome acessível da foto do site; aceita `{nome}` */
     previa: string;
     experiencia: string;

@@ -9,7 +9,7 @@
 /**
  * Contrato do topo.
  *
- * O cabeçalho e o seletor de idioma ocupam a primeira linha da tela, e as telas
+ * O cabeçalho e o menu de opções ocupam a primeira linha da tela, e as telas
  * reservam esse espaço antes do conteúdo. Nenhuma delas conhece o cabeçalho,
  * então o número mora aqui, uma vez, e as duas pontas derivam dele. Já houve um
  * contrato igual para o rodapé do celular, quando a barra de seções morava lá; ela
@@ -19,7 +19,7 @@
   /* onde a primeira linha do topo começa, medindo da borda */
   --hud-topo-base: max(2.4vh, 20px);
   /**
-   * A altura de uma linha do topo: o seletor de idioma, ou o cabeçalho.
+   * A altura de uma linha do topo: o gatilho do menu de opções, ou o cabeçalho.
    * Era 21px, e com a moldura do cabeçalho o texto de 10px ficava encostado nos
    * dois fios. Os dois se centram nesta altura, então mudar o número mexe nos
    * dois juntos e nas seções, que reservam o topo a partir dele.
@@ -27,8 +27,9 @@
   --hud-topo-linha: 26px;
   /**
    * Quanto o HUD ocupa no topo: uma linha só, em qualquer tela. No desktop o
-   * idioma fica à direita e o cabeçalho no centro; no celular o idioma continua
-   * à direita e o cabeçalho vai para a esquerda.
+   * menu de opções fica à direita e o cabeçalho no centro; no celular o menu
+   * continua à direita e o cabeçalho vai para a esquerda. O painel do menu abre
+   * por cima do conteúdo e não conta aqui.
    */
   --hud-topo-altura: var(--hud-topo-linha);
   /* base do topo: acima disso é território do HUD */
@@ -39,7 +40,7 @@
   /**
    * O recuo lateral de todas as peças do HUD, e a linha de base das de baixo.
    *
-   * Idioma, versão, cabeçalho e medidor da supernova se alinham pelas
+   * Menu de opções, canais, cabeçalho e medidor da supernova se alinham pelas
    * bordas da tela, e cada um escrevia o próprio `max(3.2vw, 26px)`. O medidor
    * tinha 20px fixos no mobile enquanto o cabeçalho tinha `max(3.2vw, 20px)`, e
    * num tablet em pé os dois ficavam desalinhados por seis pixels.
@@ -161,8 +162,7 @@
   --abertura-nome: 1.35s;
   --abertura-legenda: 1.85s;
   --abertura-cabecalho: 2.2s;
-  --abertura-idioma: 2.4s;
-  --abertura-versao: 2.5s;
+  --abertura-opcoes: 2.4s;
   /* a última peça assentou: daqui em diante só o brilho do nome se move */
   --abertura-fim: 3.3s;
   /* quanto dura a aparição comum das peças do HUD */

@@ -110,6 +110,11 @@ export interface StageEnv {
    * acende a metade ímpar das estrelas uma a uma conforme ele sobe.
    */
   densidade: number;
+  /**
+   * O painel de `?pisos` está calibrando: a densidade muda na hora em vez de
+   * subir devagar, para o piso escolhido aparecer enquanto se mexe nele.
+   */
+  calibrando: boolean;
 }
 
 /**

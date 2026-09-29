@@ -10,7 +10,7 @@
  */
 
 export { createStage } from './stage';
-export type { Stage } from './stage';
+export type { MedidaQualidade, Stage } from './stage';
 export { tween } from './tween';
 export { fastSin, TAU } from './math';
 

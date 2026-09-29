@@ -2,7 +2,7 @@
  * `@keyframes` mora **no mesmo módulo** que o usa: CSS Modules escopa tanto o
  * nome declarado quanto o nome escrito em `animation`, e um keyframe global
  * nunca casaria com o nome reescrito aqui dentro. `fina` se repete no SectionNav,
- * no LanguageToggle e na Version pelo mesmo motivo — quatro linhas duplicadas custam menos
+ * no menu de opções (`hud/Opcoes`) e nos Canais pelo mesmo motivo — quatro linhas duplicadas custam menos
  * que uma animação que não roda.
  */
 

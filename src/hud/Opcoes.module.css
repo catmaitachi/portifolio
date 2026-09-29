@@ -1,0 +1,322 @@
+/** ver `HeroSection.module.css`: keyframe e uso precisam morar no mesmo módulo */
+@keyframes fina {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/**
+ * O canto que era do seletor de idioma, no mesmo recuo e na mesma linha do cabeçalho.
+ * No celular continua à direita, e o cabeçalho vai para a esquerda.
+ */
+.raiz {
+  position: absolute;
+  z-index: 4;
+  top: var(--hud-topo-base);
+  right: var(--hud-borda);
+  animation: fina var(--abertura-fina) ease-out var(--abertura-opcoes) both;
+}
+
+/* três traços da mira: o de cima e o de baixo cruzam num X, o do meio recolhe */
+.gatilho {
+  display: grid;
+  place-items: center;
+  width: var(--hud-topo-linha);
+  height: var(--hud-topo-linha);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  appearance: none;
+}
+
+.gatilho svg {
+  width: 16px;
+  height: 16px;
+  overflow: visible;
+}
+
+.gatilho line {
+  stroke: var(--tx-apagado);
+  stroke-width: 1;
+  transform-origin: 8px 8px;
+  transition:
+    stroke var(--dur-hover) var(--ease-saida),
+    transform var(--dur-retorno) var(--ease-saida);
+}
+
+.gatilho:hover line,
+.gatilho[aria-expanded='true'] line {
+  stroke: var(--tx-titulo);
+}
+
+.gatilho[aria-expanded='true'] .t1 {
+  transform: rotate(45deg) translateY(4px);
+}
+
+.gatilho[aria-expanded='true'] .t2 {
+  transform: rotate(-45deg) translateY(-4px);
+}
+
+.gatilho[aria-expanded='true'] .t3 {
+  transform: scaleX(0);
+}
+
+/**
+ * O painel se desenha do canto de onde saiu: o recorte abre de cima-direita para
+ * baixo-esquerda. Aberto, o recorte passa da borda, para não cortar o contorno de
+ * foco das linhas (`outline-offset: 3px`), que é o motivo de o chanfro do site não
+ * usar `clip-path` (ver `direcao-visual.md`).
+ */
+.painel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(264px, calc(100vw - 2 * var(--hud-borda)));
+  padding: 6px 18px;
+  border: 1px solid var(--linha-forte);
+  border-radius: 2px;
+  background: #000;
+  clip-path: inset(0 0 100% 100%);
+  transition: clip-path 0.35s var(--ease-saida);
+}
+
+@supports (corner-shape: bevel) {
+  .painel {
+    border-radius: 12px 2px;
+    corner-shape: bevel;
+  }
+}
+
+.painel[data-aberto] {
+  clip-path: inset(-6px);
+  transition-duration: 0.5s;
+}
+
+/* as linhas chegam da profundidade, como todo texto do site, uma depois da outra */
+.linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 10px 0;
+  opacity: 0;
+  filter: blur(4px);
+  transform: scale(0.86);
+  transform-origin: right center;
+  transition:
+    opacity 0.3s,
+    filter 0.3s,
+    transform 0.3s var(--ease-saida);
+}
+
+.painel[data-aberto] .linha {
+  opacity: 1;
+  filter: blur(0);
+  transform: none;
+  transition:
+    opacity 0.5s var(--ease-entrada),
+    filter 0.5s var(--ease-entrada),
+    transform 0.6s var(--ease-entrada);
+  transition-delay: calc(0.14s + var(--i) * 0.06s);
+}
+
+.linha + .linha {
+  border-top: 1px solid var(--linha-sutil);
+}
+
+.rotulo {
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+
+/* nada se desloca: o idioma escolhido se enche de luz de baixo para cima, em corte seco */
+.idiomas {
+  display: flex;
+  gap: 14px;
+}
+
+.idioma {
+  height: 22px;
+  margin: 0;
+  padding: 0 0 0 0.28em;
+  border: 0;
+  background-color: transparent;
+  background-image: linear-gradient(to top, var(--tx-titulo) 50%, var(--tx-apagado) 50%);
+  background-position: 0 0;
+  background-size: 100% 200%;
+  background-clip: text;
+  color: transparent;
+  font-size: var(--fs-controle);
+  letter-spacing: 0.28em;
+  cursor: pointer;
+  appearance: none;
+  transition: background-position 0.6s var(--ease-saida);
+}
+
+.idioma[aria-checked='true'] {
+  background-position: 0 100%;
+}
+
+.idioma:not([aria-checked='true']):hover {
+  background-position: 0 30%;
+}
+
+.versao {
+  color: var(--tx-apagado);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+
+/* a régua de qualidade */
+/* grade, e não a fileira das outras linhas: o `space-between` de `.linha` encolheria a coluna */
+.qualidade {
+  display: grid;
+  gap: 8px;
+  justify-content: stretch;
+}
+
+.cabeca {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.auto {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tx-apagado);
+  font-size: var(--fs-rotulo);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+  cursor: pointer;
+  appearance: none;
+  transition: color var(--dur-hover) var(--ease-saida);
+}
+
+.auto:hover {
+  color: var(--tx-hover);
+}
+
+.auto[aria-pressed='true'] {
+  color: var(--tx-titulo);
+  cursor: default;
+}
+
+.regua {
+  --p: 0;
+
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 18px;
+  margin-top: 6px;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.regua[aria-disabled='true'] {
+  cursor: default;
+}
+
+.traco {
+  width: 1px;
+  height: 100%;
+  background: var(--tx-titulo);
+  opacity: 0.22;
+  transform: scaleY(0.3);
+  transform-origin: bottom;
+}
+
+/* o ponto exato do nível, que pode cair entre dois traços */
+.marca {
+  position: absolute;
+  bottom: -3px;
+  left: calc(var(--p) * 100%);
+  width: 1px;
+  height: 24px;
+  background: var(--linha-cheia);
+  transform: translateX(-50%);
+}
+
+.limite,
+.ideal {
+  position: absolute;
+  left: calc(var(--em) * 100%);
+  pointer-events: none;
+}
+
+/* o limite recomendado: um risco tracejado que atravessa a régua */
+.limite {
+  top: -6px;
+  bottom: -3px;
+  width: 0;
+  border-left: 1px dashed var(--linha-acesa);
+}
+
+/* o ideal: um ponto acima da régua, onde a cena para sozinha */
+.ideal {
+  top: -8px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--tx-corpo);
+  transform: translateX(-1px);
+}
+
+.pontas {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  color: var(--tx-marcador);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+
+/* a legenda das duas marcas, só depois que o motor mediu alguma coisa */
+.legenda {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--tx-marcador);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+
+.legendaIdeal {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--tx-corpo);
+}
+
+.legendaLimite {
+  width: 0;
+  height: 8px;
+  margin-left: 6px;
+  border-left: 1px dashed var(--linha-acesa);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .painel,
+  .linha,
+  .gatilho line,
+  .idioma {
+    transition-duration: 0.01ms;
+    transition-delay: 0s;
+  }
+}

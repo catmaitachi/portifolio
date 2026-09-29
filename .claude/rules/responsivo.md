@@ -19,8 +19,7 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | `FilmsSection` | `--marcador-col --credito-fs` |
 | `ContactSection` | `--carta-fs --carta-gap` (o título mede a coluna, por `cqi`, e não a tela) |
 | `SectionNav` | `--cab-left --cab-tx --cab-fs --cab-px --cab-ls` |
-| `LanguageToggle` | `--lang-left --lang-right --lang-tx` |
-| `Version` | `--ver-bottom --ver-left --ver-right --ver-tx` |
+| `Opcoes` | nenhum: fica no canto direito nas duas faixas, e o painel mede `min(264px, 100vw − 2·--hud-borda)` |
 | `NovaGauge` | `--nova-bottom --nova-left --nova-size` |
 | `Tela` | `--secao-pt`, `--secao-pb` e `--secao-min`, que a seção usa no lugar dos seus quando existem; toda seção depois da primeira ganha o respiro largo antes dela |
 
@@ -52,16 +51,16 @@ cabeçalho, então os números moram em `:root` (`reset.css`) e as duas pontas d
 | Token | O quê |
 |---|---|
 | `--hud-topo-base` | onde o cabeçalho começa, medindo do topo; o rodapé do celular usa o mesmo número |
-| `--hud-topo-linha` | a altura de uma linha do topo (cabeçalho e idioma se centram nela) |
+| `--hud-topo-linha` | a altura de uma linha do topo (cabeçalho e gatilho do menu de opções se centram nela) |
 | `--hud-topo-altura` | o que o HUD ocupa no topo: uma linha, em qualquer tela |
 | `--hud-topo` | a soma: acima disso é território do HUD |
 | `--hud-topo-respiro` | o que separa o conteúdo do cabeçalho |
 | `--hud-borda` | o recuo lateral de todas as peças do HUD; encolhe sozinho na faixa do celular |
-| `--hud-fundo` | a linha de base das peças de baixo no desktop (versão, medidor) |
+| `--hud-fundo` | a linha de base das peças de baixo no desktop (o medidor) |
 
 No topo, o `--pt` é `max(--pt-livre, --hud-topo + --hud-topo-respiro)`: as media queries mexem só em
 `--pt-livre`, e o cabeçalho é um **piso**, não um valor somado. No celular o `--pb` é o mesmo número,
-porque a versão e o medidor ficam à mesma distância da borda de baixo que o cabeçalho da de cima.
+porque o medidor fica à mesma distância da borda de baixo que o cabeçalho da de cima.
 
 Um número solto em dois lugares é o defeito que este contrato existe para evitar: foi assim, com
 `bottom: 56px` na faixa de seções que existia no rodapé contra `--pb: 116px` nas seções, que o

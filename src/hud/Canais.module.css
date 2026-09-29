@@ -28,7 +28,7 @@
   gap: clamp(18px, 2.4vw, 28px);
   align-items: center;
   transform: translateX(-50%);
-  animation: fina var(--abertura-fina) ease-out var(--abertura-idioma) both;
+  animation: fina var(--abertura-fina) ease-out var(--abertura-opcoes) both;
 }
 
 /* a área de toque é maior que o glifo: 18px de ícone num alvo de 32px */

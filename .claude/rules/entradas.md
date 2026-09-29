@@ -105,7 +105,7 @@ estado derivado durante o render, como na Trajetória):
 
 A volta é a mesma cascata sem a espera do HUD, com os mesmos intervalos entre as peças. O brilho
 entra logo depois do nome porque não sobra nada chegando com que ele dispute atenção; na abertura ele
-espera o cabeçalho, o idioma e a versão assentarem (ver `hud.md`). Quem abre o site pelo endereço de
+espera o cabeçalho e o menu de opções assentarem (ver `hud.md`). Quem abre o site pelo endereço de
 outra seção já começa como volta.
 
 Duas coisas vieram junto, e nenhuma é opcional:

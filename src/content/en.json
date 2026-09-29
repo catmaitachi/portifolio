@@ -199,9 +199,23 @@
     }
   },
 
+  "opcoes": {
+    "abrir": "Options: language, quality and version",
+    "idioma": "Language",
+    "qualidade": "Quality",
+    "regua": "Scene quality, from more performance to more detail",
+    "desempenho": "performance",
+    "detalhe": "quality",
+    "auto": "auto",
+    "autoDica": "Let the site choose the quality",
+    "ideal": "ideal",
+    "limite": "limit",
+    "acima": "{n}%, above the recommended limit",
+    "versao": "Version"
+  },
+
   "a11y": {
     "secoes": "Sections",
-    "idioma": "Switch language between Portuguese and English",
     "previa": "The {nome} website",
     "experiencia": "Career: use the arrow keys to move through the years",
     "canais": "Contact channels",

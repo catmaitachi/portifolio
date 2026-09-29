@@ -32,7 +32,7 @@
   /**
    * O conteúdo se apaga ao passar por baixo do HUD, nas duas pontas.
    *
-   * As telas rolam, e o cabeçalho e o seletor de idioma ficam fixos no topo, a
+   * As telas rolam, e o cabeçalho e o menu de opções ficam fixos no topo, a
    * versão e o medidor da supernova no rodapé: sem isto, uma linha de texto
    * passaria atrás deles. A máscara apaga as duas faixas em vez de cortá-las, e
    * só a faixa que o HUD ocupa. O rodapé espelha o topo, porque as peças de
@@ -59,6 +59,17 @@
   filter: none;
   transform: none;
   transition: none;
+}
+
+/**
+ * Fora de vista, nada anima. `visibility: hidden` não para animação de CSS (só
+ * `display: none` para, e ele desmontaria a rolagem guardada), e as telas de trás
+ * seguiam pulsando: o "buscando" das seções que ainda não buscaram nada, o anel da
+ * órbita da Carreira. Cada uma pedia estilo e composição a todo quadro para
+ * ninguém ver.
+ */
+.tela:not([data-ativa]) * {
+  animation-play-state: paused;
 }
 
 /* a chegada começa no meio do salto, quando os riscos estão no auge */

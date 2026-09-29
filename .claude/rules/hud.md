@@ -20,7 +20,7 @@ zoom é `DURACAO.cameraZoom`, em `scene/scenePlan.ts`:
 
 Na página: etiqueta 1.2s, nome 1.35s (as letras chegando do fundo, 70ms por passo de distância ao
 centro, ver `direcao-visual.md`), legenda
-1.85s, cabeçalho 2.2s, seletor de idioma 2.4s e versão 2.5s. A
+1.85s, cabeçalho 2.2s e menu de opções 2.4s (os canais do rodapé também). A
 aparição comum das peças do HUD dura `--abertura-fina` (0.8s).
 
 **A abertura já levou o dobro.** A primeira versão punha o nome na tela aos 3,75s e só assentava aos
@@ -48,11 +48,11 @@ lado (`ModeHeader`), que saiu junto com os dois lados do site, e herdou dele:
 
 - **a posição e os tokens do topo.** Centrado no desktop (com o nome do meio no eixo da tela, ver
   `navegacao.md`), à esquerda no celular, na mesma linha do
-  seletor de idioma, os dois com o recuo `--hud-borda` e espelhando um ao outro. `--hud-topo-linha`
+  menu de opções, os dois com o recuo `--hud-borda` e espelhando um ao outro. `--hud-topo-linha`
   é a altura da linha e `--hud-topo-altura` o que o HUD ocupa; o `--pt` das seções é `max(--pt-livre,
   --hud-topo + respiro)`, e as media queries redefinem só `--pt-livre`. Quem mexer na altura do
   cabeçalho mexe em um número só;
-- **a linha de 26px**, que a moldura de antes pediu e ficou: o seletor de idioma se centra na mesma
+- **a linha de 26px**, que a moldura de antes pediu e ficou: o gatilho do menu de opções tem essa
   altura. O recuo da esquerda de cada nome leva o `letter-spacing` a mais, porque ele entra também
   depois da última letra e deslocaria o nome em relação ao próprio risco.
 
@@ -76,15 +76,51 @@ preenchido. Hoje é o TikTok. **O e-mail não entra**: o endereço mora no Conta
 São peça do HUD, e não do Início, porque a faixa de baixo da tela é apagada de propósito pela máscara
 da `Tela`, e dentro da seção eles ficariam justamente nela. A barra entra uma vez, na abertura; a
 presença é dos ícones, que se apagam fora do Início e voltam sem esperar a abertura de novo (o
-`inert` os tira do clique e do foco). No celular sobem uma linha, acima da versão centrada.
+`inert` os tira do clique e do foco).
+
+### Menu de opções
+
+`hud/Opcoes` fica no canto superior direito, onde morava o seletor de idioma, e reúne o **idioma**, a
+**qualidade** da cena e a **versão**, que saiu do canto de baixo. Escolhido numa rodada da skill
+`inspiration` (28/09/2026), com a mistura por slot feita pelo Lucas:
+
+| Slot | Padrão | Referências |
+|---|---|---|
+| gatilho | três traços da mira do HUD; aberto, o de cima e o de baixo cruzam num X e o do meio recolhe | reactbits/BranchedMenu |
+| painel | moldura chanfrada que se desenha do canto de onde saiu (`clip-path` abrindo de cima-direita), e as linhas chegam da profundidade, uma depois da outra | reactbits/GlideSelect, motionprimitives/morphing-popover |
+| idioma | nada se desloca: o escolhido se enche de luz de baixo para cima, em corte seco | animata/metis-text |
+| qualidade | uma régua de 29 traços; **qualquer ponto** de "desempenho" a "qualidade", e os traços perto da marca crescem e acendem pela distância a ela | smoothui/exposure-slider, reactbits/WakeSlider |
+
+- **A régua mostra o que o motor sabe da máquina**: um ponto no **ideal**, onde a cena para sozinha,
+  e um risco tracejado no **limite recomendado**, com os traços de depois dele apagados. A legenda só
+  aparece depois da primeira medição. Arrastar, clicar ou usar as setas (5%, `Home`/`End`) fixa um
+  nível; o botão da direita diz "auto" ou o valor escolhido, e clicado devolve a decisão à cena (ver
+  `motor.md`). O pedido que decidiu isso: perfis fixos ("desempenho"/"qualidade") esconderiam a escala.
+- **O menu só lê o motor enquanto está aberto** (a cada 0,4s), e a marca anda por rAF escrevendo
+  direto nos traços: nada disso é estado do `App`, e fechado ele não custa nada.
+- **Abre só pelo clique**, e fecha pelo gatilho, pelo `Esc` (que devolve o foco ao gatilho) ou por
+  um toque fora. Fechado, o painel é `inert`. Não é o pop-up que a regra de baixo proíbe: é um
+  controle que o visitante abre, e nada aparece sozinho.
+- **As setas dentro dele não navegam a seção de trás.** O idioma (um `radiogroup`) e a régua (um
+  `slider`) param a propagação, senão o `useArrowKeys` da Carreira ou de Jogos andaria junto.
+- **O recorte aberto passa da borda** (`inset(-6px)`), para não cortar o contorno de foco, que é o
+  motivo de o chanfro do site não ser `clip-path` (ver `direcao-visual.md`).
+
+### O painel de `?pisos`
+
+`hud/Pisos` calibra os pisos da qualidade (ver `motor.md`) e só existe com `?pisos` no endereço: o
+`App` o carrega por `lazy`, e quem não o pede não baixa o código. É ferramenta de quem escreve a
+página, não conteúdo, e por isso é **a única peça com texto literal fora do dicionário**. O que ele
+muda não fica guardado.
+
+Ele também mostra o **tempo de quadro da página inteira** (mediana e p95 dos últimos 120 quadros, e
+quantos passaram de 20ms), medido por rAF. É a medida que importa para travamento: o consumo do motor
+só conta o canvas, e um tranco que vem do navegador (compor camadas, filtros, a máscara da tela) não
+aparece nele.
 
 ### Versão
 
-`Version` fica no canto inferior direito, alinhada ao mesmo recuo do seletor (`--hud-borda`). No
-mobile vai para o centro do rodapé, à mesma distância da borda que o cabeçalho tem do topo
-(`--hud-topo-base`): os dois são espelho um do outro.
-
-O número **não é uma string escrita no componente nem uma chave de dicionário**: vem do `version` do
+Mora no menu de opções, na última linha. O número **não é uma string escrita no componente nem uma chave de dicionário**: vem do `version` do
 `package.json` por `define` do Vite (`__VERSAO__`, tipado em `vite-env.d.ts`), reduzido a
 `major.minor`. Publicar uma versão e exibir outra é uma divergência que ninguém percebe até
 constranger. E ela fica fora do i18n de propósito: `v1.0` é dado, não texto — uma chave por idioma
@@ -101,8 +137,8 @@ escondida, e já tira a peça do clique e da tabulação.
 
 ### Medidor da supernova
 
-`NovaGauge` fica no canto inferior esquerdo, com os mesmos recuos da versão (`--hud-borda` e
-`--hud-fundo`; no mobile desce para `--hud-topo-base`, na mesma linha da versão centrada).
+`NovaGauge` fica no canto inferior esquerdo, nos recuos do HUD (`--hud-borda` e `--hud-fundo`; no
+mobile desce para `--hud-topo-base`, a distância do cabeçalho ao topo).
 
 Só existe no DOM depois da primeira supernova, e `key={disparo}` é o que reinicia a animação a cada
 estrela. A recarga inteira é CSS de duração `--recarga`; o perímetro do arco vem do componente
@@ -154,7 +190,7 @@ simplesmente não roda, sem erro de build e sem aviso no console.
 
 Foi assim que a abertura inteira ficou morta por um tempo (anéis parados, mira sem pulso). `animation: :global(nome)` **não** é saída: o parser do PostCSS recusa o `:` no
 valor. A saída é declarar o keyframe no próprio módulo — `fina` está duplicado em Hero,
-`SectionNav`, LanguageToggle e Version, e o brilho do nome está copiado em Música, onde a barra do que está
+`SectionNav`, `Opcoes` e `Canais`, e o brilho do nome está copiado em Música, onde a barra do que está
 tocando usa a mesma varredura. Quatro linhas repetidas custam menos que uma animação que não roda,
 e o que se compartilha nesses casos são os **números**, não a declaração.
 

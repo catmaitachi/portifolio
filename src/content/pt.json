@@ -199,9 +199,23 @@
     }
   },
 
+  "opcoes": {
+    "abrir": "Opções: idioma, qualidade e versão",
+    "idioma": "Idioma",
+    "qualidade": "Qualidade",
+    "regua": "Qualidade da cena, de mais desempenho a mais qualidade",
+    "desempenho": "desempenho",
+    "detalhe": "qualidade",
+    "auto": "auto",
+    "autoDica": "Deixar o site escolher a qualidade",
+    "ideal": "ideal",
+    "limite": "limite",
+    "acima": "{n}%, acima do limite recomendado",
+    "versao": "Versão"
+  },
+
   "a11y": {
     "secoes": "Seções",
-    "idioma": "Alternar idioma entre português e inglês",
     "previa": "O site de {nome}",
     "experiencia": "Carreira: use as setas para percorrer os anos",
     "canais": "Canais de contato",

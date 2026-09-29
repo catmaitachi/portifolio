@@ -12,7 +12,7 @@
 
 /**
  * O cabeçalho fica **centrado** no topo no desktop, e à esquerda no celular, na
- * mesma linha do seletor de idioma (ver a faixa no fim do módulo). A posição é
+ * mesma linha do menu de opções (ver a faixa no fim do módulo). A posição é
  * token pela regra de sempre: a faixa só redefine os valores.
  *
  * A altura que ele reserva é `--hud-topo-altura`, em `reset.css`, e é de lá que
@@ -177,7 +177,7 @@
 }
 
 /**
- * No celular ele encosta à esquerda, espelhando o seletor de idioma à direita
+ * No celular ele encosta à esquerda, espelhando o menu de opções à direita
  * com o mesmo recuo de borda, com o espaçamento encolhido para os três nomes
  * caberem ao lado dele.
  */
@@ -198,7 +198,8 @@
 
 /**
  * Celular estreito (360px): os três nomes de dez letras com o espaçamento acima
- * somam ~253px, e o seletor de idioma começa em ~270px. Encosta nele. O espaço
+ * somam ~253px, e o gatilho do menu de opções começa em ~314px. Antes era o seletor
+ * de idioma, em ~270px, e o cabeçalho encostava nele; a regra ficou pela folga. O espaço
  * entre letras e entre nomes aperta até caber com folga.
  */
 @media (width <= 400px) {

@@ -66,7 +66,8 @@ profundidade ou se enche de luz.
 | Filmes | créditos: o título em contorno que se enche ao ser apontado, e o pôster que segue o cursor, inclinado pela velocidade | `FilmsSection` | aceternity/link-preview, animata/reveal-image |
 | Carreira | órbita: cada experiência é um corpo que gira **sobre a linha** de uma elipse vista de lado; escolher traz o corpo para a frente pelo caminho da órbita | `Orbita`, `orbitaGeometria` | animata/orbiting-items-3-d |
 
-Três regras saíram da rodada e valem para o que vier depois:
+Quatro regras saíram da rodada (a do `@property`, de um defeito achado depois) e valem para o que
+vier depois:
 
 - **o que anda num traço é calculado pela mesma conta que desenha o traço.** A primeira órbita
   inclinava um círculo de CSS e posicionava os corpos por uma elipse à parte, e eles não caíam na
@@ -74,7 +75,12 @@ Três regras saíram da rodada e valem para o que vier depois:
 - **encher é preenchimento de corte seco, não degradê de cor.** O título do Contato, o endereço, o
   envio e os títulos de Filmes usam `background-clip: text` com um degradê branco/transparente de
   corte seco, cuja posição anda. O hook de design do Impeccable o aponta como "gradient text", e a
-  exceção está gravada em `.impeccable/config.json` para os dois arquivos;
+  exceção está gravada em `.impeccable/config.json` por arquivo (Contato, Filmes e o idioma do menu
+  de opções);
+- **`@property` é global, então o nome registrado é único no site.** O CSS Modules não escopa o
+  registro. O título do Contato registrava `--cheio` com `inherits: false`, e a nota de Filmes, que
+  passa uma variável com o mesmo nome da marca para o preenchimento, parou de herdá-la: toda nota
+  aparecia vazia. Hoje o do Contato é `--grito-cheio`;
 - **uma última seção curta precisa poder chegar ao topo** (ver `navegacao.md`): o Contato ficava
   encostado embaixo quando era o foco.
 

@@ -24,6 +24,9 @@ paths:
   subtítulo aponta para `https://clinplay.com`, o endereço que estava no antigo cartão de projeto:
   conferir.
 - TikTok está sem `url` em `shared.json`, então aparece como "em breve".
+- **Os pisos da qualidade estão em calibragem** (`PISO_DENSIDADE` 0,3 e `PISO_ESCALA` 0,7, em
+  `engine/stage.ts`). Testar com `?pisos` no endereço, em aparelhos fracos de verdade, e gravar os
+  números escolhidos (ver `motor.md`).
 - **`LETTERBOXD_LIST` está no `.env.local` e falta nas variáveis da Vercel.** Sem ela lá, o bloco de
   favoritos simplesmente não aparece em produção, e a seção mostra só os vistos por último.
 - **Conferir os dados das formações.** A `conclusao` do SENAC (`2022.12`) e o `progresso` da PUC

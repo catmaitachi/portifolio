@@ -5,8 +5,8 @@ paths:
 
 ## Acessibilidade
 
-- `aria-label` no nav, no seletor de idioma, na órbita da Carreira e no grupo
-  de canais — todos vindos de `a11y` no dicionário. **Textos de a11y também passam pelo i18n**,
+- `aria-label` no nav, no gatilho do menu de opções (`opcoes.abrir`), na régua de qualidade, na
+  órbita da Carreira e no grupo de canais — todos vindos de `a11y` no dicionário. **Textos de a11y também passam pelo i18n**,
   nunca literais no componente.
 - `aria-current` no item de seção ativo e no corpo escolhido da órbita.
 - Fichas de carreira inativas ficam `inert`: um leitor de tela não deve encontrar quatro empregos
@@ -33,6 +33,10 @@ paths:
 - **O nome da instituição de cada formação é o nome acessível do logo** (`role="img"` com
   `aria-label`, que é o alt de uma imagem de fundo). Os logos já trazem o nome desenhado, e o texto
   repetido embaixo deles saiu da tela; sem logo, ele volta a ser escrito.
+- **O menu de opções** tem gatilho com `aria-expanded` e `aria-controls`, e fechado é `inert`. O
+  idioma é um `radiogroup` (←/→ trocam, um só na tabulação) e a qualidade um `slider` de 0 a 100 cujo
+  `aria-valuetext` avisa quando o valor passa do limite recomendado (`opcoes.acima`). `Esc` fecha e
+  devolve o foco ao gatilho.
 - Foco visível só para navegação por teclado (`:focus-visible`).
 - **Nenhuma região focável apaga o contorno.** A curva do tempo, que existiu na Carreira, tinha
   `outline: none`, e quem chegava pelo teclado não via onde estava. O único `outline: none` que sobra

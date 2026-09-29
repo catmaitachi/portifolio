@@ -1,0 +1,87 @@
+/* ferramenta de calibragem (`?pisos`): legível e fora do caminho, sem pretensão de desenho */
+.painel {
+  position: absolute;
+  z-index: 6;
+  top: 50%;
+  left: var(--hud-borda);
+  display: grid;
+  gap: 10px;
+  width: 230px;
+  padding: 14px;
+  border: 1px solid var(--linha-forte);
+  background: rgb(0 0 0 / 85%);
+  color: var(--tx-corpo);
+  font-size: var(--fs-pequeno);
+  transform: translateY(-50%);
+  user-select: none;
+}
+
+.titulo {
+  margin: 0;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
+  letter-spacing: var(--ls-rotulo);
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.dica {
+  margin: 0;
+  color: var(--tx-apagado);
+  font-size: var(--fs-meta);
+  text-align: left;
+}
+
+.campo {
+  display: grid;
+  gap: 4px;
+}
+
+.campo b,
+.leitura dd {
+  color: var(--tx-titulo);
+  font-weight: 400;
+}
+
+.campo input {
+  width: 100%;
+  accent-color: #fff;
+}
+
+.marcar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.leitura {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 10px;
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--linha-sutil);
+}
+
+.leitura dt {
+  color: var(--tx-apagado);
+}
+
+.leitura dd {
+  margin: 0;
+  text-align: right;
+}
+
+.botao {
+  justify-self: start;
+  padding: 4px 8px;
+  border: 1px solid var(--linha-forte);
+  background: none;
+  color: var(--tx-forte);
+  font: inherit;
+  cursor: pointer;
+}
+
+.botao:hover {
+  border-color: var(--linha-foco);
+}

@@ -19,10 +19,37 @@ export interface Stage {
     /** liga ou desliga a deriva lenta para dentro do céu */
     derivar(ligada: boolean): void;
   };
+  readonly qualidade: {
+    /** o nível em vigor e o que a medição sabe desta máquina (ver o topo do arquivo) */
+    ler(): MedidaQualidade;
+    /** fixa o nível que quem visita escolheu; `null` devolve a decisão à cena */
+    fixar(v: number | null): void;
+    /** troca os pisos e força a taxa de 30, para calibrar (o painel de `?pisos`) */
+    calibrar(c: { densidade?: number; escala?: number; trinta?: boolean }): void;
+  };
   /** busca uma camada pelo nome; `undefined` se ela não estiver montada */
   layer<T extends Layer = Layer>(name: string): T | undefined;
   setEnabled(name: string, on: boolean): void;
   destroy(): void;
+}
+
+export interface MedidaQualidade {
+  /** o nível em vigor, de 0 a 1 */
+  q: number;
+  /**
+   * O nível em que o consumo chegaria a `LIMITE`, e o `ideal`, onde ele fica na
+   * meta. `null` até a primeira janela medida.
+   */
+  limite: number | null;
+  ideal: number | null;
+  /** o nível foi escolhido por quem visita, e a cena não o mexe */
+  manual: boolean;
+  /** o que o nível virou: quanto da metade opcional do céu está acesa, px de canvas por px, e a taxa */
+  densidade: number;
+  escala: number;
+  fps: number;
+  /** o consumo da última janela, em fração de um núcleo; `null` antes da primeira */
+  consumo: number | null;
 }
 
 /** DPR acima de 2 quadruplica os pixels sem ganho perceptível — daí o teto. */
@@ -45,16 +72,23 @@ const SALTO = 1;
 const SALTO_VOO = 0.9;
 
 /**
- * A qualidade é **contínua**, de 0 a 1, e decide o que pesa na cena, **menos a
- * taxa de quadros**, que fica em 60: a resolução do canvas (de `ESCALA_MIN` ao
- * DPR do aparelho, com teto 2), a densidade do céu (`env.densidade`, que acende
- * a metade ímpar das estrelas uma a uma até `Q_DENSO`) e o halo da supernova
- * (`env.leve` abaixo de `Q_LEVE`).
+ * A qualidade é **contínua**, de 0 a 1, e decide o que pesa na cena **na ordem em
+ * que quem olha menos sente**: primeiro a densidade do céu, depois a resolução,
+ * e a taxa de quadros só por último.
+ *
+ * - de `Q_RES` a 1, só a densidade anda: `env.densidade` vai do `pisoDensidade`
+ *   até 1 (a metade ímpar das estrelas acende uma a uma), com a resolução cheia;
+ * - de 0 a `Q_RES`, a densidade fica no piso e a resolução anda, do
+ *   `pisoEscala` ao DPR do aparelho (teto 2);
+ * - abaixo de 0 não há mais o que tirar, e a taxa cai de 60 para 30 (`economia`).
+ *
+ * O halo da supernova sai abaixo de `Q_LEVE` (`env.leve`). Os dois pisos são
+ * calibráveis ao vivo (`qualidade.calibrar`, o painel de `?pisos`).
  *
  * Ela começa baixa e sobe devagar, **sem nunca procurar o limite da máquina**.
  * A cada janela o palco mede quanto de CPU a cena gasta (o trabalho de cada
  * quadro desenhado vezes os quadros por segundo, em fração de um núcleo), e
- * **a meta é `MARGEM` do limite**: a cena para 30% abaixo do consumo que a
+ * **a meta é `MARGEM` do limite**: a cena para 15% abaixo do consumo que a
  * máquina aguentaria. Cada passo para cima vai só até onde a proporção prevê que
  * a meta ainda cabe; se mesmo assim passar (um degrau de resolução é um salto de
  * pixels), a cena volta ao nível de antes e para ali. Sem passo recente, um
@@ -65,25 +99,34 @@ const SALTO_VOO = 0.9;
  *
  * **Descer fixa o teto**: quem desceu não volta a subir na mesma visita, e a
  * cena não oscila. Subir é um passo pequeno por janela, para a troca não se ver.
+ *
+ * **Quem visita pode escolher o nível** (`qualidade.fixar`, a régua do menu de
+ * opções), e aí a cena para de decidir: continua medindo, mas não sobe nem
+ * desce. A medição vira duas marcas na régua: o `limite`, onde o consumo chegaria
+ * a `LIMITE` pela mesma proporção que guia os passos, e o `ideal`, `MARGEM` dele.
  */
 const Q_INICIO = 0.1;
 const Q_PASSO = 0.04;
-/** a qualidade em que o céu fica todo aceso: a densidade chega antes da resolução cheia */
-const Q_DENSO = 0.8;
+/** onde a resolução chega ao máximo e a densidade começa a subir do piso */
+const Q_RES = 0.5;
 /** abaixo disto, `env.leve` */
 const Q_LEVE = 0.35;
-/** a resolução mínima, em px de canvas por px de layout */
-const ESCALA_MIN = 0.7;
+/** o piso da densidade: quanto da metade opcional do céu fica acesa no mínimo */
+const PISO_DENSIDADE = 0.3;
+/** o piso da resolução, em px de canvas por px de layout */
+const PISO_ESCALA = 0.7;
 /** o consumo aceitável da cena, em fração de um núcleo */
 const LIMITE = 0.25;
-/** o alvo fica em 70% da qualidade em que o consumo chegaria ao limite */
-const MARGEM = 0.7;
+/** o alvo fica em 85% da qualidade em que o consumo chegaria ao limite */
+const MARGEM = 0.85;
 /** um quadro que leva mais que isto do intervalo esperado está atrasado */
 const ATRASO = 1.35;
 /** a janela do julgamento, em segundos de relógio de parede */
 const JANELA = 0.6;
 /** depois de cada troca, o tempo que fica de fora: redimensionar o canvas custa um quadro */
 const ASSENTA = 0.3;
+/** quanto de cada janela nova entra na estimativa do limite, para as marcas não tremerem */
+const SUAVE = 0.3;
 
 export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
   // `alpha: false` deixa o compositor pular a mesclagem com o fundo da página.
@@ -103,6 +146,7 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
     bus: {},
     leve: true,
     densidade: 0,
+    calibrando: false,
   };
 
   // ordem do array = ordem de update; `z` = ordem de desenho
@@ -170,15 +214,29 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
   let decorrido = 0;
   let parede = 0;
   let julgarApos = 0;
+  /** o nível que quem visita escolheu, ou `null` */
+  let manual: number | null = null;
+  let limite: number | null = null;
 
+  let pisoDensidade = PISO_DENSIDADE;
+  let pisoEscala = PISO_ESCALA;
   const dprMax = () => Math.min(window.devicePixelRatio || 1, MAX_DPR);
   // em degraus de 1/8, para a resolução não trocar a cada passo pequeno de `q`
-  const escalaDe = (v: number) =>
-    Math.round((ESCALA_MIN + (dprMax() - ESCALA_MIN) * v) * 8) / 8;
+  const escalaDe = (v: number) => {
+    const piso = Math.min(pisoEscala, dprMax());
+    // no piso, o valor exato: é o que o painel de `?pisos` calibra, e o degrau o esconderia
+    if (v <= 0) return piso;
+    return Math.round((piso + (dprMax() - piso) * Math.min(1, v / Q_RES)) * 8) / 8;
+  };
+  const densidadeDe = (v: number) =>
+    v <= Q_RES ? pisoDensidade : pisoDensidade + ((1 - pisoDensidade) * (v - Q_RES)) / (1 - Q_RES);
+  /** o consumo da última janela medida, em fração de um núcleo */
+  let consumoMedido: number | null = null;
   /**
    * 60fps sempre, e a intro com eles: o primeiro contato é o que mais sente. Só
    * uma máquina que passa da meta com resolução e densidade no piso cai para 30
-   * (`economia`), e fica ali na visita.
+   * (`economia`), e fica ali na visita. O painel de `?pisos` também a liga, para
+   * ver como a cena fica a 30.
    */
   let economia = false;
   const intervaloAlvo = () => (economia ? 1 / 30 : 1 / 60);
@@ -199,13 +257,13 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
     for (const l of layers) l.resize?.(env);
   };
 
-  const aplicar = (novo: number) => {
+  const aplicar = (novo: number, forcar = false) => {
     const escalaAntes = escalaDe(q);
     q = Math.min(1, Math.max(0, novo));
     env.leve = q < Q_LEVE;
-    env.densidade = Math.min(1, q / Q_DENSO);
-    if (escalaDe(q) !== escalaAntes) dimensionar();
-    canvas.dataset.qualidade = economia || q < Q_LEVE ? '0' : q < Q_DENSO ? '1' : '2';
+    env.densidade = densidadeDe(q);
+    if (forcar || escalaDe(q) !== escalaAntes) dimensionar();
+    canvas.dataset.qualidade = economia || q < Q_LEVE ? '0' : q < Q_RES ? '1' : '2';
     canvas.dataset.q = q.toFixed(2);
     julgarApos = parede + ASSENTA;
     trabalho = 0;
@@ -228,8 +286,14 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
     decorrido = 0;
     // fração de um núcleo: o trabalho de cada quadro vezes os quadros por segundo
     const consumo = porQuadro / Math.max(intervaloMedio, intervaloAlvo());
+    consumoMedido = consumo;
     const atrasado = intervaloMedio > intervaloAlvo() * ATRASO;
     const meta = MARGEM * LIMITE;
+    // ponytail: proporção pura (custo ∝ nível); perto de 0 o custo fixo da cena a deixa
+    // conservadora, e o limite só fica fiel depois de a cena subir ou de alguém escolher
+    const estimado = Math.min(1, atrasado ? q * MARGEM : (q * LIMITE) / Math.max(consumo, 1e-4));
+    limite = limite === null ? estimado : limite + (estimado - limite) * SUAVE;
+    if (manual !== null) return;
     if (atrasado || consumo > meta) {
       // o passo que acabou de subir passou da meta: volta a ele e para ali. Sem passo
       // recente, a cena ficou mais cara (a supernova): desce na proporção do excesso
@@ -349,6 +413,52 @@ export function createStage(canvas: HTMLCanvasElement, layers: Layer[]): Stage {
         camElapsed = 0;
         env.camera.k = from;
         env.camera.progress = 0;
+      },
+    },
+    qualidade: {
+      ler: () => ({
+        q,
+        limite,
+        ideal: limite === null ? null : limite * MARGEM,
+        manual: manual !== null,
+        densidade: env.densidade,
+        escala: env.dpr,
+        fps: economia ? 30 : 60,
+        consumo: consumoMedido,
+      }),
+      calibrar(c) {
+        env.calibrando = true;
+        /**
+         * Mexer num piso põe a cena nele, senão não se vê nada: numa máquina que
+         * aguenta, o nível fica perto de 1, onde a densidade e a resolução estão
+         * cheias e os pisos não valem. O da densidade vai a `Q_RES` (densidade no
+         * piso, resolução cheia) e o da resolução a 0 (os dois no piso).
+         */
+        if (c.densidade !== undefined) {
+          pisoDensidade = Math.min(1, Math.max(0, c.densidade));
+          manual = Q_RES;
+        }
+        if (c.escala !== undefined) {
+          pisoEscala = Math.min(MAX_DPR, Math.max(0.25, c.escala));
+          manual = 0;
+        }
+        if (c.trinta !== undefined) economia = c.trinta;
+        anterior = null;
+        aplicar(manual ?? q, true);
+      },
+      fixar(v) {
+        manual = v === null ? null : Math.min(1, Math.max(0, v));
+        anterior = null;
+        if (manual !== null) {
+          // escolher é aceitar o custo: nem a taxa de quadros cai por conta própria
+          economia = false;
+          aplicar(manual);
+          return;
+        }
+        // de volta à cena: ela recomeça a julgar do nível em que está, sem o teto de antes
+        teto = 1;
+        desceu = false;
+        aplicar(q);
       },
     },
     layer<T extends Layer = Layer>(name: string) {

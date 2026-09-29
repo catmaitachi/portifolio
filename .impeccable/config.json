@@ -20,6 +20,15 @@
         ],
         "createdAt": "2026-09-27T21:11:41.763Z",
         "reason": "corte seco branco/transparente (título que se enche), não degradê de cor; mecanismo escolhido pelo usuário na vitrine (filmes-C)"
+      },
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "src/hud/Opcoes.module.css"
+        ],
+        "createdAt": "2026-09-29T10:18:05.973Z",
+        "reason": "sanctioned project exception: preenchimento de corte seco (direcao-visual.md), idioma-B chosen by the user in the inspiration vitrine"
       }
     ]
   }

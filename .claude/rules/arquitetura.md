@@ -9,7 +9,7 @@
 | `src/i18n/` | Idioma corrente, detecção e persistência. | `content` |
 | `src/scene/` | Ponte React ↔ motor e a cena de cada seção. | `engine`, `content` |
 | `src/navigation/` | As telas (`Tela`), o cabeçalho (`SectionNav`), o endereço e o título da aba. | `content`, `i18n`, `sections/types` |
-| `src/hud/` | Anéis, mira, seletor de idioma, versão, ícones dos canais e o medidor da supernova. | `i18n`, `content` |
+| `src/hud/` | Anéis, mira, menu de opções (idioma, qualidade, versão), ícones dos canais, o medidor da supernova e o painel de `?pisos`. | `i18n`, `content`, `scene/qualidade` (o canal da régua) |
 | `src/sections/` | Uma pasta por seção, mais o `SectionProps` e as peças que mais de uma usa (`EstadoRemoto`, `PerfilExterno`) e o botão de passo (`.passo`, em `section.module.css`). | `content`, `i18n`, componentes |
 | `src/components/` | Peças genéricas (`Figure`). | nada |
 | `src/hooks/` | Hooks transversais (`useReducedMotion`, `useArrowKeys`, `useDecipher`, `useInclinacao`, `useRemoto`). | nada |

@@ -26,7 +26,7 @@ inteira, rola por dentro e **empilha** as seções dela, uma embaixo da outra, c
 a página: no cabeçalho eles ocupam a mesma largura. Eles já foram Dossiê, Hobbies e Trajetória, e a
 chave no código continua a de antes (`dossie`, `hobbies`, `trajetoria`): o nome é texto de
 dicionário (`telas`), não chave. Num celular de 360px os três com o espaçamento normal encostavam no
-seletor de idioma, e abaixo de 400px o cabeçalho aperta letras e intervalos (`SectionNav`).
+menu de opções, e abaixo de 400px o cabeçalho aperta letras e intervalos (`SectionNav`).
 
 **Hobbies e Trajetória já foram abas**, uma seção de cada vez escolhida na lista do cabeçalho, e
 viraram páginas corridas como a Identidade: as subseções de uma tela vivem na mesma página. Com isso o
@@ -49,6 +49,11 @@ contornar a rolagem que agora é permitida. O ADR está em `docs/plano-site-pess
 As três ficam **montadas e empilhadas no mesmo lugar**. Só a ativa aparece; as outras ficam `inert`
 (fora do clique, do foco e da árvore de acessibilidade) e invisíveis. Montadas, elas guardam a
 rolagem de cada uma: voltar a uma tela é voltar ao ponto em que se estava.
+
+**Fora de vista, nada anima** (`animation-play-state: paused` em tudo dentro de uma tela inativa).
+`visibility: hidden` não para animação de CSS, e as telas de trás seguiam pulsando o "buscando" das
+seções que ainda não buscaram nada e o anel da órbita da Carreira, pedindo estilo e composição a todo
+quadro para ninguém ver.
 
 A troca é por opacidade, e a `visibility` sai **depois** dela (atraso na transição), senão a tela que
 sai sumiria num quadro.
@@ -97,7 +102,7 @@ Nenhuma seção pode ter rolagem vertical própria dentro de uma tela: a roda do
 nela. A bio do Sobre era a única e perdeu a dela por isso.
 
 **O conteúdo se apaga ao passar pelo HUD.** A tela tem um `mask-image` que apaga a faixa do topo (o
-cabeçalho e o idioma) e a do rodapé (a versão e o medidor da supernova), só na altura que eles ocupam.
+cabeçalho e o menu de opções) e a do rodapé (os canais e o medidor da supernova), só na altura que eles ocupam.
 
 **A tela move a câmera do céu.** A tela ativa avisa o progresso da própria rolagem (0 a 1) pela
 prop `aoRolar`, e o `App` a entrega a `scene/camera.ts`, que o `SpaceCanvas` liga ao motor. Não passa
@@ -124,7 +129,7 @@ conjunto ficava centrado, mas o nome do meio caía 18px à esquerda do eixo quan
 tamanhos diferentes (Dossiê e Trajetória), e o cabeçalho lia torto contra o buraco negro e os canais, que estão no eixo. Os nomes: os nomes em versalete com respiro, e o risco
 de 1px sob a tela em vigor, que cresce em `scaleX` para o layout não mudar enquanto ele anda. O estado
 é cor: `--tx-apagado`, `--tx-hover` apontado, `--tx-titulo` na ativa, com `aria-current="page"`.
-Centrado no topo no desktop e à esquerda no celular, na linha do seletor de idioma. Ele já teve uma
+Centrado no topo no desktop e à esquerda no celular, na linha do menu de opções. Ele já teve uma
 moldura chanfrada com fundo preto, que ficou apertada e pesada, e saiu.
 
 **As subseções de cada tela ficam numa lista que abre embaixo do nome.** Apontar o nome abre a

@@ -28,6 +28,15 @@ export interface BlackHoleLayer extends FadableLayer {
 }
 
 /**
+ * O quanto do caminho até o `alvo` o raio anda por segundo: **a mesma inércia da
+ * câmera** (`SEGUE`, em `stage.ts`). Era 12, quatro vezes mais seco que as
+ * estrelas: com a roda do mouse, que rola em degraus, o buraco negro saltava de
+ * tamanho a cada degrau enquanto o céu em volta deslizava, e isso lia como
+ * travamento. Com a mesma curva, os dois andam como uma câmera só.
+ */
+const SEGUE = 3.2;
+
+/**
  * Buraco negro: plasma, poeira em órbita, halo e horizonte.
  *
  * `strength` é a única alavanca de presença — em 0 a camada inteira é pulada e
@@ -63,12 +72,15 @@ export function BlackHole({
 
   let R0 = 0;
   let acc = 1 / plasma.fps;
-  // Degradês em cache: dependem só de (centro, raio, força). Na cena parada eles
-  // param de ser recriados — createRadialGradient por quadro é alocação pura.
-  let gk = -1;
-  let gr = -1;
-  let gcx = -1;
-  let gcy = -1;
+  /**
+   * Os degradês são criados **uma vez**, num espaço em que o raio vale 1 e o
+   * centro é a origem, com a intensidade cheia. O desenho os leva ao tamanho por
+   * `scale` e à força por `globalAlpha`, como a carga da supernova.
+   *
+   * Antes a chave do cache era (centro, raio, força), e na rolagem o raio muda em
+   * todo quadro: eram dois `createRadialGradient` e seis strings de cor por quadro
+   * justamente enquanto o buraco negro encolhia.
+   */
   let haloG: CanvasGradient | null = null;
   let bordaG: CanvasGradient | null = null;
 
@@ -86,7 +98,7 @@ export function BlackHole({
     update(env) {
       if (this.alvo !== null) {
         const falta = this.alvo - this.strength;
-        this.strength = Math.abs(falta) < 0.0005 ? this.alvo : this.strength + falta * Math.min(1, env.dt * 12);
+        this.strength = Math.abs(falta) < 0.0005 ? this.alvo : this.strength + falta * Math.min(1, env.dt * SEGUE);
       }
       if (this.strength <= 0.001) {
         env.bus.gravity = null;
@@ -137,38 +149,36 @@ export function BlackHole({
         ctx.fill();
       }
 
-      ctx.globalAlpha = 1;
-      // quantiza raio e força antes de comparar: variações sub-pixel não
-      // justificam recriar os degradês
-      const rk = Math.round(R * 4) / 4;
-      const kk = Math.round(k * 200) / 200;
-      if (rk !== gr || kk !== gk || cx !== gcx || cy !== gcy) {
-        gr = rk;
-        gk = kk;
-        gcx = cx;
-        gcy = cy;
-        haloG = ctx.createRadialGradient(cx, cy, R * 0.9, cx, cy, R * halo.reach);
-        haloG.addColorStop(0, `rgba(255,255,255,${(halo.inner * k).toFixed(3)})`);
-        haloG.addColorStop(0.28, `rgba(255,255,255,${(halo.outer * k).toFixed(3)})`);
+      if (!haloG || !bordaG) {
+        haloG = ctx.createRadialGradient(0, 0, 0.9, 0, 0, halo.reach);
+        haloG.addColorStop(0, `rgba(255,255,255,${halo.inner})`);
+        haloG.addColorStop(0.28, `rgba(255,255,255,${halo.outer})`);
         haloG.addColorStop(1, 'rgba(255,255,255,0)');
-        bordaG = ctx.createRadialGradient(cx, cy, R * 0.96, cx, cy, R * 1.25);
+        bordaG = ctx.createRadialGradient(0, 0, 0.96, 0, 0, 1.25);
         bordaG.addColorStop(0, 'rgba(0,0,0,1)');
         bordaG.addColorStop(1, 'rgba(0,0,0,0)');
       }
-      ctx.fillStyle = haloG!;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(R, R);
+      // a força apagava as paradas do halo; agora apaga o desenho inteiro, que é a mesma conta
+      ctx.globalAlpha = k;
+      ctx.fillStyle = haloG;
       ctx.beginPath();
-      ctx.arc(cx, cy, R * halo.reach, 0, TAU);
+      ctx.arc(0, 0, halo.reach, 0, TAU);
       ctx.fill();
 
+      ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = 'source-over';
       ctx.fillStyle = '#000';
       ctx.beginPath();
-      ctx.arc(cx, cy, R, 0, TAU);
+      ctx.arc(0, 0, 1, 0, TAU);
       ctx.fill();
-      ctx.fillStyle = bordaG!;
+      ctx.fillStyle = bordaG;
       ctx.beginPath();
-      ctx.arc(cx, cy, R * 1.25, 0, TAU);
+      ctx.arc(0, 0, 1.25, 0, TAU);
       ctx.fill();
+      ctx.restore();
     },
   };
 }

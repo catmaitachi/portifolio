@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { SectionKey } from '~/content';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
 import { ligarCamera } from './camera';
+import { ligarQualidade } from './qualidade';
 import { CEUS, DURACAO, nomeDoCeu, NOVA_NIVEIS } from './scenePlan';
 import styles from './SpaceCanvas.module.css';
 
@@ -227,7 +228,8 @@ export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
         /**
          * O buraco negro segue a rolagem, e não a seção: a presença vira o raio
          * dele (`strength`), então ele encolhe enquanto o Início sai de vista.
-         * Um passo pequeno (rolagem) é seguido em 0,3s, que só suaviza a roda do
+         * Um passo pequeno (rolagem) é seguido com a inércia da câmera (~0,3s para
+         * dois terços do caminho, ver `SEGUE` no buraco negro), que só suaviza a roda do
          * mouse; um salto de presença (trocar de tela, abrir por endereço) usa a
          * entrada e a saída de sempre, porque ali ele chega ou vai embora inteiro.
          */
@@ -250,10 +252,12 @@ export function SpaceCanvas({ secao, onNova }: SpaceCanvasProps) {
         },
       });
       stage.camera.derivar(!semMovimentoRef.current);
+      const desligarQualidade = ligarQualidade(stage.qualidade);
 
       destruirStage = () => {
         aplicarRef.current = null;
         desligarCamera();
+        desligarQualidade();
         stage.destroy();
       };
 

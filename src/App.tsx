@@ -1,10 +1,9 @@
-import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { lazy, memo, Suspense, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { TELAS, telaPorChave, type SectionKey, type TelaKey } from '~/content';
 import { Canais } from '~/hud/Canais';
 import { Hud } from '~/hud/Hud';
-import { LanguageToggle } from '~/hud/LanguageToggle';
 import { NovaGauge } from '~/hud/NovaGauge';
-import { Version } from '~/hud/Version';
+import { Opcoes } from '~/hud/Opcoes';
 import { SectionNav } from '~/navigation/SectionNav';
 import { Tela } from '~/navigation/Tela';
 import { useDocumentTitle } from '~/navigation/useDocumentTitle';
@@ -56,6 +55,12 @@ const MONTAR: Record<SectionKey, React.ComponentType<SectionProps>> = {
  * reescrito pela própria navegação.
  */
 const ROTA_INICIAL = rotaInicial();
+
+/**
+ * O painel de calibragem dos pisos da qualidade (`hud/Pisos`), só com `?pisos` no
+ * endereço. Vem por `lazy`: quem não o pede não baixa o código dele.
+ */
+const Pisos = new URLSearchParams(window.location.search).has('pisos') ? lazy(() => import('~/hud/Pisos')) : null;
 
 /**
  * O que a cena faz quando a tela muda: o salto, e o buraco negro indo embora se
@@ -226,7 +231,7 @@ export function App() {
       <Hud ativo={parte === 'inicio'} />
       <Canais ativo={parte === 'inicio'} />
       <SectionNav tela={tela} parte={parte} irPara={irParaTela} irParaParte={irParaParte} />
-      <LanguageToggle />
+      <Opcoes />
 
       {TELAS.map((t) => (
         <Tela
@@ -240,8 +245,12 @@ export function App() {
         />
       ))}
 
-      <Version />
       <NovaGauge disparo={nova.disparo} segundos={nova.recarga} />
+      {Pisos && (
+        <Suspense fallback={null}>
+          <Pisos />
+        </Suspense>
+      )}
     </div>
   );
 }

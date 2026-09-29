@@ -45,9 +45,9 @@ concordar em nada, mas o efeito é por pixel e traz junto uma máscara, uma tabe
 | Camada | Arquivo | z | Notas |
 |---|---|---|---|
 | `Nebula` | `layers/nebula.ts` | 0 | Buffer de 128px, 5 massas brancas em deriva, repintado a 12fps e ampliado pela GPU. Cada massa é o mesmo sprite assado uma vez, com o `globalAlpha` dela: nenhum degradê por repintura. alpha 0.16. |
-| `Starfield` | `layers/starfield.ts` | 10 | ~354 estrelas num 1280×720 (densidade por área), TypedArrays, repulsão do ponteiro por mola, gravidade de `engine/gravity.ts` e cintilar via LUT, 8 baldes de opacidade. O desenho é o sprite de `engine/star.ts` por `drawImage`, com deriva ambiente de 8px e a lente da gravidade esticando o brilho. Cintilar lento (±22%). No modo leve desenha metade (ver *A qualidade sobe até 30% abaixo do que a máquina aguenta*). |
+| `Starfield` | `layers/starfield.ts` | 10 | ~354 estrelas num 1280×720 (densidade por área), TypedArrays, repulsão do ponteiro por mola, gravidade de `engine/gravity.ts` e cintilar via LUT, 8 baldes de opacidade. O desenho é o sprite de `engine/star.ts` por `drawImage`, com deriva ambiente de 8px e a lente da gravidade esticando o brilho. Cintilar lento (±22%). No modo leve desenha metade (ver *A qualidade sobe até 15% abaixo do que a máquina aguenta*). |
 | `Constellations` | `layers/constellations.ts` | 12 | Figuras do céu real. Estrelas herdam as propriedades do `Starfield`; linha de 1px num único `stroke()`; as estrelas saem do mesmo sprite de `engine/star.ts`, sem deriva e sem lente; posições do quadro em `vx_/vy_` pré-alocados. As arestas se desenham das pontas para dentro quando a camada aparece (`drawTime`). `opacity` em 0 tira a camada do `update` **e** do `draw`. |
-| `BlackHole` | `layers/blackHole.ts` | 20 | Raio `0.14·min(W,H)`. Plasma 96×96 por LUT de senos a 20fps (alpha .22), 260 poeiras em órbita kepleriana, halo .18/.06 até 3.4R (degradês em cache por centro/raio/força), horizonte preto + borda **preta** suavizando — nunca borda brilhante. |
+| `BlackHole` | `layers/blackHole.ts` | 20 | Raio `0.14·min(W,H)`. Plasma 96×96 por LUT de senos a 20fps (alpha .22), 260 poeiras em órbita kepleriana, halo .18/.06 até 3.4R, horizonte preto + borda **preta** suavizando — nunca borda brilhante. Os degradês são criados **uma vez**, com raio 1 na origem, e o desenho os leva ao tamanho por `scale` e à força por `globalAlpha`: a chave antiga (centro, raio, força) mudava em todo quadro de rolagem. O raio segue o `alvo` com a inércia da câmera (`SEGUE` 3,2), não mais a 12: com a roda do mouse ele saltava de tamanho a cada degrau enquanto o céu deslizava. |
 | `Supernova` | `layers/supernova.ts` | 14 | A estrela que o visitante carrega e acende. Pressionar abre um poço (`bus.well`) que aperta em quatro níveis; soltar explode com força, alcance, duração e recarga daquele nível. Pool de 12 estrelas (guardadas em fração da tela), uma onda de cada vez, carga e recarga no relógio do motor. Plasma a partir do nível 2 (criado na primeira vez), estrela supermassiva de 220px num buffer de disco no 3, e no 4 ela colapsa com um pico de 3,2× no puxão até um núcleo crítico de ~22px que treme à espera do release. Sem buraco negro no fim. O degradê do poço fica em cache com `globalAlpha`, e o pulso não entra na chave dele. Ociosa custa três comparações. |
 | `Meteors` | `layers/meteors.ts` | 30 | Pool de 3, intervalo 4–13s, rastro por gradiente linear. |
 
@@ -166,27 +166,51 @@ Obrigatório para qualquer camada nova:
 - desenho em lote (agrupar por opacidade, um `fill()` por grupo);
 - camada desligada precisa custar zero.
 
-### A qualidade sobe até 30% abaixo do que a máquina aguenta
+### A qualidade sobe até 15% abaixo do que a máquina aguenta
 
 A cena **começa leve e sobe devagar**, mas não procura o limite da máquina: ela para numa meta de
 consumo bem abaixo dele. A versão anterior subia degraus enquanto a taxa de quadros aguentava, o que
 na prática era um teste de estresse: um notebook modesto rodava a 60fps no limite e a CPU subia só
 de abrir o site.
 
-**A qualidade é contínua, de 0 a 1** (`stage.ts`), e decide o que pesa no canvas, **menos a taxa de
-quadros, que fica em 60** desde a intro: o primeiro contato é o que mais sente um céu a 30fps, e a
-primeira versão, que baixava os quadros junto com o resto, pesava justamente ali.
+**A qualidade é contínua, de 0 a 1** (`stage.ts`), e gasta o que tira **na ordem em que quem olha
+menos sente: densidade, depois resolução, e a taxa de quadros por último.** Uma estrela a menos no
+fundo quase não se nota; o texto e as linhas do canvas borrados se notam; e 30fps se notam em tudo
+que anda. A ordem é do Lucas (28/09/2026). Antes as duas primeiras caíam juntas, e a resolução era a
+primeira a ceder.
 
-| O quê | Como segue a qualidade |
-|---|---|
-| resolução do canvas | de 0,7 px de canvas por px de layout até o DPR do aparelho (teto 2), em degraus de 1/8 para não redimensionar a cada passo |
-| densidade | `env.densidade`, de 0 a 1 até a qualidade 0,8: o `Starfield` acende a metade ímpar das estrelas **uma a uma**, cada uma com o próprio fade |
-| halo da supernova | `env.leve` abaixo de 0,35 |
-| taxa de quadros | 60; **30 só como último recurso** (`economia`), quando a cena passa da meta com a qualidade já em 0, e fica ali na visita |
+| Faixa de `q` | O que anda | O que fica parado |
+|---|---|---|
+| de `Q_RES` (0,5) a 1 | `env.densidade`, do `PISO_DENSIDADE` a 1: o `Starfield` acende a metade ímpar das estrelas **uma a uma**, cada uma com o próprio fade | a resolução, cheia (o DPR do aparelho, teto 2) |
+| de 0 a 0,5 | a resolução, do `PISO_ESCALA` (px de canvas por px de layout) ao DPR, em degraus de 1/8 para não redimensionar a cada passo | a densidade, no piso |
+| abaixo de 0 | a taxa: **30 só como último recurso** (`economia`), e fica ali na visita | tudo no piso |
+
+O halo da supernova sai abaixo de 0,35 (`env.leve`). **Os pisos ainda estão em calibragem**: 0,3 da
+metade opcional do céu (65% das estrelas acesas) e 0,7 px por px. O painel de `?pisos` (`hud/Pisos`,
+carregado só com o parâmetro no endereço) troca os dois ao vivo, liga os 30fps e mostra o que o nível
+virou e quanto consome; "copiar os pisos" leva os números escolhidos para `stage.ts`. O que ele troca
+não fica guardado.
+
+**Mexer num piso põe a cena nele**, senão não se vê nada: numa máquina que aguenta, o nível fica perto
+de 1, com densidade e resolução cheias, e ali os pisos não valem. O da densidade leva a qualidade a
+0,5 (densidade no piso, resolução cheia) e o da resolução a 0 (os dois no piso). Com o painel aberto
+(`env.calibrando`) a densidade muda na hora em vez de subir a 0,06 por segundo, e no nível 0 a
+resolução é o piso exato, sem o degrau de 1/8, que fazia vários pontos do controle darem o mesmo
+valor. A primeira versão do painel não fazia nada disso e parecia quebrada.
+
+**Quem visita pode escolher o nível** na régua do menu de opções (ver `hud.md`), e aí a cena para de
+decidir: continua medindo, mas não sobe nem desce, e não cai para 30fps sozinha. A escolha fica no
+`localStorage` (`portfolio.qualidade`) e volta na próxima visita; "auto" a apaga e devolve a decisão à
+cena, sem o teto de antes. O canal é `scene/qualidade.ts`, no desenho de `scene/camera.ts`.
+
+A medição vira duas marcas na régua. O **limite** é o nível em que o consumo chegaria a `LIMITE`,
+pela mesma proporção que guia os passos (`q · LIMITE / consumo`, suavizada entre janelas), e o
+**ideal** é `MARGEM` dele, onde a cena para sozinha. Proporção pura: perto de 0 o custo fixo da cena a
+deixa conservadora, e o limite só fica fiel depois de a cena subir ou de alguém escolher um nível.
 
 **O que se mede é consumo, e não taxa de quadros**: o trabalho de cada quadro desenhado vezes os
 quadros por segundo, em fração de um núcleo, numa janela de 0,6s de relógio de parede. O limite
-aceitável é `LIMITE` (25% de um núcleo) e **a meta é 70% dele** (`MARGEM`): a cena para 30% abaixo
+aceitável é `LIMITE` (25% de um núcleo) e **a meta é 85% dele** (`MARGEM`): a cena para 15% abaixo
 do que a máquina aguentaria. Quadro atrasado (intervalo 35% acima do alvo, porque a GPU ou o
 navegador não acompanham) conta como passar da meta ali mesmo.
 
@@ -216,7 +240,9 @@ página: na faixa 0 param o brilho do nome no Início e o da barra de Música, q
 pinta a 30fps enquanto só gira (um décimo de grau por quadro) e a 60 só no deslize de escolher.
 
 Conferido em Node com o palco empacotado por `esbuild`, um canvas falso e um custo por quadro de
-`base + k·dpr²` ms, a 1280×720 (a simulação não modela a densidade, que só baixa o custo):
+`base + k·dpr²` ms, a 1280×720 (a simulação não modela a densidade, que só baixa o custo). **Os
+números são da calibragem anterior** (meta de 70% e resolução caindo primeiro), e ficam como ordem de
+grandeza até os pisos novos serem escolhidos:
 
 | Máquina (base, k, DPR) | Assenta em | Quadros | Consumo |
 |---|---|---|---|
