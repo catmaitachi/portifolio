@@ -50,6 +50,12 @@ export interface Musica {
   /** mais tocadas do último mês */
   faixas: Faixa[];
   artistas: Artista[];
+  /**
+   * Quando o Spotify foi perguntado, em ms desde 1970. A resposta pode ter passado
+   * alguns segundos no cache da borda, e é por este número que a página desconta
+   * esse tempo do progresso de `tocando`.
+   */
+  medidoEm: number;
 }
 
 export interface Jogo {

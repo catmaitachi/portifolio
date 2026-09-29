@@ -35,7 +35,17 @@ export type Remoto<T> =
  * razão: o efeito precisa cobrir o caso de a seção sair enquanto a resposta
  * ainda vem.
  */
-export function useRemoto<T>(caminho: string, ativo: boolean, intervalo = 0): Remoto<T> {
+export function useRemoto<T>(
+  caminho: string,
+  ativo: boolean,
+  /**
+   * De quanto em quanto tempo repetir, em ms; 0 não repete. Pode ser uma função
+   * da última resposta (`null` depois de uma falha), para quem sabe quando o dado
+   * vai mudar: Música busca de novo quando a faixa acaba. **Precisa ser estável**
+   * (do escopo do módulo), senão cada render refaz o efeito e busca de novo.
+   */
+  intervalo: number | ((dados: T | null) => number) = 0,
+): Remoto<T> {
   const [remoto, setRemoto] = useState<Remoto<T>>({ estado: 'carregando', dados: null });
 
   useEffect(() => {
@@ -44,9 +54,10 @@ export function useRemoto<T>(caminho: string, ativo: boolean, intervalo = 0): Re
     const controle = new AbortController();
     let timer = 0;
 
-    const agendar = () => {
-      if (intervalo > 0 && !controle.signal.aborted) {
-        timer = window.setTimeout(ciclo, intervalo);
+    const agendar = (dados: T | null = null) => {
+      const espera = typeof intervalo === 'function' ? intervalo(dados) : intervalo;
+      if (espera > 0 && !controle.signal.aborted) {
+        timer = window.setTimeout(ciclo, espera);
       }
     };
 
@@ -56,6 +67,7 @@ export function useRemoto<T>(caminho: string, ativo: boolean, intervalo = 0): Re
         agendar();
         return;
       }
+      let recebido: T | null = null;
       try {
         const resposta = await fetch(caminho, { signal: controle.signal });
         if (!resposta.ok) throw new Error(String(resposta.status));
@@ -70,6 +82,7 @@ export function useRemoto<T>(caminho: string, ativo: boolean, intervalo = 0): Re
          * `await`, e não antes.
          */
         if (!controle.signal.aborted) setRemoto({ estado: 'pronto', dados });
+        recebido = dados;
       } catch {
         if (!controle.signal.aborted) {
           setRemoto((atual) =>
@@ -77,7 +90,7 @@ export function useRemoto<T>(caminho: string, ativo: boolean, intervalo = 0): Re
           );
         }
       }
-      agendar();
+      agendar(recebido);
     };
 
     const aoVoltar = () => {

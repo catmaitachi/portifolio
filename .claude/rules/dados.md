@@ -25,7 +25,7 @@ projeto que roda fora do navegador.
 
 | Função | Segredos | Cache de borda | O que devolve |
 |---|---|---|---|
-| `api/spotify.ts` | `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REFRESH_TOKEN` | 30s | tocando agora, mais tocadas, mais ouvidos, recentes |
+| `api/spotify.ts` | `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REFRESH_TOKEN` | 10s (e só 10s servido velho) | tocando agora, mais tocadas, mais ouvidos, recentes |
 | `api/steam.ts` | `STEAM_API_KEY`, `STEAM_ID` | 60s | jogando agora e os das duas últimas semanas |
 | `api/letterboxd.ts` | `LETTERBOXD_USER`, `LETTERBOXD_LIST` (opcional) | 30min | últimos assistidos com a nota, e uma lista escolhida a dedo |
 | `api/github.ts` | `GITHUB_TOKEN` | 1h | os repositórios de `shared.json → projetos`, com atividade, linguagens e números |
@@ -64,7 +64,11 @@ nome inteiro apontaria para o primeiro deles.
   `npx tsc --noEmit --module nodenext --moduleResolution nodenext --target ES2023 --lib ES2023 --strict --types node api/*.ts`.
 - **Cache de borda, nunca de navegador**: `s-maxage` com `max-age=0`. Uma segunda visita não pode
   mostrar o que estava tocando ontem, mas cem visitantes no mesmo minuto devem custar uma chamada só
-  ao provedor. `stale-while-revalidate` deixa a borda servir o valor velho enquanto busca o novo.
+  ao provedor. `stale-while-revalidate` deixa a borda servir o valor velho enquanto busca o novo, por
+  dez vezes o cache, **menos no Spotify**: lá eram 30s e cinco minutos servido velho, e a primeira
+  visita depois de um intervalo recebia a faixa de minutos atrás. Hoje são 10s e 10s, e a resposta
+  leva `medidoEm` (quando o Spotify foi perguntado): a página soma ao progresso o tempo que a resposta
+  passou no cache, e a barra e o relógio começam no ponto certo.
 - **Falha nunca é 200 com corpo vazio.** Chave errada, provedor fora do ar e perfil fechado são
   estados diferentes de "não tem nada para mostrar", e um 200 vazio faria a página afirmar que a
   pessoa não ouviu nada este mês. Variável faltando responde 500 com o **nome** dela.
@@ -174,7 +178,8 @@ Três decisões seguram o custo e o risco disso:
   escondido gasta para mostrar o que ninguém vê;
 - **erro não apaga o que já estava certo.** Uma falha no meio de uma repetição mantém os dados
   anteriores: o que estava tocando há trinta segundos é melhor resposta que uma seção vazia;
-- Música repete a cada 20s, Jogos a cada 60s, e **Filmes e Projetos não repetem**: um feed de filmes vistos e um
+- Música repete a cada 20s **ou quando a faixa que toca acaba** (mais 1,5s, nunca antes de 3s: o
+  intervalo pode ser uma função da última resposta, estável, do escopo do módulo), Jogos a cada 60s, e **Filmes e Projetos não repetem**: um feed de filmes vistos e um
   repositório não mudam enquanto alguém olha para eles.
 
 `react-doctor/no-set-state-after-await-in-effect` **aponta este hook**, e é falso positivo conhecido,

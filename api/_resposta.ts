@@ -18,10 +18,16 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
  * ao provedor. `stale-while-revalidate` deixa a borda servir o valor velho
  * enquanto busca o novo, então ninguém espera a origem.
  */
-export function json(res: ServerResponse, dados: unknown, segundos: number): void {
+export function json(
+  res: ServerResponse,
+  dados: unknown,
+  segundos: number,
+  /** quanto a borda ainda serve o valor velho; dez vezes o cache, a menos que o dado seja vivo */
+  revalidar = segundos * 10,
+): void {
   res.writeHead(200, {
     'content-type': 'application/json; charset=utf-8',
-    'cache-control': `public, max-age=0, s-maxage=${segundos}, stale-while-revalidate=${segundos * 10}`,
+    'cache-control': `public, max-age=0, s-maxage=${segundos}, stale-while-revalidate=${revalidar}`,
   });
   res.end(JSON.stringify(dados));
 }

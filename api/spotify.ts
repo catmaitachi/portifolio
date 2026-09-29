@@ -148,8 +148,14 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       return falha(res, 502, `spotify:${tocandoR.status}`);
     }
 
-    const dados: Musica = { tocando, recentes, faixas, artistas };
-    json(res, dados, 30);
+    const dados: Musica = { tocando, recentes, faixas, artistas, medidoEm: Date.now() };
+    /**
+     * 10s de borda, e só mais 10s de valor velho. Eram 30s e cinco minutos (os
+     * dez vezes de `json`), e a primeira visita depois de um intervalo podia
+     * receber a faixa de minutos atrás. O que está tocando é o dado mais vivo do
+     * site; o custo são quatro chamadas ao Spotify a cada 10s no pior caso.
+     */
+    json(res, dados, 10, 10);
   } catch {
     falha(res, 502, 'spotify:rede');
   }

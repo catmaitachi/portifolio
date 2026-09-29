@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import type { Musica } from '~/data/types';
+import { useEffect, useMemo, useRef } from 'react';
+import type { Faixa, Musica } from '~/data/types';
 import { useInclinacao } from '~/hooks/useInclinacao';
 import { useRemoto } from '~/hooks/useRemoto';
 import { useLanguage, useT } from '~/i18n/useLanguage';
@@ -11,6 +11,31 @@ import styles from './MusicSection.module.css';
 
 /** De quanto em quanto tempo o "tocando agora" é conferido, com a seção na tela. */
 const REPETIR = 20_000;
+/** a folga depois do fim da faixa: o Spotify leva um instante para dizer qual veio depois */
+const DEPOIS_DO_FIM = 1500;
+/** nunca menos que isto entre duas buscas, mesmo com a faixa já no fim */
+const REPETIR_MIN = 3000;
+
+/**
+ * O progresso de agora: o que o Spotify disse, mais o tempo desde que ele foi
+ * perguntado. A resposta pode ter passado até 20s no cache da borda (ver
+ * `api/spotify`), e sem o desconto a barra começaria atrasada esse tanto.
+ */
+function progressoAgora(f: Faixa, medidoEm: number): number {
+  const passou = Math.max(0, Date.now() - medidoEm);
+  return Math.min(f.duracaoMs ?? 0, (f.progressoMs ?? 0) + passou);
+}
+
+/**
+ * Quando buscar de novo: a cada 20s, ou logo que a faixa acabar, o que vier
+ * antes. A troca de música aparecia até vinte segundos depois de acontecer.
+ */
+function repetirEm(m: Musica | null): number {
+  const f = m?.tocando;
+  if (!m || !f?.duracaoMs) return REPETIR;
+  const resta = f.duracaoMs - progressoAgora(f, m.medidoEm);
+  return Math.min(REPETIR, Math.max(REPETIR_MIN, resta + DEPOIS_DO_FIM));
+}
 
 /** `m:ss`, que é como a duração de uma faixa se escreve em qualquer lugar. */
 function relogio(ms: number): string {
@@ -21,7 +46,7 @@ function relogio(ms: number): string {
 /**
  * O tempo decorrido, andando de segundo em segundo.
  *
- * O que chega do Spotify é um instantâneo, e a busca só se repete a cada 20s:
+ * O que chega do Spotify é um instantâneo, e a busca se repete a cada 20s:
  * escrito uma vez, o número ficaria vinte segundos parado ao lado de uma barra
  * que anda, o que é pior do que não ter número nenhum. O relógio local parte do
  * progresso que veio e conta a partir dali; a resposta seguinte o recoloca no
@@ -80,6 +105,11 @@ function Conteudo({ dados }: { dados: Musica }) {
   // sem nada tocando, o destaque é a última que tocou
   const destaque = dados.tocando ?? dados.recentes[0] ?? null;
   const aoVivo = Boolean(dados.tocando);
+  // uma vez por resposta: o relógio e a barra andam sozinhos a partir daqui
+  const progresso = useMemo(
+    () => (dados.tocando ? progressoAgora(dados.tocando, dados.medidoEm) : 0),
+    [dados],
+  );
 
   if (!destaque) return <EstadoRemoto estado="vazio" />;
 
@@ -155,17 +185,17 @@ function Conteudo({ dados }: { dados: Musica }) {
 
           {aoVivo && destaque.duracaoMs ? (
             <span className={styles.medidor} aria-hidden="true">
-              <Tempo inicioMs={destaque.progressoMs ?? 0} duracaoMs={destaque.duracaoMs} />
+              <Tempo inicioMs={progresso} duracaoMs={destaque.duracaoMs} />
               <span className={`${comum.trilha} ${styles.trilha}`}>
                 <span
                   /* a `key` carrega o progresso: é assim que cada resposta reinicia a
                      animação, em vez de continuar a anterior de onde ela estava */
-                  key={`${destaque.id}-${destaque.progressoMs ?? 0}`}
+                  key={`${destaque.id}-${progresso}`}
                   className={styles.progresso}
                   style={
                     {
-                      '--de': `${((destaque.progressoMs ?? 0) / destaque.duracaoMs) * 100}%`,
-                      '--resta': `${destaque.duracaoMs - (destaque.progressoMs ?? 0)}ms`,
+                      '--de': `${(progresso / destaque.duracaoMs) * 100}%`,
+                      '--resta': `${destaque.duracaoMs - progresso}ms`,
                     } as React.CSSProperties
                   }
                 />
@@ -228,8 +258,8 @@ function Conteudo({ dados }: { dados: Musica }) {
  *
  * O dado vem de `api/spotify`, e a seção nunca fala com o Spotify: ela lê a
  * forma declarada em `data/types.ts`. A busca só acontece com a seção ativa, e se
- * repete a cada 20s enquanto ela estiver na tela e a aba visível (ver
- * `useRemoto`).
+ * repete a cada 20s, ou quando a faixa que toca acaba, enquanto ela estiver na
+ * tela e a aba visível (ver `useRemoto` e `repetirEm`).
  *
  * **As capas são o conteúdo.** O que tocou abre a seção, as oito mais tocadas
  * são uma parede de capas (apontar uma a traz para o foco e apaga as outras) e
@@ -250,7 +280,7 @@ function Conteudo({ dados }: { dados: Musica }) {
  */
 export function MusicSection({ ativo, indice }: SectionProps) {
   const t = useT();
-  const musica = useRemoto<Musica>('api/spotify', ativo, REPETIR);
+  const musica = useRemoto<Musica>('api/spotify', ativo, repetirEm);
 
   return (
     <section
