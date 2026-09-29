@@ -52,6 +52,85 @@ interface Resposta {
 /** quantas linguagens a seção mostra; o resto soma pouco e só enche a nuvem */
 const LINGUAGENS = 8;
 
+/**
+ * **Os ícones das linguagens vêm do Devicon, pelo Iconify**, e são procurados a
+ * cada resposta: uma linguagem que aparecer amanhã no GitHub ganha ícone sem
+ * mexer no site, se o Devicon tiver. Escolhido numa vitrine (29/09/2026) contra o
+ * File Icons e siglas sem biblioteca.
+ *
+ * A cascata: o Devicon simplificado em uma cor, depois o original (a nuvem pinta
+ * tudo de branco, e dele sobra a silhueta), e sem nenhum a seção desenha a sigla.
+ * Numa amostra de 30 linguagens, 29 tiveram ícone; faltou Assembly.
+ */
+const CASCATA = ['devicon-plain', 'devicon'];
+
+/**
+ * Os nomes que o GitHub (o Linguist) escreve diferente do Devicon. O resto se
+ * acha pelo próprio nome, e é isso que deixa a busca valer para linguagens novas.
+ */
+const APELIDOS: Record<string, string[]> = {
+  CSS: ['css3'],
+  HTML: ['html5'],
+  Shell: ['bash'],
+  'Jupyter Notebook': ['jupyter'],
+  SCSS: ['sass'],
+  Makefile: ['cmake'],
+  'C++': ['cplusplus'],
+  'C#': ['csharp'],
+  Vue: ['vuejs'],
+  Nix: ['nixos'],
+  TeX: ['tex', 'latex'],
+  Dockerfile: ['docker'],
+};
+
+/** os nomes a tentar para uma linguagem, só com o que um nome de ícone aceita */
+const termos = (nome: string): string[] => {
+  const base = nome.toLowerCase();
+  const t = [...(APELIDOS[nome] ?? []), base.replace(/\s+/g, '-'), base.replace(/\s+/g, ''), base.split(/\s+/)[0]];
+  return [...new Set(t)].filter((x) => /^[a-z0-9-]+$/.test(x));
+};
+
+interface ConjuntoIconify {
+  width?: number;
+  height?: number;
+  icons?: Record<string, { body: string; width?: number; height?: number; left?: number; top?: number }>;
+  aliases?: Record<string, { parent: string }>;
+}
+
+/**
+ * Um SVG por linguagem, ou `null`. Uma chamada por conjunto da cascata, com todos
+ * os nomes de uma vez. Falhar aqui não derruba a resposta: a linguagem só vira
+ * sigla.
+ */
+async function icones(nomes: string[]): Promise<Record<string, string | null>> {
+  const achados: Record<string, string | null> = Object.fromEntries(nomes.map((n) => [n, null]));
+  for (const conjunto of CASCATA) {
+    const faltam = nomes.filter((n) => !achados[n]);
+    if (!faltam.length) break;
+    const pedidos = [...new Set(faltam.flatMap(termos))];
+    try {
+      const r = await fetch(`https://api.iconify.design/${conjunto}.json?icons=${pedidos.join(',')}`, {
+        signal: AbortSignal.timeout(4000),
+      });
+      if (!r.ok) continue;
+      const c = (await r.json()) as ConjuntoIconify;
+      for (const nome of faltam) {
+        for (const t of termos(nome)) {
+          const i = c.icons?.[t] ?? (c.aliases?.[t] ? c.icons?.[c.aliases[t].parent] : undefined);
+          if (!i) continue;
+          const w = i.width ?? c.width ?? 16;
+          const h = i.height ?? c.height ?? 16;
+          achados[nome] = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${i.left ?? 0} ${i.top ?? 0} ${w} ${h}">${i.body}</svg>`;
+          break;
+        }
+      }
+    } catch {
+      /* sem ícone deste conjunto: o próximo, ou a sigla */
+    }
+  }
+  return achados;
+}
+
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
   if (metodoInvalido(req, res)) return;
   const env = ambiente(['GITHUB_TOKEN']);
@@ -91,10 +170,9 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       for (const e of repo.languages?.edges ?? []) pesos.set(e.node.name, (pesos.get(e.node.name) ?? 0) + e.size);
     }
     const soma = [...pesos.values()].reduce((a, b) => a + b, 0) || 1;
-    const linguagens = [...pesos]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, LINGUAGENS)
-      .map(([nome, size]) => ({ nome, fracao: size / soma }));
+    const maiores = [...pesos].sort((a, b) => b[1] - a[1]).slice(0, LINGUAGENS);
+    const svg = await icones(maiores.map(([nome]) => nome));
+    const linguagens = maiores.map(([nome, size]) => ({ nome, fracao: size / soma, icone: svg[nome] ?? null }));
 
     const dados: Atividade = {
       dias,

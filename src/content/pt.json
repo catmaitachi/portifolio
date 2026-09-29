@@ -101,7 +101,7 @@
     "aoVivo": "ver ao vivo",
     "atividade": "Um traço por commit",
     "arquivado": "Arquivado",
-    "linguagens": "Linguagens de todo o código que publiquei",
+    "linguagens": "Linguagens",
     "noAr": "no ar",
     "soCodigo": "só código",
     "rodar": "rodar aqui",
@@ -172,7 +172,7 @@
     "mais": "mais",
     "dia": "{data} · {n}",
     "ceuA11y": "{n} contribuições em {dias} dias com código no último ano",
-    "linguagens": "Linguagens",
+    "linguagens": "Linguagens de todo o código que publiquei",
     "doCodigo": "{n}% do código",
     "quantas": "{n} linguagens",
     "aponte": "aponte ou escolha uma"

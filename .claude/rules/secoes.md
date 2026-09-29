@@ -233,7 +233,16 @@ Lucas (o Icon Cloud do Magic UI). As três foram harmonizadas numa física só, 
   ícones, e cada ícone do tamanho do peso da linguagem. O bloco tem a largura do cartaz e do céu, mas
   **quem cresce é a legenda, não a nuvem**: ela fica em 360px (`--gh-nuvem`) e a legenda vai até a
   borda. Uma versão esticou a nuvem até 520px para preencher o vão, e ficou desproporcional. Ícones e
-  estrelas acompanham o tamanho da nuvem (as medidas são de uma de 300px, multiplicadas pela escala). Os ícones são do Simple Icons (CC0), guardados
+  estrelas acompanham o tamanho da nuvem (as medidas são de uma de 300px, multiplicadas pela escala).
+  O título diz de onde vem o dado, "Linguagens de todo o código que publiquei": sozinho, "Linguagens"
+  não dizia se era do ano, de um projeto ou do perfil.
+- **os ícones das linguagens são do Devicon e não moram no projeto.** `api/atividade` procura cada
+  linguagem que o GitHub devolve no Iconify, numa cascata (o Devicon simplificado em uma cor, depois o
+  original, que a nuvem pinta de branco), e entrega o SVG junto com o dado; sem ícone, a nuvem desenha
+  a sigla num círculo fino, como um elemento da tabela periódica. Uma linguagem nova amanhã ganha
+  ícone sozinha. Escolhido numa terceira vitrine contra o File Icons e as siglas puras; antes eram
+  arquivos do Simple Icons guardados em `assets/`, que cobriam só as linguagens de hoje. O SVG só vira
+  imagem no canvas, nunca entra no DOM como marcação. Os ícones são do Simple Icons (CC0), guardados
   em `assets/linguagens/` e pintados de branco no canvas; linguagem sem ícone aparece pela sigla.
 
 Três ajustes da nuvem saíram das observações da vitrine e valem para o que vier:

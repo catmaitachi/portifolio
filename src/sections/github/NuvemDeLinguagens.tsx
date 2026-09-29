@@ -1,10 +1,10 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { format, LINGUAGENS } from '~/content';
+import { format } from '~/content';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
 import { useT } from '~/i18n/useLanguage';
 import styles from './GithubSection.module.css';
 
-type Linguagem = { nome: string; fracao: number };
+type Linguagem = { nome: string; fracao: number; icone: string | null };
 interface Ponto {
   x: number;
   y: number;
@@ -40,7 +40,20 @@ function esfera(n: number, linguagens: number): Ponto[] {
 /** o menor giro até um ângulo, a partir de onde a esfera está (ela acumula voltas) */
 const perto = (atual: number, alvo: number) => atual + (((alvo - atual + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
 
-/** um ícone do Simple Icons, preto, pintado de branco num canvas próprio */
+/**
+ * A sigla de uma linguagem sem ícone, como um elemento da tabela periódica: as
+ * duas maiúsculas do nome quando há (JS, PS), senão as iniciais das palavras ou
+ * as duas primeiras letras.
+ */
+function sigla(nome: string): string {
+  const maiusculas = nome.match(/[A-Z]/g) ?? [];
+  if (maiusculas.length >= 2 && nome.length > 3) return maiusculas.slice(0, 2).join('');
+  const partes = nome.replace(/[^A-Za-z0-9+#]/g, ' ').trim().split(/\s+/);
+  const s = partes.length > 1 ? partes[0][0] + partes[1][0] : partes[0].slice(0, 2);
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/** o SVG de uma linguagem (preto, do Devicon), pintado de branco num canvas próprio */
 function carregarBranco(src: string): Promise<HTMLCanvasElement | null> {
   return new Promise((ok) => {
     const img = new Image();
@@ -64,7 +77,8 @@ function carregarBranco(src: string): Promise<HTMLCanvasElement | null> {
  * As linguagens como uma nuvem de ícones: a esfera do Icon Cloud do Magic UI
  * (sugestão do Lucas na rodada do /inspiration de 29/09/2026), adaptada ao céu
  * do site. Entre as linguagens há estrelas, e cada ícone tem o tamanho do quanto
- * a linguagem pesa nos repositórios.
+ * a linguagem pesa nos repositórios. Os ícones são do Devicon e chegam prontos de
+ * `api/atividade`; linguagem sem ícone vira sigla num círculo fino.
  *
  * Três ajustes que saíram da vitrine, e valem como regra:
  *
@@ -131,7 +145,8 @@ export function NuvemDeLinguagens({ linguagens, ativo }: { linguagens: Linguagem
 
     let icones: (HTMLCanvasElement | null)[] = [];
     let vivo = true;
-    void Promise.all(linguagens.map((l) => (LINGUAGENS[l.nome] ? carregarBranco(LINGUAGENS[l.nome]) : Promise.resolve(null)))).then(
+    // o SVG vem de `api/atividade` e só vira imagem: nunca entra no DOM como marcação
+    void Promise.all(linguagens.map((l) => (l.icone ? carregarBranco(`data:image/svg+xml;utf8,${encodeURIComponent(l.icone)}`) : Promise.resolve(null)))).then(
       (r) => {
         if (vivo) icones = r;
       },
@@ -206,12 +221,17 @@ export function NuvemDeLinguagens({ linguagens, ativo }: { linguagens: Linguagem
         if (icone) {
           ctx.drawImage(icone, v.X - s / 2, v.Y - s / 2, s, s);
         } else {
-          // sem ícone, a sigla
+          // sem ícone, a sigla num círculo de 1px
+          ctx.strokeStyle = '#fff';
           ctx.fillStyle = '#fff';
-          ctx.font = `300 ${Math.round(s * 0.42)}px 'IBM Plex Mono', monospace`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(v.X, v.Y, s * 0.46, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.font = `300 ${Math.round(s * 0.36)}px 'IBM Plex Mono', monospace`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText(linguagens[i].nome.slice(0, 2).toUpperCase(), v.X, v.Y);
+          ctx.fillText(sigla(linguagens[i].nome), v.X, v.Y + 1);
         }
         if (eleito) {
           ctx.globalAlpha = 0.45;

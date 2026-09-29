@@ -74,5 +74,5 @@ export type {
   TelaKey,
   TipoExperiencia,
 } from './types';
-export { ICONES, LINGUAGENS, LOGOS, RETRATO } from './assets';
+export { ICONES, LOGOS, RETRATO } from './assets';
 export { urlExterna } from './links';

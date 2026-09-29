@@ -37,6 +37,12 @@ número (o calendário conta sem dizer onde), e as linguagens vêm só dos repos
 são fork. O número depende das permissões do token: um *fine-grained* só de leitura pública conta menos
 contribuição privada que um token pessoal completo (401 contra 471 em 29/09/2026).
 
+**Ela também busca os ícones das linguagens**, no Iconify (`api.iconify.design`, sem chave), uma
+chamada por conjunto da cascata com todos os nomes de uma vez e 4s de limite: o Devicon simplificado,
+depois o original. Os nomes do Linguist que o Devicon escreve diferente estão em `APELIDOS` (CSS →
+`css3`, Shell → `bash`...); o resto se acha pelo próprio nome. Falhar ali não derruba a resposta: a
+linguagem só vem sem ícone, e a seção desenha a sigla.
+
 **O League of Legends ficou de fora, e não por falta de tentativa.** Não existe API de terceiro
 legítima para histórico de partidas: todo rastreador usa a chave própria dele na API da Riot, e a
 chave pessoal expira a cada 24 horas.

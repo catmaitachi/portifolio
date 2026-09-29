@@ -101,7 +101,7 @@
     "aoVivo": "see it live",
     "atividade": "One line per commit",
     "arquivado": "Archived",
-    "linguagens": "Languages across all the code I've published",
+    "linguagens": "Languages",
     "noAr": "live",
     "soCodigo": "code only",
     "rodar": "run here",
@@ -172,7 +172,7 @@
     "mais": "more",
     "dia": "{data} · {n}",
     "ceuA11y": "{n} contributions across {dias} days with code in the last year",
-    "linguagens": "Languages",
+    "linguagens": "Languages across all the code I've published",
     "doCodigo": "{n}% of the code",
     "quantas": "{n} languages",
     "aponte": "point to or pick one"

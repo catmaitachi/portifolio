@@ -76,8 +76,12 @@ export interface Atividade {
   repositorios: number;
   /** o ano em que a conta foi criada */
   desde: string;
-  /** o peso de cada linguagem nos repositórios públicos, as maiores primeiro */
-  linguagens: { nome: string; fracao: number }[];
+  /**
+   * O peso de cada linguagem nos repositórios públicos, as maiores primeiro, com
+   * o ícone dela: o SVG que o Devicon tem (preto, a nuvem o pinta de branco), ou
+   * `null`, e aí a seção desenha a sigla.
+   */
+  linguagens: { nome: string; fracao: number; icone: string | null }[];
 }
 
 export interface Jogo {

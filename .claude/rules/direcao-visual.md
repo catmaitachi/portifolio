@@ -90,7 +90,7 @@ vier depois:
 |---|---|---|
 | GitHub, o ano | céu de estrelas que um feixe de luz acende; apontar mostra o dia com um risco-guia | reactbits/DotGrid, cultui/lightboard, animata/animated-beam |
 | GitHub, os números | um número grande em contorno que se enche de luz enquanto conta, e a ficha pontilhada ao lado | animata/metis-text, magicui/number-ticker |
-| GitHub, as linguagens | nuvem de ícones numa esfera que gira, a escolhida vem para a frente e acende; ao lado, um cabeçalho fixo e uma grade de chips iguais | magicui/icon-cloud, reactbits/GlideSelect |
+| GitHub, as linguagens | nuvem de ícones (Devicon) numa esfera que gira, a escolhida vem para a frente e acende; ao lado, um cabeçalho fixo e uma grade de chips iguais; sem ícone, sigla num círculo fino | magicui/icon-cloud, reactbits/GlideSelect |
 | menu de opções | ver `hud.md` | |
 
 Quatro regras gerais saíram das observações da rodada: **arrastar gira na direção da mão**, **o item
