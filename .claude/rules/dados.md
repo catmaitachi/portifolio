@@ -29,6 +29,8 @@ projeto que roda fora do navegador.
 | `api/steam.ts` | `STEAM_API_KEY`, `STEAM_ID` | 60s | jogando agora e os das duas últimas semanas |
 | `api/letterboxd.ts` | `LETTERBOXD_USER`, `LETTERBOXD_LIST` (opcional) | 30min | últimos assistidos com a nota, e uma lista escolhida a dedo |
 | `api/github.ts` | `GITHUB_TOKEN` | 1h | os repositórios de `shared.json → projetos`, com atividade, linguagens e números |
+| `api/minecraft.ts` | `MINECRAFT_USER` (não é segredo: o nick) | 1h (e um dia servida velha) | o nome como o jogo o escreve, a skin, o modelo (slim ou largo) e a capa |
+| `api/riot.ts` | `RIOT_API_KEY`, `RIOT_ID` (`nome#tag`, **entre aspas** no `.env`), `RIOT_REGIAO` (`br1`…) | 5min | o perfil, as três maiores maestrias e as seis últimas partidas (`Liga`) |
 | `api/atividade.ts` | `GITHUB_TOKEN` | 1h | o último ano no GitHub (calendário, contagens, sequência, pico) e o peso das linguagens |
 
 **A conta de `api/atividade` é a do token (`viewer`)**, nunca um parâmetro: com o login na query,
@@ -43,9 +45,37 @@ depois o original. Os nomes do Linguist que o Devicon escreve diferente estão e
 `css3`, Shell → `bash`...); o resto se acha pelo próprio nome. Falhar ali não derruba a resposta: a
 linguagem só vem sem ícone, e a seção desenha a sigla.
 
-**O League of Legends ficou de fora, e não por falta de tentativa.** Não existe API de terceiro
-legítima para histórico de partidas: todo rastreador usa a chave própria dele na API da Riot, e a
-chave pessoal expira a cada 24 horas.
+**A Mojang responde sem chave, mas sem CORS**, e é só por isso que `api/minecraft` existe. São duas
+chamadas (o nome vira o UUID, e o perfil do UUID traz as texturas num JSON em base64), e **as imagens
+não passam pela função**: a página as usa como `background-image`, que não pede CORS, então ela
+devolve só os endereços, trocados para `https` (a Mojang ainda os escreve em `http`). O modelo
+precisa vir junto: a mesma textura desenha braços de 3 ou de 4 texels, e quem diz qual é o metadado.
+
+**O League of Legends: a API entrega tudo o que a seção mostra** (conferido na especificação
+OpenAPI da Riot, 30/09/2026): `account-v1 /accounts/by-riot-id` dá o PUUID; `summoner-v4
+/summoners/by-puuid` o ícone e o nível; `champion-mastery-v4 /by-puuid/{puuid}/top` as maiores
+maestrias; `match-v5 /by-puuid/{puuid}/ids` e uma chamada por partida, o resto. As imagens (ícone,
+campeão, item) são do Data Dragon, sem chave. **A borda de nível e o brasão de maestria não vêm da
+API**: são arte, e moram no projeto (ver `secoes.md`). A borda ranqueada que o jogador escolhe
+(regalia) não existe na API. Uma visita custa ~12 chamadas (e duas ao Data Dragon: a versão e a lista de campeões, porque a
+maestria vem só com o número do campeão), e os 5 minutos de borda cabem no limite da chave pessoal.
+
+Quatro pegadinhas que já custaram uma tentativa cada:
+
+- **o `#` do Riot ID começa um comentário no `.env`**: sem aspas, a tag some e a função responde
+  `variavel:RIOT_ID`;
+- **o servidor de desenvolvimento não relê uma variável que já leu**: ele copia o `.env.local` para o
+  `process.env` a cada pedido, mas o `loadEnv` do Vite dá prioridade ao que já está no
+  `process.env`. Corrigir um valor pede reiniciar o `npm run dev`;
+- **uma chave recém-gerada responde 401 por alguns minutos** antes de valer;
+- **ARAM: Desordem (fila 2400) não existe na API**: some do histórico e responde 403 pelo id (bug
+  aberto no `RiotGames/developer-relations`, #1109). A busca de partidas é sem filtro de fila, e
+  mesmo pedindo `queue=2400` a lista vem vazia; a gaveta avisa (`jogos.lol.semDesordem`).
+
+**A chave.** Não existe API de terceiro legítima para histórico de partidas (todo rastreador usa
+a chave própria dele na da Riot), e a chave de desenvolvimento expira a cada 24 horas. A que serve ao
+site publicado é a *Personal API Key*, um produto que a Riot aprova uma vez e que não expira; falta
+pedi-la (ver `pendencias.md`).
 
 ### O contrato é nosso, não do provedor
 

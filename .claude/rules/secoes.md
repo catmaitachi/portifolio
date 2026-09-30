@@ -374,6 +374,62 @@ página do jogo) e as horas da quinzena e do total. Escolhido numa rodada da ski
 - A entrada anima o **miolo** da capa (`.arte`), porque o `transform` da capa é da mola.
 - Com um jogo só não há passos, pela regra de sempre.
 
+**O andar de baixo: o LoL e o Minecraft.** Embaixo do deque, dois sub-títulos (`<h3>`, com o risco
+de `comum.tituloLista`, o mesmo da Música): o League of Legends com a parte maior, e o Minecraft
+fechando a seção, mais estreito. Escolhido numa rodada da skill `inspiration` (30/09/2026, Andares
++ Pedestal); na vitrine o Minecraft vinha primeiro, com o nick e um texto embaixo do boneco, e as
+observações do Lucas foram pô-lo por último, menor que o LoL, e tirar os textos.
+
+- **O LoL** (`Liga`) tem a carta do invocador e o pódio das maestrias lado a lado, e as últimas
+  partidas embaixo, numa gaveta. Escolhido numa segunda rodada da skill `inspiration` (30/09/2026,
+  Carta + Pódio + Linhas), com as observações do Lucas: a carta só com ícone, borda, nível, nick e
+  região, e os campeões do pódio com o ícone redondo; depois, as partidas num dropdown com a seta no
+  fim da linha do título.
+  - **A carta** é o ícone dentro da borda de nível do jogo, o nível na placa, o nick e a região; é
+    chanfrada e inclina com o ponteiro (`useInclinacao`), como o retrato do Sobre.
+  - **O pódio** põe o 1º no meio (`order`, e o DOM continua na ordem para o leitor de tela); o degrau
+    tem a altura dos pontos e sobe do chão quando a seção entra, depois do bloco (520ms).
+  - **As partidas** são linhas: um fio cheio (vitória) ou tracejado (derrota, com o campeão sem cor,
+    como no deque), o K/D/A, KDA e CS, a fila (pelo `queueId`, no dicionário), a duração, os sete
+    itens e há quanto tempo. Moram num `<details>` fechado ao chegar, com a `.ponta` no fim da linha
+    do título; abrir desliza a altura (`interpolate-size`, sem animação onde não há suporte).
+  - **O dado vem de `api/riot`**, uma vez por entrada. Esperando, ou com a Riot fora (chave vencida
+    responde 401), a forma é a mesma desenhada com `liga.molde.ts`, apagada, com o aviso por cima,
+    como nas outras seções remotas. Na primeira versão os números de exemplo apareciam de verdade,
+    com uma etiqueta dizendo que eram de exemplo; ela saiu quando a função chegou.
+  - **ARAM: Desordem não aparece, e a gaveta diz isso** (`jogos.lol.semDesordem`): a Riot não
+    publica a fila 2400 na API (some do histórico e dá 403 pelo id; bug aberto no
+    `RiotGames/developer-relations`, #1109). Quem mostra essas partidas lê o cliente do jogo no PC,
+    o que não serve a um site. O Lucas notou porque as últimas dele eram todas desse modo.
+  - **A fila é nome do dicionário** (`jogos.lol.filas`, pelo `queueId`), e a que não está lá vira
+    "Partida". A 1750 não está nem na lista oficial da Riot: é a Arena de 18 jogadores (`CHERRY`).
+  - **A borda de nível e o brasão de maestria não vêm da API**: são arte do jogo guardada em
+    `src/assets/lol` em webp pequeno (21 bordas e 10 brasões, ~40KB cada contra ~300KB do original),
+    e a página só baixa a que usa. O tema da borda sai do nível (até o 29, do 30 ao 49, e daí um a
+    cada 25 até o 500); o ícone cabe no buraco, que tem 54% da arte, e o nível fica a 80% da altura,
+    no meio da placa (medido nos 21 temas).
+- **O Minecraft é um boneco 3D com a skin de verdade** (`Boneco`, `modelo.tsx`, `comportamento.ts`),
+  em CSS 3D, sem three.js: seis caixas de seis faces, cada face um `<i>` com o recorte da textura
+  pela UV do jogo, a segunda camada meio texel para fora, o modelo slim ou largo e a capa. A skin vem
+  de `api/minecraft` e troca sozinha quando ela muda no jogo. Sem ela, o molde é o pedestal vazio.
+- **O comportamento é o do jogo, em ticks de 50ms**: parado, a cabeça segue o ponteiro e o tronco
+  acompanha a um quarto (de costas, a mira se espelha, e ele olha para o lado da tela em que o
+  ponteiro está); segurar e arrastar gira o corpo; **ao aparecer na tela ele chega do fundo e faz um
+  gesto sorteado de `GESTOS`** (hoje só o aceno do Bedrock); **clicar é um golpe**: 30% de vermelho
+  por cima da textura, meio segundo de invulnerabilidade, o empurrão com a física do jogo (gravidade
+  0,08, atrito de ar e de chão, força 0,2 no lugar dos 0,4 do soco, para caber no palco), a volta
+  andando com o balanço de pernas do `HumanoidModel`, e, se estava de costas, ele vira para quem bateu.
+  A vida (20, dez corações) só aparece depois de um golpe e some em 3s; sem vida ele tomba de lado em
+  20 ticks, vira fumaça e renasce 1,5s depois, chegando de novo.
+- **Ele acena quando aparece, e não quando a seção abre**: mora no fim de Jogos, e um gesto no abrir
+  da seção aconteceria fora de vista. Um `IntersectionObserver` (60% à vista) marca `data-visto`.
+- **O pedestal é chão de verdade**: três anéis de 1px deitados no 3D, com a mesma câmera do boneco.
+  A primeira versão os desenhava como elipses em 2D, e o boneco parecia flutuar ao lado deles.
+- **A entrada anima a `.cena`, plana, e não o `.boneco`**: `opacity` e `filter` achatam um elemento
+  `preserve-3d`, e as faces de trás passariam na frente durante a chegada.
+- É desenho (`aria-hidden`), dentro de um `role="img"` com o nick e o que ele é
+  (`jogos.minecraft.boneco`).
+
 Antes os recentes eram uma faixa que rolava de lado, compartilhada com Filmes (`sections/Faixa`, com
 o hook `useRolagemLateral`), e o destaque era uma caixa com a arte deitada. As duas saíram nesta
 rodada, e a faixa junto, porque nenhuma seção a usa mais. Duas versões anteriores também ficaram pelo

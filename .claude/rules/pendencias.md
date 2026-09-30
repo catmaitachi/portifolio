@@ -13,10 +13,11 @@ paths:
   resolver quando isso acontecer. Em desenvolvimento o plugin do Vite cobre isso (ver `dados.md`).
 - **Girar os segredos depois de publicar.** A client secret do Spotify e a chave da Steam passaram
   por um canal de chat, então valem como comprometidas por precaução.
-- **O LoL ficou de fora, e não por falta de tentativa.** Não existe API de terceiro legítima para
-  histórico de partidas: todo rastreador usa a chave própria dele na API da Riot, e a chave pessoal
-  expira a cada 24 horas.
-
+- **O LoL roda com a chave de desenvolvimento**, que vence a cada 24 horas; vencida, a seção mostra
+  a forma com o aviso de falha. Para publicar falta a *Personal API Key* e cadastrar `RIOT_API_KEY`,
+  `RIOT_ID` e `RIOT_REGIAO` na Vercel. As duas chaves de desenvolvimento passaram pelo chat.
+- **`MINECRAFT_USER` falta na Vercel** (no `.env.local` já está). Sem ela o canto do Minecraft mostra
+  o pedestal vazio com o aviso de falha.
 - **`GITHUB_TOKEN` falta no `.env.local` e na Vercel.** Sem ele a seção Projetos mostra o estado de
   falha. Um token *fine-grained* só com leitura de repositórios públicos basta (ver `.env.example`).
 - **O texto da ClinPlaY na Trajetória é rascunho**, escrito a partir do que já estava no
@@ -42,12 +43,12 @@ as seções **vão ser**, e aquele arquivo descreve o que elas são.
 
 ### Jogos divide a seção com o LoL
 
-A Riot volta ao plano, com as últimas partidas do League of Legends ao lado da Steam. O que fez ela
-sair continua valendo e precisa de resposta antes de começar (ver a nota do LoL acima): a chave
-pessoal da API expira a cada 24 horas, então isso pede uma chave de produção aprovada pela Riot, e
-não um contorno.
+A Riot volta ao plano, com o perfil, as maestrias e as últimas partidas do League of Legends
+embaixo da Steam. A chave de desenvolvimento expira a cada 24 horas, então isso pede uma chave
+aprovada pela Riot, e não um contorno.
 
-A seção passa a ser **dividida entre os dois serviços**. O deque da Steam (ver `secoes.md`) ocupa
-hoje a largura inteira com o painel ao lado, e precisará caber em metade do espaço sem perder as capas.
+A divisão, o desenho e a função já existem (ver `secoes.md` e `dados.md`). Falta a *Personal API
+Key*, pedida pelo Lucas no portal da Riot, e as três variáveis na Vercel.
 
-O `PerfilExterno` de hoje é um por seção, e uma seção com dois serviços quebra essa premissa.
+O `PerfilExterno` de hoje é um por seção (o da Steam), e uma seção com três serviços quebra essa
+premissa: o LoL e o Minecraft ainda não têm link para o perfil.

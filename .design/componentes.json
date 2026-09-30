@@ -54,11 +54,86 @@
         "variações do crachá pensando em n entradas",
         "misturar o texto na lateral do crachá sozinho com o maço de crachás"
       ]
+    },
+    {
+      "nome": "jogos: andar do LoL e do Minecraft",
+      "arquivo": "src/sections/games/Boneco.tsx",
+      "escolha": "minecraft=mc-C (Pedestal), divisao=div-A (Andares)",
+      "referencias": [
+        {
+          "site": "reactbits",
+          "componente": "Cubes",
+          "url": "https://www.reactbits.dev/animations/cubes",
+          "tomei": "cubos de seis faces em CSS 3D (preserve-3d, rotate + translate de meia aresta)",
+          "mudei": "cada face recorta a skin pela UV do Minecraft; seis caixas articuladas por pivôs, segunda camada inflada, medidas em texels via --px"
+        },
+        {
+          "site": "fancycomponents",
+          "componente": "css-box",
+          "url": "https://www.fancycomponents.dev/docs/components/blocks/css-box",
+          "tomei": "caixa com tamanho por eixo e giro controlado de fora",
+          "mudei": "sem motion; o giro é um rAF por ticks de 50ms com a física do jogo (empurrão, andar, queda da morte)"
+        },
+        {
+          "site": "cultui",
+          "componente": "three-d-carousel",
+          "url": "https://www.cult-ui.com",
+          "tomei": "arraste horizontal vira rotação no eixo Y",
+          "mudei": "arrastar gira o corpo; soltar sem arrastar é um golpe; de costas a mira da cabeça se espelha"
+        },
+        {
+          "site": "magicui",
+          "componente": "bento-grid",
+          "url": "https://magicui.design/docs/components/bento-grid",
+          "tomei": "blocos de tamanhos diferentes numa seção",
+          "mudei": "dois andares: Steam na largura toda, e LoL (1,6fr) ao lado do Minecraft (1fr), cada um com o sub-título de risco da Música"
+        }
+      ],
+      "ajustes": [
+        "Minecraft por último e mais estreito que o LoL",
+        "sem textos embaixo do boneco",
+        "observa o mouse parado, segurar gira, gesto aleatório ao carregar (só aceno), clique = golpe com dano, empurrão e volta, vira se estiver de costas, vida que aparece e some, morre e renasce, animações do jogo",
+        "o palco estava estranho: anéis passaram a deitar no chão 3D",
+        "de costas, a mira do mouse se inverte"
+      ]
+    },
+    {
+      "nome": "jogos: LoL (perfil, maestrias, partidas)",
+      "arquivo": "src/sections/games/Liga.tsx",
+      "escolha": "perfil=perfil-C (Carta de invocador), maestrias=maestria-A (Pódio), partidas=partidas-A (Linhas)",
+      "referencias": [
+        {
+          "site": "reactbits",
+          "componente": "ProfileCard",
+          "url": "https://www.reactbits.dev/components/profile-card",
+          "tomei": "carta de perfil que inclina com o ponteiro, com brilho",
+          "mudei": "é o useInclinacao do retrato, chanfrada; dentro, a borda de nível do jogo com o ícone e o nível na placa"
+        },
+        {
+          "site": "kokonutui",
+          "componente": "bento-grid",
+          "url": "https://kokonutui.com",
+          "tomei": "colunas que crescem na entrada",
+          "mudei": "três degraus com a altura dos pontos, 1º no meio por order, sobem depois do bloco"
+        },
+        {
+          "site": "magicui",
+          "componente": "animated-list",
+          "url": "https://magicui.design/docs/components/animated-list",
+          "tomei": "lista de eventos em linhas",
+          "mudei": "fio cheio ou tracejado pelo resultado, campeão sem cor na derrota, numa gaveta <details>"
+        }
+      ],
+      "ajustes": [
+        "perfil bem simples: ícone com nível e borda, nick e região apenas",
+        "ícone redondo nos campeões de maior maestria",
+        "últimas partidas num dropdown, com o ícone no fim da linha"
+      ]
     }
   ],
   "baseado_em": {
     "conceito": 1,
     "direcao": 1
   },
-  "revisao": 1
+  "revisao": 3
 }

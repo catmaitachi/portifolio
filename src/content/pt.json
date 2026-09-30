@@ -135,7 +135,42 @@
     "duasSemanas": "nas 2 semanas",
     "total": "no total",
     "anterior": "Jogo anterior",
-    "proximo": "Próximo jogo"
+    "proximo": "Próximo jogo",
+    "minecraft": {
+      "titulo": "Minecraft",
+      "boneco": "{nome}, meu boneco no Minecraft, com a skin que uso no jogo"
+    },
+    "lol": {
+      "titulo": "League of Legends",
+      "nivel": "Nível {n}",
+      "maestria": "Maior maestria",
+      "pontos": "pontos",
+      "partidas": "Últimas partidas",
+      "vitoria": "Vitória",
+      "derrota": "Derrota",
+      "filas": {
+        "400": "Normal",
+        "420": "Ranqueada solo/duo",
+        "430": "Normal",
+        "440": "Ranqueada flex",
+        "450": "ARAM",
+        "490": "Normal",
+        "700": "Clash",
+        "720": "Clash ARAM",
+        "900": "URF",
+        "1020": "Um por Todos",
+        "1300": "Nexus Blitz",
+        "1400": "Grimório Supremo",
+        "1700": "Arena",
+        "1710": "Arena",
+        "1750": "Arena",
+        "1900": "URF",
+        "2300": "Brawl",
+        "2400": "ARAM: Caos"
+      },
+      "outraFila": "Partida",
+      "semDesordem": "Partidas de ARAM: Desordem não aparecem: a Riot não as publica na API."
+    }
   },
 
   "filmes": {

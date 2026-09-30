@@ -218,6 +218,32 @@
   background: linear-gradient(90deg, transparent, var(--linha-forte), transparent);
 }
 
+/* ---------- o andar de baixo: LoL e Minecraft ---------- */
+
+/**
+ * O LoL leva a parte maior, e o Minecraft fecha a seção, mais estreito: o boneco
+ * tem a largura do palco dele, e o que sobra é respiro.
+ */
+.andar {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 48px);
+  align-items: start;
+  margin-top: clamp(12px, 3vmin, 28px);
+}
+
+.parte {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.canto {
+  display: flex;
+  justify-content: center;
+}
+
 /* celular: o deque em cima, o painel embaixo */
 @media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .cena {
@@ -226,6 +252,10 @@
 
   .deque {
     order: -1;
+  }
+
+  .andar {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .secao {

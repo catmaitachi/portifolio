@@ -397,26 +397,6 @@
   min-width: 0;
 }
 
-/* é um `<h3>`: o sub-título da grade, que o leitor de tela alcança por título */
-.tituloLista {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  margin: 0;
-  color: var(--tx-rotulo);
-  font-size: var(--fs-rotulo);
-  font-weight: 400;
-  letter-spacing: var(--ls-rotulo);
-  text-transform: uppercase;
-}
-
-.tituloLista::after {
-  flex: 1;
-  height: 1px;
-  background: var(--linha);
-  content: '';
-}
-
 /**
  * A parede de capas. **Apontar uma a traz para o foco**: as outras apagam, perdem
  * a cor e desfocam de leve, e o nome sobe de dentro da capa apontada. O

@@ -135,7 +135,42 @@
     "duasSemanas": "in 2 weeks",
     "total": "total",
     "anterior": "Previous game",
-    "proximo": "Next game"
+    "proximo": "Next game",
+    "minecraft": {
+      "titulo": "Minecraft",
+      "boneco": "{nome}, my Minecraft character, wearing the skin I use in game"
+    },
+    "lol": {
+      "titulo": "League of Legends",
+      "nivel": "Level {n}",
+      "maestria": "Top mastery",
+      "pontos": "points",
+      "partidas": "Recent matches",
+      "vitoria": "Victory",
+      "derrota": "Defeat",
+      "filas": {
+        "400": "Normal",
+        "420": "Ranked solo/duo",
+        "430": "Normal",
+        "440": "Ranked flex",
+        "450": "ARAM",
+        "490": "Normal",
+        "700": "Clash",
+        "720": "ARAM Clash",
+        "900": "URF",
+        "1020": "One for All",
+        "1300": "Nexus Blitz",
+        "1400": "Ultimate Spellbook",
+        "1700": "Arena",
+        "1710": "Arena",
+        "1750": "Arena",
+        "1900": "URF",
+        "2300": "Brawl",
+        "2400": "ARAM: Mayhem"
+      },
+      "outraFila": "Match",
+      "semDesordem": "ARAM: Mayhem games don't show up: Riot doesn't publish them in its API."
+    }
   },
 
   "filmes": {

@@ -163,6 +163,43 @@
   background: var(--linha);
 }
 
+/**
+ * O sub-título de uma parte da seção, com um risco que termina a linha. É um
+ * `<h3>`, que o leitor de tela alcança por título. Música o usa nas duas grades, e
+ * Jogos nos dois andares de baixo.
+ */
+.tituloLista {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin: 0;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
+  font-weight: 400;
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+
+.tituloLista::after {
+  flex: 1;
+  height: 1px;
+  background: var(--linha);
+  content: '';
+}
+
+/**
+ * Texto só para o leitor de tela: o que o desenho mostra e a árvore acessível
+ * não teria (o cargo no crachá da Carreira, o nível na placa do LoL).
+ */
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .cabecalho {
   display: flex;
   flex-direction: column;

@@ -15,7 +15,9 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | `JourneySection` | `--exp-cargo --exp-gap --exp-bloco-gap --exp-txt --cracha-col --cracha-ar --fita-h` (no celular o crachá fica 4:5, menos alto) |
 | `MusicSection` | `--capa --capas-cols --artistas-cols` |
 | `ProjectsSection` (e `Projeto`) | `--proj-cols --proj-gap --proj-entre` |
-| `GamesSection` | `--capa-w --deque-h` |
+| `GamesSection` | `--capa-w --deque-h` (o andar de baixo, LoL e Minecraft, vira uma coluna) |
+| `Liga` | `--carta-w` (no celular a carta sobe para cima do pódio, centrada, e os itens das partidas encolhem de 18 para 14px) |
+| `Boneco` | `--px`, o tamanho de um texel: 6px, 5px no celular, 7px acima de 1600px. **Inteiro de propósito**: com frações aparecem frestas entre as faces |
 | `FilmsSection` | `--quadro-w --quadro-gap --furo-h --legenda-fs` (no celular a legenda reserva duas linhas) |
 | `GithubSection` | `--gh-nuvem --gh-grande` (no celular o céu do ano rola de lado, com 680px de largura mínima, e os chips de linguagem passam de quatro para dois por linha) |
 | `ContactSection` | `--carta-fs --carta-gap` (o título mede a coluna, por `cqi`, e não a tela) |

@@ -1,0 +1,399 @@
+/**
+ * O LoL (ver `Liga.tsx`): a carta e o pódio lado a lado, as partidas embaixo.
+ * Escolhido numa rodada da skill `inspiration` (30/09/2026): Carta de invocador,
+ * Pódio e Linhas.
+ */
+.liga {
+  --carta-w: 200px;
+
+  display: grid;
+  gap: 22px;
+}
+
+.topo {
+  display: grid;
+  grid-template-columns: var(--carta-w) minmax(0, 1fr);
+  gap: 24px;
+  align-items: end;
+}
+
+.bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* ---------- a carta do invocador ---------- */
+
+.carta {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 14px 16px;
+  overflow: hidden;
+  border: 1px solid var(--linha);
+  border-radius: 2px;
+  background: var(--fundo-sutil);
+  /* o retorno é desta transição; `--inclina-t` a desliga com o ponteiro em cima (`useInclinacao`) */
+  transition: transform var(--inclina-t, var(--dur-retorno)) var(--ease-saida);
+}
+
+/**
+ * O ícone dentro da borda do nível, como o cliente do jogo desenha: o buraco da
+ * arte tem 54% da largura dela, e a placa do nível vai de 76% a 84% da altura
+ * (medido nos 21 temas; o nível fica no meio dela).
+ */
+.brasao {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+.brasao .icone {
+  position: absolute;
+  inset: 23%;
+  width: 54%;
+  height: 54%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.borda {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.nivel {
+  position: absolute;
+  top: 80%;
+  left: 50%;
+  translate: -50% -50%;
+  color: #fff;
+  font-size: var(--fs-pequeno);
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+.nick {
+  margin-top: 4px;
+  color: var(--tx-titulo);
+  font-size: var(--fs-destaque);
+  letter-spacing: 0.03em;
+}
+
+.regiao {
+  margin-top: 2px;
+  color: var(--tx-apagado);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.2em;
+}
+
+@supports (corner-shape: bevel) {
+  .carta {
+    border-radius: 14px 2px;
+    corner-shape: bevel;
+  }
+}
+
+/* ---------- o pódio das maestrias ---------- */
+
+.podio {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lugar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  order: var(--ordem);
+}
+
+/* o ícone redondo, com o brasão da maestria pendurado embaixo */
+.campeao {
+  position: relative;
+  margin-bottom: 14px;
+}
+
+.campeao img:first-child {
+  display: block;
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--linha-forte);
+  border-radius: 50%;
+}
+
+.brasaoMaestria {
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  width: 34px;
+  height: 34px;
+  translate: -50% 0;
+  object-fit: contain;
+}
+
+.nome {
+  color: var(--tx-titulo);
+  font-size: var(--fs-pequeno);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pontos {
+  color: var(--tx-apoio);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/**
+ * O degrau: a altura sai dos pontos (o maior tem o degrau cheio). Ele sobe do
+ * chão quando a seção entra, depois de o bloco assentar (`entradas.md`).
+ */
+@keyframes sobe {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+.degrau {
+  display: grid;
+  place-items: start center;
+  width: 100%;
+  height: calc(34px + var(--altura) * 56px);
+  padding-top: 6px;
+  border: 1px solid var(--linha);
+  border-bottom: 0;
+  background: var(--fundo-sutil);
+  color: var(--tx-marcador);
+  font-size: 22px;
+  transform-origin: bottom;
+}
+
+:global([data-ativo]) .degrau {
+  animation: sobe 0.9s var(--ease-entrada) backwards;
+  animation-delay: calc(520ms + var(--ordem) * 110ms);
+}
+
+/* ---------- as partidas, numa gaveta ---------- */
+
+/**
+ * A alça é a linha do título inteira, com a seta no fim, depois do risco. A seta
+ * é a `.ponta` de sempre: aponta para baixo fechada e para cima aberta.
+ */
+.alca {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  color: var(--tx-rotulo);
+  cursor: pointer;
+  list-style: none;
+  transition: color var(--dur-hover);
+}
+
+.alca::-webkit-details-marker {
+  display: none;
+}
+
+.alca:hover,
+.alca:focus-visible {
+  color: var(--tx-hover);
+}
+
+.alca h4 {
+  flex: 1;
+  color: inherit;
+}
+
+.seta {
+  --ponta: 7px;
+
+  margin: 0 3px 3px 0;
+  transform: rotate(135deg);
+  transition: transform var(--dur-hover) var(--ease-saida);
+}
+
+.gaveta[open] .seta {
+  margin: 3px 3px 0 0;
+  transform: rotate(-45deg);
+}
+
+/**
+ * Abrir desliza a altura de 0 à do conteúdo. `interpolate-size` deixa animar até
+ * `auto`; onde não há suporte (Firefox, hoje) ela só abre, sem animação.
+ */
+.gaveta {
+  interpolate-size: allow-keywords;
+}
+
+.gaveta::details-content {
+  block-size: 0;
+  overflow: hidden;
+  transition:
+    block-size var(--dur-retorno) var(--ease-saida),
+    content-visibility var(--dur-retorno) allow-discrete;
+}
+
+.gaveta[open]::details-content {
+  block-size: auto;
+}
+
+.gaveta .partidas {
+  margin-top: 6px;
+}
+
+.nota {
+  display: block;
+  margin-top: 10px;
+  color: var(--tx-apagado);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.1em;
+}
+
+.partidas {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* o fio do resultado, o campeão, os números e, à direita, os itens e quando */
+.partida {
+  display: grid;
+  grid-template-columns: 3px 38px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--linha-sutil);
+}
+
+/* vitória é fio cheio; derrota, tracejado e o campeão sem cor, como no deque */
+.resultado {
+  align-self: stretch;
+  background: var(--linha-cheia);
+}
+
+.partida[data-derrota] .resultado {
+  border-left: 1px dashed var(--linha-forte);
+  background: none;
+}
+
+.partida > .icone {
+  width: 38px;
+  height: 38px;
+  border-radius: 2px;
+}
+
+.partida[data-derrota] > .icone {
+  filter: grayscale(0.8) brightness(0.7);
+}
+
+.numeros {
+  min-width: 0;
+}
+
+.kda {
+  color: var(--tx-titulo);
+  font-size: var(--fs-corpo);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.kda i {
+  color: var(--tx-apagado);
+  font-style: normal;
+}
+
+.razao {
+  color: var(--tx-apoio);
+  font-size: var(--fs-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+.sub {
+  display: block;
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.1em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.lado {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+}
+
+.itens {
+  display: grid;
+  grid-template-columns: repeat(7, 18px);
+  gap: 2px;
+}
+
+.itens img,
+.itens i {
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+}
+
+.itens i {
+  border: 1px solid var(--linha-sutil);
+}
+
+.quando {
+  color: var(--tx-apagado);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* celular: a carta sobre o pódio, e os itens menores */
+@media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
+  .topo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .carta {
+    justify-self: center;
+    width: var(--carta-w);
+  }
+
+  .itens {
+    grid-template-columns: repeat(7, 14px);
+  }
+
+  .itens img,
+  .itens i {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global([data-ativo]) .degrau {
+    animation: none;
+  }
+
+  .gaveta::details-content {
+    transition: none;
+  }
+}

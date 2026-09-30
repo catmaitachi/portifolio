@@ -1,5 +1,6 @@
 import { urlExterna, type Experiencia } from '~/content';
 import { useT } from '~/i18n/useLanguage';
+import comum from '../section.module.css';
 import styles from './JourneyEntry.module.css';
 
 /** Chips exibidos por ficha: mais que isso vira uma segunda linha de chips. */
@@ -48,7 +49,7 @@ export function JourneyEntry({ entrada, ativa }: JourneyEntryProps) {
 
       <div className={styles.conteudo}>
         <h3 className={styles.org}>
-          <span className={styles.oculto}>{entrada.cargo}, </span>
+          <span className={comum.oculto}>{entrada.cargo}, </span>
           {endereco ? (
             <a className={styles.orgLink} href={endereco} target="_blank" rel="noreferrer">
               {entrada.org}
