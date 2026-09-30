@@ -4,7 +4,7 @@ import type { Filme, Filmes } from '~/data/types';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
 import { useRemoto } from '~/hooks/useRemoto';
 import { useLanguage, useT } from '~/i18n/useLanguage';
-import { EstadoRemoto } from '../EstadoRemoto';
+import { EstadoRemoto, type SemDado, Traco } from '../EstadoRemoto';
 import { PerfilExterno } from '../PerfilExterno';
 import comum from '../section.module.css';
 import type { SectionProps } from '../types';
@@ -302,6 +302,46 @@ function Pelicula({ filmes, aba, ativo }: { filmes: Filme[]; aba: Aba; ativo: bo
 }
 
 /**
+ * A seção sem o dado: as abas, a película com os quadros vazios e os furos, e a
+ * legenda por chegar, com as mesmas classes, então nada pula quando ela chega.
+ */
+function Molde({ estado }: { estado: SemDado }) {
+  return (
+    <EstadoRemoto estado={estado}>
+      <div className={styles.conteudo}>
+        <div className={styles.abas}>
+          <span className={styles.aba}>
+            <Traco w="9ch" />
+          </span>
+          <span className={styles.aba}>
+            <Traco w="15ch" />
+          </span>
+        </div>
+        <div className={styles.pelicula}>
+          <div className={styles.faixa}>
+            <ol className={styles.trilho}>
+              {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+                <li key={i}>
+                  <span className={styles.quadro} />
+                </li>
+              ))}
+            </ol>
+          </div>
+          <p className={styles.legenda}>
+            <span className={styles.legendaMeta}>
+              <Traco w="10ch" />
+            </span>
+            <span className={styles.legendaTitulo}>
+              <Traco w="14ch" />
+            </span>
+          </p>
+        </div>
+      </div>
+    </EstadoRemoto>
+  );
+}
+
+/**
  * Filmes: uma lista escolhida a dedo, e os últimos assistidos.
  *
  * O dado vem de `api/letterboxd`, e **não se repete**: um feed de filmes vistos
@@ -342,9 +382,9 @@ export function FilmsSection({ ativo, indice }: SectionProps) {
         </div>
 
         {filmes.estado !== 'pronto' ? (
-          <EstadoRemoto estado={filmes.estado} />
+          <Molde estado={filmes.estado} />
         ) : !aba ? (
-          <EstadoRemoto estado="vazio" />
+          <Molde estado="vazio" />
         ) : (
           <div className={styles.conteudo}>
             {/* com uma lista só não há o que escolher: o nome dela vira o rótulo */}
