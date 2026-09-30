@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { format, urlExterna } from '~/content';
 import type { Projetos, Repositorio } from '~/data/types';
 import { useT } from '~/i18n/useLanguage';
+import { Traco } from '../EstadoRemoto';
 import comum from '../section.module.css';
 import { nomeLegivel } from './nome';
 import styles from './Projeto.module.css';
@@ -75,6 +76,37 @@ function Linguagens({ lista, titulo }: { lista: Repositorio['linguagens']; titul
         ))}
       </span>
     </div>
+  );
+}
+
+/**
+ * Um projeto sem o dado: a janela vazia e as linhas do texto por chegar, com as
+ * mesmas classes, então a vitrine não pula quando o GitHub responde. As larguras
+ * são em `ch` porque a coluna do texto se ajusta ao conteúdo.
+ */
+export function ProjetoMolde({ indice }: { indice: number }) {
+  return (
+    <article className={styles.projeto} style={{ '--ordem': indice } as React.CSSProperties}>
+      <div className={styles.janela}>
+        <div className={styles.vista} />
+        <div className={styles.endereco}>
+          <Traco w="18ch" />
+          <span className={styles.risco} />
+        </div>
+      </div>
+      <div className={styles.info}>
+        <span className={styles.dono}>
+          <Traco w="10ch" />
+        </span>
+        <span className={styles.nome}>
+          <Traco w="12ch" />
+        </span>
+        <span className={styles.descricao}>
+          <Traco w="36ch" />
+          <Traco w="28ch" />
+        </span>
+      </div>
+    </article>
   );
 }
 

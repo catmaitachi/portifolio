@@ -4,7 +4,7 @@ import { useArrowKeys } from '~/hooks/useArrowKeys';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
 import { useRemoto } from '~/hooks/useRemoto';
 import { useT } from '~/i18n/useLanguage';
-import { EstadoRemoto } from '../EstadoRemoto';
+import { EstadoRemoto, type SemDado, Traco } from '../EstadoRemoto';
 import { PerfilExterno } from '../PerfilExterno';
 import comum from '../section.module.css';
 import type { SectionProps } from '../types';
@@ -46,6 +46,52 @@ const limitar = (v: number, min: number, max: number) => Math.min(max, Math.max(
  * As capas são desenho (`aria-hidden`): quem usa leitor de tela navega pelo
  * painel ao lado, que diz o nome, as horas e leva à página do jogo.
  */
+/**
+ * Onde fica a capa que está `d` posições atrás da da frente (negativo: já
+ * passou). A mola do deque e o molde de espera desenham pela mesma conta.
+ */
+function pose(d: number) {
+  const tras = Math.max(0, d);
+  // a que já passou sai para o lado e some; as de trás só apagam depois da quarta
+  const opacidade = d < 0 ? Math.max(0, 1 + d * 1.4) : Math.max(0, 1 - Math.max(0, d - 3.2));
+  return {
+    transform: `translate(-50%, -50%) translateX(${d * AFASTA + Math.min(d, 0) * 40}px) translateZ(${-d * PROFUNDIDADE}px) rotateY(${limitar(d, 0, 1) * -GIRA}deg)`,
+    opacity: String(opacidade),
+    filter: `brightness(${Math.max(0.2, 1 - tras * APAGA)}) blur(${Math.min(4, tras * DESFOCA)}px) grayscale(${Math.min(1, tras * 0.6)})`,
+    zIndex: String(100 - Math.round(d * 10)),
+  };
+}
+
+/** A seção sem o dado: o painel com o texto por chegar e três capas vazias no deque. */
+function Molde({ estado }: { estado: SemDado }) {
+  return (
+    <EstadoRemoto estado={estado}>
+      <div className={styles.cena}>
+        <div className={styles.painel}>
+          <span className={styles.rotulo}>
+            <Traco w="36%" />
+          </span>
+          <span className={styles.nome}>
+            <Traco w="70%" />
+            <Traco w="45%" />
+          </span>
+          <span className={styles.tempos}>
+            <Traco w="50%" />
+          </span>
+        </div>
+        <div className={styles.deque}>
+          {[0, 1, 2].map((i) => (
+            <span key={i} className={styles.capa} style={pose(i)}>
+              <span className={styles.arte} />
+            </span>
+          ))}
+          <span className={styles.chao} />
+        </div>
+      </div>
+    </EstadoRemoto>
+  );
+}
+
 function Deque({
   jogos,
   atual,
@@ -64,15 +110,7 @@ function Deque({
 
   const pintar = useCallback(() => {
     capas.current.forEach((el, i) => {
-      if (!el) return;
-      const d = i - pos.current;
-      const tras = Math.max(0, d);
-      // a que já passou sai para o lado e some; as de trás só apagam depois da quarta
-      const opacidade = d < 0 ? Math.max(0, 1 + d * 1.4) : Math.max(0, 1 - Math.max(0, d - 3.2));
-      el.style.transform = `translate(-50%, -50%) translateX(${d * AFASTA + Math.min(d, 0) * 40}px) translateZ(${-d * PROFUNDIDADE}px) rotateY(${limitar(d, 0, 1) * -GIRA}deg)`;
-      el.style.opacity = String(opacidade);
-      el.style.filter = `brightness(${Math.max(0.2, 1 - tras * APAGA)}) blur(${Math.min(4, tras * DESFOCA)}px) grayscale(${Math.min(1, tras * 0.6)})`;
-      el.style.zIndex = String(100 - Math.round(d * 10));
+      if (el) Object.assign(el.style, pose(i - pos.current));
     });
   }, []);
 
@@ -191,7 +229,7 @@ function Conteudo({ dados, ativo }: { dados: Jogos; ativo: boolean }) {
   );
   useArrowKeys(ativo && jogos.length > 1, andar);
 
-  if (!destaque) return <EstadoRemoto estado="vazio" />;
+  if (!destaque) return <Molde estado="vazio" />;
 
   const jogo = jogos[i];
   const rotulo = i > 0 ? t.jogos.recentes : aoVivo ? t.jogos.jogando : t.jogos.ultimo;
@@ -291,7 +329,7 @@ export function GamesSection({ ativo, indice }: SectionProps) {
         {jogos.estado === 'pronto' ? (
           <Conteudo dados={jogos.dados} ativo={ativo} />
         ) : (
-          <EstadoRemoto estado={jogos.estado} />
+          <Molde estado={jogos.estado} />
         )}
       </div>
     </section>

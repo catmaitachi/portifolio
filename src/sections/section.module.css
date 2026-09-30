@@ -28,6 +28,8 @@
   /* o menu de seções da direita saiu, e a reserva de 150px de cada lado com ele */
   --px: max(96px, 6vw);
   --gap: clamp(16px, 2.4vmin, 28px);
+  /* entre as partes de um bloco; o molde de espera (EstadoRemoto) usa o mesmo */
+  --bloco-gap: clamp(18px, 3vmin, 34px);
   /* token e não valor solto: o retrato do Sobre no mobile mede o título para
      acertar a própria altura na régua das linhas */
   --titulo-fs: clamp(22px, 4.6vmin, 52px);
@@ -65,7 +67,7 @@
   display: flex;
   flex: none;
   flex-direction: column;
-  gap: clamp(18px, 3vmin, 34px);
+  gap: var(--bloco-gap);
   width: 100%;
   /**
    * Entra da profundidade quando a seção vira a ativa: pequeno, fora de foco e

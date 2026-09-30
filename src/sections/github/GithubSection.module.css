@@ -362,6 +362,22 @@
   animation: chega 0.6s var(--ease-entrada) calc(0.6s + var(--ordem) * 0.06s) backwards;
 }
 
+/* o molde de espera (EstadoRemoto): a grade de dias do céu e o lugar da nuvem */
+.ceuMolde {
+  display: block;
+  aspect-ratio: 53 / 8;
+  background: radial-gradient(circle, var(--linha-forte) 1px, transparent 1.5px) 0 0 / calc(100% / 53)
+    calc(100% / 8);
+}
+
+.nuvemMolde {
+  display: block;
+  width: var(--gh-nuvem);
+  aspect-ratio: 1;
+  border: 1px solid var(--linha-sutil);
+  border-radius: 50%;
+}
+
 @media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .secao {
     --gh-nuvem: min(340px, 86vw);
@@ -372,7 +388,8 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .nuvem {
+  .nuvem,
+  .nuvemMolde {
     justify-self: center;
   }
 

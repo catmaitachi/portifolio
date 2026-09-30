@@ -2,12 +2,12 @@ import { PROJETOS } from '~/content';
 import type { Projetos } from '~/data/types';
 import { useRemoto } from '~/hooks/useRemoto';
 import { useT } from '~/i18n/useLanguage';
-import { EstadoRemoto } from '../EstadoRemoto';
+import { EstadoRemoto, type SemDado } from '../EstadoRemoto';
 import { PerfilExterno } from '../PerfilExterno';
 import comum from '../section.module.css';
 import type { SectionProps } from '../types';
 import styles from './ProjectsSection.module.css';
-import { Projeto } from './Projeto';
+import { Projeto, ProjetoMolde } from './Projeto';
 
 /** A escolha vai inteira no endereço, e é ele a chave do cache da borda. */
 const CAMINHO = `api/github?repos=${encodeURIComponent(PROJETOS.join(','))}`;
@@ -25,6 +25,21 @@ const CAMINHO = `api/github?repos=${encodeURIComponent(PROJETOS.join(','))}`;
  * existia aqui saiu: ela mostrava um projeto por vez e escondia os outros atrás
  * de um giro, e a vitrine mostra todos, cada um com o site.
  */
+/** A vitrine sem o dado: uma linha vazia por projeto escolhido, que já se sabe quantos são. */
+function Molde({ estado, texto, linhas }: { estado: SemDado; texto?: string; linhas: number }) {
+  return (
+    <EstadoRemoto estado={estado} texto={texto}>
+      <ol className={styles.lista}>
+        {Array.from({ length: linhas }, (_, i) => (
+          <li key={i}>
+            <ProjetoMolde indice={i} />
+          </li>
+        ))}
+      </ol>
+    </EstadoRemoto>
+  );
+}
+
 export function ProjectsSection({ ativo, indice }: SectionProps) {
   const t = useT();
   const escolhidos = PROJETOS.length > 0;
@@ -52,12 +67,12 @@ export function ProjectsSection({ ativo, indice }: SectionProps) {
         </div>
 
         {!escolhidos ? (
-          <EstadoRemoto estado="vazio" texto={t.projetos.vazio} />
+          <Molde estado="vazio" texto={t.projetos.vazio} linhas={1} />
         ) : remoto.estado !== 'pronto' ? (
-          <EstadoRemoto estado={remoto.estado} />
+          <Molde estado={remoto.estado} linhas={PROJETOS.length} />
         ) : lista.length === 0 ? (
           // escolhidos, mas nenhum voltou: todos privados, renomeados ou apagados
-          <EstadoRemoto estado="vazio" />
+          <Molde estado="vazio" linhas={1} />
         ) : (
           <ol className={styles.lista}>
             {lista.map((r, i) => (
