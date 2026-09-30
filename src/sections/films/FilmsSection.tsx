@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { format } from '~/content';
 import type { Filme, Filmes } from '~/data/types';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
@@ -13,11 +12,23 @@ import styles from './FilmsSection.module.css';
 
 const MARCAS = 5;
 
-/** Quanto o pôster se afasta do ponteiro, em px: ao lado dele, e não embaixo. */
-const AO_LADO = { x: 110, y: -60 };
-/** O giro máximo, em graus, e quanto da velocidade do ponteiro vira giro. */
-const GIRO_MAX = 14;
-const GIRO_POR_PX = 0.6;
+/** A película anda sozinha para a esquerda, em px/s, e volta a essa velocidade depois de um empurrão. */
+const VELOCIDADE = 28;
+/** Quanto do empurrão (roda, arraste) fica a cada segundo: a velocidade volta à base aos poucos. */
+const RETORNO = 3.2;
+/** A inclinação máxima dos quadros, em graus, e quantos px/s viram um grau. */
+const INCLINA_MAX = 8;
+const PX_POR_GRAU = 90;
+/** A roda do mouse sobre a película vira velocidade; a página continua rolando. */
+const RODA = 0.9;
+/** O passo dos furos da película, em px (o desenho deles está no CSS). */
+const FURO = 22;
+/** Quanto tempo a legenda leva para se decifrar, em ms. */
+const DECIFRA_MS = 420;
+/** Só ASCII técnico: a fonte da página não tem outros glifos (ver `entradas.md`). */
+const SINAIS = '01<>/_#*+=:';
+
+const limitar = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
 type Aba = 'favoritos' | 'recentes';
 
@@ -48,127 +59,245 @@ function Nota({ nota }: { nota: number }) {
 }
 
 /**
- * O pôster que acompanha o ponteiro pela lista, inclinado pela velocidade dele.
+ * O título na legenda, decifrado da esquerda para a direita como a bio.
  *
- * A posição é escrita **direto no `style`** num rAF, como a inclinação do
- * retrato: um `setState` por `pointermove` re-renderizaria a lista inteira. O
- * laço só existe enquanto há um pôster à vista; sem ele, nenhum quadro roda.
- * Sem hover (toque) ele não aparece, e cada linha mostra o pôster pequeno.
+ * A `key` de quem o usa é o filme: cada troca monta um nó novo, e o efeito
+ * escreve direto no `textContent` dele sem disputar o texto com o React. O último
+ * quadro escreve o título exato, que é o mesmo que o React pôs ali.
  */
-function PosterFlutuante({
-  poster,
-  ponteiro,
-}: {
-  poster: string | null;
-  ponteiro: React.RefObject<{ x: number; y: number }>;
-}) {
+function TituloDecifrado({ texto }: { texto: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   const reduzido = useReducedMotion();
-  const visivel = Boolean(poster);
 
   useEffect(() => {
     const el = ref.current;
-    if (!visivel || !el) return;
-    let antes = ponteiro.current.x;
-    let giro = 0;
+    if (reduzido || !el) return;
+    const inicio = performance.now();
     let quadro = 0;
-    const passo = () => {
-      const { x, y } = ponteiro.current;
-      // o giro segue a velocidade do ponteiro e volta a zero quando ele para
-      const vx = x - antes;
-      antes = x;
-      giro += (Math.max(-GIRO_MAX, Math.min(GIRO_MAX, vx * GIRO_POR_PX)) - giro) * 0.12;
-      const r = reduzido ? 0 : giro;
-      el.style.transform = `translate(${x + AO_LADO.x}px, ${y + AO_LADO.y}px) translate(-50%, -50%) rotate(${r}deg)`;
-      quadro = requestAnimationFrame(passo);
+    const passo = (agora: number) => {
+      const k = (agora - inicio) / DECIFRA_MS;
+      el.textContent = [...texto]
+        .map((c, i) => (c === ' ' || k * texto.length > i ? c : SINAIS[(Math.random() * SINAIS.length) | 0]))
+        .join('');
+      if (k < 1) quadro = requestAnimationFrame(passo);
     };
-    passo();
-    return () => cancelAnimationFrame(quadro);
-  }, [visivel, reduzido, ponteiro]);
+    quadro = requestAnimationFrame(passo);
+    return () => {
+      cancelAnimationFrame(quadro);
+      el.textContent = texto;
+    };
+  }, [texto, reduzido]);
 
-  // no `body`: as telas se movem por `transform`, e um `position: fixed` dentro
-  // delas passaria a medir a tela, e não a janela
-  return createPortal(
-    <span ref={ref} className={styles.flutuante} data-visivel={visivel || undefined} aria-hidden="true">
-      {poster ? <img src={poster} alt="" /> : null}
-    </span>,
-    document.body,
+  return (
+    <span ref={ref} className={styles.legendaTitulo}>
+      {texto}
+    </span>
   );
 }
 
 /**
- * Uma lista de filmes, como créditos: o título em contorno gigante, que se enche
- * ao ser apontado.
+ * A película: os pôsteres numa tira de filme que corre devagar para a esquerda.
  *
- * À esquerda fica o que distingue um filme do outro **naquela lista**: nos
- * favoritos a posição, que é a única coisa que a lista afirma (a nota ali é
- * sempre cinco); nos recentes, o dia em que foi visto. À direita, o ano e, nos
- * recentes, a nota. **Sem nota é diferente de nota zero**: quem marcou como
- * visto sem avaliar recebe o rótulo, e não cinco marcas vazias.
+ * - **A velocidade é o gesto.** A roda do mouse sobre a tira e o arraste entram
+ *   como velocidade, que volta à base aos poucos, e a velocidade inclina os
+ *   quadros (o ScrollVelocity da React Bits, sem a mola do motion). A roda **não**
+ *   é engolida: a página continua rolando, e a tira só sente o empurrão.
+ * - **Apontar um quadro para a tira**, e a legenda passa a ser dele. Sem ninguém
+ *   apontando, a legenda é do quadro no centro, e troca quando ele passa.
+ * - **A lista vem duas vezes**, para a tira dar a volta sem emenda; a segunda
+ *   cópia é desenho (`aria-hidden`, fora da tabulação).
+ * - O rAF escreve direto no `style` (`transform` e `--furos`), e só roda com a
+ *   seção em cena. Sem movimento, nada anda: a tira vira uma faixa que rola de
+ *   lado, e a legenda segue o ponteiro e o foco.
  */
-function Creditos({
-  filmes,
-  aba,
-  apontar,
-  ponteiro,
-}: {
-  filmes: Filme[];
-  aba: Aba;
-  apontar: (poster: string | null) => void;
-  ponteiro: React.RefObject<{ x: number; y: number }>;
-}) {
+function Pelicula({ filmes, aba, ativo }: { filmes: Filme[]; aba: Aba; ativo: boolean }) {
   const { t, lang } = useLanguage();
+  const reduzido = useReducedMotion();
+  const faixa = useRef<HTMLDivElement>(null);
+  const trilho = useRef<HTMLOListElement>(null);
+  const [foco, setFoco] = useState(0);
+  const mov = useRef({ x: 0, v: 0, parado: false, foco: 0, passo: 1, arraste: null as { x: number; andou: boolean } | null });
+
   // um formatador por idioma, e não um por render
   const dia = useMemo(
     () => new Intl.DateTimeFormat(lang, { day: '2-digit', month: '2-digit', timeZone: 'UTC' }),
     [lang],
   );
   const ranqueada = aba === 'favoritos';
+  const copias = reduzido ? [0] : [0, 1];
+
+  const focar = (i: number) => {
+    mov.current.foco = i;
+    setFoco(i);
+  };
+
+  // a largura de um quadro mais o vão: medida quando muda, e não a cada quadro
+  useEffect(() => {
+    const tri = trilho.current;
+    if (!tri) return;
+    const medir = () => {
+      const q = tri.firstElementChild as HTMLElement | null;
+      if (q) mov.current.passo = q.offsetWidth + parseFloat(getComputedStyle(tri).columnGap || '0');
+    };
+    medir();
+    const obs = new ResizeObserver(medir);
+    obs.observe(tri);
+    return () => obs.disconnect();
+  }, [filmes.length]);
+
+  useEffect(() => {
+    const tri = trilho.current;
+    const fx = faixa.current;
+    if (!ativo || reduzido || !tri || !fx) return;
+    const m = mov.current;
+    let antes = performance.now();
+    let quadro = 0;
+    const passo = (agora: number) => {
+      const dt = Math.min(0.05, (agora - antes) / 1000);
+      antes = agora;
+      if (!m.arraste) {
+        m.v += ((m.parado ? 0 : -VELOCIDADE) - m.v) * Math.min(1, dt * RETORNO);
+        m.x += m.v * dt;
+      }
+      // a volta tem o comprimento de uma cópia: passando dela, a outra está no mesmo lugar
+      const volta = m.passo * filmes.length;
+      m.x = (((m.x % volta) + volta) % volta) - volta;
+      const inclina = limitar(m.v / PX_POR_GRAU, -INCLINA_MAX, INCLINA_MAX);
+      tri.style.transform = `translate3d(${m.x.toFixed(1)}px, 0, 0) skewX(${inclina.toFixed(2)}deg)`;
+      fx.style.setProperty('--furos', `${(m.x % FURO).toFixed(1)}px`);
+      if (!m.parado) {
+        const i = Math.floor((fx.clientWidth / 2 - m.x) / m.passo) % filmes.length;
+        if (i !== m.foco) {
+          m.foco = i;
+          setFoco(i);
+        }
+      }
+      quadro = requestAnimationFrame(passo);
+    };
+    quadro = requestAnimationFrame(passo);
+
+    const roda = (e: WheelEvent) => {
+      m.v -= (e.deltaY + e.deltaX) * RODA;
+    };
+    fx.addEventListener('wheel', roda, { passive: true });
+    return () => {
+      cancelAnimationFrame(quadro);
+      fx.removeEventListener('wheel', roda);
+    };
+  }, [ativo, reduzido, filmes.length]);
+
+  const filme = filmes[foco] ?? filmes[0];
 
   return (
-    <ol className={styles.lista} onPointerLeave={() => apontar(null)}>
-      {filmes.map((f, i) => (
-        <li key={f.id} style={{ '--ordem': Math.min(i, 12) } as React.CSSProperties}>
-          <a
-            className={styles.linha}
-            href={f.url}
-            target="_blank"
-            rel="noreferrer"
-            onPointerEnter={(e) => {
-              if (e.pointerType !== 'mouse') return;
-              // o pôster nasce onde o ponteiro entrou, e não onde o último saiu
-              ponteiro.current = { x: e.clientX, y: e.clientY };
-              apontar(f.poster);
-            }}
-          >
-            {ranqueada ? (
-              <span className={styles.marcador} aria-label={format(t.filmes.posicao, { n: String(i + 1) })}>
-                {String(i + 1).padStart(2, '0')}
-              </span>
-            ) : (
-              <span className={styles.marcador}>
-                {f.assistidoEm ? dia.format(new Date(f.assistidoEm)) : null}
-              </span>
-            )}
+    <div className={styles.pelicula}>
+      <div
+        ref={faixa}
+        className={styles.faixa}
+        onPointerDown={(e) => {
+          if (reduzido) return;
+          mov.current.arraste = { x: e.clientX, andou: false };
+        }}
+        onPointerMove={(e) => {
+          const a = mov.current.arraste;
+          if (!a) return;
+          const dx = e.clientX - a.x;
+          if (!a.andou && Math.abs(dx) < 4) return;
+          if (!a.andou) e.currentTarget.setPointerCapture(e.pointerId);
+          a.andou = true;
+          a.x = e.clientX;
+          mov.current.x += dx;
+          mov.current.v = dx * 60;
+        }}
+        onPointerUp={() => {
+          // o clique que fecha um arraste não abre o filme
+          const a = mov.current.arraste;
+          setTimeout(() => {
+            if (mov.current.arraste === a) mov.current.arraste = null;
+          });
+        }}
+        onPointerCancel={() => {
+          // o toque virou rolagem da página: o arraste acaba aqui
+          mov.current.arraste = null;
+        }}
+        onPointerLeave={() => {
+          mov.current.parado = false;
+        }}
+      >
+        <ol ref={trilho} className={styles.trilho}>
+          {copias.flatMap((c) =>
+            filmes.map((f, i) => (
+              <li key={`${c}-${f.id}`} data-foco={i === foco || undefined} aria-hidden={c ? true : undefined}>
+                <a
+                  className={styles.quadro}
+                  href={f.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  tabIndex={c ? -1 : undefined}
+                  draggable={false}
+                  aria-label={
+                    ranqueada
+                      ? `${format(t.filmes.posicao, { n: String(i + 1) })}: ${f.titulo} (${f.ano})`
+                      : `${f.titulo} (${f.ano})`
+                  }
+                  onPointerEnter={(e) => {
+                    if (e.pointerType !== 'mouse') return;
+                    mov.current.parado = true;
+                    focar(i);
+                  }}
+                  onFocus={() => {
+                    // o foco do teclado traz o quadro para o meio, para ele não passar fora de vista
+                    const m = mov.current;
+                    m.parado = true;
+                    if (!reduzido && faixa.current) {
+                      faixa.current.scrollLeft = 0;
+                      m.x = faixa.current.clientWidth / 2 - (i + 0.5) * m.passo;
+                    }
+                    focar(i);
+                  }}
+                  onBlur={() => {
+                    mov.current.parado = false;
+                  }}
+                  onClick={(e) => {
+                    if (mov.current.arraste?.andou) e.preventDefault();
+                  }}
+                >
+                  {f.poster ? (
+                    <img
+                      src={f.poster}
+                      alt=""
+                      loading="lazy"
+                      draggable={false}
+                      onError={(e) => {
+                        e.currentTarget.hidden = true;
+                      }}
+                    />
+                  ) : (
+                    <span className={styles.semPoster}>{f.titulo}</span>
+                  )}
+                </a>
+              </li>
+            )),
+          )}
+        </ol>
+      </div>
 
-            {/* sem hover, o pôster mora na linha; com hover, ele segue o ponteiro */}
-            {f.poster ? <img className={styles.miniatura} src={f.poster} alt="" loading="lazy" /> : null}
-
-            <span className={styles.titulo}>{f.titulo}</span>
-
-            <span className={styles.lado}>
-              <span className={styles.ano}>{f.ano}</span>
-              {f.revisita && <span className={styles.revisita}>{t.filmes.revisita}</span>}
-              {ranqueada ? null : f.nota === null ? (
-                <span className={styles.semNota}>{t.filmes.semNota}</span>
-              ) : (
-                <Nota nota={f.nota} />
-              )}
-            </span>
-          </a>
-        </li>
-      ))}
-    </ol>
+      {/* a legenda do quadro em foco; não é `aria-live`: ela troca sozinha a cada poucos segundos */}
+      <p className={styles.legenda}>
+        <span className={styles.legendaMeta}>
+          <span>
+            {ranqueada
+              ? `${String(foco + 1).padStart(2, '0')}º`
+              : filme.assistidoEm
+                ? dia.format(new Date(filme.assistidoEm))
+                : null}
+          </span>
+          <span>{filme.ano}</span>
+          {filme.revisita && <span>{t.filmes.revisita}</span>}
+          {ranqueada ? null : filme.nota === null ? <span>{t.filmes.semNota}</span> : <Nota nota={filme.nota} />}
+        </span>
+        <TituloDecifrado key={filme.id} texto={filme.titulo} />
+      </p>
+    </div>
   );
 }
 
@@ -188,7 +317,6 @@ export function FilmsSection({ ativo, indice }: SectionProps) {
   const t = useT();
   const filmes = useRemoto<Filmes>('api/letterboxd', ativo);
   const [escolhida, setEscolhida] = useState<Aba>('favoritos');
-  const [poster, setPoster] = useState<string | null>(null);
 
   const favoritos = filmes.dados?.favoritos ?? [];
   const recentes = filmes.dados?.recentes ?? [];
@@ -197,18 +325,8 @@ export function FilmsSection({ ativo, indice }: SectionProps) {
   );
   const aba = abas.includes(escolhida) ? escolhida : abas[0];
 
-  const apontar = useCallback((p: string | null) => setPoster(p), []);
-  // onde o ponteiro está, para o pôster; um ref, e não estado: muda a cada quadro
-  const ponteiro = useRef({ x: 0, y: 0 });
-
   return (
-    <section
-      className={`${comum.secao} ${comum.rolavel} ${styles.secao}`}
-      aria-label={t.nav.filmes}
-      onPointerMove={(e) => {
-        ponteiro.current = { x: e.clientX, y: e.clientY };
-      }}
-    >
+    <section className={`${comum.secao} ${comum.rolavel} ${styles.secao}`} aria-label={t.nav.filmes}>
       <div className={`${comum.bloco} ${styles.bloco}`} data-ativo={ativo || undefined}>
         <p className={comum.indice}>
           <span>{indice}</span>
@@ -228,7 +346,7 @@ export function FilmsSection({ ativo, indice }: SectionProps) {
         ) : !aba ? (
           <EstadoRemoto estado="vazio" />
         ) : (
-          <div className={styles.creditos}>
+          <div className={styles.conteudo}>
             {/* com uma lista só não há o que escolher: o nome dela vira o rótulo */}
             <div className={styles.abas} role={abas.length > 1 ? 'group' : undefined}>
               {abas.map((a) =>
@@ -250,19 +368,16 @@ export function FilmsSection({ ativo, indice }: SectionProps) {
               )}
             </div>
 
-            {/* a `key` refaz a lista ao trocar de aba, e a cascata de entrada corre de novo */}
-            <Creditos
+            {/* a `key` refaz a película ao trocar de aba: ela volta ao começo e chega de novo */}
+            <Pelicula
               key={aba}
               filmes={aba === 'favoritos' ? favoritos : recentes}
               aba={aba}
-              apontar={apontar}
-              ponteiro={ponteiro}
+              ativo={ativo}
             />
           </div>
         )}
       </div>
-
-      <PosterFlutuante poster={ativo ? poster : null} ponteiro={ponteiro} />
     </section>
   );
 }

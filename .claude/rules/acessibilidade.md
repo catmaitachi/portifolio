@@ -5,10 +5,9 @@ paths:
 
 ## Acessibilidade
 
-- `aria-label` no nav, no gatilho do menu de opções (`opcoes.abrir`), na régua de qualidade, na
-  órbita da Carreira e no grupo de canais — todos vindos de `a11y` no dicionário. **Textos de a11y também passam pelo i18n**,
+- `aria-label` no nav, no gatilho do menu de opções (`opcoes.abrir`), na régua de qualidade e no grupo de canais — todos vindos de `a11y` no dicionário. **Textos de a11y também passam pelo i18n**,
   nunca literais no componente.
-- `aria-current` no item de seção ativo e no corpo escolhido da órbita.
+- `aria-current` no item de seção ativo.
 - Fichas de carreira inativas ficam `inert`: um leitor de tela não deve encontrar quatro empregos
   empilhados no mesmo lugar.
 - Tabular para um controle que o visitante não consegue ver é perder o foco no meio da tela: o que
@@ -25,11 +24,13 @@ paths:
 - **Os passos ficam `disabled` nas pontas e no lugar, nunca escondidos**, em Jogos e na Carreira:
   um botão que deixa de existir enquanto está focado joga o foco no `body` no meio do gesto. Com um
   item só não há passo nenhum.
-- **A órbita da Carreira é um `role="group"`** com `a11y.experiencia` como nome, e cada corpo é um
-  botão com o cargo, a empresa e o período no `aria-label`; o escolhido leva `aria-current`. O foco
-  num corpo segura a órbita, para o alvo não andar enquanto está focado.
-- **O pôster que segue o cursor em Filmes é desenho** (`aria-hidden`, num portal): o título é o link,
-  e o que distingue cada filme (a posição, o dia, a nota) está escrito na linha.
+- **O maço de crachás da Carreira é desenho** (`aria-hidden`), como o deque de Jogos: a ficha ao lado
+  diz o cargo, a empresa, o tipo, o período, o texto e a stack, e trocar é pelas setas ←/→ ou pelos
+  passos. As cartas são botões fora da tabulação, só para o mouse.
+- **A película de Filmes**: cada quadro é um link com o título, o ano e, nos favoritos, a posição no
+  `aria-label`; a segunda cópia da lista (a que fecha a volta) é `aria-hidden` e fora da tabulação. A
+  legenda não é `aria-live`, porque troca sozinha a cada poucos segundos, e o foco do teclado traz o
+  quadro focado para o meio da tira.
 - **O nome da instituição de cada formação é o nome acessível do logo** (`role="img"` com
   `aria-label`, que é o alt de uma imagem de fundo). Os logos já trazem o nome desenhado, e o texto
   repetido embaixo deles saiu da tela; sem logo, ele volta a ser escrito.

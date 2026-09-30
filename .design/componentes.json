@@ -1,0 +1,64 @@
+{
+  "feitos": [
+    {
+      "nome": "filmes",
+      "arquivo": "src/sections/films/FilmsSection.tsx",
+      "escolha": "filmes-B (Película)",
+      "referencias": [
+        {
+          "site": "reactbits",
+          "componente": "ScrollVelocity",
+          "url": "https://reactbits.dev/text-animations/scroll-velocity",
+          "tomei": "velocidade da rolagem somada à base e mapeada em distorção dos itens",
+          "mudei": "sem motion: decaimento num rAF; a roda não é engolida, a página continua rolando; a distorção é skew de até 8°"
+        },
+        {
+          "site": "magicui",
+          "componente": "marquee",
+          "url": "https://magicui.design/docs/components/marquee",
+          "tomei": "a lista duplicada que dá a volta sem emenda",
+          "mudei": "a segunda cópia é aria-hidden e fora da tabulação; furos de película desenhados em 1px andando junto"
+        },
+        {
+          "site": "motionprimitives",
+          "componente": "text-scramble",
+          "url": "https://motion-primitives.com/docs/text-scramble",
+          "tomei": "letras que embaralham e assentam da esquerda",
+          "mudei": "o alfabeto ASCII da bio e o nó recriado por filme (key), como o useDecipher"
+        }
+      ],
+      "ajustes": []
+    },
+    {
+      "nome": "carreira",
+      "arquivo": "src/sections/journey/Cracha.tsx",
+      "escolha": "carreira-M (Maço + lateral), depois de três refazer",
+      "referencias": [
+        {
+          "site": "reactbits",
+          "componente": "Lanyard",
+          "url": "https://reactbits.dev/components/lanyard",
+          "tomei": "crachá pendurado numa fita com inércia",
+          "mudei": "sem three/rapier: um pêndulo 2D (rotate) cujo rAF só existe enquanto balança; a velocidade torce o cartão em Y; fita impressa com o nome"
+        },
+        {
+          "site": "reactbits",
+          "componente": "Stack",
+          "url": "https://reactbits.dev/components/stack",
+          "tomei": "pilha em que o cartão de trás vem para a frente",
+          "mudei": "todos no mesmo cordão, os de trás com o período numa orelha; navegação não circular"
+        }
+      ],
+      "ajustes": [
+        "achei com pouca personalidade (terminal, índice e constelação recusados)",
+        "variações do crachá pensando em n entradas",
+        "misturar o texto na lateral do crachá sozinho com o maço de crachás"
+      ]
+    }
+  ],
+  "baseado_em": {
+    "conceito": 1,
+    "direcao": 1
+  },
+  "revisao": 1
+}

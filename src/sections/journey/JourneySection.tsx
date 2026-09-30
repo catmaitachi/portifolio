@@ -5,7 +5,7 @@ import comum from '../section.module.css';
 import type { SectionProps } from '../types';
 import { JourneyEntry } from './JourneyEntry';
 import styles from './JourneySection.module.css';
-import { Orbita } from './Orbita';
+import { Maco } from './Cracha';
 
 /**
  * Carreira: cada experiência é um corpo numa órbita, e a ficha do escolhido ao
@@ -51,8 +51,16 @@ export function JourneySection({ ativo, indice }: SectionProps) {
         </div>
 
         <div className={styles.cena}>
+          <Maco lista={lista} ativa={ativa} escolher={setEscolhida} ativo={ativo} />
+
           <div className={styles.lado}>
-            <Orbita lista={lista} ativa={ativa} escolher={setEscolhida} ativo={ativo} />
+            {/* as fichas se empilham na mesma célula: o palco tem a altura da maior, e
+                trocar de experiência não o faz pular */}
+            <div className={styles.palco}>
+              {lista.map((e, i) => (
+                <JourneyEntry key={e.key} entrada={e} indice={i} total={lista.length} ativa={i === ativa} />
+              ))}
+            </div>
 
             {/* com um evento só não há para onde andar, e as duas setas ficariam
                 apagadas para sempre: é a regra da faixa que coube inteira */}
@@ -67,7 +75,6 @@ export function JourneySection({ ativo, indice }: SectionProps) {
                 >
                   <span className={comum.ponta} data-lado="antes" aria-hidden="true" />
                 </button>
-                {/* qual é, de quantas: morava no centro da órbita, onde hoje fica a marca */}
                 <span className={styles.contagem}>
                   <b>{String(ativa + 1).padStart(2, '0')}</b> / {String(lista.length).padStart(2, '0')}
                 </span>
@@ -82,14 +89,6 @@ export function JourneySection({ ativo, indice }: SectionProps) {
                 </button>
               </div>
             ) : null}
-          </div>
-
-          {/* as fichas se empilham na mesma célula: o palco tem a altura da maior, e
-              trocar de experiência não o faz pular */}
-          <div className={styles.palco}>
-            {lista.map((e, i) => (
-              <JourneyEntry key={e.key} entrada={e} indice={i} ativa={i === ativa} />
-            ))}
           </div>
         </div>
       </div>

@@ -8,6 +8,7 @@ const MAX_STACK = 5;
 interface JourneyEntryProps {
   entrada: Experiencia;
   indice: number;
+  total: number;
   ativa: boolean;
 }
 
@@ -36,18 +37,20 @@ interface JourneyEntryProps {
  * tela não deve encontrar quatro empregos empilhados no mesmo lugar, e o link de
  * uma ficha escondida não entra na tabulação.
  */
-export function JourneyEntry({ entrada, indice, ativa }: JourneyEntryProps) {
+export function JourneyEntry({ entrada, indice, total, ativa }: JourneyEntryProps) {
   const t = useT();
   const stack = entrada.stack.slice(0, MAX_STACK);
   const endereco = urlExterna(entrada.url);
 
   return (
     <article className={styles.ficha} data-ativa={ativa || undefined} inert={!ativa}>
-      <div className={styles.trilho}>
-        <span className={styles.indice}>{String(indice + 1).padStart(2, '0')}</span>
-        <span className={styles.risco} aria-hidden="true" />
-        <span className={styles.tipo}>{t.experiencia.tipos[entrada.tipo]}</span>
-      </div>
+      <p className={styles.linha}>
+        <b>{String(indice + 1).padStart(2, '0')}</b> / {String(total).padStart(2, '0')}
+        <span>·</span>
+        {t.experiencia.tipos[entrada.tipo]}
+        <span>·</span>
+        {t.experiencia.cracha.desde} {entrada.periodo}
+      </p>
 
       <div className={styles.conteudo}>
         <div className={styles.cabecalho}>

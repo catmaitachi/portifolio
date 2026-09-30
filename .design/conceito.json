@@ -1,0 +1,82 @@
+{
+  "projeto": "portifolio",
+  "stack": "React 19 + TypeScript + Vite, CSS Modules, canvas 2D próprio (sem gsap/three/motion)",
+  "proposito": "site pessoal de um dev: quem é, do que gosta e o que já fez, contado com cuidado de detalhe",
+  "publico": "recrutadores e times de produto numa primeira visita, e quem chega pelos perfis (Spotify, Steam, Letterboxd, GitHub)",
+  "design_existente": {
+    "situacao": "manter",
+    "onde": [
+      "src/styles/reset.css (tokens)",
+      "src/sections/section.module.css",
+      ".claude/rules/direcao-visual.md"
+    ],
+    "resumo": "cena espacial em canvas, preto profundo, estritamente monocromático, HUD sci-fi com linhas de 1px e IBM Plex Mono 300/400, cantos chanfrados (sup-esq e inf-dir), física Travelling: tudo chega da profundidade",
+    "o_que_fica": [
+      "paleta monocromática (só capas/pôsteres de terceiros em cor)",
+      "IBM Plex Mono",
+      "linhas de 1px e tracejados",
+      "chanfro nos cantos opostos",
+      "entrada pela profundidade, nunca deslizando",
+      "tokens de reset.css",
+      "sem textura por cima da página"
+    ]
+  },
+  "escopo": [
+    "filmes",
+    "carreira",
+    "estados de espera e vazio das seções remotas"
+  ],
+  "tom": [
+    {
+      "sim": "sóbrio",
+      "nao": "chamativo"
+    },
+    {
+      "sim": "técnico",
+      "nao": "frio"
+    },
+    {
+      "sim": "cinematográfico",
+      "nao": "enfeitado"
+    }
+  ],
+  "prioridades": [
+    {
+      "nome": "legibilidade e acessibilidade",
+      "contra": "efeito",
+      "escolha": "legibilidade",
+      "porque": "piso, não se negocia abaixo de AA"
+    },
+    {
+      "nome": "personalidade",
+      "contra": "familiaridade",
+      "escolha": "personalidade",
+      "porque": "o site é o produto"
+    },
+    {
+      "nome": "movimento",
+      "contra": "desempenho",
+      "escolha": "desempenho",
+      "porque": "o motor de cena já consome o orçamento de quadro; reduced-motion sempre"
+    },
+    {
+      "nome": "respiro",
+      "contra": "densidade",
+      "escolha": "respiro",
+      "porque": "tudo sutil; intensidades sempre para baixo"
+    }
+  ],
+  "impacto": "cinematografico",
+  "restricoes": [
+    "sem dependência nova de animação (gsap, three, motion)",
+    "sem cor além de identidade de terceiro",
+    "sem grão ou textura",
+    "clarão de tela cheia fraco e único"
+  ],
+  "fora_de_escopo": [
+    "blog",
+    "área logada"
+  ],
+  "baseado_em": {},
+  "revisao": 1
+}

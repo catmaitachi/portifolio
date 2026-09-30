@@ -291,6 +291,8 @@ export interface Dictionary {
     intro: string;
     /** `Record` total: uma categoria nova quebra o build até ter nome nos dois idiomas */
     tipos: Record<TipoExperiencia, string>;
+    /** o rótulo do crachá e a palavra antes do período, na ficha */
+    cracha: { acesso: string; desde: string };
     janela: { anterior: string; posterior: string };
     lista: Experiencia[];
   };
@@ -348,7 +350,6 @@ export interface Dictionary {
     secoes: string;
     /** o nome acessível da foto do site; aceita `{nome}` */
     previa: string;
-    experiencia: string;
     canais: string;
     retrato: string;
     /** o canal que ainda não tem endereço; aceita `{rede}` */

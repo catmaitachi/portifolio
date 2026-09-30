@@ -139,49 +139,43 @@ lista foi refeita com esse critério e ficou só com o que é contribuição rea
 monitorias e participações em evento saíram, porque não passavam a credibilidade que a seção existe
 para passar.
 
-**Órbita + ficha.** Cada experiência é um corpo numa órbita vista de lado (`Orbita`), e a ficha do
-escolhido fica ao lado; no celular a órbita vai para cima. Escolhida numa rodada da skill
-`inspiration` (a direção Profundidade, com o pedido de a órbita girar de verdade e os corpos ficarem
-na linha); antes era a curva em onda com uma janela deslizante (ver *A curva saiu*).
+**Maço de crachás + ficha.** Cada experiência é um crachá, e todos pendem do mesmo cordão, um atrás
+do outro (`Maco`, em `Cracha.tsx`); a ficha da escolhida fica ao lado, e no celular o maço vai para
+cima. Escolhido numa rodada da skill `inspiration` (30/09/2026), depois de três refazer: a primeira
+leva (terminal, índice e constelação) foi achada com pouca personalidade, a segunda trouxe o crachá
+sozinho, e a escolhida é a mistura que o Lucas pediu, **o maço de uma variação com a lateral de
+texto do crachá sozinho**. Antes era a órbita (ver *A órbita saiu*).
 
-- **A órbita gira de verdade**, uma volta por minuto (`PERIODO`), e os corpos andam sobre a linha.
-  Os de trás são menores e mais apagados e passam por trás dos da frente (`--z`, a profundidade, de
-  0 em cima a 1 embaixo, decide tamanho, brilho e `z-index`). A metade de trás do anel é mais
-  apagada que a da frente, e é isso que dá o lado de cá a uma elipse.
-- **O desenho e os corpos saem da mesma conta** (`orbitaGeometria.ts`, matemática pura). O anel é
-  uma elipse num `viewBox` de 1000×560, o contêiner tem exatamente essa proporção
-  (`aspect-ratio`), e cada corpo vai para `ponto(ângulo)`, que é a equação da mesma elipse: o centro
-  dele cai sobre a linha com erro de 0px por construção (conferido no navegador: a equação dá
-  1,0002 no centro medido). A primeira versão, na vitrine, inclinava um círculo de CSS em `rotateX`
-  e posicionava os corpos por uma elipse calculada à parte, e os dois não coincidiam: foi isso que o
-  Lucas apontou como "não está orbitando certo".
-- **Escolher traz o corpo para a frente pelo caminho da órbita**, sempre no sentido do giro
-  (`faseParaFrente`), em 1,2s, e daí ele segue girando. Andar para trás leria como a órbita voltando
-  no tempo.
-- **O ponteiro sobre a órbita, ou o foco num corpo, a segura**: um alvo que anda embaixo do cursor é
-  difícil de acertar. Fora de cena, ou com `prefers-reduced-motion`, nenhum quadro roda e a
-  escolhida fica na frente.
-- O rAF escreve **direto no `style`** de cada corpo, como a inclinação do retrato. A posição inicial
-  é pintada num `useLayoutEffect`, antes da primeira pintura; ler a ref da fase durante o render para
-  pôr no `style` seria ler ref no render (ver `react.md`).
-- **Os corpos são botões** de 38px, com o cargo, a empresa e o período no `aria-label`; o escolhido
-  leva `aria-current` e o anel do nó ativo, que respira devagar. O rótulo embaixo de cada um é o
-  período (**ano.mês**) e o tipo. **No centro fica a marca da escolhida**, pintada por máscara (o
-  arquivo pode ser o logo colorido; o que chega à tela é a silhueta, em `--tx-apoio`), trocando da profundidade quando a escolha muda; sem marca, o nome da
-  organização. O centro já mostrou qual é e de quantos (`01 / 03`), e no meio do desenho aquilo lia
-  como placar: a contagem foi para **entre os passos**, e some com eles quando há uma experiência só.
-- Navegação: clicar num corpo, as setas ←/→ (sem foco, enquanto a seção está ativa) ou os passos de
-  38px embaixo da órbita (`.passo`, em `section.module.css`, o mesmo de Jogos), que apagam nas pontas.
-  **A navegação não é circular**, mesmo com a órbita dando voltas: as pontas da lista são pontas.
-- **Com um evento só, os passos não aparecem**, pela regra de sempre, e a órbita gira com o corpo
-  sozinho.
+- **O crachá da frente é a escolhida**, em cor cheia; os de trás recuam 16px cada, encolhem e
+  apagam, e mostram o **período numa orelha** embaixo do da frente. Clicar numa orelha traz aquele à
+  frente. Cinco ficam à vista (`VISIVEIS`), e o resto se esconde atrás deles; a ordem dá a volta, mas
+  **a navegação não é circular**: as pontas da lista são pontas.
+- **O cordão é um pêndulo** (`usePendulo`): um chute soma velocidade, a gravidade puxa para o meio e o
+  atrito segura. Ele chega balançando quando a seção entra, balança de novo a cada troca, e arrastar
+  de lado o empurra (`touch-action: pan-y`: o arraste vertical continua rolando a página). O rAF **só
+  existe enquanto ele balança** e escreve direto no `style` (`rotate` e `--torce`, que gira o cartão no
+  próprio eixo pela velocidade, como um crachá de verdade). Com `prefers-reduced-motion`, nada
+  balança.
+- **O cartão diz o que a ficha diz**, em outra gramática: acesso com o tipo, a marca por máscara (a
+  silhueta, como era no centro da órbita; sem marca, a sigla), o cargo, a empresa e o período, e a
+  **stack como código de barras**, seis barras por tecnologia pela conta do nome, com os nomes
+  embaixo. A fita é impressa com o nome (`hero.nome`), como toda fita de crachá, e o brilho segue o
+  ponteiro sobre o da frente, como na carta do retrato.
+- **O maço é desenho** (`aria-hidden`), como as capas do deque de Jogos: quem usa leitor de tela
+  navega pela ficha e pelos passos, e as cartas são botões fora da tabulação.
+- **A ficha abre com uma linha**: qual é, de quantas, o tipo e "desde" o período
+  (`experiencia.cracha.desde`); depois o cargo, a empresa (link quando há `url`), o parágrafo e a
+  stack em chips. O trilho vertical que ela tinha (índice, risco e tipo em pé) saiu: a linha de cima
+  diz o mesmo e o maço já ocupa a coluna da esquerda. A ficha começa na altura do crachá, e não da
+  fita (`--fita-h`).
+- Navegação: clicar numa orelha, as setas ←/→ (sem foco, enquanto a seção está ativa) ou os passos de
+  38px embaixo da ficha, que apagam nas pontas. **Com uma experiência só, os passos não aparecem** e
+  o maço é um crachá.
 
 **As fichas se empilham na mesma célula do palco** (`grid-area: 1 / 1`) e só a escolhida aparece,
 com opacidade e 18px de deslocamento. O palco tem a altura da ficha maior, então trocar não o faz
 pular. Antes a altura era fixa (`--exph`), com as fichas em `position: absolute`, e um texto mais
-longo passava do palco. A ficha é uma grade `--exp-rail 1fr`: no trilho, o índice, um risco em
-degradê e a categoria escrita na vertical (`writing-mode`); no conteúdo, o cargo como título, a
-empresa ou o projeto como subtítulo, um parágrafo de texto e a stack em chips de 1px.
+longo passava do palco.
 
 - **O texto é um parágrafo, e não uma lista.** As três atividades numeradas liam como relatório; um
   `<p>` justificado, como a bio, conta o que o trabalho foi na voz de quem o fez. Ele não repete o nome
@@ -192,9 +186,17 @@ empresa ou o projeto como subtítulo, um parágrafo de texto e a stack em chips 
   `--exp-bloco-gap`): ali o texto corre na largura inteira, e com o espaçamento de desktop cargo,
   subtítulo e parágrafo liam como um bloco só.
 - **A marca da empresa não fica na ficha.** Ela já foi um fundo grande à direita (no celular o texto
-  passava por cima), o pé da ficha (onde um parágrafo longo a reduzia a quase nada) e o canto de cima
-  à direita, ao lado do cargo. Hoje mora no centro da órbita, e as duas juntas repetiam o mesmo logo
-  lado a lado. A data também não: ela mora na órbita, onde organiza alguma coisa.
+  passava por cima), o pé da ficha (onde um parágrafo longo a reduzia a quase nada), o canto de cima
+  à direita, ao lado do cargo, e o centro da órbita. Hoje mora no crachá.
+
+### A órbita saiu
+
+Entre 27 e 30/09/2026 a seção foi uma órbita vista de lado (`Orbita`, `orbitaGeometria`): cada
+experiência um corpo girando sobre a linha de uma elipse, uma volta por minuto, e escolher trazia o
+corpo para a frente pelo caminho da órbita. Saiu pelo maço de crachás. Com ela saíram o
+`a11y.experiencia` (o nome do grupo da órbita) e a regra de a posição inicial ser pintada num
+`useLayoutEffect`. A lição dela continua valendo para qualquer coisa que ande num traço: **o que anda
+num traço é calculado pela mesma conta que desenha o traço**.
 
 ### A curva saiu
 
@@ -284,7 +286,7 @@ o que separa um estado do outro.
 |---|---|---|
 | Música | o que está tocando: capa, faixa, artista e a barra de progresso | as oito mais tocadas numa parede de capas, e os oito mais ouvidos numa fileira de retratos |
 | Jogos | jogando agora, ou o último jogado: a capa da frente do deque, com o painel ao lado | os das duas últimas semanas, atrás dela no deque |
-| Filmes | não tem: todo filme é passado | uma lista escolhida a dedo e os últimos assistidos, em duas abas de créditos |
+| Filmes | não tem: todo filme é passado | uma lista escolhida a dedo e os últimos assistidos, em duas abas de película |
 
 **Música é uma vitrine de capas.** O destaque abre a seção, sem caixa em volta, com a capa grande.
 Embaixo, as oito mais tocadas são uma **parede de capas**, e apontar uma a traz para o foco: as outras
@@ -369,23 +371,44 @@ caminho: uma inclinava cada capa em 3D como uma prateleira vista de esguelha (o 
 fileira parecer prateleira deixava a arte ilegível), e outra era uma pilha que abria no ponto do
 ponteiro.
 
-**Filmes é uma lista de créditos** (`Creditos`). Cada filme é uma linha com o título em contorno
-gigante, que se enche da esquerda ao ser apontado, e **o pôster segue o ponteiro**, ao lado dele,
-inclinado pela velocidade com que ele anda (aceternity/link-preview e animata/reveal-image).
-Escolhida numa rodada da skill `inspiration`, entre a folha de contato e o túnel em profundidade.
+**Filmes é uma película** (`Pelicula`). Os pôsteres correm numa tira de filme, devagar, para a
+esquerda, com os furos desenhados em 1px nas duas bordas, e embaixo fica a legenda do quadro em foco:
+o que distingue o filme naquela lista, o ano, e o título **se decifrando** como a bio. Escolhida numa
+rodada da skill `inspiration` (30/09/2026), entre o obturador (fendas que abrem) e a claquete (um
+pôster grande e o rol de títulos); antes era a lista de créditos (ver *Os créditos saíram*).
 
-- **Duas abas, Favoritos e Vistos por último**, e os favoritos abrem, porque são uma escolha e a
-  escolha diz mais sobre quem escreveu a página. Com uma lista só (sem `LETTERBOXD_LIST`) não há
-  abas: o nome da lista vira o rótulo. Trocar de aba refaz a lista (`key`), e a cascata de entrada
-  corre de novo.
-- À esquerda fica o que distingue um filme do outro **naquela lista**: nos favoritos a posição, e nos
-  recentes o dia em que foi visto (`Intl.DateTimeFormat` no idioma da página, sem texto de
-  dicionário). À direita, o ano, a revisita e, nos recentes, a nota.
-- **O pôster flutuante mora num portal no `body`.** As telas se movem por `transform`, e um
-  `position: fixed` dentro delas passaria a medir a tela, e não a janela. A posição do ponteiro vem
-  de um ref da própria seção (`onPointerMove`), sem `setState`, e o rAF só roda enquanto há um
-  pôster à vista. Ele nasce onde o ponteiro entrou na linha, e não onde o último saiu.
-- **Sem hover (toque), o pôster mora na linha**, pequeno, entre o marcador e o título.
+- **A velocidade é o gesto** (o ScrollVelocity da React Bits, sem a mola do motion): a roda do mouse
+  sobre a tira e o arraste entram como velocidade, que volta à base (28px/s) aos poucos, e a
+  velocidade **inclina os quadros** (até 8°). A roda **não é engolida**: a página continua rolando e a
+  tira só sente o empurrão. No toque, o arraste de lado empurra e o vertical rola a página
+  (`touch-action: pan-y`).
+- **Só o quadro em foco tem cor.** Os outros ficam em cinza e apagados: a cor é do filme da legenda.
+  Sem ninguém apontando, o foco é o quadro no centro, e a legenda troca quando ele passa; apontar um
+  quadro para a tira e a legenda passa a ser dele. O foco do teclado traz o quadro para o meio, para
+  ele não passar fora de vista.
+- **A lista vem duas vezes** para a tira dar a volta sem emenda; a segunda cópia é desenho
+  (`aria-hidden`, fora da tabulação). Cada quadro é um link para o filme, com o título, o ano e, nos
+  favoritos, a posição no `aria-label`.
+- **O rAF só roda com a seção em cena** e escreve direto no `style` (`transform` do trilho e
+  `--furos`, a posição dos furos); a largura do quadro é medida quando muda, e não a cada quadro. A
+  legenda troca por estado, mas só quando o filme em foco muda (a cada poucos segundos), e **não é
+  `aria-live`**: trocando sozinha, ela falaria sem parar.
+- **O título se decifra num nó novo a cada filme** (`key`), e o efeito escreve no `textContent` dele,
+  como a bio: sem a `key`, o React perderia o nó de texto que o efeito substituiu.
+- **Sem movimento, a tira não anda**: vira uma faixa que rola de lado, com uma cópia só, e a legenda
+  segue o ponteiro e o foco.
+- **Duas abas, Favoritos e Vistos por último**, como antes: os favoritos abrem, com uma lista só não
+  há abas, e trocar de aba refaz a película (`key`). Nos favoritos a legenda diz a posição; nos
+  recentes, o dia em que foi visto (`Intl.DateTimeFormat`) e a nota.
+- Sem pôster, o quadro mostra o título dentro da moldura de 1px, que é o espaço reservado de toda
+  imagem da página.
+
+### Os créditos saíram
+
+De 27 a 30/09/2026 Filmes foi uma lista de créditos (`Creditos`): o título em contorno gigante, que se
+enchia ao ser apontado, e o pôster que seguia o ponteiro num portal no `body`, inclinado pela
+velocidade. Saiu pela película, e com ela o portal, a exceção de "gradient text" de
+`FilmsSection.module.css` no `.impeccable/config.json` e os tokens `--marcador-col` e `--credito-fs`.
 
 **A nota do Letterboxd é desenhada, não escrita.** Cinco marcas de 1px preenchidas pela fração cabem
 na régua da página melhor que um glifo de estrela, e a meia estrela fica **exata** em vez de

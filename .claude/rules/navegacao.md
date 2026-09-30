@@ -52,7 +52,7 @@ rolagem de cada uma: voltar a uma tela é voltar ao ponto em que se estava.
 
 **Fora de vista, nada anima** (`animation-play-state: paused` em tudo dentro de uma tela inativa).
 `visibility: hidden` não para animação de CSS, e as telas de trás seguiam pulsando o "buscando" das
-seções que ainda não buscaram nada e o anel da órbita da Carreira, pedindo estilo e composição a todo
+seções que ainda não buscaram nada e o anel da órbita que existiu na Carreira, pedindo estilo e composição a todo
 quadro para ninguém ver.
 
 A troca é por opacidade, e a `visibility` sai **depois** dela (atraso na transição), senão a tela que
@@ -204,7 +204,7 @@ parte é o nome da tela**: "Início" não diz nada a quem olha a aba, "Identidad
 ↑/↓ são da rolagem da tela; **←/→ são da seção aberta**, sem exigir foco: `useArrowKeys(ativo,
 andar)` (`src/hooks/`) registra o listener na janela **enquanto a seção está ativa**. Duas seções
 nunca disputam a tecla, porque fora da seção o listener não existe. Hoje quem as reivindica são
-a Carreira (a órbita) e Jogos (o deque), cada uma na sua tela, e os componentes de dentro não
+a Carreira (o maço de crachás) e Jogos (o deque), cada uma na sua tela, e os componentes de dentro não
 duplicam o listener. Projetos pessoais já reivindicou as setas para girar uma órbita, que saiu.
 
 A exceção mora no hook: `editandoTexto()`, porque num campo de texto a seta é do cursor.

@@ -186,6 +186,7 @@
       "freela": "Freelance",
       "emprego": "Emprego"
     },
+    "cracha": { "acesso": "Acesso", "desde": "desde" },
     "janela": {
       "anterior": "Evento anterior",
       "posterior": "Próximo evento"
@@ -245,7 +246,6 @@
   "a11y": {
     "secoes": "Seções",
     "previa": "O site de {nome}",
-    "experiencia": "Carreira: use as setas para percorrer os anos",
     "canais": "Canais de contato",
     "retrato": "Retrato",
     "emBreve": "{rede} (em breve)",

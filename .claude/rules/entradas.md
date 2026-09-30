@@ -6,7 +6,7 @@ paths:
 
 ## Entradas das seções
 
-Como cada seção se apresenta quando vira a ativa, e os dois efeitos que dependem disso: a órbita da
+Como cada seção se apresenta quando vira a ativa, e os dois efeitos que dependem disso: o crachá da
 Carreira e a decifragem da bio. A navegação em si está em `navegacao.md`.
 
 ### Cada seção entra de um jeito
@@ -21,11 +21,11 @@ a cada volta*).
 |---|---|---|
 | Sobre (o arquivo) | cada seção de texto chega cifrada e se decifra da esquerda para a direita, um parágrafo depois do outro | `hooks/useDecipher.ts` |
 | Projetos pessoais | cada linha chega da profundidade, uma depois da outra, e os trechos das linguagens se preenchem | `Projeto.module.css` |
-| Carreira | o anel da órbita chega do fundo e os corpos acendem atrás dele, um a um | `Orbita.module.css` |
+| Carreira | o maço de crachás chega do fundo depois do bloco (300ms) e o cordão balança | `Cracha.module.css`, `Cracha.tsx` |
 | Sobre (a formação) | a onda em pé e a inversa se desenham em sentidos opostos, os nós acendem atrás delas e as linhas do medidor se preenchem uma a uma | `AboutSection.module.css` |
 | Música | tudo chega da profundidade: o destaque, depois as capas uma a uma e os retratos por último | `MusicSection.module.css` |
 | Jogos | as capas do deque chegam do fundo, a da frente primeiro | `GamesSection.module.css` |
-| Filmes | os títulos chegam da profundidade, um depois do outro, e de novo a cada troca de aba | `FilmsSection.module.css` |
+| Filmes | a película chega da profundidade depois do bloco (300ms), e de novo a cada troca de aba | `FilmsSection.module.css` |
 | GitHub | o número grande conta e se enche de luz, a ficha chega linha a linha, um feixe atravessa o céu do ano e o acende, e a nuvem e a lista de linguagens chegam depois | `GithubSection.module.css`, `GithubSection` |
 
 O cartão de projeto anda **72px**, e não é exagero: ele tem 280px de altura, e um pulo de 30px nele
@@ -69,7 +69,7 @@ Quatro decisões valem para todas, e são o que mantém isso barato e escalável
 em 0,9s (`section.module.css`), e é fácil escrever uma cascata que se some a ele em vez de vir depois
 dele: foi o que aconteceu em Jogos, quando as capas subiam 22px em 0,6s sem atraso nenhum, e a seção
 aparecia **sem entrada nenhuma**. Por isso as cascatas de Jogos e Filmes começam depois de o bloco
-assentar (520ms e 300ms), e a órbita da Carreira acende os corpos só depois do anel (900ms).
+assentar (520ms e 300ms), e o maço da Carreira também espera 300ms.
 
 **E a entrada de Jogos já sumiu uma vez sem ninguém ver.** Quando a grade de recentes virou uma faixa,
 as regras que aplicavam o keyframe miravam a grade e saíram junto com ela. O keyframe continuou
@@ -77,16 +77,15 @@ declarado, o build passou, o console ficou quieto, e a seção passou a aparecer
 Um `@keyframes` que nenhuma regra usa é o sintoma a procurar depois de mexer na estrutura de uma
 seção.
 
-**Quem tem posição escrita pelo JS anima o miolo.** As capas do deque e os corpos da órbita recebem o
+**Quem tem posição escrita pelo JS anima o miolo.** As capas do deque e o cordão do crachá recebem o
 `transform` (ou o `left`/`top`) de um rAF, e uma animação de entrada no mesmo elemento o apagaria:
-a entrada mora na `.arte` da capa e no `.ponto` do corpo.
+a entrada mora na `.arte` da capa e no `.maco`, dentro do cordão que balança.
 
 Toda entrada usa `--ease-entrada`, e toda transição `--ease-saida` (ver `direcao-visual.md`).
 
 **Seção fora da tela não anima.** `.bloco:not([data-ativo]) *` pausa toda animação que estiver
 correndo dentro de uma seção inativa (`section.module.css`). As entradas não sentem isso, porque só
-existem com `data-ativo`. Quem sente são os movimentos contínuos (o anel do corpo
-escolhido da órbita, o ponto que pulsa em Música e Jogos, a linha de espera de uma busca), que seguiam rodando com
+existem com `data-ativo`. Quem sente são os movimentos contínuos (o ponto que pulsa em Música e Jogos, a linha de espera de uma busca), que seguiam rodando com
 a seção fora de vista. A barra do que está tocando também para, e a busca que acontece ao voltar a
 recoloca no lugar.
 
@@ -122,13 +121,13 @@ Pendurado em `data-ativo`, o brilho também para quando o Início sai de cena. O
 `.bloco`, então a pausa de `section.module.css` não o alcançava, e o laço seguia rodando com a seção
 fora de vista.
 
-### A órbita da Carreira não para em cena
+### O crachá da Carreira só balança quando alguém mexe
 
-Ela gira uma volta por minuto enquanto a seção está ativa, e é por isso que o laço vive no JS e não
-num `@keyframes`: o ponteiro sobre a órbita a segura, escolher um corpo o traz para a frente e daí ele
-segue girando, e as três coisas precisam da mesma fase. **Fora de cena o rAF nem existe**, como os
-pulsos SMIL da curva que ela substituiu, que precisavam ser desmontados para parar. O anel do corpo
-escolhido respira em CSS e para com o resto pela regra do `.bloco:not([data-ativo])`.
+O pêndulo do cordão vive no JS, e não num `@keyframes`, porque a entrada, a troca e o arraste somam
+no mesmo movimento: cada um é um chute de velocidade, e a gravidade e o atrito os devolvem ao prumo.
+**O rAF só existe enquanto ele balança**, e para sozinho quando o giro e a velocidade ficam abaixo de
+um fio; fora de cena ninguém chuta, então nada roda. A película de Filmes, ao contrário, anda o tempo
+todo em cena, e o laço dela some com a seção.
 
 A geometria e o resto do comportamento estão em `secoes.md` (*Seção "Carreira"*).
 

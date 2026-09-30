@@ -54,14 +54,16 @@ visível e passou a ter: texto inglês partido por regras do português.
 Onde falta suporte (o Firefox ainda não tem `hyphenate-limit-chars`) o parágrafo continua
 justificado e hifenizado, só com quebras menos bem escolhidas.
 
-Três exceções: os dois `<p>` que já se excluíam da seleção de texto, pela mesma razão, e a frase do
-Contato, que tem um campo no meio. Nenhum deles é texto corrido:
+Cinco exceções: os dois `<p>` que já se excluíam da seleção de texto, pela mesma razão, a frase do
+Contato, que tem um campo no meio, e dois rótulos que são `<p>` por semântica. Nenhum deles é texto corrido:
 
 | Onde | O quê |
 |---|---|
 | `section.module.css → .indice` | `text-align: left` + `hyphens: manual` — lê como marcador |
 | `HeroSection → .etiqueta` | idem; uma palavra só, e não há por que parti-la ao meio |
 | `ContactSection → .frase` | `text-align: left` + `hyphens: manual` — é uma frase com um campo no meio, e não texto corrido |
+| `JourneyEntry → .linha` | `text-align: left` + `hyphens: manual` — a linha de cima da ficha (posição, tipo, desde) é rótulo |
+| `FilmsSection → .legenda` | `text-align: center` + `hyphens: manual` — a legenda da película é um título, e não texto corrido |
 
 Ficam de fora por não serem `<p>`: os títulos, os chips e os rótulos do HUD, frases de uma linha,
 onde justificar não muda nada e hifenizar só introduziria hífen. O texto da ficha da Carreira é

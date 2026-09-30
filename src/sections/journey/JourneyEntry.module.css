@@ -2,8 +2,8 @@
 .ficha {
   grid-area: 1 / 1;
   display: grid;
-  grid-template-columns: var(--exp-rail, 26px) 1fr;
   gap: var(--exp-gap, clamp(16px, 2.6vmin, 30px));
+  align-content: start;
   opacity: 0;
   transform: translateY(18px);
   transition:
@@ -18,46 +18,30 @@
   pointer-events: auto;
 }
 
-/* trilho: índice em cima, risco em degradê e o tipo escrito na vertical */
-.trilho {
+/* a linha de cima: qual é, de quantas, o tipo e desde quando */
+.linha {
   display: flex;
-  flex-direction: column;
-  gap: 13px;
-  align-items: center;
-  min-height: 0;
-}
-
-.indice {
-  color: var(--tx-corpo);
-  font-size: var(--fs-pequeno);
-  font-weight: 300;
-  letter-spacing: 0.08em;
-}
-
-.risco {
-  display: block;
-  flex: 1;
-  width: 1px;
-  background: linear-gradient(180deg, rgb(255 255 255 / 30%), rgb(255 255 255 / 3%));
-}
-
-.tipo {
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 0;
   color: var(--tx-rotulo);
-  font-size: var(--fs-rotulo);
-  letter-spacing: 0.42em;
+  font-size: var(--fs-meta);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-rotulo);
+  text-align: left;
   text-transform: uppercase;
-  white-space: nowrap;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
+  hyphens: manual;
 }
 
-/**
- * O conteúdo é uma grade: o cabeçalho na primeira linha, e o texto e os chips
- * embaixo. A marca da empresa, que dividia a primeira linha com o cabeçalho, foi
- * para o centro da órbita (ver `Orbita`). A última linha fica com a
- * sobra da ficha, e a stack assenta no pé dela, qualquer que seja o tamanho do
- * texto.
- */
+.linha b {
+  color: var(--tx-titulo);
+  font-weight: 400;
+}
+
+.linha span {
+  color: var(--tx-marcador);
+}
+
 .conteudo {
   display: grid;
   grid-template-rows: auto auto 1fr;

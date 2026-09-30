@@ -283,8 +283,8 @@ afina o que já está desenhado, e as camadas trabalham em px de layout e não p
 O CSS pergunta por `:root:has(canvas[data-qualidade='0'])` (faixa 0: qualidade abaixo de 0,35 ou
 em economia), sem JavaScript e sem o motor conhecer a
 página: na faixa 0 param o brilho do nome no Início e o da barra de Música, que andam
-`background-position` num texto e repintam a cada quadro. A órbita da Carreira, que gira em rAF,
-pinta a 30fps enquanto só gira (um décimo de grau por quadro) e a 60 só no deslize de escolher.
+`background-position` num texto e repintam a cada quadro. A película de Filmes anda em rAF a 60fps enquanto está em cena; o pêndulo do crachá da Carreira
+só roda enquanto balança.
 
 **As regras têm um teste que roda**: `npm run check:qualidade` (`scripts/check-qualidade.mjs`)
 empacota o palco com esbuild e o roda em Node, com um canvas falso e um relógio de mentira em que cada

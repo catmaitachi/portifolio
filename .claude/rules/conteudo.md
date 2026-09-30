@@ -127,8 +127,8 @@ Uma entrada em `experiencia.lista` nos dois dicionários. A lista está em **ord
 - `tipo` é `extensao`, `freela` ou `emprego`, que é o trabalho remunerado constante, do estágio à
   CLT. Os nomes ficam em `experiencia.tipos`, que é `Record` total: uma categoria nova quebra o build
   até ter nome nos dois idiomas;
-- `periodo` é **ano.mês** e é o rótulo do corpo na órbita, não posição: os corpos ficam sempre
-  igualmente espaçados. Ele não aparece na ficha;
+- `periodo` é **ano.mês** e é rótulo, não posição: aparece no crachá, na orelha dos crachás de trás
+  e na linha de cima da ficha ("desde 2026.06");
 - `url` é opcional: com ele, o subtítulo vira link, sublinhado e sem ícone;
 - `texto` é um parágrafo só, contado como a bio, e não repete o nome da empresa, que já está no
   subtítulo;

@@ -1,0 +1,262 @@
+/**
+ * O maço de crachás da Carreira: um cordão, todos os crachás nele, o da frente em
+ * cor cheia e os de trás recuando, com o período numa orelha embaixo.
+ */
+
+@keyframes chega {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: scale(0.86);
+  }
+}
+
+.palco {
+  position: relative;
+  /* as orelhas dos de trás descem abaixo do da frente */
+  padding-bottom: calc(var(--orelhas) * 16px + 24px);
+  cursor: grab;
+  /* o arraste vertical continua rolando a página; o de lado balança */
+  touch-action: pan-y;
+}
+
+.palco:active {
+  cursor: grabbing;
+}
+
+.pendulo {
+  display: grid;
+  justify-items: center;
+  transform-origin: 50% 0;
+}
+
+/* a fita é impressa, como toda fita de crachá: o nome correndo em pé */
+.fita {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: var(--fita-h);
+  overflow: hidden;
+  border-inline: 1px solid var(--linha-forte);
+}
+
+.fita::before {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  color: var(--tx-marcador);
+  font-size: 7px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  content: attr(data-texto);
+  transform: translateX(-50%);
+}
+
+.presilha {
+  display: block;
+  width: 30px;
+  height: 12px;
+  margin-top: -1px;
+  border: 1px solid var(--linha-acesa);
+  border-radius: 2px;
+}
+
+.maco {
+  display: grid;
+  width: 100%;
+  margin-top: 6px;
+}
+
+/* a entrada pende de `data-ativo`, como a das outras seções; o `rotate` do pendulo é do rAF */
+[data-ativo] .maco {
+  animation: chega 0.9s var(--ease-entrada) 0.3s backwards;
+}
+
+.carta {
+  position: relative;
+  z-index: calc(20 - var(--k));
+  grid-area: 1 / 1;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  filter: brightness(calc(1 - var(--k) * 0.2));
+  transform: translateY(calc(var(--k) * 16px)) scale(calc(1 - var(--k) * 0.04));
+  transform-origin: 50% 100%;
+  transition:
+    transform 0.7s var(--ease-saida),
+    filter 0.7s var(--ease-saida);
+}
+
+.carta[data-longe] {
+  visibility: hidden;
+}
+
+.carta:not([data-frente]):hover {
+  filter: brightness(0.95);
+}
+
+/* a orelha: o período de cada crachá de trás, aparecendo embaixo do da frente */
+.orelha {
+  position: absolute;
+  right: 14px;
+  bottom: -1px;
+  padding: 2px 8px 3px;
+  border: 1px solid var(--linha-forte);
+  border-top: 0;
+  background: #050505;
+  color: var(--tx-apoio);
+  font-size: var(--fs-micro);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.16em;
+  transform: translateY(100%);
+  transition:
+    color var(--dur-hover),
+    border-color var(--dur-hover);
+}
+
+.carta:hover .orelha {
+  border-color: var(--linha-cheia);
+  color: var(--tx-titulo);
+}
+
+.cartao {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  padding: 20px 18px 16px;
+  overflow: hidden;
+  border: 1px solid var(--linha-forte);
+  border-radius: 2px;
+  background: #050505;
+  transform: perspective(700px) rotateY(var(--torce, 0deg));
+}
+
+@supports (corner-shape: bevel) {
+  .cartao {
+    border-radius: 16px 2px;
+    corner-shape: bevel;
+  }
+}
+
+/* o brilho segue o ponteiro, como na carta do retrato */
+.cartao::after {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    200px circle at var(--bx, 50%) var(--by, 30%),
+    rgb(255 255 255 / 14%),
+    transparent 60%
+  );
+  content: '';
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+
+.carta[data-frente]:hover .cartao::after {
+  opacity: 1;
+}
+
+.furo {
+  width: 40px;
+  height: 6px;
+  margin: -6px auto 0;
+  border: 1px solid var(--linha-forte);
+  border-radius: 4px;
+}
+
+.acesso {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+
+.acesso b {
+  padding: 1px 6px;
+  background: var(--tx-titulo);
+  color: #000;
+  font-weight: 400;
+}
+
+.foto {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1.7;
+  border: 1px solid var(--linha-sutil);
+}
+
+/* a marca por máscara: o arquivo pode ser colorido, o que chega à tela é a silhueta */
+.marca {
+  width: 46%;
+  height: 62%;
+  background: var(--tx-forte);
+  mask: var(--logo) center / contain no-repeat;
+}
+
+.sigla {
+  color: var(--tx-forte);
+  font-size: 28px;
+  letter-spacing: 0.14em;
+}
+
+.quem {
+  display: grid;
+  gap: 5px;
+}
+
+.quem strong {
+  font-size: clamp(14px, 2vmin, 19px);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.quem small {
+  color: var(--tx-apoio);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.barras {
+  display: flex;
+  gap: 5px;
+  height: 26px;
+}
+
+.trecho {
+  display: flex;
+  gap: 1px;
+}
+
+.trecho i {
+  background: var(--tx-forte);
+}
+
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  color: var(--tx-marcador);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carta {
+    transition: none;
+  }
+}

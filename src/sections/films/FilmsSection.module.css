@@ -1,35 +1,33 @@
 /**
- * Entrada: os títulos chegam da profundidade, um depois do outro.
- *
- * Pequenos, fora de foco e apagados, e assentam: a mesma chegada das letras do
- * nome, sem deslizar de baixo. A entrada fica **pendurada em `data-ativo`**, não
- * no mount, como em Música e Jogos; trocar de aba refaz a lista (`key`) e a
- * cascata corre de novo. A ordem é a posição na lista, com teto em doze: numa
- * lista de vinte, o último não pode esperar dois segundos para existir.
- * `backwards`, nunca `forwards`, pela regra de sempre.
+ * Entrada: a película chega da profundidade depois de o bloco assentar, e pende
+ * de `data-ativo`, como em Música e Jogos. Trocar de aba refaz a película
+ * (`key`), e ela chega de novo. `backwards`, nunca `forwards`, pela regra de
+ * sempre.
  */
-@keyframes tituloChega {
+@keyframes filmesChega {
   from {
     opacity: 0;
-    filter: blur(6px);
-    transform: scale(0.94);
+    filter: blur(8px);
+    transform: scale(0.86);
   }
 }
 
 .secao {
-  /* a coluna do marcador (posição ou dia) e o tamanho do título */
-  --marcador-col: clamp(40px, 6vmin, 64px);
-  --credito-fs: clamp(22px, 4.6vmin, 50px);
+  /* a largura de um quadro da película, o vão entre eles e a altura da faixa de furos */
+  --quadro-w: clamp(120px, 15vw, 170px);
+  --quadro-gap: 12px;
+  --furo-h: 10px;
+  --legenda-fs: clamp(18px, 3.4vmin, 34px);
 }
 
 .bloco {
   max-width: 1000px;
 }
 
-.creditos {
+.conteudo {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
 }
 
 /* ---------- as abas ---------- */
@@ -69,94 +67,136 @@ button.aba:hover {
   color: var(--tx-titulo);
 }
 
-/* ---------- a lista ---------- */
+/* ---------- a película ---------- */
 
-.lista {
+.pelicula {
+  display: grid;
+  gap: clamp(16px, 2.4vmin, 24px);
+}
+
+.faixa {
+  position: relative;
+  padding: calc(var(--furo-h) + 12px) 0;
+  overflow: hidden;
+  cursor: grab;
+  /* o arraste vertical continua rolando a página; o de lado empurra a película */
+  touch-action: pan-y;
+  user-select: none;
+  /* as pontas somem no preto, e não num corte */
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+
+.faixa:active {
+  cursor: grabbing;
+}
+
+[data-ativo] .faixa {
+  animation: filmesChega 0.9s var(--ease-entrada) 0.3s backwards;
+}
+
+/* os furos: retângulos de 1px desenhados, andando com a película (`--furos`, do rAF) */
+.faixa::before,
+.faixa::after {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: var(--furo-h);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='10'%3E%3Crect x='.5' y='.5' width='12' height='9' rx='1.5' fill='none' stroke='white' stroke-opacity='.24'/%3E%3C/svg%3E")
+    var(--furos, 0px) 0 / 22px 10px repeat-x;
+  content: '';
+}
+
+.faixa::before {
+  top: 4px;
+}
+
+.faixa::after {
+  bottom: 4px;
+}
+
+.trilho {
+  display: flex;
+  gap: var(--quadro-gap);
+  width: max-content;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--linha);
   list-style: none;
 }
 
-.bloco[data-ativo] .lista li {
-  animation: tituloChega 0.7s var(--ease-entrada) backwards;
-  animation-delay: calc(300ms + var(--ordem, 0) * 55ms);
-}
-
-.linha {
+.quadro {
+  position: relative;
   display: grid;
-  grid-template-columns: var(--marcador-col) minmax(0, 1fr) auto;
-  gap: clamp(12px, 2vw, 22px);
-  align-items: baseline;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--linha-sutil);
+  place-items: center;
+  width: var(--quadro-w);
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border: 1px solid var(--linha);
   color: inherit;
   text-decoration: none;
+  -webkit-user-drag: none;
 }
 
-.marcador {
+/* a moldura só aparece quando o pôster não veio, como em toda imagem da página */
+.quadro:has(img:not([hidden])) {
+  border-color: transparent;
+}
+
+.quadro img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* fora de foco, o pôster fica em cinza e apagado: a cor é do filme da legenda */
+  filter: grayscale(1) brightness(0.45);
+  transition: filter 0.5s var(--ease-saida);
+}
+
+[data-foco] .quadro img {
+  filter: none;
+}
+
+[data-foco] .quadro:not(:has(img:not([hidden]))) {
+  border-color: var(--linha-cheia);
+}
+
+.semPoster {
+  padding: 10px;
   color: var(--tx-rotulo);
-  font-size: var(--fs-lista);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.08em;
-}
-
-/**
- * O título em contorno, que se enche da esquerda ao ser apontado.
- *
- * É o mesmo corte seco do Contato (branco ou transparente, sem degradê de cor),
- * num texto só: `background-clip: text`, e não uma cópia por cima.
- */
-.titulo {
-  background: linear-gradient(90deg, var(--tx-titulo) 50%, transparent 50%) 100% 0 / 200% 100%
-    no-repeat;
-  background-clip: text;
-  color: transparent;
-  font-size: var(--credito-fs);
-  line-height: 1.05;
-  letter-spacing: 0.01em;
+  font-size: var(--fs-meta);
+  letter-spacing: 0.12em;
+  text-align: center;
   text-transform: uppercase;
-  overflow-wrap: anywhere;
-  -webkit-text-stroke: 1px var(--linha-acesa);
-  transition: background-position var(--dur-retorno) var(--ease-saida);
 }
 
-.linha:hover .titulo,
-.linha:focus-visible .titulo {
-  background-position: 0 0;
+.legenda {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  min-height: calc(var(--legenda-fs) * 1.1 + 30px);
+  margin: 0;
+  text-align: center;
+  hyphens: manual;
 }
 
-.lado {
+.legendaMeta {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  align-items: flex-end;
-  color: var(--tx-apoio);
-  font-size: var(--fs-lista);
-  font-variant-numeric: tabular-nums;
-}
-
-.revisita {
+  gap: 16px;
+  align-items: center;
   color: var(--tx-rotulo);
-  font-size: var(--fs-micro);
-  letter-spacing: 0.18em;
+  font-size: var(--fs-meta);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-rotulo);
   text-transform: uppercase;
 }
 
-.semNota {
-  color: var(--tx-marcador);
-  font-size: var(--fs-micro);
-  letter-spacing: 0.16em;
+.legendaTitulo {
+  color: var(--tx-titulo);
+  font-size: var(--legenda-fs);
+  line-height: 1.1;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-/**
- * A nota: cinco marcas de 1px, preenchidas pela fração.
- *
- * Cada marca é uma trilha vazia com um preenchimento de largura `--cheio`, então
- * a meia estrela do Letterboxd sai exata em vez de arredondada. É a mesma
- * gramática do medidor das formações e do estado dos projetos.
- */
 .nota {
   display: flex;
   gap: 3px;
@@ -180,77 +220,24 @@ button.aba:hover {
   content: '';
 }
 
-/* ---------- o pôster ---------- */
-
-/**
- * Com hover, o pôster segue o ponteiro (`.flutuante`); a miniatura na linha é
- * só para quem não tem hover. Pôster é identidade de terceiro e fica colorido.
- */
-.miniatura {
-  display: none;
-}
-
-.flutuante {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 50;
-  /* fora da seção (é um portal no `body`), então o tamanho mora aqui, e não num token dela */
-  width: clamp(130px, 16vmin, 170px);
-  aspect-ratio: 2 / 3;
-  overflow: hidden;
-  border-radius: 2px;
-  opacity: 0;
-  pointer-events: none;
-  scale: 0.85;
-  transition:
-    opacity 0.25s var(--ease-saida),
-    scale 0.25s var(--ease-saida);
-  will-change: transform;
-}
-
-@supports (corner-shape: bevel) {
-  .flutuante {
-    border-radius: 12px 2px;
-    corner-shape: bevel;
-  }
-}
-
-.flutuante[data-visivel] {
-  opacity: 1;
-  scale: 1;
-}
-
-.flutuante img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* sem hover (toque), o pôster mora na linha, pequeno, ao lado do título */
-@media (hover: none) {
-  .flutuante {
-    display: none;
-  }
-
-  .linha {
-    grid-template-columns: var(--marcador-col) 34px minmax(0, 1fr) auto;
-    align-items: center;
-  }
-
-  .miniatura {
-    display: block;
-    width: 34px;
-    aspect-ratio: 2 / 3;
-    object-fit: cover;
-    border-radius: 2px;
+/* sem movimento a película não anda: vira uma faixa que rola de lado */
+@media (prefers-reduced-motion: reduce) {
+  .faixa {
+    overflow-x: auto;
+    mask-image: none;
+    cursor: auto;
   }
 }
 
 @media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .secao {
-    --marcador-col: 30px;
-    --credito-fs: clamp(18px, 6vw, 28px);
+    --quadro-w: clamp(96px, 28vw, 130px);
+    --quadro-gap: 8px;
+    --legenda-fs: clamp(16px, 5vw, 22px);
+  }
+
+  /* no celular um título longo quebra em duas linhas: a legenda já reserva as duas, e nada pula */
+  .legenda {
+    min-height: calc(var(--legenda-fs) * 2.2 + 30px);
   }
 }

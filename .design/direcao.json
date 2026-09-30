@@ -1,0 +1,30 @@
+{
+  "origem": "existente",
+  "nome": "Travelling, com os detalhes da Exposição",
+  "fonte": ".claude/rules/direcao-visual.md",
+  "fisica": "a câmera anda no eixo da profundidade: o que entra chega do fundo (escala + desfoque + opacidade) e assenta; o que se destaca se enche de luz",
+  "cor": "preto #000 e branco em degraus de opacidade (tokens --tx-* e --linha-*); cor só nas capas e pôsteres de terceiros",
+  "tipo": "IBM Plex Mono 300/400, versalete espaçado nos rótulos (--ls-rotulo .28em)",
+  "forma": "linhas de 1px, tracejados finos, chanfro no canto sup-esq e inf-dir",
+  "movimento": {
+    "entrada": "--ease-entrada, backwards, de 0,86x (bloco) ou 1,9x (letra)",
+    "saida": "--ease-saida",
+    "hover": "--dur-hover .35s",
+    "retorno": "--dur-retorno .55s"
+  },
+  "regras": [
+    "nada entra deslizando",
+    "movimento de câmera é do motor, nunca do CSS",
+    "sem textura por cima da página",
+    "encher é corte seco, não degradê",
+    "o que anda num traço é calculado pela mesma conta que desenha o traço",
+    "o item escolhido se destaca no próprio lugar",
+    "painel de detalhe com medida fixa",
+    "blocos empilhados de uma seção com a mesma largura",
+    "a data é rótulo, não posição"
+  ],
+  "baseado_em": {
+    "conceito": 1
+  },
+  "revisao": 1
+}

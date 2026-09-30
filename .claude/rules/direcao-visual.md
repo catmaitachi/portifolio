@@ -63,8 +63,8 @@ profundidade ou se enche de luz.
 |---|---|---|---|
 | Contato | cartaz: o título em contorno gigante **se enche de baixo para cima conforme a mensagem cresce** (o título é o medidor); o endereço copia ao clique; o formulário é uma frase para completar | `ContactSection` | animata/metis-text, reactbits/CountUp |
 | Jogos | deque em profundidade: as capas recuam no eixo z, a da frente em cor e em foco, as de trás apagam e desfocam pela distância; arraste, setas e passos | `GamesSection` (`Deque`) | reactbits/DepthCarousel, cultui/three-d-carousel |
-| Filmes | créditos: o título em contorno que se enche ao ser apontado, e o pôster que segue o cursor, inclinado pela velocidade | `FilmsSection` | aceternity/link-preview, animata/reveal-image |
-| Carreira | órbita: cada experiência é um corpo que gira **sobre a linha** de uma elipse vista de lado; escolher traz o corpo para a frente pelo caminho da órbita | `Orbita`, `orbitaGeometria` | animata/orbiting-items-3-d |
+| Filmes | ~~créditos~~, trocado em 30/09 (ver abaixo) | | |
+| Carreira | ~~órbita~~, trocada em 30/09 (ver abaixo) | | |
 
 Quatro regras saíram da rodada (a do `@property`, de um defeito achado depois) e valem para o que
 vier depois:
@@ -97,6 +97,25 @@ Quatro regras gerais saíram das observações da rodada: **arrastar gira na dir
 escolhido se destaca no próprio lugar** (e não só num painel ao lado), **um painel de detalhe tem
 medida fixa**, sem mudar de largura a cada escolha, e **os blocos empilhados de uma seção têm a mesma
 largura**: o que cresce para preencher é o espaço interno, e não o objeto.
+
+### Padrões escolhidos na rodada de 30/09/2026 (Filmes e Carreira)
+
+Rodada do /inspiration 0.6 (`.design/`), com o design atual mantido (`conceito.design_existente:
+manter`). A Carreira passou por três refazer até a mistura escolhida.
+
+| Seção | Padrão | Onde mora | Referências |
+|---|---|---|---|
+| Filmes | película: a tira de pôsteres corre devagar, a velocidade (roda, arraste) a acelera e inclina os quadros, só o do foco tem cor, e a legenda se decifra | `FilmsSection` (`Pelicula`) | reactbits/ScrollVelocity, magicui/marquee, motionprimitives/text-scramble |
+| Carreira | maço de crachás num cordão que balança como pêndulo, os de trás com o período numa orelha, e a ficha ao lado | `Cracha.tsx` (`Maco`) | reactbits/Lanyard, reactbits/Stack |
+
+Duas coisas da rodada valem para o que vier:
+
+- **"pouca personalidade" é um critério.** A primeira leva da Carreira era correta e sóbria (terminal,
+  índice, constelação) e foi recusada inteira; o que passou foi um objeto com física (o crachá). Na
+  próxima rodada, uma das opções deve ser um objeto, e não só um arranjo de texto;
+- **velocidade vira inclinação, e só ela.** Na película e no crachá o movimento entra como
+  velocidade que decai, e é a velocidade (não a posição) que inclina ou torce; parado, tudo volta ao
+  prumo.
 
 ### Tokens: a régua é uma só
 
@@ -136,7 +155,7 @@ opostos dá direção ao bloco; nos quatro, a caixa vira um losango achatado e s
 | `Projeto → .vista` (a janela do site) | 18px |
 | `Projeto → .topicos li` | 5px |
 | `PortraitCard → .carta` | 14px |
-| `FilmsSection → .flutuante` (o pôster que segue o cursor) | 12px |
+| `Cracha → .cartao` (o crachá da Carreira) | 16px |
 | `GamesSection → .arte` (as capas do deque) | 12px |
 | `MusicSection → .capa` (o destaque) | 12px |
 | `MusicSection → .faixaLink` (a parede de capas) | 12px |
@@ -160,7 +179,7 @@ A implementação é `corner-shape: bevel` + `border-radius: <chanfro> 2px`, den
   regra extra.
 Ficam **de fora**, e por motivo: os campos do formulário de contato (`.nome`, `.mensagem`) são um
 risco de 1px, não uma caixa — não há canto para chanfrar; e tudo que é círculo
-(anéis do HUD, corpos da órbita da Carreira, medidor da supernova).
+(anéis do HUD, medidor da supernova).
 
 ### A moldura da imagem é espaço reservado, não enfeite
 

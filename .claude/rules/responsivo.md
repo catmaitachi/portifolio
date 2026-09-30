@@ -12,11 +12,11 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 |---|---|
 | `section.module.css` | `--pt --pb --px --gap` |
 | `AboutSection` | `--lado --retrato --retrato-ar --colunas-gap --parte-gap --texto-fs --logo-caixa --onda-w --onda-folga` |
-| `JourneySection` | `--exp-cargo --exp-rail --exp-gap --exp-cab-gap --exp-bloco-gap --exp-txt` (a órbita não tem token: a proporção é a do `viewBox`) |
+| `JourneySection` | `--exp-cargo --exp-gap --exp-cab-gap --exp-bloco-gap --exp-txt --cracha-col --fita-h` |
 | `MusicSection` | `--capa --capas-cols --artistas-cols` |
 | `ProjectsSection` (e `Projeto`) | `--proj-cols --proj-gap --proj-entre` |
 | `GamesSection` | `--capa-w --deque-h` |
-| `FilmsSection` | `--marcador-col --credito-fs` |
+| `FilmsSection` | `--quadro-w --quadro-gap --furo-h --legenda-fs` (no celular a legenda reserva duas linhas) |
 | `GithubSection` | `--gh-nuvem --gh-grande` (no celular o céu do ano rola de lado, com 680px de largura mínima, e os chips de linguagem passam de quatro para dois por linha) |
 | `ContactSection` | `--carta-fs --carta-gap` (o título mede a coluna, por `cqi`, e não a tela) |
 | `SectionNav` | `--cab-left --cab-tx --cab-fs --cab-px --cab-ls` |
@@ -25,7 +25,7 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | `Tela` | `--secao-pt`, `--secao-pb` e `--secao-min`, que a seção usa no lugar dos seus quando existem; toda seção depois da primeira ganha o respiro largo antes dela |
 
 Faixas: **`(width <= 640px), (orientation: portrait) and (width <= 1024px)`** (layout de celular:
-coluna única, cabeçalho à esquerda, a órbita e o deque em cima do texto) e
+coluna única, cabeçalho à esquerda, o maço de crachás e o deque em cima do texto) e
 **`(width > 640px) and (height <= 720px) and (orientation: landscape)`** (paisagem curta: retrato
 150px, texto 22vh, paddings menores).
 
