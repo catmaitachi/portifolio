@@ -208,7 +208,11 @@ desenho próprio e não dependia dos arquivos que saíram.
 
 ---
 
-## Seção "GitHub"
+## Seção "GitHub" (título: Estatísticas)
+
+**Na tela ela se chama Estatísticas** (`nav.github` e `github.titulo`, "Statistics" em inglês), a pedido
+do Lucas; no código, no endereço (`#journey/github`) e nesta documentação continua sendo GitHub, que é
+de onde o dado vem. O ícone do perfil ao lado do título segue dizendo qual é a fonte.
 
 **O que o GitHub registrou do último ano**, na Trajetória, entre a Carreira e os Projetos. Os Projetos
 mostram cada repositório; esta seção mostra o ano de trabalho inteiro. O dado vem de `api/atividade`
