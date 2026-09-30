@@ -47,7 +47,7 @@
   white-space: nowrap;
 }
 
-/* com forma: o aviso fica por cima dela, como uma etiqueta do HUD. No alto, e
+/* com forma: o aviso fica por cima dela, só o texto, sem caixa. No alto, e
    não no meio: a forma de Projetos ou de Música passa da altura da tela, e o meio
    dela cairia fora de vista */
 .molde {
@@ -65,9 +65,7 @@
   align-self: start;
   margin-top: clamp(40px, 22svh, 200px);
   justify-self: center;
-  padding: 8px 14px;
-  border: 1px solid var(--linha-sutil);
-  background: #000;
+  padding: 0;
   text-align: center;
 }
 

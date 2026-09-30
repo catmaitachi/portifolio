@@ -416,8 +416,9 @@ recebe o molde como `children` e decide o resto:
 - **esperando, a forma respira e não há texto à vista.** O "Buscando…" saiu a pedido do Lucas: a
   forma pulsando já diz que algo vem. O aviso continua no DOM, escondido, com `role="status"` e
   `aria-busy`, para o leitor de tela;
-- **vazio ou erro, a forma fica parada, apagada e sumindo para baixo**, com o aviso por cima numa
-  etiqueta do HUD, no alto da forma (no meio ela cairia fora da tela em Projetos e Música);
+- **vazio ou erro, a forma fica parada, apagada e sumindo para baixo**, com o aviso por cima, no alto
+  da forma (no meio ela cairia fora da tela em Projetos e Música). É só o
+  texto, "Nada aqui por ora.", sem caixa: um fundo preto com borda atrás dele saiu a pedido do Lucas;
 - **a página não pula quando o dado chega**, porque as caixas já tinham o tamanho certo. O deque de
   Jogos põe as três capas vazias pela mesma conta da mola (`pose`), e Projetos desenha uma linha por
   repositório escolhido, que já se sabe quantos são;
