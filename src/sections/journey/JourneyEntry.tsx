@@ -7,27 +7,23 @@ const MAX_STACK = 5;
 
 interface JourneyEntryProps {
   entrada: Experiencia;
-  indice: number;
-  total: number;
   ativa: boolean;
 }
 
 /**
- * Ficha de um evento da trajetória.
+ * Ficha de um evento da trajetória: o contexto e o relato.
  *
- * O cargo, a empresa ou o projeto, um texto corrido e a stack. **O texto é um
- * parágrafo, contado como a bio**, e não uma lista de atividades: três frases
- * numeradas liam como relatório, e o que a ficha precisa passar é o que aquele
- * trabalho foi, dito por quem o fez. O nome da empresa já está no subtítulo, e
- * o texto não o repete.
+ * **O crachá é do portador, e a ficha é do trabalho.** O crachá ao lado diz
+ * quem (o nome e o cargo, sob a marca de quem o emitiu); a ficha diz o tipo,
+ * desde quando, a empresa, o que foi feito e a stack nomeada. Antes os dois
+ * repetiam quase tudo. O maço é `aria-hidden`, então o cargo continua aqui,
+ * escondido da vista, para o leitor de tela.
  *
- * **O subtítulo vira link** quando a experiência tem endereço, marcado só pelo
- * sublinhado. É o lugar natural para ele: o nome é a pergunta que o link
- * responde.
+ * **O texto é um parágrafo, contado como a bio**, e não uma lista de
+ * atividades: três frases numeradas liam como relatório.
  *
- * **A marca da empresa não mora aqui.** Ela ficou um tempo no canto de cima à
- * direita, e foi para o centro da órbita (`Orbita`): as duas juntas repetiam o
- * mesmo logo lado a lado.
+ * **O título é a empresa, e vira link** quando a experiência tem endereço,
+ * marcado só pelo sublinhado.
  *
  * Todas as fichas ficam sobrepostas na mesma célula do palco e só a
  * ativa aparece — trocar de evento é uma transição de opacidade, sem rAF e sem
@@ -37,7 +33,7 @@ interface JourneyEntryProps {
  * tela não deve encontrar quatro empregos empilhados no mesmo lugar, e o link de
  * uma ficha escondida não entra na tabulação.
  */
-export function JourneyEntry({ entrada, indice, total, ativa }: JourneyEntryProps) {
+export function JourneyEntry({ entrada, ativa }: JourneyEntryProps) {
   const t = useT();
   const stack = entrada.stack.slice(0, MAX_STACK);
   const endereco = urlExterna(entrada.url);
@@ -45,27 +41,22 @@ export function JourneyEntry({ entrada, indice, total, ativa }: JourneyEntryProp
   return (
     <article className={styles.ficha} data-ativa={ativa || undefined} inert={!ativa}>
       <p className={styles.linha}>
-        <b>{String(indice + 1).padStart(2, '0')}</b> / {String(total).padStart(2, '0')}
-        <span>·</span>
-        {t.experiencia.tipos[entrada.tipo]}
+        <b>{t.experiencia.tipos[entrada.tipo]}</b>
         <span>·</span>
         {t.experiencia.cracha.desde} {entrada.periodo}
       </p>
 
       <div className={styles.conteudo}>
-        <div className={styles.cabecalho}>
-          <h3 className={styles.cargo}>{entrada.cargo}</h3>
-          <span className={styles.org}>
-            <span className={styles.ponto} aria-hidden="true" />
-            {endereco ? (
-              <a className={styles.orgLink} href={endereco} target="_blank" rel="noreferrer">
-                {entrada.org}
-              </a>
-            ) : (
-              <span>{entrada.org}</span>
-            )}
-          </span>
-        </div>
+        <h3 className={styles.org}>
+          <span className={styles.oculto}>{entrada.cargo}, </span>
+          {endereco ? (
+            <a className={styles.orgLink} href={endereco} target="_blank" rel="noreferrer">
+              {entrada.org}
+            </a>
+          ) : (
+            entrada.org
+          )}
+        </h3>
 
         <p className={styles.texto}>{entrada.texto}</p>
 

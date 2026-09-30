@@ -18,7 +18,7 @@
   pointer-events: auto;
 }
 
-/* a linha de cima: qual é, de quantas, o tipo e desde quando */
+/* a linha de cima: o tipo e desde quando */
 .linha {
   display: flex;
   flex-wrap: wrap;
@@ -46,22 +46,15 @@
   display: grid;
   grid-template-rows: auto auto 1fr;
   grid-template-columns: minmax(0, 1fr);
-  /* entre o cabeçalho, o texto e os chips */
+  /* entre o título, o texto e os chips */
   gap: var(--exp-bloco-gap, clamp(11px, 1.9vmin, 19px));
   column-gap: 16px;
   min-width: 0;
 }
 
-.cabecalho {
-  display: flex;
-  grid-area: 1 / 1;
-  flex-direction: column;
-  /* entre o cargo e o subtítulo */
-  gap: var(--exp-cab-gap, 10px);
+/* o título da ficha é a empresa: o cargo mora no crachá */
+.org {
   min-width: 0;
-}
-
-.cargo {
   margin: 0;
   color: var(--tx-titulo);
   font-size: var(--exp-cargo, clamp(15px, 2.6vmin, 26px));
@@ -72,26 +65,14 @@
   text-wrap: pretty;
 }
 
-.org {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  min-width: 0;
-  color: var(--tx-apoio);
-  font-size: var(--fs-lista);
-  font-weight: 300;
-  letter-spacing: 0.14em;
-  text-wrap: pretty;
-  /* subtítulo do cargo: é conteúdo, e `<span>` não entra na regra global */
-  user-select: text;
-}
-
-.ponto {
-  flex: none;
-  width: 4px;
-  height: 4px;
-  border: 1px solid var(--linha-acesa);
-  border-radius: 50%;
+/* o cargo, para o leitor de tela: o maço que o mostra é `aria-hidden` */
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /**

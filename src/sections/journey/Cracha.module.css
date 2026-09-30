@@ -126,11 +126,14 @@
   color: var(--tx-titulo);
 }
 
+/* em pé, na proporção de um cartão de verdade: a marca ocupa o que sobra da altura */
 .cartao {
   position: relative;
   display: grid;
-  gap: 12px;
-  padding: 20px 18px 16px;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  gap: 16px;
+  aspect-ratio: var(--cracha-ar, 3 / 4);
+  padding: 20px 20px 18px;
   overflow: hidden;
   border: 1px solid var(--linha-forte);
   border-radius: 2px;
@@ -172,87 +175,66 @@
   border-radius: 4px;
 }
 
-.acesso {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: var(--tx-rotulo);
-  font-size: var(--fs-micro);
-  letter-spacing: var(--ls-rotulo);
-  text-transform: uppercase;
-}
-
-.acesso b {
-  padding: 1px 6px;
-  background: var(--tx-titulo);
-  color: #000;
-  font-weight: 400;
-}
-
 .foto {
   display: grid;
   place-items: center;
-  aspect-ratio: 1.7;
+  min-height: 0;
   border: 1px solid var(--linha-sutil);
 }
 
 /* a marca por máscara: o arquivo pode ser colorido, o que chega à tela é a silhueta */
 .marca {
-  width: 46%;
-  height: 62%;
+  width: 64%;
+  height: 50%;
   background: var(--tx-forte);
   mask: var(--logo) center / contain no-repeat;
 }
 
 .sigla {
   color: var(--tx-forte);
-  font-size: 28px;
+  font-size: 34px;
   letter-spacing: 0.14em;
 }
 
+/* o portador: o nome grande, o cargo embaixo, como em todo crachá */
 .quem {
   display: grid;
-  gap: 5px;
+  gap: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--linha-sutil);
 }
 
 .quem strong {
-  font-size: clamp(14px, 2vmin, 19px);
+  font-size: clamp(16px, 2.4vmin, 22px);
   font-weight: 400;
-  line-height: 1.2;
-  letter-spacing: 0.1em;
+  line-height: 1.1;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
 .quem small {
   color: var(--tx-apoio);
-  font-size: var(--fs-meta);
-  letter-spacing: 0.2em;
+  font-size: var(--fs-controle);
+  line-height: 1.5;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
+/* o código de barras corre na largura do cartão, como num crachá impresso */
 .barras {
   display: flex;
   gap: 5px;
-  height: 26px;
+  height: 30px;
 }
 
 .trecho {
   display: flex;
-  gap: 1px;
+  flex: 1;
+  justify-content: space-between;
 }
 
 .trecho i {
   background: var(--tx-forte);
-}
-
-.legenda {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px 10px;
-  color: var(--tx-marcador);
-  font-size: var(--fs-micro);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
 }
 
 @media (prefers-reduced-motion: reduce) {
