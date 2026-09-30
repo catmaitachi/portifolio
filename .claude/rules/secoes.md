@@ -394,9 +394,11 @@ observações do Lucas foram pô-lo por último, menor que o LoL, e tirar os tex
     itens e há quanto tempo. Moram num `<details>` fechado ao chegar, com a `.ponta` no fim da linha
     do título; abrir desliza a altura (`interpolate-size`, sem animação onde não há suporte).
   - **O dado vem de `api/riot`**, uma vez por entrada. Esperando, ou com a Riot fora (chave vencida
-    responde 401), a forma é a mesma desenhada com `liga.molde.ts`, apagada, com o aviso por cima,
-    como nas outras seções remotas. Na primeira versão os números de exemplo apareciam de verdade,
-    com uma etiqueta dizendo que eram de exemplo; ela saiu quando a função chegou.
+    responde 401), fica o `Molde`: as mesmas caixas, com `Traco` no lugar do texto e **nenhuma
+    imagem**, apagado e com o aviso por cima, como nas outras seções remotas. O ícone, a borda, os
+    campeões e os brasões viram círculos de 1px. Antes o molde era a própria seção desenhada com dados
+    de exemplo, e a espera baixava as artes do jogo de um perfil que não era o de ninguém; e, antes
+    disso, os números de exemplo apareciam como se fossem de verdade, com uma etiqueta avisando.
   - **ARAM: Desordem não aparece, e a gaveta diz isso** (`jogos.lol.semDesordem`): a Riot não
     publica a fila 2400 na API (some do histórico e dá 403 pelo id; bug aberto no
     `RiotGames/developer-relations`, #1109). Quem mostra essas partidas lê o cliente do jogo no PC,

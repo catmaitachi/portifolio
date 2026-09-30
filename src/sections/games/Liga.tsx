@@ -6,8 +6,7 @@ import { useLanguage, useT } from '~/i18n/useLanguage';
 import { haQuanto } from '../haQuanto';
 import comum from '../section.module.css';
 import { useRemoto } from '~/hooks/useRemoto';
-import { EstadoRemoto } from '../EstadoRemoto';
-import { LIGA_MOLDE } from './liga.molde';
+import { EstadoRemoto, type SemDado, Traco } from '../EstadoRemoto';
 import styles from './Liga.module.css';
 
 /**
@@ -170,13 +169,78 @@ function Conteudo({ dados }: { dados: DadosLiga }) {
   );
 }
 
+/** As alturas dos degraus no molde: um pódio qualquer, do 1º ao 3º. */
+const ALTURAS_MOLDE = [1, 0.62, 0.4];
+
+/**
+ * O LoL sem o dado: as mesmas caixas e classes, com traços no lugar do texto e
+ * **nenhuma imagem**. O ícone, a borda de nível, os campeões e os brasões viram
+ * círculos de 1px: uma espera que baixa artes do jogo (a borda sozinha tem
+ * ~40KB) gasta rede com o que ainda nem se sabe se vai aparecer, e numa falha
+ * mostraria um perfil que não é o de ninguém. A gaveta das partidas fica
+ * fechada, como chega de verdade, então a lista não entra no molde.
+ */
+function Molde({ estado }: { estado: SemDado }) {
+  const t = useT();
+  const { lol } = t.jogos;
+
+  return (
+    <EstadoRemoto estado={estado}>
+      <div className={styles.liga}>
+        <div className={styles.topo}>
+          <div className={styles.carta}>
+            <div className={styles.brasao}>
+              <span className={`${styles.icone} ${styles.vazio}`} />
+            </div>
+            <span className={styles.nick}>
+              <Traco w="120px" />
+            </span>
+            <span className={styles.regiao}>
+              <Traco w="24px" />
+            </span>
+          </div>
+          <div className={styles.bloco}>
+            <h4 className={comum.tituloLista}>
+              <Traco w="96px" />
+            </h4>
+            <ol className={styles.podio}>
+              {ALTURAS_MOLDE.map((altura, i) => (
+                <li
+                  key={LUGAR[i]}
+                  className={styles.lugar}
+                  style={{ '--ordem': LUGAR[i], '--altura': altura } as React.CSSProperties}
+                >
+                  <span className={styles.campeao}>
+                    <span className={styles.vazio} />
+                  </span>
+                  <span className={styles.nome}>
+                    <Traco w="56px" />
+                  </span>
+                  <span className={styles.pontos}>
+                    <Traco w="72px" />
+                  </span>
+                  <span className={styles.degrau} />
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+        <div className={styles.alca}>
+          <h4 className={comum.tituloLista}>{lol.partidas}</h4>
+          <span className={`${comum.ponta} ${styles.seta}`} />
+        </div>
+      </div>
+    </EstadoRemoto>
+  );
+}
+
 /**
  * O League of Legends: a carta do invocador e o pódio das maestrias lado a lado,
  * e as últimas partidas embaixo, na largura toda, numa gaveta que abre no título.
  *
  * O dado vem de `api/riot` (ver `dados.md`), uma vez por entrada da seção.
- * Esperando, ou quando a Riot falha (chave vencida, por exemplo), a forma é a
- * mesma desenhada com `LIGA_MOLDE`, apagada, com o aviso por cima.
+ * Esperando, ou quando a Riot falha (chave vencida, por exemplo), fica o `Molde`:
+ * a mesma forma, sem imagem nenhuma, apagada e com o aviso por cima.
  *
  * As artes são identidade do jogo e ficam coloridas, como as capas da Steam.
  */
@@ -184,9 +248,5 @@ export function Liga({ ativo }: { ativo: boolean }) {
   const liga = useRemoto<DadosLiga>('api/riot', ativo);
 
   if (liga.estado === 'pronto') return <Conteudo dados={liga.dados} />;
-  return (
-    <EstadoRemoto estado={liga.estado}>
-      <Conteudo dados={LIGA_MOLDE} />
-    </EstadoRemoto>
-  );
+  return <Molde estado={liga.estado} />;
 }
