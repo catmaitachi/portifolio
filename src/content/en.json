@@ -4,7 +4,7 @@
     "sobre": "About me",
     "projetos": "Side projects",
     "experiencia": "Career",
-    "github": "GitHub",
+    "github": "Statistics",
     "musica": "Music",
     "jogos": "Games",
     "filmes": "Films",
@@ -155,7 +155,7 @@
   },
 
   "github": {
-    "titulo": "GitHub",
+    "titulo": "Statistics",
     "intro": "What GitHub recorded of my last year.",
     "commits": "commits in the last year",
     "rotulos": {
