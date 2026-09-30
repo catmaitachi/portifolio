@@ -156,17 +156,24 @@ texto do crachá sozinho**. Antes era a órbita (ver *A órbita saiu*).
   existe enquanto ele balança** e escreve direto no `style` (`rotate` e `--torce`, que gira o cartão no
   próprio eixo pela velocidade, como um crachá de verdade). Com `prefers-reduced-motion`, nada
   balança.
-- **O cartão diz o que a ficha diz**, em outra gramática: acesso com o tipo, a marca por máscara (a
-  silhueta, como era no centro da órbita; sem marca, a sigla), o cargo, a empresa e o período, e a
-  **stack como código de barras**, seis barras por tecnologia pela conta do nome, com os nomes
-  embaixo. A fita é impressa com o nome (`hero.nome`), como toda fita de crachá, e o brilho segue o
-  ponteiro sobre o da frente, como na carta do retrato.
+- **O crachá é do portador, e a ficha é do trabalho: nada é dito nos dois.** O crachá tem a marca
+  de quem o emitiu, por máscara (a silhueta; sem marca, a sigla), o nome de quem o usa
+  (`hero.nome`) grande, o cargo embaixo, e a **stack como código de barras**, seis barras por
+  tecnologia pela conta do nome, sem os nomes. A ficha tem o tipo e desde quando, a empresa como
+  título, o texto e a stack nomeada em chips. Na primeira versão o cartão repetia quase tudo da
+  ficha (tipo, cargo, empresa, período, e a stack três vezes: barras, nomes no cartão e chips);
+  escolhida entre quatro divisões (30/09/2026). A fita é impressa com o nome, como toda fita de
+  crachá, e o brilho segue o ponteiro sobre o da frente, como na carta do retrato.
+- **O cartão é em pé** (3:4, `--cracha-ar`): a marca ocupa o que sobra da altura, o nome fica sob um
+  risco, e o código de barras corre na largura inteira. Com a marca numa foto deitada (1,7:1) ele
+  saía pequeno e quadrado; na proporção de um cartão de verdade (54 × 86) ficou alto demais ao lado
+  da ficha. A coluna é `clamp(220px, 22vw, 260px)`.
 - **O maço é desenho** (`aria-hidden`), como as capas do deque de Jogos: quem usa leitor de tela
   navega pela ficha e pelos passos, e as cartas são botões fora da tabulação.
-- **A ficha abre com uma linha**: qual é, de quantas, o tipo e "desde" o período
-  (`experiencia.cracha.desde`); depois o cargo, a empresa (link quando há `url`), o parágrafo e a
-  stack em chips. O trilho vertical que ela tinha (índice, risco e tipo em pé) saiu: a linha de cima
-  diz o mesmo e o maço já ocupa a coluna da esquerda. A ficha começa na altura do crachá, e não da
+- **A ficha abre com uma linha**: o tipo e "desde" o período (`experiencia.cracha.desde`); depois a
+  empresa como título (link quando há `url`), o parágrafo e a stack em chips. A posição ("01 / 03")
+  saiu da linha: a contagem entre os passos já a diz, e com uma experiência só não diz nada. O
+  trilho vertical que ela tinha (índice, risco e tipo em pé) também saiu. A ficha começa na altura do crachá, e não da
   fita (`--fita-h`).
 - Navegação: clicar numa orelha, as setas ←/→ (sem foco, enquanto a seção está ativa) ou os passos de
   38px embaixo da ficha, que apagam nas pontas. **Com uma experiência só, os passos não aparecem** e
@@ -179,12 +186,11 @@ longo passava do palco.
 
 - **O texto é um parágrafo, e não uma lista.** As três atividades numeradas liam como relatório; um
   `<p>` justificado, como a bio, conta o que o trabalho foi na voz de quem o fez. Ele não repete o nome
-  da empresa, que já está no subtítulo.
-- **O subtítulo vira link** quando a experiência tem `url`, marcado só por um sublinhado de 1px que
+  da empresa, que já é o título.
+- **O título (a empresa) vira link** quando a experiência tem `url`, marcado só por um sublinhado de 1px que
   acende sob o ponteiro, sem ícone.
-- **No celular o cabeçalho e o texto se afastam um pouco mais** (`--exp-cab-gap` e
-  `--exp-bloco-gap`): ali o texto corre na largura inteira, e com o espaçamento de desktop cargo,
-  subtítulo e parágrafo liam como um bloco só.
+- **No celular o título e o texto se afastam um pouco mais** (`--exp-bloco-gap`): ali o texto corre
+  na largura inteira, e com o espaçamento de desktop título e parágrafo liam como um bloco só.
 - **A marca da empresa não fica na ficha.** Ela já foi um fundo grande à direita (no celular o texto
   passava por cima), o pé da ficha (onde um parágrafo longo a reduzia a quase nada), o canto de cima
   à direita, ao lado do cargo, e o centro da órbita. Hoje mora no crachá.

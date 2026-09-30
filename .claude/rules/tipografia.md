@@ -25,8 +25,6 @@ As exceções moram no módulo de quem as pede, nunca no global:
 | `section.module.css → .indice` | `none` | é `<p>` por semântica, mas lê como marcador: ninguém copia "01" |
 | `HeroSection → .etiqueta` | `none` | ornamento do nome, entre dois riscos |
 
-| `JourneyEntry → .org` | `text` | subtítulo do cargo, e `<span>` não entra na regra global |
-
 ---
 
 ## Parágrafos justificados
@@ -62,7 +60,7 @@ Contato, que tem um campo no meio, e dois rótulos que são `<p>` por semântica
 | `section.module.css → .indice` | `text-align: left` + `hyphens: manual` — lê como marcador |
 | `HeroSection → .etiqueta` | idem; uma palavra só, e não há por que parti-la ao meio |
 | `ContactSection → .frase` | `text-align: left` + `hyphens: manual` — é uma frase com um campo no meio, e não texto corrido |
-| `JourneyEntry → .linha` | `text-align: left` + `hyphens: manual` — a linha de cima da ficha (posição, tipo, desde) é rótulo |
+| `JourneyEntry → .linha` | `text-align: left` + `hyphens: manual` — a linha de cima da ficha (tipo e desde quando) é rótulo |
 | `FilmsSection → .legenda` | `text-align: center` + `hyphens: manual` — a legenda da película é um título, e não texto corrido |
 
 Ficam de fora por não serem `<p>`: os títulos, os chips e os rótulos do HUD, frases de uma linha,

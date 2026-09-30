@@ -25,8 +25,10 @@ paths:
   um botão que deixa de existir enquanto está focado joga o foco no `body` no meio do gesto. Com um
   item só não há passo nenhum.
 - **O maço de crachás da Carreira é desenho** (`aria-hidden`), como o deque de Jogos: a ficha ao lado
-  diz o cargo, a empresa, o tipo, o período, o texto e a stack, e trocar é pelas setas ←/→ ou pelos
-  passos. As cartas são botões fora da tabulação, só para o mouse.
+  diz o tipo, o período, a empresa, o texto e a stack, e trocar é pelas setas ←/→ ou pelos
+  passos. As cartas são botões fora da tabulação, só para o mouse. **O cargo só se vê no crachá**, e
+  por isso a ficha o leva escondido da vista (`.oculto`) no começo do título: sem ele, o leitor de
+  tela ouviria a empresa e nunca o que se fazia nela.
 - **A película de Filmes**: cada quadro é um link com o título, o ano e, nos favoritos, a posição no
   `aria-label`; a segunda cópia da lista (a que fecha a volta) é `aria-hidden` e fora da tabulação. A
   legenda não é `aria-live`, porque troca sozinha a cada poucos segundos, e o foco do teclado traz o

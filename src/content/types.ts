@@ -292,7 +292,7 @@ export interface Dictionary {
     /** `Record` total: uma categoria nova quebra o build até ter nome nos dois idiomas */
     tipos: Record<TipoExperiencia, string>;
     /** o rótulo do crachá e a palavra antes do período, na ficha */
-    cracha: { acesso: string; desde: string };
+    cracha: { desde: string };
     janela: { anterior: string; posterior: string };
     lista: Experiencia[];
   };

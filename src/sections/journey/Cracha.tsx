@@ -60,7 +60,7 @@ function usePendulo(ref: React.RefObject<HTMLElement | null>) {
   );
 }
 
-/** a stack vira código de barras: cada tecnologia, um trecho de seis barras pela conta do nome */
+/** a stack vira código de barras: cada tecnologia, um trecho de seis barras pela conta do nome; os nomes estão nos chips da ficha */
 function Barras({ stack }: { stack: string[] }) {
   return (
     <span className={styles.barras}>
@@ -78,16 +78,17 @@ function Barras({ stack }: { stack: string[] }) {
   );
 }
 
+/**
+ * O crachá é de quem o usa: a marca de quem o emitiu, o nome do portador e o
+ * cargo. O contexto (tipo, período, empresa) e o relato ficam na ficha ao lado,
+ * e nada é dito nos dois lugares.
+ */
 function Cartao({ e }: { e: Experiencia }) {
   const t = useT();
   const marca = e.logo ? LOGOS[e.logo] : undefined;
   return (
     <span className={styles.cartao}>
       <span className={styles.furo} />
-      <span className={styles.acesso}>
-        <span>{t.experiencia.cracha.acesso}</span>
-        <b>{t.experiencia.tipos[e.tipo]}</b>
-      </span>
       <span className={styles.foto}>
         {marca ? (
           <i className={styles.marca} style={{ '--logo': `url(${marca})` } as React.CSSProperties} />
@@ -96,17 +97,10 @@ function Cartao({ e }: { e: Experiencia }) {
         )}
       </span>
       <span className={styles.quem}>
-        <strong>{e.cargo}</strong>
-        <small>
-          {e.org} · {e.periodo}
-        </small>
+        <strong>{t.hero.nome}</strong>
+        <small>{e.cargo}</small>
       </span>
       <Barras stack={e.stack} />
-      <span className={styles.legenda}>
-        {e.stack.map((s) => (
-          <span key={s}>{s}</span>
-        ))}
-      </span>
     </span>
   );
 }
@@ -125,7 +119,7 @@ interface MacoProps {
  * maço.
  *
  * **É desenho** (`aria-hidden`), como as capas do deque de Jogos: quem usa leitor
- * de tela navega pela ficha ao lado, que diz tudo o que o crachá diz.
+ * de tela navega pela ficha ao lado, que leva o cargo escondido da vista.
  */
 export function Maco({ lista, ativa, escolher, ativo }: MacoProps) {
   const t = useT();

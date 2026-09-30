@@ -3,8 +3,9 @@
   --exp-cargo: clamp(15px, 2.6vmin, 26px);
   --exp-gap: clamp(16px, 2.6vmin, 30px);
   --exp-txt: 100%; /* a ficha já divide a largura com o maço */
-  /* a coluna do maço de crachás e o comprimento da fita */
-  --cracha-col: clamp(220px, 26vw, 290px);
+  /* a coluna do maço de crachás, a proporção do cartão (em pé; o CR80 de verdade, 54 × 86, ficava alto demais ao lado da ficha) e o comprimento da fita */
+  --cracha-col: clamp(220px, 22vw, 260px);
+  --cracha-ar: 3 / 4;
   --fita-h: clamp(80px, 12vh, 110px);
 }
 
@@ -64,10 +65,11 @@
   .secao {
     --exp-cargo: 16px;
     --exp-gap: 14px;
-    /* no celular o cargo, o subtítulo e o texto correm na largura inteira, e com
+    /* no celular o título e o texto correm na largura inteira, e com
        o gap de desktop liam como um bloco só */
-    --exp-cab-gap: 13px;
     --exp-bloco-gap: 16px;
+    /* no celular o crachá em pé inteiro empurraria a ficha para fora da tela */
+    --cracha-ar: 4 / 5;
   }
 
   .cena {
@@ -77,7 +79,7 @@
   /* no celular o maço vai para cima, centrado e mais estreito, e a ficha logo embaixo */
   .cena > :first-child {
     justify-self: center;
-    width: min(250px, 100%);
+    width: min(240px, 100%);
   }
 
   .lado {

@@ -186,7 +186,7 @@
       "freela": "Freelance",
       "emprego": "Emprego"
     },
-    "cracha": { "acesso": "Acesso", "desde": "desde" },
+    "cracha": { "desde": "desde" },
     "janela": {
       "anterior": "Evento anterior",
       "posterior": "Próximo evento"

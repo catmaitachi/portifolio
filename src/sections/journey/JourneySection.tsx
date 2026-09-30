@@ -8,12 +8,12 @@ import styles from './JourneySection.module.css';
 import { Maco } from './Cracha';
 
 /**
- * Carreira: cada experiência é um corpo numa órbita, e a ficha do escolhido ao
- * lado.
+ * Carreira: cada experiência é um crachá no mesmo cordão (`Maco`), e a ficha da
+ * escolhida ao lado.
  *
  * A lista está em ordem cronológica (a mais antiga primeiro) e a escolhida
- * inicial é a mais recente. A navegação **não é circular**, mesmo com a órbita
- * dando voltas: as pontas da lista são pontas, e uma carreira que passa do
+ * inicial é a mais recente. A navegação **não é circular**, mesmo com o maço
+ * dando a volta: as pontas da lista são pontas, e uma carreira que passa do
  * último emprego para o primeiro mente sobre a cronologia.
  *
  * As setas ←/→ funcionam **sem foco nenhum** enquanto a seção estiver ativa:
@@ -58,7 +58,7 @@ export function JourneySection({ ativo, indice }: SectionProps) {
                 trocar de experiência não o faz pular */}
             <div className={styles.palco}>
               {lista.map((e, i) => (
-                <JourneyEntry key={e.key} entrada={e} indice={i} total={lista.length} ativa={i === ativa} />
+                <JourneyEntry key={e.key} entrada={e} ativa={i === ativa} />
               ))}
             </div>
 
