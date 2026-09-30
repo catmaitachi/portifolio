@@ -151,7 +151,7 @@
   "remoto": {
     "carregando": "Fetching…",
     "erro": "Couldn't fetch this right now.",
-    "vazio": "Nothing here yet."
+    "vazio": "Nothing here for now."
   },
 
   "github": {

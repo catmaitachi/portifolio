@@ -1,9 +1,10 @@
 /**
- * A linha de espera pulsa; as de erro e vazio ficam paradas.
+ * A espera respira; erro e vazio ficam parados.
  *
- * Um texto que respira diz "ainda estou tentando" sem precisar de um giro nem de
- * um esqueleto cinza. Erro e vazio são estados finais: eles não devem sugerir
- * que algo continua acontecendo.
+ * Um desenho que respira diz "ainda estou tentando" sem precisar de um giro.
+ * Erro e vazio são estados finais: eles não devem sugerir que algo continua
+ * acontecendo, e por isso a forma fica quieta e apagada, com o aviso por cima —
+ * o lugar existe, e está vazio.
  */
 @keyframes respiraEspera {
   0%,
@@ -34,4 +35,71 @@
 
 .estado[data-estado='erro'] {
   color: var(--tx-apagado);
+}
+
+/* esperando, a forma que respira já diz tudo: o aviso fica só para o leitor de tela */
+.molde[data-estado='carregando'] .estado {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* com forma: o aviso fica por cima dela, só o texto, sem caixa. No alto, e
+   não no meio: a forma de Projetos ou de Música passa da altura da tela, e o meio
+   dela cairia fora de vista */
+.molde {
+  position: relative;
+  display: grid;
+}
+
+.molde > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+.molde .estado {
+  z-index: 1;
+  align-self: start;
+  margin-top: clamp(40px, 22svh, 200px);
+  justify-self: center;
+  padding: 0;
+  text-align: center;
+}
+
+.forma {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bloco-gap);
+  pointer-events: none;
+  user-select: none;
+}
+
+.molde[data-estado='carregando'] .forma {
+  animation: respiraEspera 1.9s ease-in-out infinite;
+}
+
+.molde:not([data-estado='carregando']) .forma {
+  opacity: 0.5;
+  mask-image: linear-gradient(#000 40%, transparent);
+}
+
+.traco {
+  display: block;
+  width: var(--w);
+  max-width: 100%;
+  height: 0.62em;
+  margin-block: 0.2em;
+  border-radius: 1px;
+  background: var(--linha);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .estado[data-estado='carregando'],
+  .molde[data-estado='carregando'] .forma {
+    animation: none;
+    opacity: 0.5;
+  }
 }

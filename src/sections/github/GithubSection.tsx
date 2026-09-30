@@ -4,7 +4,7 @@ import type { Atividade } from '~/data/types';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
 import { useRemoto } from '~/hooks/useRemoto';
 import { useLanguage, useT } from '~/i18n/useLanguage';
-import { EstadoRemoto } from '../EstadoRemoto';
+import { EstadoRemoto, type SemDado, Traco } from '../EstadoRemoto';
 import { PerfilExterno } from '../PerfilExterno';
 import comum from '../section.module.css';
 import type { SectionProps } from '../types';
@@ -83,6 +83,54 @@ function Cartaz({ dados, ativo }: { dados: Atividade; ativo: boolean }) {
 }
 
 /**
+ * A seção sem o dado: o cartaz com os rótulos da ficha e os valores por chegar,
+ * o céu do ano só com a grade de dias, e a nuvem como um círculo vazio.
+ */
+function Molde({ estado }: { estado: SemDado }) {
+  const t = useT();
+  return (
+    <EstadoRemoto estado={estado}>
+      <div className={styles.conteudo}>
+        <div className={styles.cartaz}>
+          <p className={styles.grande}>
+            <span className={styles.grandeNumero}>
+              <Traco w="2.2em" />
+            </span>
+            <span className={styles.grandeRotulo}>{t.github.commits}</span>
+          </p>
+          <dl className={styles.ficha}>
+            {Object.values(t.github.rotulos).map((rotulo) => (
+              <div key={rotulo} className={styles.fichaLinha}>
+                <dt>{rotulo}</dt>
+                <dd>
+                  <Traco w="4ch" />
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+        <span className={styles.ceuMolde} />
+        <div className={styles.linguagens}>
+          <span className={styles.nuvemMolde} />
+          <div className={styles.legenda}>
+            <h3 className={styles.linguagensTitulo}>{t.github.linguagens}</h3>
+            <ol className={styles.chips}>
+              {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+                <li key={i}>
+                  <span className={styles.chip}>
+                    <Traco w="55%" />
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </div>
+    </EstadoRemoto>
+  );
+}
+
+/**
  * GitHub: o que o GitHub registrou do último ano, na Trajetória, entre a Carreira
  * e os Projetos.
  *
@@ -114,7 +162,7 @@ export function GithubSection({ ativo, indice }: SectionProps) {
         </div>
 
         {remoto.estado !== 'pronto' ? (
-          <EstadoRemoto estado={remoto.estado} />
+          <Molde estado={remoto.estado} />
         ) : (
           <div className={styles.conteudo}>
             <Cartaz dados={remoto.dados} ativo={ativo} />

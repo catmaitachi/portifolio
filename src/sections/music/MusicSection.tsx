@@ -3,7 +3,7 @@ import type { Faixa, Musica } from '~/data/types';
 import { useInclinacao } from '~/hooks/useInclinacao';
 import { useRemoto } from '~/hooks/useRemoto';
 import { useLanguage, useT } from '~/i18n/useLanguage';
-import { EstadoRemoto } from '../EstadoRemoto';
+import { EstadoRemoto, type SemDado, Traco } from '../EstadoRemoto';
 import { PerfilExterno } from '../PerfilExterno';
 import comum from '../section.module.css';
 import type { SectionProps } from '../types';
@@ -87,6 +87,56 @@ function haQuanto(iso: string, lang: string): string {
 }
 
 /**
+ * A seção sem o dado: o destaque, a parede de oito capas e a fileira de oito
+ * retratos, com as mesmas classes, então a página não pula quando ele chega.
+ */
+function Molde({ estado }: { estado: SemDado }) {
+  const t = useT();
+  const oito = Array.from({ length: 8 }, (_, i) => i);
+  return (
+    <EstadoRemoto estado={estado}>
+      <div className={styles.destaque}>
+        <span className={styles.capa} />
+        <div className={styles.corpo}>
+          <span className={styles.rotulo}>
+            <Traco w="28%" />
+          </span>
+          <span className={styles.faixaNome}>
+            <Traco w="52%" />
+          </span>
+          <span className={styles.artista}>
+            <Traco w="34%" />
+          </span>
+        </div>
+      </div>
+      <div className={styles.grupo}>
+        <h3 className={styles.tituloLista}>{t.musica.faixas}</h3>
+        <ol className={styles.capas}>
+          {oito.map((i) => (
+            <li key={i} className={styles.faixa}>
+              <span className={styles.faixaLink} />
+            </li>
+          ))}
+        </ol>
+      </div>
+      <div className={styles.grupo}>
+        <h3 className={styles.tituloLista}>{t.musica.artistas}</h3>
+        <ol className={styles.artistas}>
+          {oito.map((i) => (
+            <li key={i}>
+              <span className={styles.artistaCartao}>
+                <span className={styles.retrato} />
+                <Traco w="70%" />
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </EstadoRemoto>
+  );
+}
+
+/**
  * O conteúdo, quando ele existe.
  *
  * Fica separado do casco da seção porque os três estados de uma busca remota já
@@ -111,7 +161,7 @@ function Conteudo({ dados }: { dados: Musica }) {
     [dados],
   );
 
-  if (!destaque) return <EstadoRemoto estado="vazio" />;
+  if (!destaque) return <Molde estado="vazio" />;
 
   return (
     <>
@@ -304,7 +354,7 @@ export function MusicSection({ ativo, indice }: SectionProps) {
         {musica.estado === 'pronto' ? (
           <Conteudo dados={musica.dados} />
         ) : (
-          <EstadoRemoto estado={musica.estado} />
+          <Molde estado={musica.estado} />
         )}
       </div>
     </section>

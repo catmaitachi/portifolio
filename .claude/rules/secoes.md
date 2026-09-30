@@ -429,6 +429,29 @@ de 1px só aparece quando a imagem não veio**, que é o espaço reservado de to
 da raspagem de uma lista do Letterboxd, que não tem RSS, e a função devolve lista vazia em vez de
 falha quando não há lista configurada ou quando o HTML mudou de forma (ver `dados.md`).
 
+### Esperando e vazio: a forma da seção, sem o dado
+
+As cinco seções de dado remoto (Música, Jogos, Filmes, GitHub e Projetos) desenham **a própria
+forma** enquanto esperam e quando não há nada: cada uma tem um `Molde` que monta as mesmas caixas e
+grades com as classes dela, com `Traco` (de `EstadoRemoto`) no lugar do texto. `EstadoRemoto`
+recebe o molde como `children` e decide o resto:
+
+- **esperando, a forma respira e não há texto à vista.** O "Buscando…" saiu a pedido do Lucas: a
+  forma pulsando já diz que algo vem. O aviso continua no DOM, escondido, com `role="status"` e
+  `aria-busy`, para o leitor de tela;
+- **vazio ou erro, a forma fica parada, apagada e sumindo para baixo**, com o aviso por cima, no alto
+  da forma (no meio ela cairia fora da tela em Projetos e Música). É só o
+  texto, "Nada aqui por ora.", sem caixa: um fundo preto com borda atrás dele saiu a pedido do Lucas;
+- **a página não pula quando o dado chega**, porque as caixas já tinham o tamanho certo. O deque de
+  Jogos põe as três capas vazias pela mesma conta da mola (`pose`), e Projetos desenha uma linha por
+  repositório escolhido, que já se sabe quantos são;
+- tentou-se tracejar as molduras no vazio com `.forma * { border-style: dashed }`, e isso acendeu
+  borda de 3px em todo elemento que não tinha borda (o estilo `none` escondia a largura `medium`).
+  Não voltar a isso: o vazio se distingue pela quietude e pela etiqueta.
+
+O intervalo entre as partes do bloco virou token (`--bloco-gap`, em `.secao`), porque a forma do
+molde precisa do mesmo respiro que o `.bloco`.
+
 ---
 
 ## Seção "Contato"
