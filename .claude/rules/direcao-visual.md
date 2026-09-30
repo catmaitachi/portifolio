@@ -108,6 +108,16 @@ manter`). A Carreira passou por três refazer até a mistura escolhida.
 | Filmes | película: a tira de pôsteres corre devagar, a velocidade (roda, arraste) a acelera e inclina os quadros, só o do foco tem cor, e a legenda se decifra | `FilmsSection` (`Pelicula`) | reactbits/ScrollVelocity, magicui/marquee, motionprimitives/text-scramble |
 | Carreira | maço de crachás num cordão que balança como pêndulo, os de trás com o período numa orelha, e a ficha ao lado | `Cracha.tsx` (`Maco`) | reactbits/Lanyard, reactbits/Stack |
 
+Na mesma data, uma rodada para Jogos: o andar de baixo (**Andares**: Steam em cima, LoL e Minecraft
+embaixo) e o **Pedestal** do Minecraft, um boneco 3D com a skin real que chega do fundo sobre anéis
+de 1px deitados no chão, gira no arraste e apanha no clique (reactbits/Cubes,
+fancycomponents/css-box, cultui/three-d-carousel, magicui/bento-grid; ver `secoes.md`). **A cor do
+boneco é do jogo**: a skin, os 30% de vermelho do dano e os corações são identidade do Minecraft,
+como as capas da Steam, e ficam fora da paleta pelo mesmo motivo. Na segunda rodada do mesmo dia, o
+LoL: a **Carta de invocador** (reactbits/ProfileCard), o **Pódio** (kokonutui/bento-grid) e as
+**Linhas** das partidas (magicui/animated-list), estas numa gaveta; a borda de nível e os
+brasões são arte do jogo e ficam coloridos pela mesma regra.
+
 Duas coisas da rodada valem para o que vier:
 
 - **"pouca personalidade" é um critério.** A primeira leva da Carreira era correta e sóbria (terminal,

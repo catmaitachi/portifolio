@@ -5,6 +5,7 @@ import { useRemoto } from '~/hooks/useRemoto';
 import { useLanguage, useT } from '~/i18n/useLanguage';
 import { EstadoRemoto, type SemDado, Traco } from '../EstadoRemoto';
 import { PerfilExterno } from '../PerfilExterno';
+import { haQuanto } from '../haQuanto';
 import comum from '../section.module.css';
 import type { SectionProps } from '../types';
 import styles from './MusicSection.module.css';
@@ -75,18 +76,6 @@ function Tempo({ inicioMs, duracaoMs }: { inicioMs: number; duracaoMs: number })
 }
 
 /**
- * "há 9 horas", no idioma da página. O `Intl` escreve a frase inteira, então não
- * há texto de dicionário para ela: a ordem das palavras é do idioma.
- */
-function haQuanto(iso: string, lang: string): string {
-  const horas = (Date.now() - new Date(iso).getTime()) / 36e5;
-  const rtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto' });
-  if (horas < 1) return rtf.format(-Math.max(1, Math.round(horas * 60)), 'minute');
-  if (horas < 24) return rtf.format(-Math.round(horas), 'hour');
-  return rtf.format(-Math.round(horas / 24), 'day');
-}
-
-/**
  * A seção sem o dado: o destaque, a parede de oito capas e a fileira de oito
  * retratos, com as mesmas classes, então a página não pula quando ele chega.
  */
@@ -110,7 +99,7 @@ function Molde({ estado }: { estado: SemDado }) {
         </div>
       </div>
       <div className={styles.grupo}>
-        <h3 className={styles.tituloLista}>{t.musica.faixas}</h3>
+        <h3 className={comum.tituloLista}>{t.musica.faixas}</h3>
         <ol className={styles.capas}>
           {oito.map((i) => (
             <li key={i} className={styles.faixa}>
@@ -120,7 +109,7 @@ function Molde({ estado }: { estado: SemDado }) {
         </ol>
       </div>
       <div className={styles.grupo}>
-        <h3 className={styles.tituloLista}>{t.musica.artistas}</h3>
+        <h3 className={comum.tituloLista}>{t.musica.artistas}</h3>
         <ol className={styles.artistas}>
           {oito.map((i) => (
             <li key={i}>
@@ -257,7 +246,7 @@ function Conteudo({ dados }: { dados: Musica }) {
       </div>
 
       <div className={styles.grupo}>
-        <h3 className={styles.tituloLista}>{t.musica.faixas}</h3>
+        <h3 className={comum.tituloLista}>{t.musica.faixas}</h3>
         {/* a parede de capas: apontar uma a traz para o foco e apaga as outras */}
         <ol className={styles.capas}>
           {dados.faixas.map((f, i) => {
@@ -287,7 +276,7 @@ function Conteudo({ dados }: { dados: Musica }) {
       </div>
 
       <div className={styles.grupo}>
-        <h3 className={styles.tituloLista}>{t.musica.artistas}</h3>
+        <h3 className={comum.tituloLista}>{t.musica.artistas}</h3>
         <ol className={styles.artistas}>
           {dados.artistas.map((a, i) => (
             <li key={a.id} style={{ '--ordem': i } as React.CSSProperties}>

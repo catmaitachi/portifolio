@@ -110,6 +110,61 @@ export interface Jogos {
   recentes: Jogo[];
 }
 
+/**
+ * O boneco do Minecraft: o nome como o jogo escreve, e as texturas.
+ *
+ * `skin` e `capa` são endereços do CDN da Mojang, e a página as usa como
+ * `background-image` (que não pede CORS). `slim` é o modelo de braços de 3px:
+ * a textura sozinha não diz qual é.
+ */
+export interface Minecraft {
+  nome: string;
+  skin: string;
+  slim: boolean;
+  /** `null` para quem não tem capa, que é quase todo mundo */
+  capa: string | null;
+}
+
+/**
+ * O League of Legends, na forma que `api/riot` vai devolver (hoje só existe o
+ * mock, ver `Liga.tsx`). As imagens vêm prontas em URL, do Data Dragon; a borda
+ * de nível e o brasão de maestria não, porque são desenho do projeto por nível
+ * (`src/assets/lol`).
+ */
+export interface Liga {
+  perfil: {
+    nome: string;
+    /** a região do servidor, como o jogo a escreve (BR, NA, EUW) */
+    regiao: string;
+    nivel: number;
+    icone: string;
+  };
+  /** as três de mais pontos, da maior para a menor */
+  maestrias: { campeao: string; icone: string; nivel: number; pontos: number }[];
+  /** as mais recentes primeiro */
+  partidas: Partida[];
+}
+
+export interface Partida {
+  id: string;
+  campeao: string;
+  icone: string;
+  vitoria: boolean;
+  abates: number;
+  mortes: number;
+  assistencias: number;
+  /** tropas e monstros */
+  cs: number;
+  /** em segundos */
+  duracao: number;
+  /** o `queueId` da Riot; o nome da fila vem do dicionário (`jogos.lol.filas`) */
+  fila: number;
+  /** ISO 8601: quando a partida acabou */
+  fim: string;
+  /** os seis espaços e o do acessório, em ordem; `null` é espaço vazio */
+  itens: (string | null)[];
+}
+
 export interface Filme {
   id: string;
   titulo: string;

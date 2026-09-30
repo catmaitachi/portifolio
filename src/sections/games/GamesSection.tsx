@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Jogo, Jogos } from '~/data/types';
+import { format } from '~/content';
+import type { Jogo, Jogos, Minecraft } from '~/data/types';
 import { useArrowKeys } from '~/hooks/useArrowKeys';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
 import { useRemoto } from '~/hooks/useRemoto';
@@ -8,7 +9,9 @@ import { EstadoRemoto, type SemDado, Traco } from '../EstadoRemoto';
 import { PerfilExterno } from '../PerfilExterno';
 import comum from '../section.module.css';
 import type { SectionProps } from '../types';
+import { Boneco, PedestalVazio } from './Boneco';
 import styles from './GamesSection.module.css';
+import { Liga } from './Liga';
 
 /** O "jogando agora" muda em minutos, não em segundos. */
 const REPETIR = 60_000;
@@ -297,7 +300,37 @@ function Conteudo({ dados, ativo }: { dados: Jogos; ativo: boolean }) {
 }
 
 /**
- * Jogos: o que está aberto agora, e o que rodou nas últimas duas semanas.
+ * O canto do Minecraft: o boneco com a skin de verdade, no pedestal.
+ *
+ * O boneco é desenho, e o nome acessível vai aqui, num `role="img"`: a placa do
+ * nome e os gestos não dizem nada a quem não os vê. Sem a skin (esperando, ou a
+ * Mojang fora do ar) fica o pedestal vazio, no mesmo tamanho, para a seção não
+ * pular quando ela chega.
+ */
+function CantoMinecraft({ ativo }: { ativo: boolean }) {
+  const t = useT();
+  const mc = useRemoto<Minecraft>('api/minecraft', ativo);
+
+  if (mc.estado !== 'pronto') {
+    return (
+      <EstadoRemoto estado={mc.estado}>
+        <PedestalVazio />
+      </EstadoRemoto>
+    );
+  }
+
+  const { nome, skin, slim, capa } = mc.dados;
+  return (
+    <div role="img" aria-label={format(t.jogos.minecraft.boneco, { nome })}>
+      <Boneco nome={nome} skin={skin} slim={slim} capa={capa} ativo={ativo} />
+    </div>
+  );
+}
+
+/**
+ * Jogos: o que está aberto agora, e o que rodou nas últimas duas semanas, na
+ * Steam; embaixo, o League of Legends (ainda só a forma) e o boneco do
+ * Minecraft.
  *
  * O dado vem de `api/steam`. Como em Música, o destaque tem dois estados e o
  * segundo é o comum: **ninguém está jogando na maior parte do dia**, e aí o lugar
@@ -331,6 +364,20 @@ export function GamesSection({ ativo, indice }: SectionProps) {
         ) : (
           <Molde estado={jogos.estado} />
         )}
+
+        {/* o andar de baixo: o LoL, e o Minecraft por último e mais estreito */}
+        <div className={styles.andar}>
+          <div className={styles.parte}>
+            <h3 className={comum.tituloLista}>{t.jogos.lol.titulo}</h3>
+            <Liga ativo={ativo} />
+          </div>
+          <div className={styles.parte}>
+            <h3 className={comum.tituloLista}>{t.jogos.minecraft.titulo}</h3>
+            <div className={styles.canto}>
+              <CantoMinecraft ativo={ativo} />
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

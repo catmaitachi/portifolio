@@ -226,6 +226,28 @@ export interface Dictionary {
     /** os dois passos do deque */
     anterior: string;
     proximo: string;
+    minecraft: {
+      titulo: string;
+      /** o nome acessível do boneco, que é desenho; `{nome}` é o nick */
+      boneco: string;
+    };
+    /** o LoL: hoje com dados de exemplo (ver `pendencias.md`) */
+    lol: {
+      titulo: string;
+      /** `{n}` é o nível, para o leitor de tela */
+      nivel: string;
+      maestria: string;
+      pontos: string;
+      partidas: string;
+      vitoria: string;
+      derrota: string;
+      /** o nome de cada fila, pelo `queueId` da Riot */
+      filas: Record<string, string>;
+      /** a fila que não está no mapa */
+      outraFila: string;
+      /** por que as partidas de ARAM: Desordem faltam (a Riot não as publica) */
+      semDesordem: string;
+    };
   };
   filmes: {
     titulo: string;

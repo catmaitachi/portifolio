@@ -65,16 +65,6 @@
   text-wrap: pretty;
 }
 
-/* o cargo, para o leitor de tela: o maço que o mostra é `aria-hidden` */
-.oculto {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
 /**
  * A empresa ou o projeto como link, quando a experiência tem endereço.
  *

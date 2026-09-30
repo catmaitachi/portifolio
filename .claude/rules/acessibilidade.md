@@ -21,6 +21,12 @@ paths:
 - **As capas do deque de Jogos são desenho** (`aria-hidden`): quem usa leitor de tela navega pelo
   painel ao lado, que diz o rótulo, o nome (link para o jogo) e as horas, num `aria-live`. Trocar de
   jogo é pelas setas ←/→ ou pelos passos (`jogos.anterior`, `jogos.proximo`).
+- **O boneco do Minecraft é desenho** (`aria-hidden`) dentro de um `role="img"` com o nick e o que
+  ele é (`jogos.minecraft.boneco`). Golpe, arraste e gestos são brincadeira para o mouse e o toque, e
+  não têm equivalente de teclado: não há informação neles que o rótulo não diga. No LoL, o nível da carta vai
+  escrito para o leitor de tela (`comum.oculto`, com `jogos.lol.nivel`), o pódio é uma `<ol>` na ordem
+  da maestria (o 1º no meio é só `order` visual), e as partidas são um `<details>`, que já diz se está
+  aberto.
 - **Os passos ficam `disabled` nas pontas e no lugar, nunca escondidos**, em Jogos e na Carreira:
   um botão que deixa de existir enquanto está focado joga o foco no `body` no meio do gesto. Com um
   item só não há passo nenhum.
