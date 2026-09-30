@@ -60,6 +60,22 @@
   object-fit: cover;
 }
 
+/**
+ * O lugar de uma imagem no molde: um círculo de 1px, do tamanho dela. No brasão
+ * ele ocupa o buraco do ícone; no pódio, o ícone do campeão.
+ */
+.vazio {
+  display: block;
+  border: 1px solid var(--linha);
+  border-radius: 50%;
+  background: var(--fundo-sutil);
+}
+
+.campeao .vazio {
+  width: 52px;
+  height: 52px;
+}
+
 .borda {
   position: absolute;
   inset: 0;
