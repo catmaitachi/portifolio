@@ -129,11 +129,38 @@
         "ícone redondo nos campeões de maior maestria",
         "últimas partidas num dropdown, com o ícone no fim da linha"
       ]
+    },
+    {
+      "nome": "música: gêneros",
+      "arquivo": "src/sections/music/MusicSection.tsx",
+      "escolha": "retratos-A-2 (Retratos empilhados), depois de um refazer, numa gaveta",
+      "referencias": [
+        {
+          "site": "kibo-ui",
+          "componente": "avatar-stack",
+          "url": "https://www.kibo-ui.com",
+          "tomei": "retratos sobrepostos com anel da cor do fundo, e o tamanho da pilha é o número",
+          "mudei": "sem biblioteca: pilha em CSS, os retratos se abrem ao apontar; redondos e sem cor como a fileira de Mais ouvidos; cada um leva ao perfil"
+        },
+        {
+          "site": "reactbits",
+          "componente": "Stack",
+          "url": "https://reactbits.dev/components/stack",
+          "tomei": "cartões empilhados que se abrem para destacar um",
+          "mudei": "margem negativa em vez de transform; a legenda de medida fixa diz quem foi apontado, escrita direto no textContent"
+        }
+      ],
+      "ajustes": [
+        "nenhum dos três primeiros (pontos, radar, mosaico) conversava com o que já existe do Spotify: o gráfico precisa usar o material da seção (retratos, capas, barra de 1px)",
+        "tirar a observação do fim (a nota de quantos artistas o Spotify classificou)",
+        "o nome do artista apontado aparece em algum lugar mais interessante que uma legenda: no fim da própria fileira",
+        "a área vira um dropdown, como o histórico de partidas do LoL"
+      ]
     }
   ],
   "baseado_em": {
     "conceito": 1,
     "direcao": 1
   },
-  "revisao": 3
+  "revisao": 5
 }

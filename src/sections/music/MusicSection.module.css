@@ -85,6 +85,8 @@
   /* as colunas da parede de capas e da fileira de retratos */
   --capas-cols: 4;
   --artistas-cols: 8;
+  /* a coluna dos nomes do gráfico de gêneros: a mesma em todas as linhas, para as barras alinharem */
+  --genero-nome: 16ch;
 }
 
 .bloco {
@@ -115,6 +117,12 @@
 .bloco[data-ativo] .faixa {
   animation: chega 0.6s var(--ease-entrada) backwards;
   animation-delay: calc(0.45s + var(--ordem, 0) * 60ms);
+}
+
+/* cada retrato chega da profundidade, fileira por fileira e um depois do outro */
+.bloco[data-ativo] .generoRetrato {
+  animation: chega 0.6s var(--ease-entrada) backwards;
+  animation-delay: calc(0.1s + var(--fileira, 0) * 60ms + var(--i, 0) * 45ms);
 }
 
 .bloco[data-ativo] .artistas li {
@@ -506,6 +514,226 @@
   font-size: var(--fs-meta);
 }
 
+/* ---------- os gêneros ---------- */
+
+/* as abas são as de Filmes: o módulo escopa as classes, então a regra é copiada */
+.abas {
+  display: flex;
+  gap: 22px;
+}
+
+.aba {
+  margin: 0;
+  padding: 0 0 6px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-controle);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+  cursor: pointer;
+  appearance: none;
+  transition:
+    color var(--dur-hover),
+    border-color var(--dur-hover);
+}
+
+.aba:hover {
+  color: var(--tx-hover);
+}
+
+.aba[aria-pressed='true'] {
+  border-color: var(--tx-titulo);
+  color: var(--tx-titulo);
+}
+
+.generos {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.genero {
+  display: grid;
+  grid-template-columns: var(--genero-nome) auto 1fr;
+  gap: 14px;
+  align-items: center;
+  color: var(--tx-corpo);
+  font-size: var(--fs-lista);
+}
+
+.generoNome {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/**
+ * A fileira é uma pilha: cada retrato entra 9px sobre o anterior, com um anel do
+ * preto da página (o respiro entre marcas que se tocam), e ao apontar a pilha
+ * eles se abrem. Redondos e sem cor até serem apontados, como "Mais ouvidos".
+ */
+.pilha {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 38px;
+}
+
+.generoRetrato {
+  display: block;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  margin-left: -9px;
+  overflow: hidden;
+  border: 2px solid #000;
+  border-radius: 50%;
+  outline: 1px solid var(--linha-forte);
+  outline-offset: -3px;
+  transition: margin-left 0.45s var(--ease-saida);
+}
+
+.generoRetrato:first-child {
+  margin-left: 0;
+}
+
+.generoRetrato img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) brightness(0.85);
+  transition: filter 0.5s var(--ease-saida);
+}
+
+.pilha:hover .generoRetrato,
+.pilha:focus-within .generoRetrato {
+  margin-left: 5px;
+}
+
+.pilha:hover .generoRetrato:first-child,
+.pilha:focus-within .generoRetrato:first-child {
+  margin-left: 0;
+}
+
+.generoRetrato:hover img,
+.generoRetrato:focus-visible img {
+  filter: none;
+}
+
+.generoN {
+  color: var(--tx-apoio);
+  font-size: var(--fs-meta);
+}
+
+/**
+ * O nome de quem está apontado, no fim da fileira. Cada retrato leva o seu, e o
+ * `.pilha` (e não o retrato) é quem o ancora: o retrato corta o que cai dentro
+ * dele, e a posição `static` deixa o nome fora do corte. Chega da profundidade,
+ * pequeno e desfocado, como tudo o que entra na página.
+ */
+.generoQuem {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  max-width: 26ch;
+  margin-left: 46px;
+  overflow: hidden;
+  color: var(--tx-titulo);
+  font-size: var(--fs-lista);
+  opacity: 0;
+  pointer-events: none;
+  text-overflow: ellipsis;
+  transform: translateY(-50%) scale(0.94);
+  transform-origin: left center;
+  white-space: nowrap;
+  filter: blur(4px);
+  transition:
+    opacity var(--dur-hover),
+    filter var(--dur-hover),
+    transform var(--dur-hover) var(--ease-saida);
+}
+
+.generoRetrato:hover .generoQuem,
+.generoRetrato:focus-visible .generoQuem {
+  opacity: 1;
+  transform: translateY(-50%);
+  filter: none;
+}
+
+/**
+ * A gaveta é a das partidas do LoL: o título inteiro é a alça, com a seta no fim,
+ * depois do risco, e abrir desliza a altura. A seta é a `.ponta` de sempre.
+ */
+.alca {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  color: var(--tx-rotulo);
+  list-style: none;
+  transition: color var(--dur-hover);
+}
+
+summary.alca {
+  cursor: pointer;
+}
+
+.alca::-webkit-details-marker {
+  display: none;
+}
+
+.alca:hover,
+.alca:focus-visible {
+  color: var(--tx-hover);
+}
+
+.alca h3 {
+  flex: 1;
+  color: inherit;
+}
+
+.seta {
+  --ponta: 7px;
+
+  margin: 0 3px 3px 0;
+  transform: rotate(135deg);
+  transition: transform var(--dur-hover) var(--ease-saida);
+}
+
+.gaveta[open] .seta {
+  margin: 3px 3px 0 0;
+  transform: rotate(-45deg);
+}
+
+/** `interpolate-size` deixa animar até `auto`; onde não há suporte, ela só abre. */
+.gaveta {
+  interpolate-size: allow-keywords;
+}
+
+.gaveta::details-content {
+  block-size: 0;
+  overflow: hidden;
+  transition:
+    block-size var(--dur-retorno) var(--ease-saida),
+    content-visibility var(--dur-retorno) allow-discrete;
+}
+
+.gaveta[open]::details-content {
+  block-size: auto;
+}
+
+.gavetaCorpo {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 16px;
+}
+
 /* os mais ouvidos: retratos redondos, sem cor até serem apontados */
 .artistas {
   display: grid;
@@ -573,6 +801,11 @@
  * brilho nenhum. É a mesma regra que o nome tem, pela mesma razão.
  */
 @media (prefers-reduced-motion: reduce) {
+  .gaveta::details-content,
+  .generoQuem {
+    transition: none;
+  }
+
   .progresso {
     background-image: none;
     background-color: var(--linha-cheia);
@@ -611,6 +844,7 @@
   .secao {
     --capa: 96px;
     --artistas-cols: 4;
+    --genero-nome: 11ch;
   }
 
   /* no estreito o respiro sobe: o que era separado por largura passa a depender da altura */

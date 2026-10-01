@@ -212,6 +212,12 @@ export interface Dictionary {
     faixas: string;
     artistas: string;
     recentes: string;
+    /** o título do gráfico de gêneros */
+    generos: string;
+    /** as três abas do gráfico, pelos períodos do Spotify */
+    periodos: { curto: string; medio: string; longo: string };
+    /** o valor de cada barra para o leitor de tela, com `{n}` */
+    generosArtistas: string;
   };
   jogos: {
     titulo: string;

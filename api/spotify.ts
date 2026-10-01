@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import type { Artista, Faixa, Musica } from '../src/data/types.js';
+import type { Artista, Faixa, Generos, Musica } from '../src/data/types.js';
 import { ambiente, falha, json, metodoInvalido } from './_resposta.js';
 
 /**
@@ -34,6 +34,8 @@ interface ArtistaSpotify {
   name: string;
   images: { url: string }[];
   external_urls: { spotify: string };
+  /** vazio em boa parte dos artistas: o Spotify só classifica o artista, nunca a faixa */
+  genres?: string[];
 }
 
 /** A maior primeiro é a ordem do Spotify; a menor serve para um sprite pequeno. */
@@ -55,6 +57,25 @@ const normalizarArtista = (a: ArtistaSpotify): Artista => ({
   imagem: menorImagem(a.images),
   url: a.external_urls.spotify,
 });
+
+/**
+ * Os gêneros de uma lista de artistas, com os artistas de cada um (a seção
+ * desenha os retratos, e quem conta é o tamanho da lista). **Não existe
+ * endpoint de gênero**: faixa e álbum não trazem nenhum, e o que há é a lista
+ * `genres` de cada artista, que aqui se soma. O Spotify deixa de fora cerca de
+ * 40% dos artistas, que ficam fora da conta.
+ */
+const contarGeneros = (artistas: ArtistaSpotify[]): Generos => {
+  const por = new Map<string, Artista[]>();
+  for (const a of artistas) {
+    const quem = normalizarArtista(a);
+    for (const g of a.genres ?? []) por.set(g, [...(por.get(g) ?? []), quem]);
+  }
+  return [...por]
+    .map(([nome, quem]) => ({ nome, quem }))
+    .sort((a, b) => b.quem.length - a.quem.length || a.nome.localeCompare(b.nome))
+    .slice(0, 8);
+};
 
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
   if (metodoInvalido(req, res)) return;
@@ -84,12 +105,18 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const em = (caminho: string) =>
       fetch(`https://api.spotify.com/v1/${caminho}`, { headers: cabecalho });
 
-    const [tocandoR, faixasR, artistasR, recentesR] = await Promise.all([
-      em('me/player/currently-playing'),
-      em('me/top/tracks?time_range=short_term&limit=8'),
-      em('me/top/artists?time_range=short_term&limit=8'),
-      em('me/player/recently-played?limit=8'),
-    ]);
+    // 50 é o máximo do Spotify: os oito retratos saem dos primeiros, e os gêneros, de todos
+    const [tocandoR, faixasR, artistasR, artistasMedioR, artistasLongoR, recentesR] =
+      await Promise.all([
+        em('me/player/currently-playing'),
+        em('me/top/tracks?time_range=short_term&limit=8'),
+        em('me/top/artists?time_range=short_term&limit=50'),
+        em('me/top/artists?time_range=medium_term&limit=50'),
+        em('me/top/artists?time_range=long_term&limit=50'),
+        em('me/player/recently-played?limit=8'),
+      ]);
+    const topArtistas = async (r: Response): Promise<ArtistaSpotify[]> =>
+      r.ok ? ((await r.json()) as { items: ArtistaSpotify[] }).items : [];
 
     /**
      * **204 é a resposta normal**, não um erro: é assim que o Spotify diz que
@@ -117,9 +144,13 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const faixas = faixasR.ok
       ? ((await faixasR.json()) as { items: FaixaSpotify[] }).items.map(normalizarFaixa)
       : [];
-    const artistas = artistasR.ok
-      ? ((await artistasR.json()) as { items: ArtistaSpotify[] }).items.map(normalizarArtista)
-      : [];
+    const curto = await topArtistas(artistasR);
+    const artistas = curto.slice(0, 8).map(normalizarArtista);
+    const generos = {
+      curto: contarGeneros(curto),
+      medio: contarGeneros(await topArtistas(artistasMedioR)),
+      longo: contarGeneros(await topArtistas(artistasLongoR)),
+    };
     /**
      * As recentes vêm com repetição: quem ouve a mesma faixa duas vezes seguidas
      * aparece duas vezes. A deduplicação acontece **no mesmo passo** da
@@ -148,12 +179,12 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       return falha(res, 502, `spotify:${tocandoR.status}`);
     }
 
-    const dados: Musica = { tocando, recentes, faixas, artistas, medidoEm: Date.now() };
+    const dados: Musica = { tocando, recentes, faixas, artistas, generos, medidoEm: Date.now() };
     /**
      * 10s de borda, e só mais 10s de valor velho. Eram 30s e cinco minutos (os
      * dez vezes de `json`), e a primeira visita depois de um intervalo podia
      * receber a faixa de minutos atrás. O que está tocando é o dado mais vivo do
-     * site; o custo são quatro chamadas ao Spotify a cada 10s no pior caso.
+     * site; o custo são seis chamadas ao Spotify a cada 10s no pior caso.
      */
     json(res, dados, 10, 10);
   } catch {

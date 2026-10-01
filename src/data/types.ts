@@ -43,6 +43,12 @@ export interface Artista {
   url: string;
 }
 
+/**
+ * Os gêneros dos artistas mais ouvidos de um período, com quem os tem: os maiores
+ * primeiro, e o tamanho de `quem` é o que ordena e o que a seção conta.
+ */
+export type Generos = { nome: string; quem: Artista[] }[];
+
 export interface Musica {
   /** `null` quando não há nada tocando, que é o estado mais comum */
   tocando: Faixa | null;
@@ -50,6 +56,8 @@ export interface Musica {
   /** mais tocadas do último mês */
   faixas: Faixa[];
   artistas: Artista[];
+  /** do último mês, dos últimos seis meses e de sempre (os três períodos do Spotify) */
+  generos: { curto: Generos; medio: Generos; longo: Generos };
   /**
    * Quando o Spotify foi perguntado, em ms desde 1970. A resposta pode ter passado
    * alguns segundos no cache da borda, e é por este número que a página desconta

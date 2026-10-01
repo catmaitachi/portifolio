@@ -294,7 +294,7 @@ o que separa um estado do outro.
 
 | | Destaque | Resto |
 |---|---|---|
-| Música | o que está tocando: capa, faixa, artista e a barra de progresso | as oito mais tocadas numa parede de capas, e os oito mais ouvidos numa fileira de retratos |
+| Música | o que está tocando: capa, faixa, artista e a barra de progresso | as oito mais tocadas numa parede de capas, os oito mais ouvidos numa fileira de retratos e os gêneros numa gaveta de retratos |
 | Jogos | jogando agora, ou o último jogado: a capa da frente do deque, com o painel ao lado | os das duas últimas semanas, atrás dela no deque |
 | Filmes | não tem: todo filme é passado | uma lista escolhida a dedo e os últimos assistidos, em duas abas de película |
 
@@ -306,6 +306,40 @@ retratos redondos, sem cor até serem apontados. Escolhida entre três direçõe
 resto eram duas listas de texto e o destaque ficava no pé da seção, numa caixa chanfrada como a de
 Jogos. **Sem hover** (toque), a legenda não teria como aparecer, e vai para baixo da capa, com a
 parede em duas colunas.
+
+**Os gêneros fecham a seção, numa gaveta de retratos** (`Generos`, em `MusicSection`): os oito
+maiores, cada um com um retrato redondo por artista que o tem, e os três períodos do Spotify em abas
+(Mês, 6 meses, Sempre, `aria-pressed`, como as de Filmes). Escolhido numa rodada da skill
+`inspiration` (01/10/2026), depois de um refazer: a primeira versão era um ranking de barras feito
+sem rodada, e o primeiro conjunto da vitrine (pontos, radar e mosaico) foi recusado com "nenhum
+conversa bem com o que já existe do Spotify". As escolhas decorrem disso:
+
+- **o gráfico é feito de gente, com o material da seção.** Os retratos são os da fileira de "Mais
+  ouvidos": redondos, **sem cor até serem apontados**, e cada um é um link para o perfil do artista.
+  O comprimento da fileira é a contagem, e o número ao lado só a confirma. Foram vistas e
+  recusadas as capas de gênero (parede de 4 colunas) e o espectro de uma barra com bandeja;
+- **a fileira é uma pilha**: cada retrato entra 9px sobre o anterior, com um anel do preto da página
+  (o respiro entre marcas que se tocam), e **ao apontar a pilha se abre**. Referências:
+  Kibo UI `avatar-stack` e React Bits `Stack`;
+- **o nome de quem está apontado aparece no fim da própria fileira**, depois do número, chegando da
+  profundidade (pequeno e desfocado, como tudo). Cada retrato leva o seu `.generoQuem`, ancorado no
+  `.pilha`: o retrato corta o que cai dentro dele, e a posição `static` do retrato deixa o nome fora
+  do corte. Uma legenda de medida fixa embaixo do gráfico foi a primeira versão, e saiu: o nome
+  longe do retrato obrigava a olhar para dois lugares. O nome é `aria-hidden`, porque o `aria-label`
+  do link já o diz;
+- **é uma gaveta, a mesma das partidas do LoL**: `<details>` fechado ao chegar, o título inteiro como
+  alça, a seta (`.ponta`) no fim da linha depois do risco, e a altura que desliza
+  (`interpolate-size`; onde não há suporte, só abre). É o detalhe, e a parede de capas e os retratos
+  de "Mais ouvidos" já dizem o que se ouve. Os retratos chegam quando ela abre: o conteúdo de uma
+  gaveta fechada não é renderizado, e a animação só corre depois. O molde mostra só a alça fechada;
+- **sem nota embaixo**, a pedido do Lucas. O Spotify deixa uns 40% dos artistas sem gênero (**5 dos 8
+  retratos de "Mais ouvidos" no mês** em 01/10/2026: mgk, Chase Atlantic, blackbear, TV Girl e Taylor
+  Swift), e é por isso que a conta parte dos 50 maiores e não dos 8: uma lente de gênero sobre a
+  parede de capas ficaria quase toda apagada. Quem quiser a leitura de quantos foram classificados
+  não a encontra na tela;
+- **a entrada**: cada retrato chega da profundidade, fileira por fileira e um depois do outro
+  (`--fileira`, `--i`); trocar de aba refaz a conta pela `key`. Período sem gênero nenhum não vira
+  aba.
 
 **Tocando, o rótulo leva um equalizador**: quatro traços de 1px subindo e descendo, cada um no seu
 tempo, ao lado do ponto que pulsa. **Calado**, o rótulo diz há quanto tempo foi a última faixa ("Tocou
