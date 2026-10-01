@@ -25,7 +25,7 @@ projeto que roda fora do navegador.
 
 | Função | Segredos | Cache de borda | O que devolve |
 |---|---|---|---|
-| `api/spotify.ts` | `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REFRESH_TOKEN` | 10s (e só 10s servido velho) | tocando agora, mais tocadas, mais ouvidos, recentes |
+| `api/spotify.ts` | `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REFRESH_TOKEN` | 10s (e só 10s servido velho) | tocando agora, mais tocadas, mais ouvidos, recentes e os gêneros (três períodos) |
 | `api/steam.ts` | `STEAM_API_KEY`, `STEAM_ID` | 60s | jogando agora e os das duas últimas semanas |
 | `api/letterboxd.ts` | `LETTERBOXD_USER`, `LETTERBOXD_LIST` (opcional) | 30min | últimos assistidos com a nota, e uma lista escolhida a dedo |
 | `api/github.ts` | `GITHUB_TOKEN` | 1h | os repositórios de `shared.json → projetos`, com atividade, linguagens e números |
@@ -141,6 +141,13 @@ aparecer, como em toda imagem da página, e o botão de rodar o site continua fu
   episódio de podcast não tem a forma de faixa. O refresh token sai de `scripts/spotify-token.mjs`,
   que faz a autorização uma vez; o app precisa ter `http://127.0.0.1:8888/callback` nos Redirect
   URIs, com o **IP**, porque `localhost` é recusado, e com a porta, que é obrigatória no loopback.
+  **Gênero não tem endpoint**, e faixa e álbum não trazem nenhum (conferido na conta real,
+  01/10/2026): o que existe é a lista `genres` de cada **artista**, em `/me/top/artists`. A função
+  pede os 50 maiores (o máximo) dos três períodos (`short`, `medium` e `long_term`) e soma por gênero
+  (`contarGeneros`), e cada gênero leva **os artistas que o têm** (`quem`, com retrato e perfil), então a seção conta artistas, não horas. Cerca de 40% dos artistas voltam
+  sem gênero nenhum e ficam fora da conta, sem aviso na tela. A
+  chamada que dava os oito retratos agora é a de 50, e os retratos saem dos oito primeiros: o custo
+  da mudança foram duas chamadas a mais, seis por resposta, e a resposta cresceu uns 18 KB com os artistas de cada gênero.
 - **Steam**: `gameextrainfo` só existe enquanto a partida está aberta, e sumir é como a API diz que
   ela acabou. O tempo jogado vem da outra chamada, porque o resumo traz só o nome. **O perfil
   precisa estar público**: fechado, a API responde 200 sem esses campos, o que é indistinguível de

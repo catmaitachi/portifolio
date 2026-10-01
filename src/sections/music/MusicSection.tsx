@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { format } from '~/content';
 import type { Faixa, Musica } from '~/data/types';
 import { useInclinacao } from '~/hooks/useInclinacao';
 import { useRemoto } from '~/hooks/useRemoto';
@@ -121,7 +122,97 @@ function Molde({ estado }: { estado: SemDado }) {
           ))}
         </ol>
       </div>
+      <div className={styles.alca}>
+        <h3 className={comum.tituloLista}>{t.musica.generos}</h3>
+        <span className={`${comum.ponta} ${styles.seta}`} aria-hidden="true" />
+      </div>
     </EstadoRemoto>
+  );
+}
+
+type Periodo = keyof Musica['generos'];
+
+/**
+ * Os gêneros dos artistas mais ouvidos: uma fileira por gênero, com um retrato
+ * redondo por artista, numa gaveta, e os três períodos do Spotify em abas.
+ *
+ * **O gráfico é feito de gente, e não de marcas abstratas.** Pontos, radar e
+ * mosaico foram vistos numa rodada e recusados: nenhum conversava com o que a
+ * seção já tem. Os retratos são os da fileira de "Mais ouvidos" (redondos, sem
+ * cor até serem apontados), e o comprimento da fileira é a contagem, então o
+ * número ao lado só confirma o que se vê. Cada retrato leva ao perfil do artista,
+ * e o nome de quem está apontado aparece na própria fileira, depois do número.
+ *
+ * **A gaveta é a das partidas do LoL** (`<details>`, fechada ao chegar, a seta no
+ * fim da linha do título): é o detalhe, e a parede de capas e os retratos de
+ * "Mais ouvidos" já dizem o que se ouve. Os retratos chegam quando ela abre.
+ */
+function Generos({ generos }: { generos: Musica['generos'] }) {
+  const { t } = useLanguage();
+  const [escolhido, setEscolhido] = useState<Periodo>('curto');
+  // período sem gênero nenhum não vira aba, como uma lista vazia em Filmes
+  const periodos = (['curto', 'medio', 'longo'] as const).filter((p) => generos[p].length);
+  const periodo = periodos.includes(escolhido) ? escolhido : periodos[0];
+  if (!periodo) return null;
+
+  return (
+    <details className={styles.gaveta}>
+      <summary className={styles.alca}>
+        <h3 className={comum.tituloLista}>{t.musica.generos}</h3>
+        <span className={`${comum.ponta} ${styles.seta}`} aria-hidden="true" />
+      </summary>
+      <div className={styles.gavetaCorpo}>
+        {periodos.length > 1 ? (
+          <div className={styles.abas} role="group" aria-label={t.musica.generos}>
+            {periodos.map((p) => (
+              <button
+                key={p}
+                type="button"
+                className={styles.aba}
+                aria-pressed={p === periodo}
+                onClick={() => setEscolhido(p)}
+              >
+                {t.musica.periodos[p]}
+              </button>
+            ))}
+          </div>
+        ) : null}
+        {/* a `key` refaz as fileiras ao trocar de aba: os retratos chegam de novo */}
+        <ol key={periodo} className={styles.generos}>
+          {generos[periodo].map((g, f) => (
+            <li key={g.nome} className={styles.genero} style={{ '--fileira': f } as React.CSSProperties}>
+              <span className={styles.generoNome}>{g.nome}</span>
+              <span
+                className={styles.pilha}
+                role="group"
+                aria-label={format(t.musica.generosArtistas, { n: String(g.quem.length) })}
+              >
+                {g.quem.map((a, i) => (
+                  <a
+                    key={a.id}
+                    className={styles.generoRetrato}
+                    href={a.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={a.nome}
+                    style={{ '--i': i } as React.CSSProperties}
+                  >
+                    {a.imagem ? <img src={a.imagem} alt="" loading="lazy" /> : null}
+                    {/* o nome do apontado, no fim da fileira: é desenho, o rótulo do link já o diz */}
+                    <span className={styles.generoQuem} aria-hidden="true">
+                      {a.nome}
+                    </span>
+                  </a>
+                ))}
+              </span>
+              <span className={styles.generoN} aria-hidden="true">
+                {g.quem.length}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </details>
   );
 }
 
@@ -288,6 +379,8 @@ function Conteudo({ dados }: { dados: Musica }) {
           ))}
         </ol>
       </div>
+
+      <Generos generos={dados.generos} />
     </>
   );
 }
