@@ -63,7 +63,7 @@
     }
   },
 
-  "projetos": ["catmaitachi/kittens"],
+  "projetos": ["catmaitachi/kittens", "catmaitachi/financeiro"],
 
   "canais": [
     {
