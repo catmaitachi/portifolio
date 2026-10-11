@@ -120,32 +120,161 @@
 }
 
 /**
- * A respiração do jogo: os braços balançam de leve, cada um para o seu lado.
- * Fora de cena, `.bloco:not([data-ativo]) *` já as pausa (`section.module.css`).
+ * A vida de quem está parado, como no Actions & Stuff: ele respira com o corpo
+ * todo e troca o peso de perna. São laços de CSS, no compositor, e o rAF do
+ * comportamento continua dormindo enquanto nada mais se move.
+ * Fora de cena, `.bloco:not([data-ativo]) *` já os pausa (`section.module.css`).
+ *
+ * **Estes laços animam `translate`, `rotate` e `scale`, e não `transform`.** As
+ * propriedades soltas somam com o `transform` que o JS escreve no mesmo nó (a
+ * cabeça) e umas com as outras, e os gestos entram por cima sem parar o laço.
+ *
+ * **O fôlego**: o tronco estica 3% a partir da cintura (e o peito enche, em
+ * profundidade), e o que mora em cima dele sobe o mesmo tanto: a cabeça e a capa
+ * a 12 texels da cintura, os braços a 10. A cabeça vai um pouco atrasada.
  */
+.palco {
+  --folego: 4.2s;
+  --peso: 11s;
+}
+
+@keyframes peito {
+  50% {
+    scale: 1 1.03 1.06;
+  }
+}
+
+@keyframes sobe {
+  50% {
+    translate: 0 calc(var(--px) * -0.36);
+  }
+}
+
+.peito {
+  animation: peito var(--folego) ease-in-out infinite;
+}
+
+.sobe,
+.cabeca {
+  animation: sobe var(--folego) ease-in-out infinite;
+}
+
+.cabeca {
+  animation-delay: 0.14s;
+}
+
+/* os braços sobem com o ombro e balançam de leve, cada um para o seu lado */
 @keyframes respiraD {
   50% {
+    translate: 0 calc(var(--px) * -0.3);
     transform: rotateZ(3deg) rotateX(2deg);
   }
 }
 
 @keyframes respiraE {
   50% {
+    translate: 0 calc(var(--px) * -0.3);
     transform: rotateZ(-3deg) rotateX(-2deg);
   }
 }
 
 .respiraD {
-  animation: respiraD 4.2s ease-in-out infinite;
+  animation: respiraD var(--folego) ease-in-out infinite;
 }
 
 .respiraE {
-  animation: respiraE 4.2s ease-in-out infinite;
+  animation: respiraE var(--folego) ease-in-out infinite;
 }
 
 /**
- * Os gestos, um por valor de `data-gesto` (a lista é `GESTOS`, em `Boneco.tsx`),
- * sempre no nó `.gesto` do braço direito.
+ * A troca de peso: o quadril vai meio texel para um lado, espera, e vai para o
+ * outro. As pernas giram o ângulo que mantém os pés onde estavam (meio texel em
+ * 12 de perna, 2,4°), e da cintura para cima ele inclina ao contrário, para a
+ * cabeça continuar no meio.
+ */
+@keyframes peso {
+  0%,
+  38%,
+  100% {
+    translate: calc(var(--px) * -0.5) 0;
+  }
+
+  50%,
+  88% {
+    translate: calc(var(--px) * 0.5) 0;
+  }
+}
+
+@keyframes pesoPerna {
+  0%,
+  38%,
+  100% {
+    rotate: z -2.4deg;
+  }
+
+  50%,
+  88% {
+    rotate: z 2.4deg;
+  }
+}
+
+@keyframes pesoAlto {
+  0%,
+  38%,
+  100% {
+    rotate: z 1.2deg;
+  }
+
+  50%,
+  88% {
+    rotate: z -1.2deg;
+  }
+}
+
+.quadril {
+  animation: peso var(--peso) ease-in-out infinite;
+}
+
+.perna {
+  animation: pesoPerna var(--peso) ease-in-out infinite;
+}
+
+.alto {
+  animation: pesoAlto var(--peso) ease-in-out infinite;
+}
+
+/**
+ * O pulo tem peso: ele agacha antes de sair do chão (`data-agacha`) e assenta
+ * quando volta (`data-pouso`). A escala parte dos pés, que são a origem do nó.
+ */
+@keyframes agacha {
+  to {
+    scale: 1.04 0.92 1.04;
+  }
+}
+
+@keyframes pouso {
+  35% {
+    scale: 1.05 0.9 1.05;
+  }
+}
+
+.palco[data-pouso] .quique {
+  animation: pouso 0.28s var(--ease-saida);
+}
+
+.palco[data-agacha] .quique {
+  animation: agacha 0.15s ease-out forwards;
+}
+
+/**
+ * Os gestos, um por valor de `data-gesto` (as listas são `CHEGADA` e `OCIOSOS`,
+ * em `comportamento.ts`). **Todo gesto anima o nó `.gesto` do braço direito pela
+ * duração inteira**: é o fim dessa animação que tira o `data-gesto`
+ * (`Boneco.tsx`). O que mais se mexe acompanha com a mesma duração.
+ *
+ * Onde o gesto pega um nó que já tem um laço, a lista repete o laço: o navegador
+ * mantém a animação que continua na lista, e ela não recomeça.
  *
  * O aceno do Bedrock: o braço sobe pelo lado, acima da cabeça, balança três
  * vezes e desce.
@@ -175,6 +304,248 @@
 
 .palco[data-gesto='acenar'] .gesto {
   animation: acenar 2.4s cubic-bezier(0.45, 0, 0.3, 1);
+}
+
+/* espreguiçar: os dois braços sobem pelos lados, o tronco arqueia e a cabeça vai para trás */
+@keyframes espreguicar {
+  0%,
+  100% {
+    transform: none;
+  }
+
+  28%,
+  72% {
+    transform: rotateZ(166deg) rotateX(-8deg);
+  }
+
+  50% {
+    transform: rotateZ(176deg) rotateX(-14deg);
+  }
+}
+
+@keyframes espreguicarE {
+  0%,
+  100% {
+    transform: none;
+  }
+
+  28%,
+  72% {
+    transform: rotateZ(-166deg) rotateX(-8deg);
+  }
+
+  50% {
+    transform: rotateZ(-176deg) rotateX(-14deg);
+  }
+}
+
+@keyframes espreguicarAlto {
+  0%,
+  100% {
+    transform: none;
+  }
+
+  28%,
+  72% {
+    transform: rotateX(4deg);
+  }
+
+  50% {
+    transform: rotateX(7deg);
+  }
+}
+
+@keyframes espreguicarCabeca {
+  0%,
+  100% {
+    rotate: x 0deg;
+  }
+
+  28%,
+  72% {
+    rotate: x 12deg;
+  }
+
+  50% {
+    rotate: x 18deg;
+  }
+}
+
+.palco[data-gesto='espreguicar'] {
+  --gesto: 3.2s cubic-bezier(0.45, 0, 0.3, 1);
+}
+
+.palco[data-gesto='espreguicar'] .gesto {
+  animation: espreguicar var(--gesto);
+}
+
+.palco[data-gesto='espreguicar'] .gestoE {
+  animation: espreguicarE var(--gesto);
+}
+
+.palco[data-gesto='espreguicar'] .alto {
+  animation:
+    pesoAlto var(--peso) ease-in-out infinite,
+    espreguicarAlto var(--gesto);
+}
+
+.palco[data-gesto='espreguicar'] .cabeca {
+  animation:
+    sobe var(--folego) ease-in-out 0.14s infinite,
+    espreguicarCabeca var(--gesto);
+}
+
+/**
+ * Comer (`data-acao='comer'`, com a duração em `COMER`, no comportamento): o
+ * braço traz a maçã dourada para a frente da boca, e são cinco mordidas. A cada
+ * uma o braço sobe um pouco, a cabeça desce até ela, a maçã encolhe um degrau
+ * (como no Actions & Stuff, onde a comida some aos pedaços) e caem migalhas.
+ *
+ * Não há mastigação: a boca é desenho da skin, e cada skin a põe num lugar.
+ */
+@keyframes comer {
+  0%,
+  100% {
+    transform: none;
+  }
+
+  12%,
+  29%,
+  43%,
+  57%,
+  71%,
+  86% {
+    transform: rotateY(30deg) rotateX(90deg);
+  }
+
+  22%,
+  36%,
+  50%,
+  64%,
+  78% {
+    transform: rotateY(30deg) rotateX(99deg);
+  }
+}
+
+@keyframes mordida {
+  0%,
+  15%,
+  29%,
+  43%,
+  57%,
+  71%,
+  85%,
+  100% {
+    rotate: x 0deg;
+  }
+
+  22%,
+  36%,
+  50%,
+  64%,
+  78% {
+    rotate: x -8deg;
+  }
+}
+
+@keyframes morde {
+  0% {
+    scale: 0;
+  }
+
+  9% {
+    scale: 1;
+  }
+
+  22% {
+    scale: 0.84;
+  }
+
+  36% {
+    scale: 0.68;
+  }
+
+  50% {
+    scale: 0.52;
+  }
+
+  64% {
+    scale: 0.36;
+  }
+
+  78%,
+  100% {
+    scale: 0;
+  }
+}
+
+@keyframes migalha {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(calc(var(--dx) * var(--px)), calc(var(--px) * 7));
+  }
+}
+
+.palco[data-acao='comer'] {
+  --comer: 2.4s;
+}
+
+.palco[data-acao='comer'] .gesto {
+  animation: comer var(--comer) ease-in-out;
+}
+
+.palco[data-acao='comer'] .cabeca {
+  animation:
+    sobe var(--folego) ease-in-out 0.14s infinite,
+    mordida var(--comer) ease-in-out;
+}
+
+/* o item da mão: a textura do jogo (`golden_apple.png`, 16 texels), em 6: maior, cobriria os olhos */
+.item {
+  visibility: hidden;
+}
+
+.item span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(var(--px) * 6);
+  height: calc(var(--px) * 6);
+  margin: calc(var(--px) * -3) 0 0 calc(var(--px) * -3);
+  background: url('../../assets/minecraft/maca-dourada.png') 0 0 / 100% 100%;
+  image-rendering: pixelated;
+  backface-visibility: hidden;
+}
+
+.palco[data-acao='comer'] .item {
+  visibility: visible;
+  animation: morde var(--comer) steps(1) both;
+}
+
+.migalhas span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--px);
+  height: var(--px);
+  margin: calc(var(--px) * -0.5) 0 0 calc(var(--px) * -0.5);
+  /* as migalhas têm duas cores da textura da maçã */
+  background: #eaee57;
+  opacity: 0;
+  backface-visibility: hidden;
+}
+
+.migalhas span:nth-child(even) {
+  background: #dba213;
+}
+
+/* cada migalha cai na mordida dela: a primeira aos 22%, e uma a cada 14% */
+.palco[data-acao='comer'] .migalhas span {
+  animation: migalha 0.45s ease-in calc(var(--comer) * (0.22 + var(--i) * 0.14));
 }
 
 /**
@@ -341,6 +712,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .peito,
+  .sobe,
+  .cabeca,
+  .quadril,
+  .perna,
+  .alto,
   .respiraD,
   .respiraE,
   .palco[data-visto] .cena,

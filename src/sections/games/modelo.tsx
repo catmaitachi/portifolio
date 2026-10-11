@@ -97,15 +97,18 @@ function Caixa({ capa, uv: [u, v], tam: [w, h, d], centro, infla = 0 }: CaixaPro
 function Parte({
   pivo,
   giro,
+  classe,
   children,
 }: {
   pivo: Vec;
   giro?: RefObject<HTMLDivElement | null>;
+  /** a animação de CSS do nó que gira (pelas propriedades soltas, que somam com o `transform` do JS) */
+  classe?: string;
   children: ReactNode;
 }) {
   return (
     <div className={styles.no} style={{ transform: em(pivo) }}>
-      <div ref={giro} className={styles.no}>
+      <div ref={giro} className={classe ? `${styles.no} ${classe}` : styles.no}>
         {children}
       </div>
     </div>
@@ -123,9 +126,25 @@ export interface Nos {
 }
 
 /**
+ * O item é a figura do jogo em dois planos em cruz, cada um com frente e verso:
+ * de lado, um plano só sumiria. O giro desfaz o do braço, que entra para o meio
+ * do corpo ao comer (`comer`, no CSS), e a figura fica de frente como o rosto.
+ */
+const ITEM = [0, 180, 90, -90];
+const GIRO_ITEM = 30;
+
+/** Para onde cai cada migalha, em texels: duas por mordida, e cinco mordidas (os atrasos são do CSS). */
+const MIGALHAS = [-1.6, 1.2, -0.4, 1.8, -1.1, 0.7, 1.5, -1.9, 0.3, -0.9];
+
+/**
  * O jogador inteiro, com a origem nos pés e y negativo para cima, em texels,
  * como o modelo do jogo. `slim` é o modelo de braços de 3 texels (Alex); o largo
  * (Steve) tem 4.
+ *
+ * **A árvore tem a forma do que se move junto.** O corpo todo assenta no pouso
+ * (`quique`) e troca o peso de perna (`quadril`); da cintura para cima (`alto`,
+ * com o pivô na cintura) ele inclina ao contrário do quadril e sobe com o
+ * fôlego. As pernas ficam de fora do `alto`, com os pés no chão.
  *
  * É `memo`: a vida e os gestos re-renderizam o boneco, e as 72 faces não mudam.
  */
@@ -140,50 +159,79 @@ export const Modelo = memo(function Modelo({
 }) {
   const bw = slim ? 3 : 4;
   const bx = slim ? 0.5 : 1;
-  const oy = slim ? -21.5 : -22;
+  /** o ombro, a partir da cintura */
+  const oy = slim ? -9.5 : -10;
 
   return (
     <div ref={nos.corpo} className={styles.boneco}>
-      <Parte pivo={[0, -24, 0]} giro={nos.cabeca}>
-        <Caixa uv={[0, 0]} tam={[8, 8, 8]} centro={[0, -4, 0]} />
-        <Caixa uv={[32, 0]} tam={[8, 8, 8]} centro={[0, -4, 0]} infla={0.5} />
-      </Parte>
-      <Parte pivo={[0, -24, 0]}>
-        <Caixa uv={[16, 16]} tam={[8, 12, 4]} centro={[0, 6, 0]} />
-        <Caixa uv={[16, 32]} tam={[8, 12, 4]} centro={[0, 6, 0]} infla={0.25} />
-      </Parte>
-      {/* nos braços são três giros: o do andar (JS), o da respiração (CSS) e,
-          no direito, o dos gestos; um `transform` por nó, senão um apaga o outro */}
-      <Parte pivo={[-5, oy, 0]} giro={nos.bracoD}>
-        <div className={`${styles.no} ${styles.respiraD}`}>
-          <div className={`${styles.no} ${styles.gesto}`}>
-            <Caixa uv={[40, 16]} tam={[bw, 12, 4]} centro={[-bx, 4, 0]} />
-            <Caixa uv={[40, 32]} tam={[bw, 12, 4]} centro={[-bx, 4, 0]} infla={0.25} />
-          </div>
+      <div className={`${styles.no} ${styles.quique}`}>
+        <div className={`${styles.no} ${styles.quadril}`}>
+          <Parte pivo={[0, -12, 0]} classe={styles.alto}>
+            <Parte pivo={[0, -12, 0]} giro={nos.cabeca} classe={styles.cabeca}>
+              <Caixa uv={[0, 0]} tam={[8, 8, 8]} centro={[0, -4, 0]} />
+              <Caixa uv={[32, 0]} tam={[8, 8, 8]} centro={[0, -4, 0]} infla={0.5} />
+              {/* as migalhas caem da boca, na frente do rosto */}
+              <div className={`${styles.no} ${styles.migalhas}`} style={{ transform: em([0, -1.5, 4.8]) }}>
+                {MIGALHAS.map((dx, i) => (
+                  <span key={dx} style={{ '--dx': dx, '--i': i >> 1 } as React.CSSProperties} />
+                ))}
+              </div>
+            </Parte>
+            {/* o tronco tem o pivô na cintura: o fôlego o estica para cima, e a cintura não abre */}
+            <Parte pivo={[0, 0, 0]} classe={styles.peito}>
+              <Caixa uv={[16, 16]} tam={[8, 12, 4]} centro={[0, -6, 0]} />
+              <Caixa uv={[16, 32]} tam={[8, 12, 4]} centro={[0, -6, 0]} infla={0.25} />
+            </Parte>
+            {/* nos braços são três giros: o do andar (JS), o da respiração (CSS) e
+                o dos gestos; um `transform` por nó, senão um apaga o outro */}
+            <Parte pivo={[-5, oy, 0]} giro={nos.bracoD}>
+              <div className={`${styles.no} ${styles.respiraD}`}>
+                <div className={`${styles.no} ${styles.gesto}`}>
+                  <Caixa uv={[40, 16]} tam={[bw, 12, 4]} centro={[-bx, 4, 0]} />
+                  <Caixa uv={[40, 32]} tam={[bw, 12, 4]} centro={[-bx, 4, 0]} infla={0.25} />
+                  {/* o item da mão: com o braço erguido, fica de pé e de frente para a boca */}
+                  <div
+                    className={`${styles.no} ${styles.item}`}
+                    style={{ transform: `${em([-bx, 10, 3.2])} rotateZ(${GIRO_ITEM}deg)` }}
+                  >
+                    {ITEM.map((giro) => (
+                      <span key={giro} style={{ transform: `rotateX(-90deg) rotateY(${giro}deg)` }} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Parte>
+            <Parte pivo={[5, oy, 0]} giro={nos.bracoE}>
+              <div className={`${styles.no} ${styles.respiraE}`}>
+                <div className={`${styles.no} ${styles.gestoE}`}>
+                  <Caixa uv={[32, 48]} tam={[bw, 12, 4]} centro={[bx, 4, 0]} />
+                  <Caixa uv={[48, 48]} tam={[bw, 12, 4]} centro={[bx, 4, 0]} infla={0.25} />
+                </div>
+              </div>
+            </Parte>
+            {capa && (
+              <Parte pivo={[0, -12, -2]} classe={styles.sobe}>
+                {/* a capa é modelada de frente para o corpo e virada para trás */}
+                <div className={`${styles.no} ${styles.capa}`}>
+                  <Caixa capa uv={[0, 0]} tam={[10, 16, 1]} centro={[0, 8, 0.5]} />
+                </div>
+              </Parte>
+            )}
+          </Parte>
+          <Parte pivo={[-1.9, -12, 0]} giro={nos.pernaD}>
+            <div className={`${styles.no} ${styles.perna}`}>
+              <Caixa uv={[0, 16]} tam={[4, 12, 4]} centro={[0, 6, 0]} />
+              <Caixa uv={[0, 32]} tam={[4, 12, 4]} centro={[0, 6, 0]} infla={0.25} />
+            </div>
+          </Parte>
+          <Parte pivo={[1.9, -12, 0]} giro={nos.pernaE}>
+            <div className={`${styles.no} ${styles.perna}`}>
+              <Caixa uv={[16, 48]} tam={[4, 12, 4]} centro={[0, 6, 0]} />
+              <Caixa uv={[0, 48]} tam={[4, 12, 4]} centro={[0, 6, 0]} infla={0.25} />
+            </div>
+          </Parte>
         </div>
-      </Parte>
-      <Parte pivo={[5, oy, 0]} giro={nos.bracoE}>
-        <div className={`${styles.no} ${styles.respiraE}`}>
-          <Caixa uv={[32, 48]} tam={[bw, 12, 4]} centro={[bx, 4, 0]} />
-          <Caixa uv={[48, 48]} tam={[bw, 12, 4]} centro={[bx, 4, 0]} infla={0.25} />
-        </div>
-      </Parte>
-      <Parte pivo={[-1.9, -12, 0]} giro={nos.pernaD}>
-        <Caixa uv={[0, 16]} tam={[4, 12, 4]} centro={[0, 6, 0]} />
-        <Caixa uv={[0, 32]} tam={[4, 12, 4]} centro={[0, 6, 0]} infla={0.25} />
-      </Parte>
-      <Parte pivo={[1.9, -12, 0]} giro={nos.pernaE}>
-        <Caixa uv={[16, 48]} tam={[4, 12, 4]} centro={[0, 6, 0]} />
-        <Caixa uv={[0, 48]} tam={[4, 12, 4]} centro={[0, 6, 0]} infla={0.25} />
-      </Parte>
-      {capa && (
-        <Parte pivo={[0, -24, -2]}>
-          {/* a capa é modelada de frente para o corpo e virada para trás */}
-          <div className={`${styles.no} ${styles.capa}`}>
-            <Caixa capa uv={[0, 0]} tam={[10, 16, 1]} centro={[0, 8, 0.5]} />
-          </div>
-        </Parte>
-      )}
+      </div>
     </div>
   );
 });
