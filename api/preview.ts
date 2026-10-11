@@ -65,6 +65,11 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       'viewport.height': '800',
       'viewport.deviceScaleFactor': '1',
       type: 'jpeg',
+      // site que monta a tela com JavaScript (React, Vite) chega vazio no
+      // `load`, e sem esperar a foto sai em branco: preta, 3 kB. Espera a rede
+      // aquietar e mais um pouco, para a animação de entrada terminar.
+      waitUntil: 'networkidle2',
+      waitForTimeout: '3000',
     });
     const captura = await fetch(`https://api.microlink.io/?${pedido}`);
     if (!captura.ok) return falha(res, 502, `captura:${captura.status}`);

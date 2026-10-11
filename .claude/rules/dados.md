@@ -131,6 +131,11 @@ captura do [microlink](https://microlink.io). Três decisões:
   hora. A imagem passa pela função, e não por um redirecionamento ao endereço do microlink: o
   endereço dele é de uma captura, e não se sabe por quanto tempo vive.
 
+- **espera a página montar** (`waitUntil=networkidle2` e 3 s de `waitForTimeout`). Site feito com
+  JavaScript (o do `financeiro` é Vite + React) chega com `<div id="root">` vazio no `load`, e sem a
+  espera a foto sai **preta, 3 kB, com status 200**, e o cache da borda a guarda por um dia. A
+  função ganhou `maxDuration: 30` no `vercel.json` por causa disso.
+
 Sem foto (a cota acabou, o site caiu), a `<img>` se esconde e a moldura de 1px da janela volta a
 aparecer, como em toda imagem da página, e o botão de rodar o site continua funcionando.
 
