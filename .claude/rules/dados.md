@@ -135,6 +135,11 @@ captura do [microlink](https://microlink.io). Três decisões:
   JavaScript (o do `financeiro` é Vite + React) chega com `<div id="root">` vazio no `load`, e sem a
   espera a foto sai **preta, 3 kB, com status 200**, e o cache da borda a guarda por um dia. A
   função ganhou `maxDuration: 30` no `vercel.json` por causa disso.
+- **`force=true`: o microlink não tem cache próprio aqui.** Ele guarda cada captura por 24 h
+  (`x-cache-ttl`), e sem o `force` um site atualizado continuava com a foto velha mesmo depois de
+  redeploy: o deploy limpa o cache da Vercel, e o do microlink devolve a mesma imagem. Com o `force`,
+  só o `CACHE` daqui decide a validade. O custo é uma captura da cota a cada vez que a borda
+  renova a foto (um dia, um redeploy ou outra região).
 
 Sem foto (a cota acabou, o site caiu), a `<img>` se esconde e a moldura de 1px da janela volta a
 aparecer, como em toda imagem da página, e o botão de rodar o site continua funcionando.

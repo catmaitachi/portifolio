@@ -70,6 +70,10 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       // aquietar e mais um pouco, para a animação de entrada terminar.
       waitUntil: 'networkidle2',
       waitForTimeout: '3000',
+      // o microlink guarda cada captura por 24 h, por cima do nosso cache: um
+      // redeploy limpa o da Vercel e a foto velha do site volta mesmo assim.
+      // Quem manda na validade é o `CACHE` daqui, uma camada só.
+      force: 'true',
     });
     const captura = await fetch(`https://api.microlink.io/?${pedido}`);
     if (!captura.ok) return falha(res, 502, `captura:${captura.status}`);
