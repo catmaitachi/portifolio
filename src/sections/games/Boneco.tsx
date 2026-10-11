@@ -22,13 +22,23 @@ interface BonecoProps {
 /**
  * O boneco no pedestal, com a placa do nome, a vida e o comportamento do jogo.
  *
- * - **Parado, ele olha o ponteiro**: a cabeça segue, o tronco vai junto, bem menos.
+ * - **Parado, ele está vivo** (o Actions & Stuff é a referência): respira com o
+ *   corpo todo, troca o peso de perna, e de tempos em tempos se espreguiça ou dá
+ *   um pulo. São laços e gestos de CSS.
+ * - **Ele olha o ponteiro**: a cabeça segue, o tronco vai junto, bem menos. Com o
+ *   ponteiro parado ou fora da página (e sempre, no toque), olha em volta sozinho.
  * - **Segurar e arrastar gira o corpo**, na direção da mão.
- * - **Ao chegar, faz um gesto** sorteado de `GESTOS` (hoje, o aceno do Bedrock).
+ * - **Ao chegar, faz um gesto** sorteado de `CHEGADA` (hoje, o aceno do Bedrock).
  * - **Clicar é um golpe**: ele fica vermelho, é empurrado para trás num pulo,
  *   volta andando e, se estava de costas, vira para quem bateu. A vida aparece
  *   só depois de um golpe, e some. Sem vida ele tomba de lado, vira fumaça e
  *   renasce.
+ * - **Machucado e deixado em paz, come uma maçã dourada**, e a vida volta aos
+ *   poucos. Um golpe no meio da mordida a derruba.
+ * - **Cada morte o traz mais preparado**: na primeira volta ele veste o
+ *   netherite, peça por peça, da bota ao elmo, e leva metade do dano; na segunda
+ *   saca espada e escudo, e defende o golpe que vem de frente; e na vez seguinte
+ *   em que morreria, o totem o segura. Depois disso a morte zera tudo.
  *
  * **Ele chega quando aparece, e não quando a seção abre.** Mora no fim de
  * Jogos, embaixo do deque, e um gesto no abrir da seção aconteceria fora de
@@ -45,6 +55,7 @@ interface BonecoProps {
 export function Boneco({ nome, skin, slim, capa, ativo }: BonecoProps) {
   const palco = useRef<HTMLDivElement>(null);
   const vida = useRef<HTMLSpanElement>(null);
+  const defesa = useRef<HTMLSpanElement>(null);
   const nos = useRef<Nos>({
     corpo: { current: null },
     cabeca: { current: null },
@@ -53,7 +64,7 @@ export function Boneco({ nome, skin, slim, capa, ativo }: BonecoProps) {
     pernaD: { current: null },
     pernaE: { current: null },
   }).current;
-  useComportamento(palco, vida, nos, ativo);
+  useComportamento(palco, vida, defesa, nos, ativo);
 
   return (
     <div
@@ -81,7 +92,13 @@ export function Boneco({ nome, skin, slim, capa, ativo }: BonecoProps) {
             <i key={i} style={f as CSSProperties} />
           ))}
         </span>
+        <span className={styles.totem} />
         <span className={styles.nome}>{nome}</span>
+        <span ref={defesa} className={styles.defesa}>
+          {Array.from({ length: VIDA / 2 }, (_, i) => (
+            <i key={i} data-v="vazio" />
+          ))}
+        </span>
         <span ref={vida} className={styles.vida}>
           {Array.from({ length: VIDA / 2 }, (_, i) => (
             <i key={i} data-v="cheio" />
