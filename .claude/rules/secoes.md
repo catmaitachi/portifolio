@@ -414,6 +414,9 @@ observações do Lucas foram pô-lo por último, menor que o LoL, e tirar os tex
   em CSS 3D, sem three.js: seis caixas de seis faces, cada face um `<i>` com o recorte da textura
   pela UV do jogo, a segunda camada meio texel para fora, o modelo slim ou largo e a capa. A skin vem
   de `api/minecraft` e troca sozinha quando ela muda no jogo. Sem ela, o molde é o pedestal vazio.
+- **O fundo de cada caixa se vê pelo verso** (`FUNDO`, em `modelo.tsx`): o jogo põe a textura do
+  fundo no mesmo sentido da tampa, o que de baixo é a figura espelhada, e um plano virado para fora
+  não espelha. Antes a face olhava para fora e a textura ficava de ponta-cabeça embaixo da cabeça.
 - **O comportamento é o do jogo, em ticks de 50ms**: parado, a cabeça segue o ponteiro e o tronco
   acompanha a um quarto (de costas, a mira se espelha, e ele olha para o lado da tela em que o
   ponteiro está); segurar e arrastar gira o corpo; **ao aparecer na tela ele chega do fundo e faz um
@@ -446,8 +449,61 @@ observações do Lucas foram pô-lo por último, menor que o LoL, e tirar os tex
   reduzido não há mordida, e a vida só volta.
   - A maçã é a textura do jogo (`assets/minecraft/maca-dourada.png`, o `golden_apple.png` de 16x16),
     em dois planos em cruz: um plano só sumiria com ele de lado.
+  - **Todo sprite do Minecraft é o oficial** (pedido do Lucas, 11/10/2026): nada é redesenhado. Vêm
+    do `client.jar` que a Mojang publica (o manifesto em `piston-meta.mojang.com` dá o endereço da
+    versão; o jar é um zip, e as texturas estão em `assets/minecraft/textures/`). A maçã e os
+    corações (`gui/sprites/hud/heart`: `container`, `container_blinking`, `full`, `half`) são da
+    26.3, como a armadura (`entity/equipment/humanoid` e `humanoid_leggings`), os ícones das peças,
+    a barra de armadura (`hud/armor_*`), a espada, o escudo (`entity/shield/shield_base_nopattern`)
+    e o totem. Os corações eram SVGs redesenhados à mão, de 9x8, e saíram.
   - A fila é de uma ação por vez (`livre()`, em `comportamento.ts`): gesto, pulo e maçã não se
     atropelam, e a próxima ação com item (uma poção, por exemplo) é mais um valor de `data-acao`.
+- **Cada morte o traz mais preparado** (ideia do Lucas, 11/10/2026). `mortes` conta as mortes da
+  visita, num `useRef` que sobrevive a sair e voltar da seção, e zera ao recarregar: nada é gravado.
+  - **Com 1, a armadura de netherite.** Ao renascer ele pega cada peça na mão e a põe, **da bota ao
+    elmo** (`data-acao='equipar'`, `data-peca`, 0,9s por peça; para as botas e a calça o tronco se
+    curva). A peça some da mão e aparece no corpo aos 70%, com um estalo de `scale`. Vestido, o golpe
+    tira meio coração e cada peça segura um décimo do empurrão. A barra de armadura do HUD aparece em
+    cima dos corações e enche a cada peça (3, 6, 8 e 3 pontos, os do jogo). Um golpe interrompe, e
+    ele continua de onde parou 1,2s depois. A armadura é mais uma camada das caixas do modelo, com a
+    textura do jogo (64x32); os membros esquerdos usam a textura virada (`*-espelho.png`, feita com
+    `sips -f horizontal`), porque `scaleX(-1)` numa caixa inverte o que `backface-visibility` esconde.
+  - **Com 2, a espada e o escudo**, sacados depois da armadura (`data-armas`). **O escudo defende o
+    golpe que vem de frente** (até 80° de lado), e sobe já com o ponteiro por cima dele. Passa-se
+    por ele de três jeitos: **girar o boneco e bater pelas costas** (solto, ele volta a encarar em
+    0,45s), **cansá-lo** (5 bloqueios e o escudo pende por 3s), ou **pegá-lo de mãos ocupadas**
+    (comendo ou se espreguiçando). A cada dois
+    bloqueios ele devolve com a espada e o palco treme; é só visual (era só no terceiro, e o Lucas
+    pediu mais). **Para comer ele guarda a
+    espada**: a maçã ocupa a mão, como trocar de espaço na barra.
+  - **Na vez em que morreria, o totem o segura** (`data-totem`): fica com um coração, a vida volta
+    aos poucos, e a figura do totem sobe na frente dele com as partículas verdes e amarelas. A conta
+    vai a 3 (armado, sem totem), e a morte seguinte é de verdade e **zera tudo**.
+  - **A espada fica como o jogo a segura**: no plano do braço, com o meio do cabo no centro da mão
+    (o fim do braço), e a lâmina para a frente, 15° acima da horizontal. A figura do jogo sobe a 45°,
+    e um giro de 30° a deita; o nó é posto onde o cabo, que fica a (-4,06; 3,66) texels do centro da
+    figura, cai na mão depois do giro (conferido com sondas no navegador, em quatro ângulos: menos de
+    1px de diferença). São três planos colados, que dão a espessura de 1 texel do jogo. De frente ela
+    aparece curta, porque aponta para quem olha, como no jogo. Duas versões ficaram pelo caminho, e o
+    Lucas recusou as duas: dois planos em cruz ao lado do braço, e um plano aberto 49° para fora
+    (aparecia mais de frente, mas saía do centro da mão e subia demais).
+  - **O escudo é a placa do modelo do jogo** (12x22x1). Em repouso fica do lado de fora do braço,
+    virado para o lado, centrado um pouco abaixo do meio dele. **Na defesa vai para adiante da mão**,
+    de pé e de frente, com o giro que desfaz o do braço (posição e giro são do CSS e mudam juntos:
+    quando só o giro mudava, o braço aparecia na frente da placa). O braço do escudo vem para a
+    frente **do lado dele do corpo** (20° para dentro, e não 40°), e **o da espada abre 34°**: com a
+    placa no meio, ela cobria a espada.
+  - **A placa é quase o dobro do braço, e o que a mantém no lugar são duas coisas**: o braço que a
+    segura **não balança nem abre** com o andar e o pulo (`BRACO_FIRME`; solta, a ponta de cima
+    entrava na cabeça), e o nó dela **desfaz a inclinação da troca de peso** (`prumo`: 1,2° do tronco
+    numa peça desse tamanho, ao lado das pernas que inclinam ao contrário, lia como ângulo errado).
+    E **cansado ele pende para a frente** (`rotateX` antes do `rotateY(90deg)`): na ordem contrária o
+    giro deitava a placa de lado, com a ponta de cima dentro da cabeça, e era esse o "escudo
+    atravessado" que o Lucas via (apareceu numa captura dele, com o boneco andando de volta).
+    Duas tentativas de resolver baixando a placa (em repouso, do ombro para baixo; erguida, até o
+    queixo) o Lucas recusou: o problema era o ângulo, não a altura.
+  - **De mãos ocupadas ele guarda o que segura** (`scale: 0`, com transição): a espada para comer, e
+    a espada e o escudo para se espreguiçar. Nos dois casos ele também não defende.
 - **Não há piscar nem mastigar**, de propósito: olhos e boca são desenho da skin, cada skin os põe
   num lugar, e a skin troca sozinha quando muda no jogo.
 - **Ele acena quando aparece, e não quando a seção abre**: mora no fim de Jogos, e um gesto no abrir

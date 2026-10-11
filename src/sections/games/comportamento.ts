@@ -1,6 +1,6 @@
 import { type RefObject, useEffect, useRef } from 'react';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
-import type { Nos } from './modelo';
+import type { Nos, Peca } from './modelo';
 
 /*
  * As regras do jogo. O Minecraft anda em ticks de 50ms, e a física do empurrão,
@@ -78,6 +78,62 @@ const REGENERA = 6;
 /** O intervalo até a próxima maçã, se uma não bastou. */
 const OUTRA_MACA = 1200;
 
+/*
+ * A armadura de netherite. Quem o mata uma vez o encontra vestindo, ao renascer:
+ * pega cada peça na mão e a põe, da bota ao elmo.
+ */
+/** As peças, na ordem de vestir, e os pontos de armadura de cada uma (os do jogo). */
+const PECAS: [Peca, number][] = [
+  ['botas', 3],
+  ['calca', 6],
+  ['peito', 8],
+  ['elmo', 3],
+];
+/** A duração de vestir uma peça (`--peca`, no CSS), e a fração em que ela sai da mão e aparece no corpo. */
+const PECA = 900;
+const VESTE = 0.7;
+/** Um golpe no meio interrompe; ele volta a se vestir depois deste tempo. */
+const ESPERA_VESTIR = 1200;
+/**
+ * O que o conjunto inteiro faz: no jogo corta uns 80% do dano e 40% do empurrão
+ * (10% por peça). Aqui o golpe passa a tirar meio coração, o menor que há.
+ */
+const DANO_ARMADO = 1;
+const FIRMEZA = 0.1;
+
+/*
+ * A escalada. `mortes` conta as vezes que ele morreu nesta visita, e cada uma o
+ * traz mais preparado: com 1, a armadura; com 2, também a espada, o escudo e um
+ * totem. O totem o segura na vez em que morreria (e a conta vai a 3, sem ele);
+ * a morte seguinte é de verdade, e zera tudo.
+ */
+const COM_ARMADURA = 1;
+const COM_ARMAS = 2;
+const SEM_TOTEM = 3;
+
+/*
+ * O escudo defende o golpe que vem de frente, como no jogo. Há três jeitos de
+ * passar por ele: girar o boneco e bater pelas costas (ele volta a encarar quem
+ * olha logo depois de solto), cansá-lo, ou pegá-lo comendo.
+ */
+/** Até quantos graus de lado o escudo ainda cobre. */
+const ARCO = 80;
+/** Quanto tempo o escudo fica erguido depois de um bloqueio. */
+const GUARDA = 600;
+/** Depois de tantos bloqueios o escudo cansa, por este tempo (no jogo, um machado o derruba por 5s). */
+const BLOQUEIOS = 5;
+const CANSADO = 3000;
+/** De quantos em quantos bloqueios ele devolve com a espada, e quanto tempo depois do golpe. */
+const CONTRA = 2;
+const ESPERA_CONTRA = 180;
+/** Quanto do balanço do andar sobra no braço que segura o escudo. */
+const BRACO_FIRME = 0.15;
+/** Solto de lado ou de costas, ele volta a encarar depois deste tempo. */
+const ENCARA = 450;
+/** O totem devolve um coração na hora e mais estes pontos aos poucos, e segura os golpes por este tempo. */
+const TOTEM = 14;
+const TOTEM_PROTEGE = 1000;
+
 /** Para onde o corpo olha sem ninguém apontando: um pouco de lado, para o 3D aparecer. */
 const REPOUSO = 18;
 /** Quanto do giro da cabeça o tronco acompanha. */
@@ -119,7 +175,11 @@ function religar(el: HTMLElement, atributo: string, valor = '') {
  *
  * Os atributos que ele escreve no palco são o contrato com o CSS
  * (`Boneco.module.css`): `data-visto` (chegou), `data-gesto` (qual gesto),
- * `data-acao` (o que ele faz com a mão: hoje, `comer`), `data-agacha` e
+ * `data-acao` (o que ele faz com a mão: `comer` ou `equipar`, e aí `data-peca`
+ * diz qual peça), `data-armadura` (as peças já vestidas), `data-armas` (espada e
+ * escudo à mão), `data-defende` (o escudo erguido), `data-bloqueio` (o golpe que
+ * bateu nele), `data-cansado`, `data-treme` (o contra-ataque), `data-totem`,
+ * `data-agacha` e
  * `data-pouso` (antes e depois do pulo), `data-ferido` (o vermelho),
  * `data-morto` (a fumaça); nos corações,
  * `data-mostra`, `data-pisca` e `data-v` em cada um.
@@ -127,18 +187,22 @@ function religar(el: HTMLElement, atributo: string, valor = '') {
 export function useComportamento(
   palco: RefObject<HTMLDivElement | null>,
   vida: RefObject<HTMLSpanElement | null>,
+  defesa: RefObject<HTMLSpanElement | null>,
   nos: Nos,
   ativo: boolean,
 ) {
   /** o giro do arraste; sobrevive às voltas da seção */
   const orbita = useRef(0);
+  /** quantas vezes ele já morreu nesta visita: é o que o faz voltar mais preparado */
+  const mortes = useRef(0);
   const reduzido = useReducedMotion();
 
   useEffect(() => {
     const el = palco.current;
     const coracoes = vida.current;
+    const escudos = defesa.current;
     const { corpo, cabeca, bracoD, bracoE, pernaD, pernaE } = nos;
-    if (!el || !coracoes || !corpo.current || !cabeca.current) return;
+    if (!el || !coracoes || !escudos || !corpo.current || !cabeca.current) return;
 
     // o olhar
     let yaw = REPOUSO;
@@ -161,10 +225,21 @@ export function useComportamento(
     // o tick anterior, para desenhar entre os dois
     let antes = { z, y, vz, balanco, amplitude };
     let pontos = VIDA;
-    // a maçã: comendo, a cabeça volta para a frente (`frente`, de 0 a 1)
-    let comendo = false;
+    // o que ele faz com a mão; ocupado, a cabeça volta para a frente (`frente`, de 0 a 1)
+    let acao: 'comer' | 'equipar' | null = null;
     let frente = 0;
+    let timerAcao = 0;
     let timerComer = 0;
+    let timerVestir = 0;
+    /** quantas peças da armadura ele já vestiu, e quantas deve vestir */
+    let vestidas = 0;
+    const aVestir = () => (mortes.current >= COM_ARMADURA ? PECAS.length : 0);
+    // a espada e o escudo: à mão, o ponteiro por cima, e os bloqueios até cansar
+    let armas = false;
+    let sobre = false;
+    let guardaAte = 0;
+    let bloqueios = 0;
+    let cansado = false;
     /** quanto de vida a maçã ainda devolve, e os ticks desde o último meio coração */
     let regen = 0;
     let contaRegen = 0;
@@ -229,7 +304,10 @@ export function useComportamento(
         bracoD.current.style.transform = `rotateZ(${abre}deg) ${rad(Math.cos(f + Math.PI) * a)}`;
       }
       if (bracoE.current) {
-        bracoE.current.style.transform = `rotateZ(-${abre}deg) ${rad(Math.cos(f) * a)}`;
+        // o braço do escudo não balança nem abre: a placa tem quase o dobro dele, e iria junto
+        bracoE.current.style.transform = armas
+          ? rad(Math.cos(f) * a * BRACO_FIRME)
+          : `rotateZ(-${abre}deg) ${rad(Math.cos(f) * a)}`;
       }
     };
 
@@ -286,7 +364,7 @@ export function useComportamento(
       amplitude > 0.005 ||
       virarPara !== null ||
       regen > 0 ||
-      Math.abs((comendo ? 1 : 0) - frente) > 0.01 ||
+      Math.abs((acao ? 1 : 0) - frente) > 0.01 ||
       (morte >= 0 && morte < MORTE);
 
     const passo = (agora: number) => {
@@ -298,8 +376,10 @@ export function useComportamento(
       }
       yaw += (alvoYaw - yaw) * mola;
       pitch += (alvoPitch - pitch) * mola;
-      frente += ((comendo ? 1 : 0) - frente) * 0.18;
+      frente += ((acao ? 1 : 0) - frente) * 0.18;
       pintar(acumulado / TICK);
+      // girando, ele pode sair de trás do escudo ou voltar para ele
+      guardar();
       if (andando()) quadro = requestAnimationFrame(passo);
       else {
         quadro = 0;
@@ -312,9 +392,62 @@ export function useComportamento(
 
     const sortear = <T,>(lista: readonly T[]) => lista[Math.floor(Math.random() * lista.length)];
     const gesto = () => {
-      if (reduzido || morte >= 0 || comendo) return;
+      if (reduzido || morte >= 0 || acao) return;
       religar(el, 'data-gesto', sortear(CHEGADA));
     };
+    // o escudo
+    const deFrente = () => Math.abs(meiaVolta(REPOUSO + orbita.current)) <= ARCO;
+    /** De mãos ocupadas (comendo, ou se espreguiçando, sem o escudo) ele não defende. */
+    const defende = () =>
+      armas &&
+      !cansado &&
+      !acao &&
+      morte < 0 &&
+      el.getAttribute('data-gesto') !== 'espreguicar' &&
+      deFrente();
+    /** Ergue o escudo com o ponteiro por cima (é a ameaça) e logo depois de um bloqueio. */
+    const guardar = () => {
+      el.toggleAttribute('data-defende', defende() && (sobre || performance.now() < guardaAte));
+    };
+    const bloquear = (agora: number) => {
+      ultimoGolpe = agora;
+      guardaAte = agora + GUARDA;
+      bloqueios += 1;
+      guardar();
+      depois(GUARDA, guardar);
+      if (!reduzido) religar(el, 'data-bloqueio');
+      if (bloqueios >= BLOQUEIOS) {
+        cansado = true;
+        el.setAttribute('data-cansado', '');
+        guardar();
+        depois(CANSADO, () => {
+          cansado = false;
+          bloqueios = 0;
+          el.removeAttribute('data-cansado');
+          guardar();
+        });
+      } else if (bloqueios % CONTRA === 0 && !reduzido) {
+        depois(ESPERA_CONTRA, () => {
+          if (!livre()) return;
+          religar(el, 'data-gesto', 'golpear');
+          depois(250, () => religar(el, 'data-treme'));
+        });
+      }
+    };
+    const sacar = () => {
+      armas = true;
+      el.setAttribute('data-armas', '');
+      guardar();
+    };
+    /** Ele não fica de costas para quem tem uma espada na frente. */
+    const encarar = () => {
+      if (arraste || morte >= 0 || !armas || deFrente()) return;
+      virarPara = orbita.current - meiaVolta(orbita.current);
+      acordar();
+    };
+
+    /** O que ele faz ao chegar: acena, ou, se já morreu aqui, se veste. */
+    const chegar = () => (aVestir() ? vestir() : gesto());
 
     /** De pé, à vista, e sem nada em curso: é quando ele faz as coisas por conta própria. */
     const livre = () =>
@@ -322,7 +455,7 @@ export function useComportamento(
       !arraste &&
       morte < 0 &&
       fase === 'parado' &&
-      !comendo &&
+      !acao &&
       !el.hasAttribute('data-gesto') &&
       !el.hasAttribute('data-agacha');
 
@@ -364,26 +497,81 @@ export function useComportamento(
     const comer = () => {
       if (morte >= 0 || pontos >= VIDA) return;
       // ocupado ou fora de vista, ele come depois
-      if (!livre() || regen > 0) return agendarComer(800);
+      if (!livre() || regen > 0 || vestidas < aVestir()) return agendarComer(800);
       const cura = () => {
-        comendo = false;
+        acao = null;
         el.removeAttribute('data-acao');
+        guardar();
         regen = MACA;
         contaRegen = 0;
         acordar();
       };
       // sem movimento não há mordidas: a vida só volta
       if (reduzido) return cura();
-      comendo = true;
+      acao = 'comer';
       religar(el, 'data-acao', 'comer');
+      guardar();
       acordar();
-      timerComer = depois(COMER, cura);
+      timerAcao = depois(COMER, cura);
     };
-    /** Um golpe no meio da mordida: a maçã se perde. */
+    /** Um golpe no meio da ação: o que estava na mão se perde. */
     const largar = () => {
+      clearTimeout(timerAcao);
       clearTimeout(timerComer);
-      comendo = false;
+      clearTimeout(timerVestir);
+      acao = null;
       el.removeAttribute('data-acao');
+      el.removeAttribute('data-peca');
+      guardar();
+    };
+
+    // a armadura
+    const mostrarArmadura = () => {
+      const nomes = PECAS.slice(0, vestidas).map(([nome]) => nome);
+      if (nomes.length) el.setAttribute('data-armadura', nomes.join(' '));
+      else el.removeAttribute('data-armadura');
+      // a barra do jogo: dez ícones, dois pontos cada
+      const total = PECAS.slice(0, vestidas).reduce((soma, [, p]) => soma + p, 0);
+      Array.from(escudos.children).forEach((c, i) => {
+        const resto = total - i * 2;
+        (c as HTMLElement).dataset.v = resto >= 2 ? 'cheio' : resto === 1 ? 'meio' : 'vazio';
+      });
+    };
+    const agendarVestir = (ms: number) => {
+      clearTimeout(timerVestir);
+      timerVestir = depois(ms, vestir);
+    };
+    const vestir = () => {
+      if (morte >= 0) return;
+      // vestido, falta sacar as armas, se ele já chegou a esse ponto
+      if (vestidas >= aVestir()) {
+        if (mortes.current >= COM_ARMAS && !armas) sacar();
+        return;
+      }
+      if (!livre()) return agendarVestir(600);
+      // sem movimento ele aparece vestido
+      if (reduzido) {
+        vestidas = aVestir();
+        mostrarArmadura();
+        mostrarVida(false);
+        return vestir();
+      }
+      acao = 'equipar';
+      el.setAttribute('data-peca', PECAS[vestidas][0]);
+      religar(el, 'data-acao', 'equipar');
+      acordar();
+      timerAcao = depois(PECA * VESTE, () => {
+        vestidas += 1;
+        mostrarArmadura();
+        mostrarVida(false);
+        timerAcao = depois(PECA * (1 - VESTE), () => {
+          acao = null;
+          el.removeAttribute('data-acao');
+          el.removeAttribute('data-peca');
+          acordar();
+          vestir();
+        });
+      });
     };
 
     // a vida: dez corações, cada um cheio, meio ou vazio; no golpe eles piscam
@@ -393,14 +581,20 @@ export function useComportamento(
         (c as HTMLElement).dataset.v = resto >= 2 ? 'cheio' : resto === 1 ? 'meio' : 'vazio';
       });
       coracoes.setAttribute('data-mostra', '');
+      escudos.toggleAttribute('data-mostra', vestidas > 0);
       if (pisca && !reduzido) religar(coracoes, 'data-pisca');
       clearTimeout(esconderVida);
-      esconderVida = depois(VIDA_A_VISTA, () => coracoes.removeAttribute('data-mostra'));
+      esconderVida = depois(VIDA_A_VISTA, () => {
+        coracoes.removeAttribute('data-mostra');
+        escudos.removeAttribute('data-mostra');
+      });
     };
 
     const sumir = () => {
+      mortes.current = mortes.current >= SEM_TOTEM ? 0 : mortes.current + 1;
       el.setAttribute('data-morto', '');
       coracoes.removeAttribute('data-mostra');
+      escudos.removeAttribute('data-mostra');
       depois(RENASCE, renascer);
     };
 
@@ -412,17 +606,34 @@ export function useComportamento(
       antes = { z, y, vz, balanco, amplitude };
       el.removeAttribute('data-morto');
       el.removeAttribute('data-ferido');
+      // a armadura ficou com o corpo: ele renasce sem nada, e se veste de novo
+      vestidas = 0;
+      mostrarArmadura();
+      armas = cansado = false;
+      bloqueios = 0;
+      for (const a of ['data-armas', 'data-defende', 'data-cansado']) el.removeAttribute(a);
       pintar(0);
-      // renasce como chegou: do fundo, e com um gesto
+      // renasce como chegou: do fundo
       religar(el, 'data-visto');
-      depois(ESPERA_GESTO, gesto);
+      depois(ESPERA_GESTO, chegar);
     };
 
     const golpe = () => {
       const agora = performance.now();
       if (morte >= 0 || agora - ultimoGolpe < INVULNERAVEL) return;
+      if (defende()) return bloquear(agora);
       ultimoGolpe = agora;
-      pontos = Math.max(0, pontos - DANO);
+      const armado = vestidas === PECAS.length;
+      pontos = Math.max(0, pontos - (armado ? DANO_ARMADO : DANO));
+      // o totem: no golpe que o mataria, ele fica com um coração, e a vida volta
+      if (pontos === 0 && mortes.current === COM_ARMAS) {
+        mortes.current = SEM_TOTEM;
+        pontos = 2;
+        regen = TOTEM;
+        contaRegen = 0;
+        ultimoGolpe = agora + TOTEM_PROTEGE - INVULNERAVEL;
+        religar(el, 'data-totem');
+      }
       mostrarVida();
       // o vermelho do dano dura o mesmo que a invulnerabilidade; morrendo, fica
       religar(el, 'data-ferido');
@@ -430,8 +641,12 @@ export function useComportamento(
       // o gesto em curso para: quem apanha não termina de acenar, nem de comer
       el.removeAttribute('data-gesto');
       largar();
-      if (pontos > 0) agendarComer(ESPERA_COMER);
-      else regen = 0;
+      if (pontos > 0) {
+        agendarComer(ESPERA_COMER);
+        if (vestidas < aVestir()) agendarVestir(ESPERA_VESTIR);
+        // armado, um golpe de lado também o faz encarar
+        depois(ENCARA, encarar);
+      } else regen = 0;
       // de costas, ele vira para quem bateu, pelo lado mais curto
       if (Math.abs(meiaVolta(orbita.current + REPOUSO)) > 90) {
         virarPara = orbita.current - meiaVolta(orbita.current);
@@ -444,8 +659,10 @@ export function useComportamento(
         }
       } else if (!reduzido) {
         // o empurrão do jogo: metade da velocidade que havia, mais a força
-        vz = vz / 2 + FORCA;
-        if (y === 0) vy = Math.min(0.4, vy / 2 + FORCA);
+        // cada peça da armadura segura um décimo do empurrão
+        const forca = FORCA * (1 - vestidas * FIRMEZA);
+        vz = vz / 2 + forca;
+        if (y === 0) vy = Math.min(0.4, vy / 2 + forca);
         fase = 'voando';
       }
       acordar();
@@ -468,7 +685,17 @@ export function useComportamento(
     const soltar = () => {
       // sem arraste, soltar é o fim de um clique: um golpe
       if (arraste && !arraste.andou) golpe();
+      else if (arraste) depois(ENCARA, encarar);
       arraste = null;
+    };
+    const entrar = (e: PointerEvent) => {
+      // o dedo não paira: no toque o escudo só sobe no golpe
+      sobre = e.pointerType !== 'touch';
+      guardar();
+    };
+    const deixar = () => {
+      sobre = false;
+      guardar();
     };
     const cancelar = () => {
       arraste = null;
@@ -496,7 +723,7 @@ export function useComportamento(
         visivel = visto.isIntersecting;
         if (!visivel || el.hasAttribute('data-visto')) return;
         el.setAttribute('data-visto', '');
-        depois(reduzido ? 0 : ESPERA_GESTO, gesto);
+        depois(reduzido ? 0 : ESPERA_GESTO, chegar);
       },
       { threshold: 0.6 },
     );
@@ -508,6 +735,8 @@ export function useComportamento(
       el.addEventListener('pointermove', arrastar);
       el.addEventListener('pointerup', soltar);
       el.addEventListener('pointercancel', cancelar);
+      el.addEventListener('pointerenter', entrar);
+      el.addEventListener('pointerleave', deixar);
       if (!reduzido) {
         window.addEventListener('pointermove', mover, { passive: true });
         document.documentElement.addEventListener('pointerleave', sair);
@@ -522,6 +751,8 @@ export function useComportamento(
       el.removeEventListener('pointermove', arrastar);
       el.removeEventListener('pointerup', soltar);
       el.removeEventListener('pointercancel', cancelar);
+      el.removeEventListener('pointerenter', entrar);
+      el.removeEventListener('pointerleave', deixar);
       window.removeEventListener('pointermove', mover);
       document.documentElement.removeEventListener('pointerleave', sair);
       timers.forEach(clearTimeout);
@@ -531,6 +762,14 @@ export function useComportamento(
         'data-visto',
         'data-gesto',
         'data-acao',
+        'data-peca',
+        'data-armadura',
+        'data-armas',
+        'data-defende',
+        'data-bloqueio',
+        'data-cansado',
+        'data-treme',
+        'data-totem',
         'data-agacha',
         'data-pouso',
         'data-ferido',
@@ -539,6 +778,7 @@ export function useComportamento(
         el.removeAttribute(a);
       }
       coracoes.removeAttribute('data-mostra');
+      escudos.removeAttribute('data-mostra');
     };
-  }, [ativo, reduzido, nos, palco, vida]);
+  }, [ativo, reduzido, nos, palco, vida, defesa]);
 }
