@@ -122,10 +122,7 @@
     "silencio": "Last played",
     "faixas": "Most played this month",
     "artistas": "Most listened this month",
-    "recentes": "Played recently",
-    "generos": "Genres I listen to most",
-    "periodos": { "curto": "Month", "medio": "6 months", "longo": "All time" },
-    "generosArtistas": "{n} artists"
+    "recentes": "Played recently"
   },
 
   "jogos": {

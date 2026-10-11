@@ -122,10 +122,7 @@
     "silencio": "Tocou por último",
     "faixas": "Mais tocadas no mês",
     "artistas": "Mais ouvidos no mês",
-    "recentes": "Ouvidas há pouco",
-    "generos": "Gêneros que mais ouço",
-    "periodos": { "curto": "Mês", "medio": "6 meses", "longo": "Sempre" },
-    "generosArtistas": "{n} artistas"
+    "recentes": "Ouvidas há pouco"
   },
 
   "jogos": {
