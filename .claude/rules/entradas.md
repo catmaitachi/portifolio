@@ -24,7 +24,7 @@ a cada volta*).
 | Carreira | o maço de crachás chega do fundo depois do bloco (300ms) e o cordão balança | `Cracha.module.css`, `Cracha.tsx` |
 | Sobre (a formação) | a onda em pé e a inversa se desenham em sentidos opostos, os nós acendem atrás delas e as linhas do medidor se preenchem uma a uma | `AboutSection.module.css` |
 | Música | tudo chega da profundidade: o destaque, depois as capas uma a uma e os retratos por último | `MusicSection.module.css` |
-| Jogos | as capas do deque chegam do fundo, a da frente primeiro (e de novo a cada troca de aba); a órbita de insígnias chega do fundo inteira, depois do bloco (520ms); o boneco do Minecraft chega do fundo **quando aparece na tela** (não quando a seção abre) e faz um gesto sorteado | `GamesSection.module.css`, `Boneco.module.css`, `comportamento.ts` |
+| Jogos | as capas do deque chegam do fundo, a da frente primeiro (e de novo a cada troca de aba); o boneco do Minecraft chega do fundo **quando aparece na tela** (não quando a seção abre) e faz um gesto sorteado | `GamesSection.module.css`, `Boneco.module.css`, `comportamento.ts` |
 | Filmes | a película chega da profundidade depois do bloco (300ms), e de novo a cada troca de aba | `FilmsSection.module.css` |
 | GitHub | o número grande conta e se enche de luz, a ficha chega linha a linha, um feixe atravessa o céu do ano e o acende, e a nuvem e a lista de linguagens chegam depois | `GithubSection.module.css`, `GithubSection` |
 

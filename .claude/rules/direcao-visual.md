@@ -134,10 +134,11 @@ Vitrine com três direções (continuidade, objeto, enxuta) em dois slots; a mis
 | Onde | Padrão | Referências |
 |---|---|---|
 | Jogos, a biblioteca | o deque ganha as abas de Filmes: Por último e Mais jogados | reactbits/DepthCarousel, aceternity/tabs |
-| Jogos, a conta | órbita de insígnias: o avatar como astro, com o anel da dezena de níveis, e as insígnias girando em elipses inclinadas | magicui/orbiting-circles, reactbits/ProfileCard |
+| Jogos, a conta | ~~órbita de insígnias~~, recusada na página no mesmo dia (ver `secoes.md`): ficou só o avatar com o anel de XP | magicui/orbiting-circles, reactbits/ProfileCard |
 
 Ficaram na vitrine o cartaz de nível (repetia o do GitHub), a faixa de ficha, as lombadas e a
-cascata sem abas.
+cascata sem abas. **A regra que saiu dela**: um segundo objeto com movimento próprio numa seção que
+já tem um (o deque) lê como exagero; o que acompanha o protagonista fica pequeno e parado.
 
 ### Tokens: a régua é uma só
 

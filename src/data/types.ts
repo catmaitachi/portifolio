@@ -109,36 +109,15 @@ export interface Jogo {
   jogadoEm?: string;
 }
 
-/**
- * Uma insígnia do perfil da Steam.
- *
- * **A API não manda nome nem ícone**, só os números. A de jogo traz o `appid`,
- * e é o jogo que dá nome e arte; a de comunidade traz só o próprio número
- * (`comunidade`), e o nome dela sai do dicionário, quando está lá.
- */
-export interface Insignia {
-  id: string;
-  /** o `badgeid` da Steam, nas de comunidade; `null` nas de jogo */
-  comunidade: number | null;
-  /** o jogo (ou o evento da loja) a que a insígnia pertence */
-  jogo: string | null;
-  arte: string | null;
-  nivel: number;
-  xp: number;
-  /** o ano em que foi alcançada */
-  ano: number | null;
-}
-
-/** A conta da Steam: quem é, em que nível está e o que já ganhou. */
+/** A conta da Steam: quem é e em que nível está. */
 export interface PerfilSteam {
   nome: string;
   avatar: string | null;
-  url: string;
   nivel: number;
-  xp: number;
-  /** o que falta para o próximo nível */
+  /** o XP que falta para o próximo nível */
   xpFalta: number;
-  insignias: Insignia[];
+  /** a fração do caminho entre o nível atual e o próximo, de 0 a 1 */
+  progresso: number;
 }
 
 export interface Jogos {
@@ -157,7 +136,7 @@ export interface Jogos {
   maisJogados: Jogo[];
   /** quantos jogos a biblioteca tem; 0 quando ela não veio */
   totalJogos: number;
-  /** `null` quando a Steam não entregou as insígnias */
+  /** `null` quando a Steam não entregou o nível (perfil fechado ou fora do ar) */
   perfil: PerfilSteam | null;
 }
 

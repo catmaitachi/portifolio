@@ -26,7 +26,7 @@ projeto que roda fora do navegador.
 | Função | Segredos | Cache de borda | O que devolve |
 |---|---|---|---|
 | `api/spotify.ts` | `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REFRESH_TOKEN` | 10s (e só 10s servido velho) | tocando agora, mais tocadas, mais ouvidos, recentes |
-| `api/steam.ts` | `STEAM_API_KEY`, `STEAM_ID`, `STEAM_OCULTAR` (opcional) | 60s | jogando agora, os das duas últimas semanas, a biblioteca (pela última sessão e pelas horas) e as insígnias e o nível da conta |
+| `api/steam.ts` | `STEAM_API_KEY`, `STEAM_ID`, `STEAM_OCULTAR` (opcional) | 60s | jogando agora, os das duas últimas semanas, a biblioteca (pela última sessão e pelas horas) e o nível da conta |
 | `api/letterboxd.ts` | `LETTERBOXD_USER`, `LETTERBOXD_LIST` (opcional) | 30min | últimos assistidos com a nota, e uma lista escolhida a dedo |
 | `api/github.ts` | `GITHUB_TOKEN` | 1h | os repositórios de `shared.json → projetos`, com atividade, linguagens e números |
 | `api/minecraft.ts` | `MINECRAFT_USER` (não é segredo: o nick) | 1h (e um dia servida velha) | o nome como o jogo o escreve, a skin, o modelo (slim ou largo) e a capa |
@@ -193,20 +193,19 @@ aparecer, como em toda imagem da página, e o botão de rodar o site continua fu
   A resolução **nunca derruba a resposta**, e tem três degraus: a URL resolvida, a convenção antiga (que
   ainda acerta a maior parte do catálogo) e, quando as duas erram, a moldura vazia que a seção já
   desenha. É o arranjo da lista do Letterboxd, e pela mesma razão: o conteúdo daqui são os jogos.
-- **Steam, a biblioteca e as insígnias** (13/10/2026): `GetOwnedGames` e `GetBadges` entraram para a
-  seção ter o que mostrar quando a quinzena vem vazia, e as duas são **opcionais** (`opcional`, 5s):
-  fora do ar ou fechadas pela privacidade ("Detalhes dos jogos"), a resposta sai sem elas, com as
-  listas vazias e `perfil: null`, e a seção volta a ser a de antes. Fechadas, elas respondem 200
-  sem campo nenhum, e é `player_level` ausente que diz isso. Quatro coisas que não são óbvias:
-  - **o nível vem do `GetBadges`** (`player_level`); o `GetSteamLevel` seria uma chamada para um número;
-  - **`GetBadges` não manda nome nem ícone de insígnia**, só números. A de jogo tem `appid`, e é o
-    jogo que lhe dá nome e arte, na mesma consulta `GetItems` das capas; a de comunidade tem só o
-    `badgeid`, e o nome sai de `jogos.insignias.nomes` no dicionário. O que não está lá vira
-    "Insígnia da comunidade". Evento da loja tem `appid` e não tem página: fica sem arte;
+- **Steam, a biblioteca e o nível** (13/10/2026): `GetOwnedGames` e `GetBadges` entraram para a seção
+  ter o que mostrar quando a quinzena vem vazia, e as duas são **opcionais** (`opcional`, 5s): fora do
+  ar ou fechadas pela privacidade ("Detalhes dos jogos"), a resposta sai sem elas, com as listas
+  vazias e `perfil: null`, e a seção volta a ser a de antes. Fechado, `GetBadges` responde 200 sem
+  campo nenhum, e é `player_level` ausente que diz isso. Três coisas que não são óbvias:
+  - **o nível vem do `GetBadges`**, e não do `GetSteamLevel`: só ele traz onde o nível atual começou
+    (`player_xp_needed_current_level`), que com o que falta dá a fração do anel (`progresso`). As
+    insígnias que ele também devolve são ignoradas (ver `secoes.md`, *A órbita de insígnias entrou e
+    saiu*);
   - **`rtime_last_played` é 0 para o que nunca foi aberto**, e é isso que tira da lista "por último" o
     que foi comprado e ficou na estante. Os recentes ganham a data da biblioteca, que é a única que a tem;
-  - **`STEAM_OCULTAR`** (appids separados por vírgula) tira um jogo da biblioteca, dos recentes e das
-    insígnias. A conta tem nove anos, e nem tudo nela é para a vitrine de um site pessoal.
+  - **`STEAM_OCULTAR`** (appids separados por vírgula) tira um jogo da biblioteca e dos recentes. A
+    conta tem nove anos, e nem tudo nela é para a vitrine de um site pessoal.
 - **Letterboxd**: é um feed, não um contrato. A forma pode mudar sem aviso e sem versão, e no dia em
   que mudar esta função para de achar os campos. **É o ponto mais frágil do projeto**, e é frágil por
   fora. Ele responde 403 sem um user-agent de navegador, traz listas e textos junto dos filmes (que

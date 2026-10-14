@@ -423,19 +423,17 @@ página do jogo) e as horas da quinzena e do total. Escolhido numa rodada da ski
 - **Um risco de 1px embaixo das horas** mede o jogo contra o mais jogado da biblioteca (`.peso`).
 - Sem a biblioteca não há abas, e a seção é a de antes.
 
-**Embaixo do deque, a órbita de insígnias** (`Orbita`), escolhida na mesma vitrine contra um cartaz
-de nível e uma faixa de ficha. O avatar no centro, com um anel de dez arcos (a dezena de níveis em
-que a conta está, que é como a Steam muda o desenho do nível) e o nível numa placa chanfrada por cima
-de tudo; as insígnias giram em três órbitas inclinadas: as de comunidade de mais XP perto, as de jogo
-no meio, com a arte do jogo do tamanho do nível, e o resto longe, como pontos do tamanho do XP.
-Apontar uma para o relógio, apaga as outras, e a legenda ao lado (medida fixa) diz qual é; sem
-nenhuma apontada, ela diz o total, o XP e quanto falta para o próximo nível.
+**No alto do painel, a conta da Steam** (`Conta`): o avatar de 34px com um anel de XP, e o nick e o
+nível ao lado. O anel são dez arcos, um por nível da dezena em que a conta está (é de dez em dez que a
+Steam muda o desenho do nível): os já passados acesos, e o do nível atual aceso até onde o XP chegou
+(`perfil.progresso`). O avatar fica sem cor até ser apontado, como os retratos de Música: o assunto
+do painel é o jogo. Sem o nível (`perfil: null`), o painel começa nas abas.
 
-- **O corpo é posto pela mesma conta que desenha a trilha** (raio, achatamento e inclinação nas
-  duas), e quem passa por trás do avatar encolhe e apaga.
-- **O rAF só roda com a seção ativa** e escreve direto no `style`; a largura é medida por
-  `ResizeObserver`, e não a cada quadro. Sem movimento, os corpos ficam onde nasceram.
-- **Só existe com as insígnias**: sem elas (`perfil: null`) a seção não ganha nada no lugar.
+**A órbita de insígnias entrou e saiu no mesmo dia** (13/10/2026). Escolhida na vitrine, ela girava
+as 40 insígnias da conta em três elipses embaixo do deque, e na página ficou exagerada: um segundo
+objeto com movimento próprio disputando a seção com o deque. Dela ficou só o avatar com o anel. As
+insígnias também saíram da função: `GetBadges` não manda nome nem ícone, e o nome das de comunidade
+precisava de um mapa no dicionário.
 
 **O andar de baixo: o LoL e o Minecraft.** Embaixo do deque, dois sub-títulos (`<h3>`, com o risco
 de `comum.tituloLista`, o mesmo da Música): o League of Legends com a parte maior, e o Minecraft

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { format } from '~/content';
-import type { Jogo, Jogos, Minecraft } from '~/data/types';
+import type { Jogo, Jogos, Minecraft, PerfilSteam } from '~/data/types';
 import { useArrowKeys } from '~/hooks/useArrowKeys';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
 import { useRemoto } from '~/hooks/useRemoto';
@@ -13,7 +13,6 @@ import type { SectionProps } from '../types';
 import { Boneco, PedestalVazio } from './Boneco';
 import styles from './GamesSection.module.css';
 import { Liga } from './Liga';
-import { Orbita } from './Orbita';
 
 /** O "jogando agora" muda em minutos, não em segundos. */
 const REPETIR = 60_000;
@@ -212,6 +211,83 @@ function Deque({
   );
 }
 
+/**
+ * Um arco do anel de XP, de `de` a `ate` (frações da volta), num círculo de
+ * raio 18 com o começo no topo. A folga entre os arcos é o que faz a dezena se
+ * ler como dez degraus, e não como um traço só.
+ */
+function arco(de: number, ate: number) {
+  const ponto = (f: number) => {
+    const a = f * 2 * Math.PI - Math.PI / 2;
+    return `${(18 * Math.cos(a)).toFixed(2)} ${(18 * Math.sin(a)).toFixed(2)}`;
+  };
+  return `M${ponto(de)} A18 18 0 0 1 ${ponto(ate)}`;
+}
+
+/** A folga entre dois arcos, em fração da volta. */
+const FOLGA = 0.012;
+
+/**
+ * A conta da Steam, no alto do painel: o avatar com o anel de XP e o nível.
+ *
+ * O anel são dez arcos, um por nível da dezena em que a conta está (é de dez em
+ * dez que a Steam muda o desenho do nível): os já passados acesos, e o do nível
+ * atual aceso até onde o XP chegou. Fica pequeno e sem cor até ser apontado,
+ * como os retratos de Música: o assunto do painel é o jogo, e não a conta.
+ *
+ * É desenho com nome acessível (`role="img"`): o nível e o XP que falta vão no
+ * rótulo, e o nick e o nível ficam escritos ao lado. O link para o perfil já é o
+ * ícone da Steam na linha do título.
+ */
+function Conta({ perfil }: { perfil: PerfilSteam }) {
+  const { t, lang } = useLanguage();
+  const naDezena = perfil.nivel % 10;
+  const passo = 1 / 10;
+
+  return (
+    <div
+      className={styles.conta}
+      role="img"
+      aria-label={format(t.jogos.conta.resumo, {
+        nome: perfil.nome,
+        n: String(perfil.nivel),
+        xp: new Intl.NumberFormat(lang).format(perfil.xpFalta),
+        prox: String(perfil.nivel + 1),
+      })}
+    >
+      <span className={styles.avatar} aria-hidden="true">
+        <svg viewBox="-20 -20 40 40">
+          {Array.from({ length: 10 }, (_, i) => {
+            const de = i * passo + FOLGA;
+            const ate = (i + 1) * passo - FOLGA;
+            const feito = i < naDezena ? 1 : i === naDezena ? perfil.progresso : 0;
+            return (
+              <g key={i}>
+                <path d={arco(de, ate)} />
+                {feito > 0 && <path d={arco(de, de + (ate - de) * feito)} data-feito="" />}
+              </g>
+            );
+          })}
+        </svg>
+        {perfil.avatar ? (
+          <img
+            src={perfil.avatar}
+            alt=""
+            draggable={false}
+            onError={(e) => {
+              e.currentTarget.hidden = true;
+            }}
+          />
+        ) : null}
+      </span>
+      <span className={styles.contaTexto} aria-hidden="true">
+        <span>{perfil.nome}</span>
+        <span>{format(t.jogos.conta.nivel, { n: String(perfil.nivel) })}</span>
+      </span>
+    </div>
+  );
+}
+
 /** As duas ordens em que o deque mostra a biblioteca. */
 type Aba = 'ultimo' | 'horas';
 
@@ -289,6 +365,8 @@ function Conteudo({ dados, ativo }: { dados: Jogos; ativo: boolean }) {
   return (
     <div className={styles.cena}>
       <div className={styles.painel}>
+        {dados.perfil && <Conta perfil={dados.perfil} />}
+
         {dados.maisJogados.length > 0 && (
           <div className={styles.abas} role="group" aria-label={t.jogos.titulo}>
             {(['ultimo', 'horas'] as const).map((a) => (
@@ -410,8 +488,8 @@ function CantoMinecraft({ ativo }: { ativo: boolean }) {
 
 /**
  * Jogos: o que está aberto agora, o que rodou nas últimas duas semanas e a
- * biblioteca, na Steam; embaixo, a órbita de insígnias da conta, o League of
- * Legends e o boneco do Minecraft.
+ * biblioteca, na Steam, com o avatar da conta no alto do painel; embaixo, o
+ * League of Legends e o boneco do Minecraft.
  *
  * O dado vem de `api/steam`. Como em Música, o destaque tem dois estados e o
  * segundo é o comum: **ninguém está jogando na maior parte do dia**, e aí o lugar
@@ -474,14 +552,6 @@ export function GamesSection({ ativo, indice }: SectionProps) {
           <Conteudo dados={jogos.dados} ativo={ativo} />
         ) : (
           <Molde estado={jogos.estado} />
-        )}
-
-        {/* a conta da Steam: só existe com as insígnias, e sem elas a seção não muda */}
-        {jogos.estado === 'pronto' && jogos.dados.perfil && (
-          <div className={styles.parte}>
-            <h3 className={comum.tituloLista}>{t.jogos.insignias.titulo}</h3>
-            <Orbita perfil={jogos.dados.perfil} ativo={ativo} />
-          </div>
         )}
 
         {/* o andar de baixo: o LoL, e o Minecraft por último e mais estreito */}

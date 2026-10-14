@@ -240,27 +240,12 @@ export interface Dictionary {
     lugar: string;
     /** `{quando}` é o tempo relativo, escrito pelo `Intl` */
     ultimaVez: string;
-    /** a órbita de insígnias da conta da Steam */
-    insignias: {
-      titulo: string;
-      /** `{n}` é quantas são */
-      total: string;
-      /** `{nome}` é o nick e `{n}` o nível */
-      conta: string;
-      xp: string;
-      /** `{n}` é o XP que falta e `{nivel}` o próximo nível */
-      faltam: string;
-      /** `{n}` é o nível da insígnia */
+    /** a conta da Steam: o avatar com o anel de XP, no painel do deque */
+    conta: {
+      /** `{n}` é o nível */
       nivel: string;
-      /** o rótulo da insígnia de comunidade, e o nome da que não está no mapa */
-      comunidade: string;
-      /** o rótulo da insígnia de um jogo, que leva o nome do jogo */
-      deJogo: string;
-      semNome: string;
-      /** o nome acessível da órbita, que é desenho; `{n}`, `{nivel}` e `{xp}` */
+      /** o nome acessível do avatar, que é desenho: `{nome}`, `{n}`, `{xp}` e `{prox}` */
       resumo: string;
-      /** o nome de cada insígnia de comunidade, pelo `badgeid` da Steam */
-      nomes: Record<string, string>;
     };
     minecraft: {
       titulo: string;

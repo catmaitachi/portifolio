@@ -1,14 +1,15 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import type { Insignia, Jogo, Jogos } from '../src/data/types.js';
+import type { Jogo, Jogos } from '../src/data/types.js';
 import { ambiente, falha, json, metodoInvalido } from './_resposta.js';
 
 /**
  * O que estou jogando, o que joguei nas últimas duas semanas, a biblioteca e
- * as insígnias da conta.
+ * o nível da conta.
  *
  * Quatro chamadas à Steam Web API, e só as duas primeiras são obrigatórias: a
- * biblioteca e as insígnias entraram para a seção ter o que mostrar quando a
- * quinzena vem vazia, e a falta delas não derruba a resposta (ver `opcional`).
+ * biblioteca entrou para a seção ter o que mostrar quando a quinzena vem vazia,
+ * e o nível para o avatar da conta; a falta delas não derruba a resposta (ver
+ * `opcional`).
  *
  * A primeira é o resumo do perfil, e é dela que
  * sai o "jogando agora": o campo `gameextrainfo` **só existe enquanto uma
@@ -36,20 +37,6 @@ interface JogoSteam {
 }
 
 /**
- * Uma insígnia, como `GetBadges` a devolve: só números. A de jogo tem `appid`
- * (e o `badgeid` de todas elas é 1); a de comunidade se distingue pelo `badgeid`.
- */
-interface InsigniaSteam {
-  badgeid: number;
-  appid?: number;
-  level?: number;
-  xp?: number;
-  completion_time?: number;
-  /** 1 na versão brilhante da insígnia de um jogo, que é outra insígnia */
-  border_color?: number;
-}
-
-/**
  * A arte **por convenção**, que é o que a Steam serviu por anos e deixou de
  * servir para tudo.
  *
@@ -66,8 +53,6 @@ interface InsigniaSteam {
  * moldura vazia, que é melhor que uma arte deitada espremida num retângulo alto.
  */
 interface Arte {
-  /** o nome que a loja dá ao item: é o que nomeia a insígnia de um jogo */
-  nome: string | null;
   deitada: string | null;
   emPe: string | null;
 }
@@ -83,7 +68,7 @@ const ASSETS = 'https://shared.steamstatic.com/store_item_assets/';
 /** A resolução da arte não pode segurar a resposta: o conteúdo daqui são os jogos. */
 const ESPERA_ASSETS = 4000;
 
-/** Quanto se espera pela biblioteca e pelas insígnias antes de seguir sem elas. */
+/** Quanto se espera pela biblioteca e pelo nível antes de seguir sem eles. */
 const ESPERA_EXTRAS = 5000;
 
 /** Quantos jogos cada lista da biblioteca leva: é o que o deque mostra de uma vez. */
@@ -92,8 +77,8 @@ const TETO = 8;
 /**
  * O que não entra na página: appids separados por vírgula em `STEAM_OCULTAR`.
  *
- * A biblioteca e as insígnias chegam inteiras, e nem tudo o que está numa conta
- * de nove anos é para a vitrine de um site pessoal. A variável é **opcional**, e
+ * A biblioteca chega inteira, e nem tudo o que está numa conta de nove anos é
+ * para a vitrine de um site pessoal. A variável é **opcional**, e
  * por isso não passa por `ambiente()`: sem ela, nada é escondido.
  */
 const ocultos = () =>
@@ -107,7 +92,7 @@ const ocultos = () =>
 /**
  * Uma chamada cuja falta não derruba a resposta.
  *
- * A biblioteca e as insígnias dependem de uma opção de privacidade a mais
+ * A biblioteca e o nível dependem de uma opção de privacidade a mais
  * ("Detalhes dos jogos"), e fechadas a API responde 200 sem os campos. Fora do
  * ar, lenta ou fechada, o retorno é `null`, e a seção volta a ser o que era
  * antes delas: o conteúdo daqui continua sendo o que está aberto e os recentes.
@@ -123,7 +108,6 @@ async function opcional<T>(url: string): Promise<T | null> {
 
 interface ItemLoja {
   id?: number;
-  name?: string;
   assets?: {
     /** o caminho até a pasta do app, com `${FILENAME}` no lugar do arquivo */
     asset_url_format?: string;
@@ -185,7 +169,6 @@ async function capas(appids: number[]): Promise<Map<number, Arte>> {
       const url = (arquivo?: string) =>
         arquivo && formato ? ASSETS + formato.replace('${FILENAME}', arquivo) : null;
       mapa.set(item.id, {
-        nome: item.name ?? null,
         deitada: url(item.assets?.header),
         emPe: url(item.assets?.library_capsule),
       });
@@ -194,6 +177,35 @@ async function capas(appids: number[]): Promise<Map<number, Arte>> {
     // resolver a arte é enfeite; devolver os jogos, não
   }
   return mapa;
+}
+
+/**
+ * A conta: o nick, o avatar e o nível, com a fração do caminho até o próximo.
+ * Fechado pela privacidade, `GetBadges` volta 200 sem campo nenhum, e é o
+ * `player_level` ausente que diz isso: aí não há conta, e a seção não ganha o
+ * avatar.
+ */
+function conta(
+  jogador: { personaname?: string; avatarfull?: string } | undefined,
+  n:
+    | {
+        player_level?: number;
+        player_xp?: number;
+        player_xp_needed_to_level_up?: number;
+        player_xp_needed_current_level?: number;
+      }
+    | undefined,
+): Jogos['perfil'] {
+  if (n?.player_level === undefined) return null;
+  const feito = (n.player_xp ?? 0) - (n.player_xp_needed_current_level ?? n.player_xp ?? 0);
+  const falta = n.player_xp_needed_to_level_up ?? 0;
+  return {
+    nome: jogador?.personaname ?? '',
+    avatar: jogador?.avatarfull ?? null,
+    nivel: n.player_level,
+    xpFalta: falta,
+    progresso: feito + falta > 0 ? Math.min(1, Math.max(0, feito / (feito + falta))) : 0,
+  };
 }
 
 const normalizar = (j: JogoSteam, capas: Map<number, Arte>): Jogo => ({
@@ -207,22 +219,6 @@ const normalizar = (j: JogoSteam, capas: Map<number, Arte>): Jogo => ({
   ...(j.rtime_last_played ? { jogadoEm: new Date(j.rtime_last_played * 1000).toISOString() } : {}),
 });
 
-/**
- * A insígnia no contrato. A de jogo ganha o nome e a arte do jogo, que vêm da
- * mesma consulta das capas; sem arte resolvida ela fica sem nenhuma, porque a
- * convenção de reserva dos jogos erraria todo evento da loja, que tem `appid` e
- * não tem página.
- */
-const insignia = (b: InsigniaSteam, capas: Map<number, Arte>): Insignia => ({
-  id: b.appid ? `jogo-${b.appid}-${b.border_color ?? 0}` : `comunidade-${b.badgeid}`,
-  comunidade: b.appid ? null : b.badgeid,
-  jogo: (b.appid && capas.get(b.appid)?.nome) || null,
-  arte: (b.appid && capas.get(b.appid)?.deitada) || null,
-  nivel: b.level ?? 1,
-  xp: b.xp ?? 0,
-  ano: b.completion_time ? new Date(b.completion_time * 1000).getUTCFullYear() : null,
-});
-
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
   if (metodoInvalido(req, res)) return;
 
@@ -231,7 +227,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   const { STEAM_API_KEY: chave, STEAM_ID: id } = env.vars;
 
   try {
-    const [resumo, recentes, biblioteca, conta] = await Promise.all([
+    const [resumo, recentes, biblioteca, nivel] = await Promise.all([
       fetch(
         `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${chave}&steamids=${id}`,
       ),
@@ -241,13 +237,16 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       opcional<{ response?: { game_count?: number; games?: JogoSteam[] } }>(
         `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${chave}&steamid=${id}&include_appinfo=1&include_played_free_games=1`,
       ),
-      // o nível vem junto das insígnias: `GetSteamLevel` seria uma chamada para um número
+      /**
+       * O nível e o XP vêm de `GetBadges`, que traz também onde o nível atual
+       * começou: é o que dá a fração do anel. `GetSteamLevel` daria só o número.
+       */
       opcional<{
         response?: {
-          badges?: InsigniaSteam[];
           player_level?: number;
           player_xp?: number;
           player_xp_needed_to_level_up?: number;
+          player_xp_needed_current_level?: number;
         };
       }>(`https://api.steampowered.com/IPlayerService/GetBadges/v1/?key=${chave}&steamid=${id}`),
     ]);
@@ -293,8 +292,6 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       .filter((g) => !fora.has(g.appid))
       .map((g) => ({ ...daPosse.get(g.appid), ...g }));
 
-    const insignias = (conta?.response?.badges ?? []).filter((b) => !b.appid || !fora.has(b.appid));
-
     /**
      * O jogo aberto vem do resumo, mas o tempo dele vem da lista de recentes: o
      * resumo traz só o nome. Quando ele ainda não aparece ali (partida da
@@ -309,7 +306,6 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const arte = await capas([
       ...new Set([
         ...[...jogos, ...porUltimo, ...maisJogados].map((g) => g.appid),
-        ...insignias.flatMap((b) => (b.appid ? [b.appid] : [])),
         ...(abertoId ? [abertoId] : []),
       ]),
     ]);
@@ -331,20 +327,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       porUltimo: porUltimo.map((g) => normalizar(g, arte)),
       maisJogados: maisJogados.map((g) => normalizar(g, arte)),
       totalJogos: biblioteca?.response?.game_count ?? 0,
-      // fechadas pela privacidade, as insígnias voltam 200 sem campo nenhum
-      perfil: conta?.response?.player_level !== undefined
-        ? {
-            nome: jogador?.personaname ?? '',
-            avatar: jogador?.avatarfull ?? null,
-            url: jogador?.profileurl ?? `https://steamcommunity.com/profiles/${id}`,
-            nivel: conta.response.player_level,
-            xp: conta.response.player_xp ?? 0,
-            xpFalta: conta.response.player_xp_needed_to_level_up ?? 0,
-            insignias: insignias
-              .map((b) => insignia(b, arte))
-              .sort((a, b) => b.xp - a.xp),
-          }
-        : null,
+      perfil: conta(jogador, nivel?.response),
     };
 
     // 60s: o "jogando agora" é o dado vivo daqui, e ele muda em minutos, não em
