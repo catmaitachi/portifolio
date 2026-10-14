@@ -14,7 +14,7 @@ os **redefine**. Nada de duplicar padding/altura em regra nova, nada de `!import
 | `AboutSection` | `--lado --retrato --retrato-ar --colunas-gap --parte-gap --texto-fs --logo-caixa --onda-w --onda-folga` |
 | `JourneySection` | `--exp-cargo --exp-gap --exp-bloco-gap --exp-txt --cracha-col --cracha-ar --fita-h` (no celular o crachá fica 4:5, menos alto) |
 | `MusicSection` | `--capa --capas-cols --artistas-cols` |
-| `ProjectsSection` (e `Projeto`) | `--proj-cols --proj-gap --proj-entre` |
+| `ProjectsSection` (e `Projeto`) | `--proj-entre --gav-cols --gav-recuo`, e `--zoom` na janela da sessão (no celular a linha da gaveta fica com número, nome e ponta, e a ficha vira uma coluna) |
 | `GamesSection` | `--capa-w --deque-h` (o andar de baixo, LoL e Minecraft, vira uma coluna) |
 | `Liga` | `--carta-w` (no celular a carta sobe para cima do pódio, centrada, e os itens das partidas encolhem de 18 para 14px) |
 | `Boneco` | `--px`, o tamanho de um texel: 6px, 5px no celular, 7px acima de 1600px. **Inteiro de propósito**: com frações aparecem frestas entre as faces |

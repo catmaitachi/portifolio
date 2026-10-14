@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "api/preview.ts": { "maxDuration": 30 }
+    "api/preview.ts": { "maxDuration": 30, "includeFiles": "src/content/shared.json" }
   },
   "redirects": [
     { "source": "/kittens", "destination": "/kittens/", "permanent": true }

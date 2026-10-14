@@ -1,7 +1,7 @@
 /**
  * `@keyframes` mora no módulo que o usa (ver `hud.md`).
  *
- * A entrada é a da direção: o projeto chega da profundidade, pequeno, fora de
+ * A entrada é a da direção: o que chega vem da profundidade, pequeno, fora de
  * foco e apagado, e assenta; nada entra deslizando (ver `direcao-visual.md`).
  */
 @keyframes chega {
@@ -19,6 +19,17 @@
   }
 }
 
+/* o ano de commits se desenha da esquerda, quando a gaveta abre */
+@keyframes revela {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
 @keyframes pulsaVivo {
   0%,
   100% {
@@ -30,51 +41,116 @@
   }
 }
 
-/**
- * Uma linha por projeto: a janela e o texto lado a lado, e as linhas alternam
- * de lado, para a coluna das janelas não virar um muro. As colunas e o respiro
- * são tokens da seção (`ProjectsSection.module.css`).
- */
-.projeto {
-  display: grid;
-  grid-template-columns: var(--proj-cols);
-  gap: var(--proj-gap);
-  align-items: center;
+/* o risco da espera corre da esquerda enquanto o site não chega */
+@keyframes espera {
+  from {
+    opacity: 1;
+    transform: scaleX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: scaleX(1);
+  }
 }
 
-.projeto:nth-child(even) .janela {
-  order: 2;
+/* ---------- a sessão ---------- */
+
+.sessao {
+  display: grid;
+  gap: 22px;
+  min-width: 0;
 }
 
 /* a entrada pende de `data-ativo` do bloco, como a das outras seções */
-[data-ativo] .projeto {
+[data-ativo] .sessao {
   animation: chega 0.8s var(--ease-entrada) backwards;
-  animation-delay: calc(0.2s + var(--ordem, 0) * 140ms);
+  animation-delay: 0.2s;
 }
 
-/* ---------- a janela ---------- */
+/**
+ * As abas: uma por destaque, numa linha só. Quando não cabem, a linha rola de
+ * lado em vez de quebrar; a aba em vigor é a que tem o risco aceso embaixo.
+ */
+.abas {
+  display: flex;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--linha);
+  scrollbar-width: none;
+}
+
+.aba {
+  display: flex;
+  flex: none;
+  gap: 10px;
+  align-items: baseline;
+  min-height: 44px;
+  margin: 0 22px -1px 0;
+  padding: 0 22px 0 0;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  background: none;
+  color: var(--tx-apoio);
+  font: inherit;
+  font-size: var(--fs-pequeno);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  appearance: none;
+  transition:
+    border-color var(--dur-hover),
+    color var(--dur-hover);
+}
+
+span.aba {
+  align-items: center;
+  cursor: default;
+}
+
+.aba:hover {
+  color: var(--tx-hover);
+}
+
+.aba[aria-pressed='true'] {
+  border-bottom-color: var(--tx-titulo);
+  color: var(--tx-titulo);
+}
+
+.num {
+  color: var(--tx-marcador);
+  font-size: var(--fs-meta);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-etiqueta);
+}
 
 .janela {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
   margin: 0;
 }
 
 /**
- * A foto emoldurada em 1px, na proporção de uma tela de 1280×800. A moldura só
- * tem cor quando a foto não veio, que é a regra de toda imagem da página (ver
- * `direcao-visual.md`): sobre a foto, ela não reserva nada.
+ * A janela emoldurada em 1px. A moldura só tem cor quando não há foto nem site,
+ * que é a regra de toda imagem da página (ver `direcao-visual.md`): sobre eles,
+ * ela não reserva nada.
+ *
+ * `--zoom` é quanto o site ao vivo é reduzido: ele roda numa largura maior que
+ * a da janela, para se ver como num computador, e encolhe para caber.
  */
 .vista {
+  --zoom: 0.72;
   position: relative;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   border: 1px solid var(--linha-forte);
   background: #050505;
 }
 
-.vista:has(img:not([hidden])) {
+.vista:has(img:not([hidden]), iframe[data-pronto]) {
   border-color: var(--linha);
 }
 
@@ -85,98 +161,111 @@
   }
 }
 
+[data-ativo] .vista {
+  animation: chega 0.55s var(--ease-entrada) backwards;
+}
+
 .vista img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: top;
+  transition:
+    opacity var(--dur-hover),
+    filter var(--dur-hover);
 }
 
-/**
- * O site ao vivo roda no dobro da largura da janela e é reduzido à metade: sem
- * isso ele se veria como num celular, porque a janela tem ~550px. Em CSS, sem
- * medir nada.
- */
+.vista:has(.tocar:hover) img {
+  opacity: 0.55;
+  filter: blur(2px);
+}
+
 .vista iframe {
   position: absolute;
   top: 0;
   left: 0;
-  width: 200%;
-  height: 200%;
+  width: calc(100% / var(--zoom));
+  height: calc(100% / var(--zoom));
   border: 0;
-  transform: scale(0.5);
+  opacity: 0;
+  transform: scale(var(--zoom));
   transform-origin: 0 0;
+  transition: opacity 0.6s var(--ease-saida);
 }
 
-.alternar {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
-  z-index: 1;
-  margin: 0;
-  padding: 5px 9px;
-  border: 1px solid var(--linha-acesa);
-  border-radius: 0;
-  background: rgb(0 0 0 / 72%);
-  color: var(--tx-forte);
-  font-size: var(--fs-rotulo);
-  letter-spacing: var(--ls-etiqueta);
-  text-transform: uppercase;
-  cursor: pointer;
-  appearance: none;
-  transition:
-    border-color var(--dur-hover),
-    color var(--dur-hover);
+.vista iframe[data-pronto] {
+  opacity: 1;
 }
 
-.alternar:hover {
-  border-color: var(--linha-cheia);
-  color: var(--tx-titulo);
-}
-
-/* sem site: o código de barras dos commits no lugar da foto, sobre um hachurado */
-.semSite {
+/* enquanto o site não chega: o aviso e um risco que corre, no meio da janela */
+.espera {
   position: absolute;
   inset: 0;
   display: grid;
-  gap: 14px;
+  gap: 10px;
   place-content: center;
-  justify-items: center;
-  background: repeating-linear-gradient(135deg, transparent 0 9px, rgb(255 255 255 / 2.5%) 9px 10px);
-  color: var(--tx-apoio);
+  color: var(--tx-rotulo);
   font-size: var(--fs-meta);
-  letter-spacing: 0.28em;
+  letter-spacing: var(--ls-rotulo);
   text-transform: uppercase;
 }
 
-.barras {
-  display: block;
-  width: min(280px, 70%);
-  height: 40px;
-  overflow: visible;
-  fill: none;
-  stroke: rgb(255 255 255 / 70%);
-  stroke-width: 1;
+.espera::after {
+  height: 1px;
+  background: var(--linha-cheia);
+  content: '';
+  transform-origin: left;
+  animation: espera 1.4s var(--ease-saida) infinite;
 }
 
-.barras path {
-  vector-effect: non-scaling-stroke;
+/* o botão de rodar, no meio da foto: é a ação da janela pausada */
+.tocar {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 20px;
+  border: 1px solid var(--linha-cheia);
+  border-radius: 0;
+  background: rgb(0 0 0 / 80%);
+  color: var(--tx-titulo);
+  font: inherit;
+  font-size: var(--fs-controle);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  appearance: none;
+  translate: -50% -50%;
+  transition:
+    background-color var(--dur-hover),
+    color var(--dur-hover);
 }
 
-.barras .base {
-  stroke: var(--linha-forte);
-  stroke-dasharray: 3 3;
+.tocar:hover {
+  background: var(--tx-titulo);
+  color: #000;
+}
+
+/* desenhada, como toda seta da página: um triângulo de borda */
+.seta {
+  border-block: 5px solid transparent;
+  border-left: 8px solid currentcolor;
 }
 
 /**
- * A legenda da janela: o endereço, um risco e o estado, como a legenda de uma
- * figura. Ela ocupou o lugar da barra de navegador, que desenhava as três
- * bolinhas do macOS.
+ * A barra da sessão: o estado, o endereço, um risco e o botão de pausar, como a
+ * legenda de uma figura. Ela ocupa o lugar da barra de navegador que a janela
+ * não tem.
  */
-.endereco {
+.barra {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   align-items: center;
   min-width: 0;
   color: var(--tx-apoio);
@@ -184,27 +273,15 @@
   letter-spacing: 0.16em;
 }
 
-.url {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.risco {
-  flex: 1;
-  min-width: 24px;
-  height: 1px;
-  background: var(--linha);
-}
-
 .estado {
   display: flex;
   flex: none;
   gap: 7px;
   align-items: center;
-  color: var(--tx-rotulo);
+  color: var(--tx-forte);
   letter-spacing: 0.24em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .pulso {
@@ -215,11 +292,37 @@
   animation: pulsaVivo 2.4s ease-in-out infinite;
 }
 
-/* ---------- o texto ---------- */
+.url {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.risco {
+  flex: 1;
+  min-width: 16px;
+  height: 1px;
+  background: var(--linha);
+}
+
+/* ---------- a ficha do destaque ---------- */
+
+.ficha {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 18px clamp(24px, 4vw, 52px);
+  align-items: start;
+}
+
+[data-ativo] .ficha {
+  animation: chega 0.55s var(--ease-entrada) backwards;
+  animation-delay: 80ms;
+}
 
 .info {
   display: grid;
   gap: 14px;
+  align-content: start;
   justify-items: start;
   min-width: 0;
 }
@@ -287,7 +390,6 @@
   display: grid;
   gap: 9px;
   width: 100%;
-  max-width: 420px;
 }
 
 .rotulo,
@@ -312,7 +414,7 @@
 
 [data-ativo] .trechos > span {
   animation: enche 0.8s var(--ease-entrada) backwards;
-  animation-delay: calc(0.6s + var(--ordem, 0) * 140ms + var(--k, 0) * 120ms);
+  animation-delay: calc(0.5s + var(--k, 0) * 120ms);
 }
 
 .legenda {
@@ -366,13 +468,21 @@
 }
 
 .link {
-  padding-bottom: 2px;
+  margin: 0;
+  padding: 0 0 2px;
+  border: 0;
   border-bottom: 1px solid var(--linha-forte);
+  border-radius: 0;
+  background: none;
   color: var(--tx-forte);
+  font: inherit;
   font-size: var(--fs-controle);
   letter-spacing: 0.24em;
   text-decoration: none;
   text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  appearance: none;
   transition:
     border-color var(--dur-hover),
     color var(--dur-hover);
@@ -383,9 +493,234 @@
   color: var(--tx-titulo);
 }
 
-/* celular: uma coluna, a janela sempre em cima */
+/* ---------- o código de barras dos commits ---------- */
+
+.barras {
+  display: block;
+  width: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: rgb(255 255 255 / 70%);
+  stroke-width: 1;
+}
+
+.barras path {
+  vector-effect: non-scaling-stroke;
+}
+
+.barras .base {
+  stroke: var(--linha-forte);
+  stroke-dasharray: 3 3;
+}
+
+.barras .mes {
+  stroke: var(--linha-sutil);
+}
+
+/* ---------- a gaveta ---------- */
+
+.gaveta {
+  border-bottom: 1px dashed var(--linha);
+}
+
+[data-ativo] .gaveta {
+  animation: chega 0.7s var(--ease-entrada) backwards;
+  animation-delay: calc(0.35s + var(--ordem, 0) * 70ms);
+}
+
+/**
+ * A linha da gaveta: número, nome, descrição, linguagem principal, o ano em
+ * miniatura e a ponta que diz se está aberta. As colunas são tokens da seção.
+ */
+.alca {
+  display: grid;
+  grid-template-columns: var(--gav-cols);
+  gap: 8px 20px;
+  align-items: center;
+  min-height: 52px;
+  padding: 14px 0;
+  list-style: none;
+  cursor: pointer;
+}
+
+.alca::-webkit-details-marker {
+  display: none;
+}
+
+div.alca {
+  cursor: default;
+}
+
+.titulo {
+  margin: 0;
+  color: var(--tx-forte);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: color var(--dur-hover);
+}
+
+.alca:hover .titulo,
+.gaveta[open] .titulo {
+  color: var(--tx-titulo);
+}
+
+.resumo {
+  overflow: hidden;
+  color: var(--tx-apoio);
+  font-size: var(--fs-pequeno);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.principal {
+  display: grid;
+  gap: 6px;
+  color: var(--tx-apoio);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.1em;
+}
+
+.alca .barras {
+  height: 18px;
+}
+
+/* a ponta é desenhada, como toda seta da página: dois lados de um quadrado, girado */
+.ponta {
+  width: 7px;
+  height: 7px;
+  border: solid var(--linha-acesa);
+  border-width: 0 1px 1px 0;
+  justify-self: center;
+  rotate: 45deg;
+  transition:
+    rotate var(--dur-hover) var(--ease-saida),
+    border-color var(--dur-hover);
+}
+
+.alca:hover .ponta {
+  border-color: var(--linha-cheia);
+}
+
+.gaveta[open] .ponta {
+  rotate: 225deg;
+}
+
+/* aberta, a linha fica só com o nome: o resto está escrito inteiro logo abaixo */
+.gaveta[open] .resumo,
+.gaveta[open] .principal,
+.gaveta[open] .alca .barras {
+  visibility: hidden;
+}
+
+.aberto {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: 24px clamp(24px, 4vw, 48px);
+  align-items: start;
+  padding: 10px 0 30px var(--gav-recuo);
+}
+
+.gaveta[open] .aberto {
+  animation: chega 0.5s var(--ease-entrada) backwards;
+}
+
+.retrato {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.ano {
+  display: grid;
+  gap: 6px;
+}
+
+.ano .barras {
+  height: 46px;
+}
+
+.gaveta[open] .tracos {
+  animation: revela 1s var(--ease-entrada) backwards;
+}
+
+.meses {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  overflow: hidden;
+  color: var(--tx-marcador);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.meses span {
+  padding-left: 4px;
+  border-left: 1px solid var(--linha);
+}
+
+/* celular: a janela mais alta, e a ficha e a gaveta em uma coluna */
 @media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
-  .projeto:nth-child(even) .janela {
-    order: 0;
+  .vista {
+    --zoom: 0.5;
+    aspect-ratio: 16 / 10;
+  }
+
+  .barra {
+    flex-wrap: wrap;
+    gap: 4px 16px;
+  }
+
+  .barra .estado {
+    flex: 1;
+  }
+
+  .barra .url {
+    flex: 1 1 100%;
+    order: 3;
+  }
+
+  .barra .risco {
+    display: none;
+  }
+
+  .link {
+    padding-block: 10px 6px;
+  }
+
+  .ficha,
+  .aberto {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .resumo {
+    grid-column: 2 / -1;
+    grid-row: 2;
+    white-space: normal;
+  }
+
+  .principal {
+    display: none;
+  }
+
+  .alca .barras {
+    grid-column: 2 / -1;
+    grid-row: 3;
+  }
+
+  .ponta {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .gaveta[open] .resumo,
+  .gaveta[open] .alca .barras {
+    display: none;
+  }
+
+  .meses {
+    display: none;
   }
 }

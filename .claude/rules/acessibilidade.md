@@ -13,8 +13,10 @@ paths:
 - Tabular para um controle que o visitante não consegue ver é perder o foco no meio da tela: o que
   está escondido sai da tabulação (`inert` ou `tabIndex -1`).
 - **Nenhum cartão é um botão.** O cartão de projeto já foi `role="button"` com um link dentro, o que
-  ARIA não permite. Na vitrine de hoje os únicos elementos interativos de um projeto são os links e o
-  botão da janela, que troca a foto pelo site ao vivo (`aria-pressed`). A foto tem o nome do projeto
+  ARIA não permite. Hoje os elementos interativos de Projetos são as abas da sessão (um grupo com
+  `a11y.destaques`, cada aba com `aria-pressed`), os botões de rodar e pausar, os links, e as gavetas,
+  que são `<details>` e dizem sozinhas se estão abertas. O número de cada projeto é desenho
+  (`aria-hidden`). A foto tem o nome do projeto
   como texto alternativo (`a11y.previa`), e o site ao vivo, o mesmo nome como título do iframe.
 - **As capas de Música são links com o nome da faixa e dos artistas** (`aria-label`), porque a
   legenda que sobe no hover é desenho (`aria-hidden`) e não aparece para quem não aponta.

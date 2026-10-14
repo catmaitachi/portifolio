@@ -10,7 +10,7 @@
 | `src/scene/` | Ponte React ↔ motor e a cena de cada seção. | `engine`, `content` |
 | `src/navigation/` | As telas (`Tela`), o cabeçalho (`SectionNav`), o endereço e o título da aba. | `content`, `i18n`, `sections/types` |
 | `src/hud/` | Anéis, mira, menu de opções (idioma, qualidade, versão), ícones dos canais, e o medidor da supernova. | `i18n`, `content`, `scene/qualidade` (o canal da régua) |
-| `src/sections/` | Uma pasta por seção, mais o `SectionProps` e as peças que mais de uma usa (`EstadoRemoto`, `PerfilExterno`) e o botão de passo (`.passo`, em `section.module.css`). | `content`, `i18n`, componentes |
+| `src/sections/` | Uma pasta por seção, mais o `SectionProps` e as peças que mais de uma usa (`EstadoRemoto`, `PerfilExterno`) e o botão de passo (`.passo`, em `section.module.css`). | `content`, `i18n`, componentes, `scene/qualidade` (só Projetos, para saber se a máquina aguenta um site ao vivo) |
 | `src/components/` | Peças genéricas (`Figure`). | nada |
 | `src/hooks/` | Hooks transversais (`useReducedMotion`, `useArrowKeys`, `useDecipher`, `useInclinacao`, `useRemoto`). | nada |
 

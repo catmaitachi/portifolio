@@ -1,0 +1,1114 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projetos: sessão e gavetas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+/* os tokens são os do reset.css do site, copiados */
+:root {
+  --tx-titulo: #fff;
+  --tx-hover: rgb(255 255 255 / 90%);
+  --tx-forte: rgb(255 255 255 / 82%);
+  --tx-corpo: rgb(255 255 255 / 66%);
+  --tx-apoio: rgb(255 255 255 / 50%);
+  --tx-rotulo: rgb(255 255 255 / 40%);
+  --tx-apagado: rgb(255 255 255 / 32%);
+  --tx-marcador: rgb(255 255 255 / 24%);
+  --linha-sutil: rgb(255 255 255 / 10%);
+  --linha: rgb(255 255 255 / 14%);
+  --linha-forte: rgb(255 255 255 / 24%);
+  --linha-acesa: rgb(255 255 255 / 36%);
+  --linha-foco: rgb(255 255 255 / 55%);
+  --linha-cheia: rgb(255 255 255 / 78%);
+  --fundo-sutil: rgb(255 255 255 / 4%);
+  --fs-micro: 7.5px;
+  --fs-rotulo: 8.5px;
+  --fs-meta: 9px;
+  --fs-controle: 10px;
+  --fs-pequeno: 11px;
+  --fs-corpo: clamp(11px, 1.5vmin, 14px);
+  --ls-rotulo: 0.28em;
+  --ls-etiqueta: 0.22em;
+  --dur-hover: 0.35s;
+  --ease-saida: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-entrada: cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #000;
+  color: var(--tx-corpo);
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-weight: 300;
+  font-size: 12px;
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font: inherit; color: inherit; }
+a { color: inherit; }
+:focus-visible { outline: 1px solid var(--linha-cheia); outline-offset: 3px; }
+
+@keyframes chega {
+  from { opacity: 0; filter: blur(6px); transform: scale(0.94); }
+}
+@keyframes enche { from { transform: scaleX(0); } }
+@keyframes pulsa { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+
+/* ---------- a barra da vitrine (não faz parte do site) ---------- */
+
+.barra {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  align-items: center;
+  padding: 12px clamp(16px, 4vw, 40px);
+  border-bottom: 1px solid var(--linha);
+  background: rgb(0 0 0 / 92%);
+}
+
+.barra h1 {
+  margin: 0;
+  color: var(--tx-apoio);
+  font-size: var(--fs-controle);
+  font-weight: 400;
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+
+.grupo { display: flex; gap: 6px; align-items: center; }
+.grupo > span {
+  margin-right: 6px;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-etiqueta);
+  text-transform: uppercase;
+}
+
+.aba {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--linha);
+  background: none;
+  color: var(--tx-apoio);
+  font-size: var(--fs-controle);
+  letter-spacing: var(--ls-etiqueta);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color var(--dur-hover), color var(--dur-hover), background var(--dur-hover);
+}
+.aba:hover { border-color: var(--linha-acesa); color: var(--tx-hover); }
+.aba[aria-pressed='true'] { border-color: var(--linha-cheia); background: #fff; color: #000; }
+
+.resumo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: 0 clamp(16px, 4vw, 40px);
+  border-bottom: 1px dashed var(--linha-forte);
+}
+.resumo > div { padding: 18px 20px 18px 0; }
+.resumo > div + div { padding-left: 20px; border-left: 1px dashed var(--linha); }
+.resumo dt, .resumo .rot {
+  margin-bottom: 7px;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+.resumo strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--tx-titulo);
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.resumo p { margin: 0; max-width: 62ch; line-height: 1.7; }
+.resumo .valor { color: var(--tx-forte); font-size: var(--fs-pequeno); line-height: 1.6; }
+
+/* ---------- a seção, como no site ---------- */
+
+.secao {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: clamp(36px, 7vh, 72px) clamp(16px, 4vw, 40px) 120px;
+}
+
+.indice {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 0 0 14px;
+  color: var(--tx-marcador);
+  font-size: var(--fs-controle);
+  letter-spacing: var(--ls-rotulo);
+}
+.indice i { width: 44px; height: 1px; background: var(--linha-forte); }
+
+.titulo {
+  margin: 0 0 12px;
+  color: var(--tx-titulo);
+  font-size: clamp(20px, 3.4vmin, 32px);
+  font-weight: 300;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.intro { margin: 0 0 clamp(36px, 6vh, 60px); max-width: 60ch; line-height: 1.8; font-size: var(--fs-corpo); }
+
+.rotulo {
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+
+.nome {
+  margin: 0;
+  color: var(--tx-titulo);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.link {
+  padding-bottom: 2px;
+  border: 0;
+  border-bottom: 1px solid var(--linha-forte);
+  background: none;
+  color: var(--tx-forte);
+  font-size: var(--fs-controle);
+  letter-spacing: 0.24em;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color var(--dur-hover), color var(--dur-hover);
+}
+.link:hover { border-bottom-color: var(--tx-titulo); color: var(--tx-titulo); }
+
+.pulso {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--tx-forte);
+  animation: pulsa 2.4s ease-in-out infinite;
+}
+
+/* a janela: a mesma do site */
+.vista {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border: 1px solid var(--linha-forte);
+  background: #050505;
+}
+.vista:has(img:not([hidden])) { border-color: var(--linha); }
+@supports (corner-shape: bevel) {
+  .vista { corner-shape: bevel; border-radius: 18px 2px; }
+}
+.vista img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.vista iframe {
+  position: absolute; top: 0; left: 0;
+  width: 200%; height: 200%; border: 0;
+  transform: scale(0.5); transform-origin: 0 0;
+}
+.alternar {
+  position: absolute; right: 10px; bottom: 10px; z-index: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--linha-acesa);
+  background: rgb(0 0 0 / 72%);
+  color: var(--tx-forte);
+  font-size: var(--fs-rotulo);
+  letter-spacing: var(--ls-etiqueta);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.alternar:hover { border-color: var(--linha-cheia); color: var(--tx-titulo); }
+
+.semSite {
+  position: absolute; inset: 0;
+  display: grid; gap: 14px; place-content: center; justify-items: center;
+  background: repeating-linear-gradient(135deg, transparent 0 9px, rgb(255 255 255 / 2.5%) 9px 10px);
+  color: var(--tx-apoio);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.barras { display: block; overflow: visible; fill: none; stroke: rgb(255 255 255 / 70%); stroke-width: 1; }
+.barras path { vector-effect: non-scaling-stroke; }
+.barras .base { stroke: var(--linha-forte); stroke-dasharray: 3 3; }
+.barras .mes { stroke: var(--linha-sutil); }
+
+.legendaJanela {
+  display: flex; gap: 14px; align-items: center;
+  min-width: 0; margin-top: 10px;
+  color: var(--tx-apoio);
+  font-size: var(--fs-rotulo);
+  letter-spacing: 0.16em;
+}
+.legendaJanela .url { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.legendaJanela i { flex: 1; min-width: 24px; height: 1px; background: var(--linha); }
+.estado {
+  display: flex; flex: none; gap: 7px; align-items: center;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.descricao { margin: 0; line-height: 1.8; font-size: var(--fs-corpo); letter-spacing: 0.04em; }
+
+.trechos { display: flex; gap: 3px; height: 3px; }
+.trechos > span { flex-basis: 0; background: rgb(255 255 255 / var(--tom)); transform-origin: left; animation: enche 0.8s var(--ease-entrada) backwards; animation-delay: calc(0.5s + var(--k, 0) * 120ms); }
+.linguas { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--tx-forte); font-size: var(--fs-pequeno); }
+.linguas span { display: flex; gap: 7px; align-items: center; }
+.linguas i { width: 7px; height: 7px; background: rgb(255 255 255 / var(--tom)); }
+.linguas em { color: var(--tx-apoio); font-style: normal; font-variant-numeric: tabular-nums; }
+
+.dados { display: flex; flex-wrap: wrap; gap: 8px 26px; margin: 0; }
+.dados div { display: grid; gap: 4px; }
+.dados dt { color: var(--tx-rotulo); font-size: var(--fs-rotulo); letter-spacing: 0.28em; text-transform: uppercase; }
+.dados dd { margin: 0; color: var(--tx-forte); font-size: var(--fs-pequeno); font-variant-numeric: tabular-nums; }
+
+.links { display: flex; gap: 22px; }
+
+/* ================= A: destaque e índice ================= */
+
+.destaques { display: grid; gap: clamp(48px, 8vh, 84px); margin: 0; padding: 0; list-style: none; }
+.destaque {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 52px);
+  align-items: center;
+  animation: chega 0.8s var(--ease-entrada) backwards;
+  animation-delay: calc(0.1s + var(--ordem, 0) * 140ms);
+}
+.destaques li:nth-child(even) .destaque > figure { order: 2; }
+.destaque figure { margin: 0; min-width: 0; }
+.info { display: grid; gap: 14px; justify-items: start; min-width: 0; }
+.info .nome { font-size: clamp(18px, 2.6vmin, 26px); }
+.info .linguagens { display: grid; gap: 9px; width: 100%; max-width: 420px; }
+
+.tituloLista {
+  display: flex; gap: 14px; align-items: center;
+  margin: clamp(56px, 9vh, 96px) 0 8px;
+  color: var(--tx-apoio);
+  font-size: var(--fs-controle);
+  font-weight: 400;
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+.tituloLista i { flex: 1; height: 1px; background: var(--linha); }
+.tituloLista span { color: var(--tx-marcador); }
+
+.rol { margin: 0; padding: 0; list-style: none; }
+.rol li {
+  display: grid;
+  grid-template-columns: 3ch minmax(13ch, 1fr) minmax(0, 2fr) 110px 130px auto;
+  gap: 20px;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px dashed var(--linha);
+  animation: chega 0.7s var(--ease-entrada) backwards;
+  animation-delay: calc(0.35s + var(--ordem, 0) * 70ms);
+}
+.rol .num { color: var(--tx-marcador); font-size: var(--fs-controle); font-variant-numeric: tabular-nums; }
+.rol .nome { font-size: 13px; }
+.rol .desc { overflow: hidden; color: var(--tx-apoio); font-size: var(--fs-pequeno); text-overflow: ellipsis; white-space: nowrap; }
+.rol .barras { width: 100%; height: 18px; }
+.rol .lingua1 { display: grid; gap: 6px; color: var(--tx-apoio); font-size: var(--fs-meta); letter-spacing: 0.1em; }
+
+/* ================= B: o visor ================= */
+
+.visor {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.6fr);
+  gap: clamp(24px, 4vw, 56px);
+  align-items: start;
+}
+.canais { display: grid; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--linha); }
+.canal {
+  display: grid;
+  grid-template-columns: 3ch minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 4px 0 0;
+  border: 0;
+  border-bottom: 1px solid var(--linha);
+  background: none;
+  color: var(--tx-apoio);
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--dur-hover), padding var(--dur-hover) var(--ease-saida);
+}
+.canais li { animation: chega 0.7s var(--ease-entrada) backwards; animation-delay: calc(0.1s + var(--ordem, 0) * 60ms); }
+.canal .num { color: var(--tx-marcador); font-size: var(--fs-controle); font-variant-numeric: tabular-nums; }
+.canal .n { overflow: hidden; font-size: 12px; font-weight: 400; letter-spacing: 0.12em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.canal .marca { display: flex; gap: 6px; align-items: center; color: var(--tx-marcador); font-size: var(--fs-micro); letter-spacing: 0.2em; text-transform: uppercase; }
+.canal .ponto { width: 5px; height: 5px; border: 1px solid var(--linha-acesa); border-radius: 50%; }
+.canal[data-site] .ponto { border-color: transparent; background: var(--tx-apoio); }
+.canal:hover { color: var(--tx-hover); }
+.canal[aria-pressed='true'] { padding-left: 12px; color: var(--tx-titulo); box-shadow: inset 2px 0 0 #fff; }
+.canal[aria-pressed='true'] .num { color: var(--tx-forte); }
+
+.tela { position: sticky; top: 76px; display: grid; gap: 22px; min-width: 0; }
+.tela figure { margin: 0; }
+.tela .miolo { position: absolute; inset: 0; animation: chega 0.55s var(--ease-entrada) backwards; }
+.tela .varre {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to bottom, transparent 0, rgb(255 255 255 / 9%) 50%, transparent 100%);
+  background-size: 100% 34%;
+  background-repeat: no-repeat;
+  animation: varre 0.55s var(--ease-saida) backwards;
+  opacity: 0;
+}
+@keyframes varre {
+  from { opacity: 1; background-position: 0 -40%; }
+  to { opacity: 0; background-position: 0 140%; }
+}
+.painel { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 18px 36px; animation: chega 0.55s var(--ease-entrada) backwards; animation-delay: 80ms; }
+.painel .nome { font-size: clamp(18px, 2.6vmin, 24px); }
+.painel > div { display: grid; gap: 12px; align-content: start; justify-items: start; min-width: 0; }
+.painel .linguagens { display: grid; gap: 9px; width: 100%; }
+
+/* ================= C: o espectro ================= */
+
+.eixo, .faixa {
+  display: grid;
+  grid-template-columns: minmax(17ch, 0.9fr) minmax(0, 2.1fr) 150px;
+  gap: 28px;
+  align-items: center;
+}
+.eixo { padding-bottom: 10px; border-bottom: 1px solid var(--linha-forte); }
+.meses { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); overflow: hidden; color: var(--tx-marcador); font-size: var(--fs-micro); letter-spacing: 0.2em; text-transform: uppercase; }
+.meses span { padding-left: 4px; border-left: 1px solid var(--linha); }
+.fichas { margin: 0; padding: 0; list-style: none; }
+.fichas > li { border-bottom: 1px dashed var(--linha); animation: chega 0.7s var(--ease-entrada) backwards; animation-delay: calc(0.1s + var(--ordem, 0) * 80ms); }
+.faixa { padding: 22px 0; }
+.faixa .quem { display: grid; gap: 8px; min-width: 0; }
+.faixa .nome { font-size: 14px; }
+.faixa .desc { overflow: hidden; color: var(--tx-apoio); font-size: var(--fs-pequeno); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.faixa .espectro { display: grid; gap: 8px; min-width: 0; }
+.faixa .barras { width: 100%; height: 46px; }
+.faixa .barras .tracos { transform-origin: left; animation: revela 1.1s var(--ease-entrada) backwards; animation-delay: calc(0.3s + var(--ordem, 0) * 80ms); }
+@keyframes revela { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+.faixa .acoes { display: grid; gap: 12px; justify-items: end; }
+.faixa .conta { color: var(--tx-forte); font-size: var(--fs-pequeno); font-variant-numeric: tabular-nums; }
+.faixa .conta small { color: var(--tx-rotulo); font-size: var(--fs-rotulo); letter-spacing: 0.24em; text-transform: uppercase; }
+.gaveta { padding: 0 0 26px; animation: chega 0.6s var(--ease-entrada) backwards; }
+.gaveta .vista { max-width: 760px; margin-left: auto; }
+.gaveta .legendaJanela { max-width: 760px; margin-left: auto; }
+
+/* ---------- celular ---------- */
+@media (width <= 760px) {
+  .resumo { grid-template-columns: 1fr 1fr; }
+  .resumo > div:first-child { grid-column: 1 / -1; }
+  .resumo > div + div { padding-left: 0; border-left: 0; }
+  .resumo > div { padding: 12px 12px 12px 0; }
+
+  .destaque { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .destaques li:nth-child(even) .destaque > figure { order: 0; }
+  .rol li { grid-template-columns: 3ch minmax(0, 1fr) auto; gap: 8px 12px; }
+  .rol .desc { grid-column: 2 / -1; grid-row: 2; white-space: normal; }
+  .rol .lingua1 { display: none; }
+  .rol .barras { grid-column: 2 / -1; grid-row: 3; }
+  .rol .links { grid-column: 3; grid-row: 1; }
+
+  .visor { grid-template-columns: minmax(0, 1fr); }
+  .canais { display: flex; gap: 8px; overflow-x: auto; border-top: 0; padding-bottom: 6px; scrollbar-width: none; }
+  .canal { grid-template-columns: auto auto; min-height: 44px; padding: 0 12px; border: 1px solid var(--linha); white-space: nowrap; }
+  .canal .marca { display: none; }
+  .canal .n { overflow: visible; }
+  .canais li { flex: none; }
+  .barra { position: static; }
+  .canal[aria-pressed='true'] { padding-left: 12px; border-color: var(--linha-cheia); box-shadow: none; }
+  .tela { position: static; }
+  .painel { grid-template-columns: minmax(0, 1fr); }
+
+  .eixo { display: none; }
+  .faixa { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .faixa .acoes { display: flex; justify-content: space-between; align-items: center; }
+  .link { padding-block: 10px 6px; }
+}
+
+/* ================= derivações da A ================= */
+
+/* destaque em par: lado a lado, a janela em cima */
+.destaques[data-d='par'] { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(24px, 4vw, 44px); align-items: start; }
+.destaques[data-d='par'] .destaque { grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+.destaques[data-d='par'] li:nth-child(even) .destaque > figure { order: 0; }
+.destaques[data-d='par'] .info .nome { font-size: clamp(16px, 2.2vmin, 21px); }
+
+/* destaque em cartaz: um só, a janela na largura inteira */
+.destaques[data-d='cartaz'] .destaque { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+.destaques[data-d='cartaz'] .vista { aspect-ratio: 2 / 1; }
+.destaques[data-d='cartaz'] .info { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); column-gap: clamp(24px, 4vw, 52px); }
+.destaques[data-d='cartaz'] .info > * { grid-column: 1; }
+.destaques[data-d='cartaz'] .info .linguagens { grid-column: 2; grid-row: 1 / span 3; align-self: end; }
+.destaques[data-d='cartaz'] .info .dados { grid-column: 2; grid-row: 4; }
+.destaques[data-d='cartaz'] .info .nome { font-size: clamp(22px, 3.4vmin, 34px); }
+
+/* índice em fichas */
+.rol[data-i='fichas'] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+.rol[data-i='fichas'] li {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  align-content: start;
+  padding: 18px 20px 20px;
+  border: 1px solid var(--linha);
+  transition: border-color var(--dur-hover);
+}
+.rol[data-i='fichas'] li:hover { border-color: var(--linha-acesa); }
+@supports (corner-shape: bevel) {
+  .rol[data-i='fichas'] li { corner-shape: bevel; border-radius: 14px 2px; }
+}
+.fichaTopo, .fichaPe { display: flex; gap: 16px; align-items: center; justify-content: space-between; min-width: 0; }
+.fichaPe { align-items: end; margin-top: 4px; }
+.fichaPe .lingua1 { flex: 1; max-width: 150px; }
+.rol[data-i='fichas'] .barras { height: 34px; }
+.rol[data-i='fichas'] .nome { font-size: 14px; }
+.rol[data-i='fichas'] .desc { margin: 0; min-height: 3.2em; line-height: 1.6; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+/* índice em gaveta */
+.rol[data-i='gaveta'] li { display: block; padding: 0; }
+.rol summary {
+  display: grid;
+  grid-template-columns: 3ch minmax(13ch, 1fr) minmax(0, 2fr) 110px 130px 16px;
+  gap: 20px;
+  align-items: center;
+  min-height: 52px;
+  padding: 14px 0;
+  list-style: none;
+  cursor: pointer;
+}
+.rol summary::-webkit-details-marker { display: none; }
+.rol summary:hover .nome { color: #fff; }
+.rol summary:hover .ponta { border-color: var(--linha-cheia); }
+.ponta { width: 7px; height: 7px; border: solid var(--linha-acesa); border-width: 0 1px 1px 0; rotate: 45deg; justify-self: center; transition: rotate var(--dur-hover) var(--ease-saida), border-color var(--dur-hover); }
+details[open] .ponta { rotate: 225deg; }
+details[open] summary .desc { visibility: hidden; }
+.aberto {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: clamp(24px, 4vw, 48px);
+  align-items: start;
+  padding: 10px 0 30px calc(3ch + 20px);
+  animation: chega 0.5s var(--ease-entrada) backwards;
+}
+.aberto figure { margin: 0; min-width: 0; }
+.aberto .info .linguagens { max-width: none; }
+
+@media (width <= 760px) {
+  .destaques[data-d='par'] { grid-template-columns: minmax(0, 1fr); }
+  .destaques[data-d='cartaz'] .vista { aspect-ratio: 16 / 10; }
+  .destaques[data-d='cartaz'] .info { grid-template-columns: minmax(0, 1fr); }
+  .destaques[data-d='cartaz'] .info > *,
+  .destaques[data-d='cartaz'] .info .linguagens,
+  .destaques[data-d='cartaz'] .info .dados { grid-column: 1; grid-row: auto; }
+  .rol[data-i='fichas'] { grid-template-columns: minmax(0, 1fr); }
+  .rol[data-i='fichas'] .lingua1 { display: grid; }
+  .rol[data-i='fichas'] .barras, .rol[data-i='fichas'] .desc, .rol[data-i='fichas'] .links { grid-column: auto; grid-row: auto; }
+  .rol summary { grid-template-columns: 3ch minmax(0, 1fr) 16px; gap: 8px 12px; }
+  .rol summary .desc { grid-column: 2 / -1; grid-row: 2; white-space: normal; }
+  .rol summary .barras { grid-column: 2 / -1; grid-row: 3; }
+  .rol summary .ponta { grid-column: 3; grid-row: 1; }
+  details[open] summary .desc { display: none; }
+  .aberto { grid-template-columns: minmax(0, 1fr); padding-left: 0; }
+  .rol .aberto .links, .rol .aberto .barras { grid-column: auto; grid-row: auto; }
+}
+
+/* ================= três destaques, ao vivo ================= */
+
+.tocar {
+  position: absolute; top: 50%; left: 50%; z-index: 1;
+  display: flex; gap: 12px; align-items: center;
+  min-height: 44px; padding: 0 20px;
+  border: 1px solid var(--linha-cheia);
+  background: rgb(0 0 0 / 80%);
+  color: #fff;
+  font-size: var(--fs-controle);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  translate: -50% -50%;
+  transition: background var(--dur-hover), color var(--dur-hover);
+}
+.tocar i { border-left: 8px solid currentcolor; border-block: 5px solid transparent; }
+.tocar:hover { background: #fff; color: #000; }
+.vista:has(.tocar) img { transition: opacity var(--dur-hover), filter var(--dur-hover); }
+.vista:has(.tocar:hover) img { opacity: 0.55; filter: blur(2px); }
+.vista .miolo { position: absolute; inset: 0; animation: chega 0.55s var(--ease-entrada) backwards; }
+.cena { margin: 0; min-width: 0; }
+
+.vista iframe { transition: opacity 0.6s var(--ease-saida); }
+.vista iframe.chegando { opacity: 0; }
+.espera { position: absolute; inset: 0; display: grid; place-content: center; color: var(--tx-rotulo); font-size: var(--fs-meta); letter-spacing: var(--ls-rotulo); text-transform: uppercase; }
+.espera::after { content: ''; display: block; width: 100%; height: 1px; margin-top: 10px; background: var(--linha-cheia); transform-origin: left; animation: sintoniza 1.4s var(--ease-saida) infinite; }
+@keyframes sintoniza { from { transform: scaleX(0); opacity: 1; } to { transform: scaleX(1); opacity: 0; } }
+
+/* palco */
+.palco { display: grid; grid-template-columns: minmax(0, 2.5fr) minmax(0, 1fr); gap: 26px clamp(18px, 2.4vw, 30px); align-items: start; }
+.palco[data-so='true'] { grid-template-columns: minmax(0, 1fr); }
+.palco .painel { grid-column: 1 / -1; }
+.coxia { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
+.mini { display: grid; gap: 8px; width: 100%; padding: 0; border: 0; background: none; text-align: left; cursor: pointer; }
+.mini .vista { display: block; }
+.mini .vista img { opacity: 0.6; filter: grayscale(1); transition: opacity var(--dur-hover), filter var(--dur-hover); }
+.mini:hover .vista img, .mini:focus-visible .vista img { opacity: 1; filter: none; }
+@supports (corner-shape: bevel) { .mini .vista { border-radius: 10px 2px; } }
+.miniNome { display: flex; gap: 10px; align-items: baseline; color: var(--tx-apoio); font-size: var(--fs-controle); letter-spacing: 0.14em; text-transform: uppercase; transition: color var(--dur-hover); }
+.miniNome .num, .abaSessao .num { color: var(--tx-marcador); font-size: var(--fs-meta); }
+.mini:hover .miniNome { color: #fff; }
+
+/* trio */
+.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px clamp(18px, 2.4vw, 30px); align-items: start; margin: 0; padding: 0; list-style: none; }
+.trio[data-qtd='2'] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.trio[data-qtd='1'] { grid-template-columns: minmax(0, 1fr); }
+.trio > li { display: grid; gap: 18px; min-width: 0; animation: chega 0.8s var(--ease-entrada) backwards; animation-delay: calc(0.1s + var(--ordem, 0) * 120ms); }
+.trio figure { margin: 0; min-width: 0; }
+.trio .info { gap: 12px; }
+.trio .info .nome { font-size: 15px; }
+.trio .descricao { font-size: var(--fs-pequeno); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.trio > li[data-aberto] { grid-column: 1 / -1; grid-row: 1; grid-template-columns: minmax(0, 2.5fr) minmax(0, 1fr); gap: clamp(18px, 2.4vw, 30px); align-items: start; animation-delay: 0s; }
+.trio > li[data-aberto] .info { gap: 14px; align-content: start; }
+.trio > li[data-aberto] .info .nome { font-size: clamp(18px, 2.6vmin, 24px); }
+.trio > li[data-aberto] .descricao { display: block; font-size: var(--fs-corpo); }
+.trio .tocar { min-height: 40px; padding: 0 14px; font-size: var(--fs-meta); letter-spacing: var(--ls-etiqueta); }
+
+/* sessão */
+.sessao { display: grid; gap: 22px; }
+.abasSessao { display: flex; gap: 0; border-bottom: 1px solid var(--linha); }
+.abaSessao {
+  display: flex; gap: 10px; align-items: baseline;
+  min-height: 44px; margin-bottom: -1px; padding: 0 22px 0 0; margin-right: 22px;
+  border: 0; border-bottom: 1px solid transparent;
+  background: none; color: var(--tx-apoio);
+  font-size: 12px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--dur-hover), border-color var(--dur-hover);
+}
+.abaSessao:hover { color: var(--tx-hover); }
+.abaSessao[aria-pressed='true'] { border-bottom-color: #fff; color: #fff; }
+.sessao .vista { aspect-ratio: 16 / 9; }
+.transporte { display: flex; gap: 16px; align-items: center; min-width: 0; margin-top: 12px; color: var(--tx-apoio); font-size: var(--fs-rotulo); letter-spacing: 0.16em; }
+.transporte .url { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.transporte i { flex: 1; min-width: 16px; height: 1px; background: var(--linha); }
+.transporte .estado { color: var(--tx-forte); }
+
+@media (width <= 760px) {
+  .palco { grid-template-columns: minmax(0, 1fr); }
+  .coxia { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .trio, .trio[data-qtd='2'] { grid-template-columns: minmax(0, 1fr); }
+  .trio > li[data-aberto] { grid-template-columns: minmax(0, 1fr); grid-row: auto; }
+  .abasSessao { overflow-x: auto; scrollbar-width: none; }
+  .transporte { flex-wrap: wrap; gap: 4px 16px; }
+  .transporte .url { flex: 1 1 100%; order: 3; }
+  .transporte i { display: none; }
+  .transporte .estado { flex: 1; }
+}
+
+/* ---------- fallbacks ---------- */
+.barra .grupo { flex-wrap: wrap; }
+.vazio { margin: 0; color: var(--tx-apoio); font-size: var(--fs-corpo); letter-spacing: 0.08em; }
+.rol[data-sozinho] { border-top: 1px solid var(--linha-forte); }
+.sessao[data-mini] { grid-template-columns: minmax(0, 2.5fr) minmax(0, 1fr); column-gap: clamp(18px, 2.4vw, 30px); align-items: start; }
+.sessao[data-mini] .painel { grid-column: 1 / -1; }
+@media (width <= 760px) {
+  .sessao[data-mini] { grid-template-columns: minmax(0, 1fr); }
+  .sessao[data-mini] .coxia { grid-template-columns: minmax(0, 0.6fr); }
+}
+
+/* ---------- N destaques e gavetas de quem não tem site ---------- */
+.abasSessao { overflow-x: auto; scrollbar-width: none; }
+.abaSessao { flex: none; }
+.topicos { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.topicos li { padding: 3px 8px; border: 1px solid var(--linha); color: var(--tx-apoio); font-size: var(--fs-rotulo); letter-spacing: var(--ls-etiqueta); text-transform: uppercase; }
+@supports (corner-shape: bevel) { .topicos li { corner-shape: bevel; border-radius: 5px 2px; } }
+.aberto { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); }
+.retrato { display: grid; gap: 16px; min-width: 0; }
+.retrato .ano { display: grid; gap: 6px; }
+.retrato .barras { width: 100%; height: 46px; }
+.retrato .barras .tracos { animation: revela 1s var(--ease-entrada) backwards; }
+.retrato .linguagens { display: grid; gap: 9px; }
+details[open] summary .barras, details[open] summary .lingua1 { visibility: hidden; }
+@media (width <= 760px) {
+  .aberto { grid-template-columns: minmax(0, 1fr); }
+  .retrato .meses { display: none; }
+  details[open] summary .barras { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="barra">
+  <h1>Projetos / sessão de destaques e gavetas</h1>
+  <div class="grupo" role="group" aria-label="Seleção">
+    <span>Seleção</span>
+    <button class="aba" data-c="cheio">3 destaques + 6 gavetas</button>
+    <button class="aba" data-c="cinco">5 destaques + 4 gavetas</button>
+    <button class="aba" data-c="hoje">Só destaques (hoje)</button>
+    <button class="aba" data-c="indice">Só gavetas</button>
+    <button class="aba" data-c="nada">Nada</button>
+  </div>
+  <div class="grupo" role="group" aria-label="Máquina">
+    <span>Máquina</span>
+    <button class="aba" data-m="forte">Forte</button>
+    <button class="aba" data-m="fraca">Fraca</button>
+  </div>
+</header>
+
+<dl class="resumo" id="resumo"></dl>
+
+<main class="secao">
+  <p class="indice"><span>03</span><i></i></p>
+  <h2 class="titulo">Projetos pessoais</h2>
+  <p class="intro">Feito com carinho.</p>
+  <div id="palco"></div>
+</main>
+
+<script>
+const D = {"janela": {"de": "2025-10-14T00:40:35.277Z", "ate": "2026-10-14T00:40:35.277Z"}, "repositorios": [{"id": "catmaitachi/kittens", "nome": "kittens", "descricao": "Kittens as a cute and interactive TypeScript component.", "url": "https://github.com/catmaitachi/kittens", "site": "https://luuspz.dev/kittens/", "estrelas": 0, "forks": 0, "commits": 41, "datasRecentes": ["2026-09-27T04:43:35Z", "2026-09-27T03:59:00Z", "2026-09-27T03:59:00Z", "2026-09-26T01:21:46Z", "2026-09-26T01:20:53Z", "2026-09-26T01:19:29Z", "2026-09-26T01:08:37Z", "2026-09-15T20:34:33Z", "2026-09-15T20:14:19Z", "2026-09-15T19:41:23Z", "2026-09-15T19:41:22Z", "2026-09-15T19:41:22Z", "2026-09-15T19:21:08Z", "2026-09-15T19:19:27Z", "2026-09-15T18:54:15Z", "2026-09-15T18:48:02Z", "2026-09-15T18:46:22Z", "2026-09-15T18:46:22Z", "2026-09-15T18:46:21Z", "2026-09-15T18:46:21Z", "2026-09-15T18:30:18Z", "2026-09-15T18:30:18Z", "2026-09-15T18:17:58Z", "2026-09-15T18:17:57Z", "2026-09-15T18:17:57Z", "2026-09-15T18:05:17Z", "2026-09-15T17:50:50Z", "2026-09-15T17:50:50Z", "2026-09-15T17:35:31Z", "2026-09-15T17:35:30Z", "2026-09-15T16:50:44Z", "2026-09-13T15:35:36Z", "2026-09-13T15:35:05Z", "2026-09-13T15:32:13Z", "2026-09-13T15:25:38Z", "2026-09-13T15:25:14Z", "2026-09-13T15:24:43Z", "2026-09-13T15:24:33Z", "2026-09-13T15:24:24Z", "2026-09-13T15:23:58Z", "2026-09-13T14:07:44Z"], "linguagens": [{"nome": "TypeScript", "fracao": 0.7993239381172471}, {"nome": "CSS", "fracao": 0.10535360761913413}, {"nome": "HTML", "fracao": 0.09532245426361871}], "topicos": ["component", "kittens", "npm-package", "typescript"], "criadoEm": "2026-09-13T14:07:43Z", "atualizadoEm": "2026-09-27T04:43:37Z", "arquivado": false}, {"id": "catmaitachi/financeiro", "nome": "financeiro", "descricao": "Gerenciador financeiro pessoal e local, integrado à Pluggy (Open Finance).", "url": "https://github.com/catmaitachi/financeiro", "site": "https://catmaitachi.github.io/financeiro/", "estrelas": 0, "forks": 0, "commits": 10, "datasRecentes": ["2026-10-11T21:18:58Z", "2026-10-11T19:54:31Z", "2026-10-11T19:53:11Z", "2026-10-11T19:49:45Z", "2026-10-11T19:48:31Z", "2026-10-11T19:43:18Z", "2026-10-11T19:38:42Z", "2026-10-11T19:17:37Z", "2026-10-11T19:11:06Z", "2026-10-11T18:53:35Z"], "linguagens": [{"nome": "TypeScript", "fracao": 0.9815374595009854}, {"nome": "CSS", "fracao": 0.01781817473306835}, {"nome": "HTML", "fracao": 0.000644365765946313}], "topicos": ["finance", "finance-management", "typescript"], "criadoEm": "2026-10-11T18:58:41Z", "atualizadoEm": "2026-10-11T21:19:00Z", "arquivado": false}, {"id": "catmaitachi/portifolio", "nome": "portifolio", "descricao": null, "url": "https://github.com/catmaitachi/portifolio", "site": "https://luuspz.dev", "estrelas": 0, "forks": 0, "commits": 165, "datasRecentes": ["2026-10-11T20:07:45Z", "2026-10-11T20:05:37Z", "2026-10-11T20:01:34Z", "2026-10-11T19:33:00Z", "2026-10-11T19:24:47Z", "2026-10-11T15:58:30Z", "2026-10-11T15:58:30Z", "2026-10-11T15:19:05Z", "2026-10-11T14:55:42Z", "2026-10-01T22:15:01Z", "2026-10-01T22:14:35Z", "2026-09-30T21:47:08Z", "2026-09-30T21:47:08Z", "2026-09-30T21:28:27Z", "2026-09-30T21:28:26Z", "2026-09-30T13:56:33Z", "2026-09-30T13:56:33Z", "2026-09-30T13:40:35Z", "2026-09-30T13:40:35Z", "2026-09-30T13:40:27Z", "2026-09-30T13:40:22Z", "2026-09-30T13:37:46Z", "2026-09-30T13:37:35Z", "2026-09-30T13:10:56Z", "2026-09-30T13:01:41Z", "2026-09-30T13:00:02Z", "2026-09-29T14:07:54Z", "2026-09-29T12:53:28Z", "2026-09-29T12:50:30Z", "2026-09-29T12:37:20Z", "2026-09-29T12:37:20Z", "2026-09-29T12:35:33Z", "2026-09-29T12:32:38Z", "2026-09-29T12:27:23Z", "2026-09-29T12:23:44Z", "2026-09-29T12:11:31Z", "2026-09-29T12:03:52Z", "2026-09-29T12:01:19Z", "2026-09-29T11:46:58Z", "2026-09-29T11:41:47Z", "2026-09-29T11:32:13Z", "2026-09-29T11:27:41Z", "2026-09-29T11:16:41Z", "2026-09-29T11:02:20Z", "2026-09-29T11:02:20Z", "2026-09-29T11:01:56Z", "2026-09-28T01:59:56Z", "2026-09-28T01:53:43Z", "2026-09-28T01:50:44Z", "2026-09-28T01:32:47Z", "2026-09-28T01:26:48Z", "2026-09-28T01:25:09Z", "2026-09-28T01:25:09Z", "2026-09-15T20:08:15Z", "2026-09-15T16:59:31Z", "2026-09-11T13:25:35Z", "2026-09-11T13:25:10Z", "2026-09-11T12:50:09Z", "2026-09-11T12:45:55Z", "2026-09-11T03:42:15Z", "2026-09-11T03:19:14Z", "2026-09-11T03:19:12Z", "2026-09-11T03:19:12Z", "2026-09-11T03:19:12Z", "2026-09-09T20:45:22Z", "2026-09-09T20:38:21Z", "2026-09-09T20:27:12Z", "2026-09-09T20:25:42Z", "2026-09-09T20:11:08Z", "2026-09-09T20:07:49Z", "2026-09-09T20:03:57Z", "2026-09-09T19:57:11Z", "2026-09-09T19:47:06Z", "2026-09-09T19:38:44Z", "2026-09-09T19:17:01Z", "2026-09-09T19:07:24Z", "2026-09-09T18:55:27Z", "2026-09-09T18:54:51Z", "2026-09-09T18:34:36Z", "2026-09-09T18:29:19Z", "2026-09-09T18:24:27Z", "2026-09-09T18:16:01Z", "2026-09-09T17:25:06Z", "2026-09-09T14:48:34Z", "2026-09-09T14:37:59Z", "2026-09-09T14:21:11Z", "2026-09-09T14:00:58Z", "2026-09-09T13:42:35Z", "2026-09-09T13:25:01Z", "2026-09-09T13:09:25Z", "2026-09-09T12:52:06Z", "2026-09-09T00:57:08Z", "2026-09-09T00:25:40Z", "2026-09-09T00:16:07Z", "2026-09-09T00:07:00Z", "2026-09-08T23:49:16Z", "2026-09-08T23:18:02Z", "2026-09-08T23:17:56Z", "2026-09-08T23:17:43Z", "2026-09-05T19:40:38Z"], "linguagens": [{"nome": "TypeScript", "fracao": 0.733944535993494}, {"nome": "CSS", "fracao": 0.23899856575793355}, {"nome": "JavaScript", "fracao": 0.025306467762311765}, {"nome": "HTML", "fracao": 0.0017504304862607585}], "topicos": ["portfolio"], "criadoEm": "2026-08-19T14:13:43Z", "atualizadoEm": "2026-10-11T20:08:33Z", "arquivado": false}, {"id": "catmaitachi/Scorepad", "nome": "Scorepad", "descricao": "Plataforma de análise predetiva de jogos que calcula a chance de sucesso de futuros lançamentos.", "url": "https://github.com/catmaitachi/Scorepad", "site": null, "estrelas": 0, "forks": 0, "commits": 3, "datasRecentes": ["2026-06-05T20:05:22Z", "2026-05-07T00:45:30Z", "2026-05-07T00:04:04Z"], "linguagens": [{"nome": "Python", "fracao": 1}], "topicos": ["data-analysis", "python"], "criadoEm": "2026-05-07T00:04:03Z", "atualizadoEm": "2026-06-05T20:05:27Z", "arquivado": false}, {"id": "catmaitachi/El_Banqueiro", "nome": "El_Banqueiro", "descricao": "Implementação do Algoritmo do Banqueiro em Python.", "url": "https://github.com/catmaitachi/El_Banqueiro", "site": null, "estrelas": 1, "forks": 0, "commits": 12, "datasRecentes": ["2026-04-28T11:56:59Z", "2026-04-28T11:20:08Z", "2026-04-27T23:39:03Z", "2026-04-27T23:38:08Z", "2026-04-27T23:29:50Z", "2026-04-26T21:50:37Z", "2026-04-26T21:48:12Z", "2026-04-26T14:50:33Z", "2026-04-23T01:34:48Z", "2026-04-23T01:25:41Z", "2026-04-22T21:35:49Z", "2026-04-16T17:31:05Z"], "linguagens": [{"nome": "Python", "fracao": 1}], "topicos": ["banker-algorithm", "python"], "criadoEm": "2026-04-16T17:31:05Z", "atualizadoEm": "2026-04-28T11:57:06Z", "arquivado": false}, {"id": "catmaitachi/Randomize", "nome": "Randomize", "descricao": "Nó customizado para automações no n8n usando API da Random.org para gerar números aleatórios.", "url": "https://github.com/catmaitachi/Randomize", "site": null, "estrelas": 0, "forks": 0, "commits": 12, "datasRecentes": [], "linguagens": [{"nome": "TypeScript", "fracao": 0.8964424951267057}, {"nome": "JavaScript", "fracao": 0.10355750487329435}], "topicos": ["n8n", "n8n-nodes", "n8n-workflow", "true-random-number-generator"], "criadoEm": "2025-09-21T00:03:15Z", "atualizadoEm": "2025-09-25T03:01:01Z", "arquivado": false}, {"id": "catmaitachi/ClinPlaY_API", "nome": "ClinPlaY_API", "descricao": null, "url": "https://github.com/catmaitachi/ClinPlaY_API", "site": null, "estrelas": 0, "forks": 0, "commits": 21, "datasRecentes": ["2026-10-07T02:22:00Z", "2026-10-07T02:22:00Z", "2026-10-07T02:22:00Z", "2026-10-07T02:14:41Z", "2026-10-07T02:01:08Z", "2026-09-26T19:37:48Z", "2026-09-26T19:30:47Z", "2026-09-26T19:13:50Z", "2026-09-26T19:04:21Z", "2026-09-26T19:03:07Z", "2026-09-22T17:42:33Z", "2026-09-13T19:38:26Z", "2026-09-13T19:16:38Z", "2026-06-20T22:56:21Z", "2026-06-20T22:24:09Z", "2026-06-20T22:07:19Z", "2026-06-20T21:14:30Z", "2026-06-18T14:15:13Z", "2026-06-18T00:29:50Z", "2026-06-17T23:00:01Z", "2026-06-17T21:28:20Z"], "linguagens": [{"nome": "Java", "fracao": 0.9752177399802309}, {"nome": "Shell", "fracao": 0.022312986068371288}, {"nome": "Dockerfile", "fracao": 0.0024692739513978252}], "topicos": [], "criadoEm": "2026-06-17T21:28:20Z", "atualizadoEm": "2026-10-07T02:22:43Z", "arquivado": false}, {"id": "catmaitachi/matricula", "nome": "matricula", "descricao": null, "url": "https://github.com/catmaitachi/matricula", "site": null, "estrelas": 0, "forks": 0, "commits": 17, "datasRecentes": ["2026-09-30T02:34:58Z", "2026-09-30T02:34:58Z", "2026-09-30T02:34:58Z", "2026-09-30T02:34:58Z", "2026-09-30T02:34:58Z", "2026-09-30T02:34:58Z", "2026-09-30T02:34:58Z", "2026-09-30T02:34:58Z", "2026-09-30T02:34:58Z", "2026-09-27T20:51:24Z", "2026-09-23T14:47:33Z", "2026-09-23T02:55:07Z", "2026-09-23T00:51:58Z", "2026-09-16T00:46:37Z", "2026-09-16T00:15:05Z", "2026-09-15T23:35:35Z", "2026-09-15T13:00:41Z"], "linguagens": [{"nome": "Java", "fracao": 0.4670671535262842}, {"nome": "TypeScript", "fracao": 0.42736413099695886}, {"nome": "CSS", "fracao": 0.08440480377350684}, {"nome": "Python", "fracao": 0.019157167387301652}, {"nome": "HTML", "fracao": 0.0011792208866913544}, {"nome": "JavaScript", "fracao": 0.0008275234292570908}], "topicos": [], "criadoEm": "2026-09-15T13:00:40Z", "atualizadoEm": "2026-09-30T02:35:04Z", "arquivado": false}, {"id": "catmaitachi/egon", "nome": "egon", "descricao": null, "url": "https://github.com/catmaitachi/egon", "site": null, "estrelas": 0, "forks": 0, "commits": 5, "datasRecentes": ["2026-10-14T00:35:18Z", "2026-10-05T23:41:46Z", "2026-10-05T22:38:25Z", "2026-10-05T21:47:29Z", "2026-10-05T21:32:06Z"], "linguagens": [], "topicos": [], "criadoEm": "2026-10-05T21:32:05Z", "atualizadoEm": "2026-10-14T00:35:25Z", "arquivado": false}]};
+
+const FOTOS = {
+  'catmaitachi/kittens': 'kittens.jpg',
+  'catmaitachi/financeiro': 'financeiro.jpg',
+  'catmaitachi/portifolio': 'portifolio.jpg',
+};
+/* a única foto que esta vitrine pede ao site de verdade, e só quando o visor a sintoniza */
+const fotoDe = (id) => FOTOS[id] ?? `https://luuspz.dev/api/preview?repo=${encodeURIComponent(id)}`;
+
+const TONS = [1, 0.6, 0.36, 0.18];
+const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+const DESTAQUES = {
+  palco: {
+    nome: 'Palco',
+    fotos: (s) => `${s} por dia, fixo`,
+    frase: 'Uma janela grande com o botão de rodar no meio, e os outros destaques ao lado. Clicar num deles o traz para o palco.',
+  },
+  trio: {
+    nome: 'Trio',
+    fotos: (s) => `${s} por dia, fixo`,
+    frase: 'Os três lado a lado. Rodar um deles o abre na largura inteira, ao vivo, e os outros descem.',
+  },
+  sessao: {
+    nome: 'Sessão',
+    fotos: (s) => `0 a ${s}: só quando alguém pausa`,
+    frase: 'O site já chega rodando. Os destaques são abas em cima da janela, e a foto só aparece se alguém pausar.',
+  },
+};
+const INDICES = {
+  linhas: { nome: 'Linhas', frase: 'O resto é uma linha por projeto, e nada abre.', perde: 'Quem está no índice não mostra o site aqui dentro.' },
+  fichas: { nome: 'Fichas', frase: 'O resto são fichas em duas colunas, com o código de barras no alto de cada uma.', perde: 'Quem está no índice não mostra o site aqui dentro.' },
+  gaveta: { nome: 'Gaveta', frase: 'O resto é uma linha por projeto, e cada linha abre: o texto inteiro, os números e o site rodando ao vivo, sem foto.', perde: 'Nada: quem está no índice ainda roda o site, só não tem foto.' },
+};
+
+const K = 'catmaitachi/';
+const CENARIOS = {
+  cheio: { destaques: ['kittens', 'financeiro', 'portifolio'], outros: ['Scorepad', 'El_Banqueiro', 'Randomize', 'ClinPlaY_API', 'matricula', 'egon'], regra: 'Os destaques vão de 01 a 03 nas abas, e as gavetas continuam a conta, de 04 a 09.' },
+  cinco: { destaques: ['kittens', 'financeiro', 'portifolio', 'Scorepad', 'matricula'], outros: ['El_Banqueiro', 'Randomize', 'ClinPlaY_API', 'egon'], emprestimo: { Scorepad: 'kittens', matricula: 'financeiro' }, regra: 'Teste de largura das abas com cinco: o Scorepad e o Matricula não têm site, e aqui tomam emprestado o de outro projeto. As gavetas começam no 06.' },
+  hoje: { destaques: ['kittens', 'financeiro'], outros: [], regra: 'Sem gavetas, a seção acaba na ficha do destaque: não há título de lista nem lista vazia.' },
+  indice: { destaques: [], outros: ['Scorepad', 'El_Banqueiro', 'Randomize', 'ClinPlaY_API', 'matricula'], regra: 'Sem destaques, a seção é só as gavetas, a partir do 01 e sem o título delas. Nenhum site é carregado e nenhuma foto é pedida.' },
+  nada: { destaques: [], outros: [], regra: 'Nada escolhido: a seção diz isso, como hoje, e não chama o GitHub.' },
+};
+let cenario = 'cheio';
+let fraca = false;
+let d = 'sessao';
+let foco = 0;
+let vivo = false;
+let trioVivo = null;
+let pausada = false;
+let ind = 'gaveta';
+let op = 'a';
+let n = 5;
+let canal = 0;
+let aberta = null;
+
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const nomeLegivel = (s) => s.replace(/[_-]+/g, ' ');
+const anoMes = (iso) => iso.slice(0, 7).replace('-', '.');
+const porcento = (f) => (f < 0.01 ? '<1%' : `${Math.round(f * 100)}%`);
+const endereco = (r) => (r.site ? r.site.replace(/^https?:\/\//, '').replace(/\/$/, '') : `github.com/${r.id}`);
+const dois = (i) => String(i + 1).padStart(2, '0');
+
+function barras(r, altura = 40, comMeses = false) {
+  const de = Date.parse(D.janela.de);
+  const largura = Date.parse(D.janela.ate) - de;
+  const tracos = r.datasRecentes
+    .map((d) => {
+      const x = ((Date.parse(d) - de) / largura) * 1000;
+      return x >= 0 && x <= 1000 ? `M${x.toFixed(1)} 0V${altura}` : '';
+    })
+    .join('');
+  let meses = '';
+  if (comMeses) for (let k = 1; k < 12; k++) meses += `M${((k / 12) * 1000).toFixed(1)} 0V${altura}`;
+  return `<svg class="barras" viewBox="0 0 1000 ${altura}" preserveAspectRatio="none" aria-hidden="true">
+    ${meses ? `<path class="mes" d="${meses}"/>` : ''}
+    <path class="base" d="M0 ${altura}H1000"/>
+    ${tracos ? `<path class="tracos" d="${tracos}"/>` : ''}
+  </svg>`;
+}
+
+function linguagens(r, comLegenda = true) {
+  if (!r.linguagens.length) return '';
+  const nomeadas = r.linguagens.slice(0, 3);
+  const resto = Math.max(0, 1 - nomeadas.reduce((s, l) => s + l.fracao, 0));
+  const trechos = nomeadas.map((l) => l.fracao).concat(resto >= 0.005 ? [resto] : []);
+  return `<div class="linguagens">
+    ${comLegenda ? '<span class="rotulo">Linguagens</span>' : ''}
+    <span class="trechos" aria-hidden="true">${trechos.map((f, k) => `<span style="flex-grow:${f};--tom:${TONS[k]};--k:${k}"></span>`).join('')}</span>
+    ${comLegenda ? `<span class="linguas">${nomeadas.map((l, k) => `<span><i style="--tom:${TONS[k]}"></i>${esc(l.nome)}<em>${porcento(l.fracao)}</em></span>`).join('')}</span>` : ''}
+  </div>`;
+}
+
+function dados(r) {
+  const d = [['Commits', r.commits]];
+  if (r.estrelas > 0) d.push(['Estrelas', r.estrelas]);
+  if (r.forks > 0) d.push(['Forks', r.forks]);
+  d.push(['Desde', anoMes(r.criadoEm)], ['Atualizado', anoMes(r.atualizadoEm)]);
+  return `<dl class="dados">${d.map(([a, b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('')}</dl>`;
+}
+
+const links = (r) => `<div class="links">
+  <a class="link" href="${esc(r.url)}" target="_blank" rel="noreferrer">Código</a>
+  ${r.site ? `<a class="link" href="${esc(r.site)}" target="_blank" rel="noreferrer">Ao vivo</a>` : ''}
+</div>`;
+
+const estado = (r) => `<span class="estado">${r.site ? '<span class="pulso" aria-hidden="true"></span>No ar' : 'Só código'}</span>`;
+
+const legendaJanela = (r) => `<figcaption class="legendaJanela"><span class="url">${esc(endereco(r))}</span><i aria-hidden="true"></i>${estado(r)}</figcaption>`;
+
+const foto = (r) => `<img src="${esc(fotoDe(r.foto ?? r.id))}" alt="Prévia do site de ${esc(nomeLegivel(r.nome))}" loading="lazy" onerror="this.hidden=true">`;
+const semSite = (r) => `<div class="semSite">${barras(r).replace('class="barras"', 'class="barras" style="width:min(280px,70%);height:40px"')}<span>Atividade no último ano</span></div>`;
+
+/* ---------- A ---------- */
+function destaque(r, i) {
+  return `<li><article class="destaque" style="--ordem:${i}">
+      <figure><div class="vista">${foto(r)}<button class="alternar" data-vivo="${esc(r.site)}">Rodar ao vivo</button></div>${legendaJanela(r)}</figure>
+      <div class="info">
+        <span class="rotulo">${esc(r.id.split('/')[0])} /</span>
+        <h3 class="nome">${esc(nomeLegivel(r.nome))}</h3>
+        ${r.descricao ? `<p class="descricao">${esc(r.descricao)}</p>` : ''}
+        ${linguagens(r)}
+        ${dados(r)}
+        ${links(r)}
+      </div>
+    </article></li>`;
+}
+
+const mesesDoAno = () => Array.from({ length: 12 }, (_, k) => MESES[(new Date(D.janela.de).getUTCMonth() + k) % 12]);
+
+const INDICE = {
+  linhas: (r, i, num) => `<li style="--ordem:${i}">
+      <span class="num">${num}</span>
+      <h4 class="nome">${esc(nomeLegivel(r.nome))}</h4>
+      <span class="desc">${esc(r.descricao || endereco(r))}</span>
+      <span class="lingua1">${esc(r.linguagens[0]?.nome ?? '')}${linguagens(r, false)}</span>
+      ${barras(r, 18)}
+      ${links(r)}
+    </li>`,
+  fichas: (r, i, num) => `<li style="--ordem:${i}">
+      <div class="fichaTopo"><span class="num">${num}</span>${estado(r)}</div>
+      ${barras(r, 34)}
+      <h4 class="nome">${esc(nomeLegivel(r.nome))}</h4>
+      <p class="desc">${esc(r.descricao || endereco(r))}</p>
+      <div class="fichaPe"><span class="lingua1">${esc(r.linguagens[0]?.nome ?? '')}${linguagens(r, false)}</span>${links(r)}</div>
+    </li>`,
+  gaveta: (r, i, num) => `<li style="--ordem:${i}"><details name="indice">
+      <summary>
+        <span class="num">${num}</span>
+        <h4 class="nome">${esc(nomeLegivel(r.nome))}</h4>
+        <span class="desc">${esc(r.descricao || endereco(r))}</span>
+        <span class="lingua1">${esc(r.linguagens[0]?.nome ?? '')}${linguagens(r, false)}</span>
+        ${barras(r, 18)}
+        <span class="ponta" aria-hidden="true"></span>
+      </summary>
+      <div class="aberto">
+        <div class="info">
+          ${r.descricao ? `<p class="descricao">${esc(r.descricao)}</p>` : ''}
+          ${r.topicos.length ? `<ul class="topicos">${r.topicos.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
+          ${links(r)}
+        </div>
+        <div class="retrato">
+          <span class="rotulo">Commits nos últimos doze meses</span>
+          <div class="ano">${barras(r, 46, true)}<div class="meses" aria-hidden="true">${mesesDoAno().map((m) => `<span>${m}</span>`).join('')}</div></div>
+          ${linguagens(r)}
+          ${dados(r)}
+        </div>
+      </div>
+    </details></li>`,
+};
+
+const espera = '<div class="espera"><span>Sintonizando</span></div>';
+const quadro = (r, fundo = foto(r)) => `${fundo}<iframe class="chegando" onload="this.classList.remove('chegando')" src="${esc(r.site)}" title="Site de ${esc(nomeLegivel(r.nome))}, ao vivo" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>`;
+const tocar = (attr) => `<button class="tocar" ${attr}><i aria-hidden="true"></i>Rodar ao vivo</button>`;
+const parar = (attr, texto = 'Parar') => `<button class="alternar" ${attr}>${texto}</button>`;
+const fichaLarga = (r) => `<div class="painel">
+    <div>
+      <span class="rotulo">${esc(r.id.split('/')[0])} /</span>
+      <h3 class="nome">${esc(nomeLegivel(r.nome))}</h3>
+      ${r.descricao ? `<p class="descricao">${esc(r.descricao)}</p>` : ''}
+      ${links(r)}
+    </div>
+    <div>${linguagens(r)}${dados(r)}</div>
+  </div>`;
+
+const PALCOS = {
+  palco(sites) {
+    foco = Math.min(foco, sites.length - 1);
+    const r = sites[foco];
+    return `<div class="palco" data-so="${sites.length === 1 || undefined}">
+      <figure class="cena">
+        <div class="vista"><div class="miolo">${vivo ? quadro(r) : foto(r)}</div>${vivo ? parar('data-tocar') : tocar('data-tocar')}</div>
+        ${legendaJanela(r)}
+      </figure>
+      ${
+        sites.length > 1
+          ? `<ol class="coxia">${sites
+              .map((p, i) =>
+                i === foco
+                  ? ''
+                  : `<li><button class="mini" data-foco="${i}">
+              <span class="vista">${foto(p)}</span>
+              <span class="miniNome"><span class="num">${dois(i)}</span>${esc(nomeLegivel(p.nome))}</span>
+            </button></li>`,
+              )
+              .join('')}</ol>`
+          : ''
+      }
+      ${fichaLarga(r)}
+    </div>`;
+  },
+  trio(sites) {
+    return `<ol class="trio" data-qtd="${sites.length}">${sites
+      .map((r, i) => {
+        const aberto = trioVivo === i;
+        return `<li style="--ordem:${i}" ${aberto ? 'data-aberto' : ''}>
+        <figure><div class="vista">${aberto ? quadro(r) : foto(r)}${aberto ? parar(`data-trio="${i}"`) : tocar(`data-trio="${i}"`)}</div>${legendaJanela(r)}</figure>
+        <div class="info">
+          <h3 class="nome">${esc(nomeLegivel(r.nome))}</h3>
+          ${r.descricao ? `<p class="descricao">${esc(r.descricao)}</p>` : ''}
+          ${linguagens(r, aberto)}
+          ${aberto ? dados(r) : ''}
+          ${links(r)}
+        </div>
+      </li>`;
+      })
+      .join('')}</ol>`;
+  },
+  sessao(sites, mini) {
+    foco = Math.min(foco, sites.length - 1);
+    const r = sites[foco];
+    const outro = mini && sites.length === 2 ? sites[1 - foco] : null;
+    return `<div class="sessao" ${outro ? 'data-mini' : ''}>
+      ${
+        sites.length > 1 && !outro
+          ? `<div class="abasSessao" role="group" aria-label="Destaques">${sites
+              .map((p, i) => `<button class="abaSessao" data-foco="${i}" aria-pressed="${i === foco}"><span class="num">${dois(i)}</span>${esc(nomeLegivel(p.nome))}</button>`)
+              .join('')}</div>`
+          : ''
+      }
+      <figure class="cena">
+        <div class="vista"><div class="miolo">${pausada ? foto(r) : quadro(r, espera)}</div>${pausada ? tocar('data-pausa') : ''}</div>
+        <figcaption class="transporte">
+          <span class="estado">${pausada ? 'Pausado' : '<span class="pulso" aria-hidden="true"></span>Rodando ao vivo'}</span>
+          <span class="url">${esc(endereco(r))}</span>
+          <i aria-hidden="true"></i>
+          <button class="link" data-pausa>${pausada ? 'Rodar' : 'Pausar'}</button>
+          <a class="link" href="${esc(r.site)}" target="_blank" rel="noreferrer">Abrir</a>
+        </figcaption>
+      </figure>
+      ${
+        outro
+          ? `<div class="coxia"><button class="mini" data-foco="${1 - foco}">
+              <span class="vista">${foto(outro)}</span>
+              <span class="miniNome"><span class="num">${dois(1 - foco)}</span>${esc(nomeLegivel(outro.nome))}</span>
+            </button></div>`
+          : ''
+      }
+      ${fichaLarga(r)}
+    </div>`;
+  },
+};
+
+function escolha() {
+  const c = CENARIOS[cenario];
+  const de = (nome) => {
+    const r = D.repositorios.find((x) => x.id === K + nome);
+    const dono = c.emprestimo?.[nome];
+    return dono ? { ...r, site: de(dono).site, foto: K + dono } : r;
+  };
+  const escolhidos = c.destaques.map(de);
+  // destaque é quem foi escolhido e tem site; sem site, desce para o topo das gavetas
+  const sites = escolhidos.filter((r) => r.site);
+  const resto = [...escolhidos.filter((r) => !r.site), ...c.outros.map(de)];
+  return { sites, resto };
+}
+
+function opA() {
+  const { sites, resto } = escolha();
+  if (!sites.length && !resto.length) return '<p class="vazio">Nada aqui por ora.</p>';
+  return `
+  ${sites.length ? PALCOS.sessao(sites) : ''}
+  ${
+    resto.length
+      ? `${sites.length ? `<h3 class="tituloLista">Outros projetos<i aria-hidden="true"></i></h3>` : ''}
+  <ol class="rol" data-i="gaveta" ${sites.length ? '' : 'data-sozinho'}>${resto.map((r, i) => INDICE.gaveta(r, i, dois(i + sites.length))).join('')}</ol>`
+      : ''
+  }`;
+}
+
+/* ---------- B ---------- */
+function opB(lista) {
+  canal = Math.min(canal, lista.length - 1);
+  const r = lista[canal];
+  return `<div class="visor">
+    <ol class="canais">${lista
+      .map(
+        (p, i) => `<li style="--ordem:${i}"><button class="canal" data-canal="${i}" aria-pressed="${i === canal}" ${p.site ? 'data-site' : ''}>
+        <span class="num">${dois(i)}</span><span class="n">${esc(nomeLegivel(p.nome))}</span>
+        <span class="marca"><span class="ponto" aria-hidden="true"></span>${p.site ? 'no ar' : 'código'}</span>
+      </button></li>`,
+      )
+      .join('')}</ol>
+    <div class="tela" aria-live="polite">
+      <figure>
+        <div class="vista">
+          <div class="miolo">${r.site ? foto(r) : semSite(r)}</div>
+          <div class="varre" aria-hidden="true"></div>
+          ${r.site ? `<button class="alternar" data-vivo="${esc(r.site)}">Rodar ao vivo</button>` : ''}
+        </div>
+        ${legendaJanela(r)}
+      </figure>
+      <div class="painel">
+        <div>
+          <span class="rotulo">${esc(r.id.split('/')[0])} /</span>
+          <h3 class="nome">${esc(nomeLegivel(r.nome))}</h3>
+          ${r.descricao ? `<p class="descricao">${esc(r.descricao)}</p>` : ''}
+          ${links(r)}
+        </div>
+        <div>${linguagens(r)}${dados(r)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- C ---------- */
+function opC(lista) {
+  const inicio = new Date(D.janela.de);
+  const meses = Array.from({ length: 12 }, (_, k) => MESES[(inicio.getUTCMonth() + k) % 12]);
+  return `
+  <div class="eixo" aria-hidden="true">
+    <span class="rotulo">Projeto</span>
+    <div class="meses">${meses.map((m) => `<span>${m}</span>`).join('')}</div>
+    <span class="rotulo" style="text-align:right">Commits</span>
+  </div>
+  <ol class="fichas">${lista
+    .map((r, i) => {
+      const noAno = r.datasRecentes.length;
+      return `<li style="--ordem:${i}">
+      <article class="faixa">
+        <div class="quem">
+          <h3 class="nome">${esc(nomeLegivel(r.nome))}</h3>
+          ${r.descricao ? `<span class="desc">${esc(r.descricao)}</span>` : ''}
+        </div>
+        <div class="espectro">
+          ${barras(r, 46, true)}
+          ${linguagens(r, false)}
+        </div>
+        <div class="acoes">
+          <span class="conta">${r.commits} <small>${noAno ? `· ${noAno} no ano` : '· parado'}</small></span>
+          <div class="links">
+            <a class="link" href="${esc(r.url)}" target="_blank" rel="noreferrer">Código</a>
+            ${r.site ? `<button class="link" data-gaveta="${i}" aria-expanded="${aberta === i}">${aberta === i ? 'Fechar' : 'Rodar'}</button>` : ''}
+          </div>
+        </div>
+      </article>
+      ${
+        aberta === i && r.site
+          ? `<div class="gaveta"><div class="vista"><iframe src="${esc(r.site)}" title="Site de ${esc(nomeLegivel(r.nome))}" sandbox="allow-scripts allow-same-origin allow-popups"></iframe></div>${legendaJanela(r).replace('figcaption', 'div').replace('/figcaption', '/div')}</div>`
+          : ''
+      }
+    </li>`;
+    })
+    .join('')}</ol>`;
+}
+
+function desenha() {
+  const c = CENARIOS[cenario];
+  const sel = escolha();
+  const sites = sel.sites.length;
+  document.getElementById('resumo').innerHTML = `
+    <div><strong>${sel.sites.length} em destaque, ${sel.resto.length} em gaveta</strong><p>${c.regra}</p></div>
+    <div><dt>Máquina</dt><dd class="valor" style="margin:0">${fraca ? 'Abaixo de 0,5 na régua: a sessão chega pausada, com a foto e o botão de rodar.' : 'De 0,5 para cima na régua: a sessão chega rodando.'}</dd></div>
+    <div><dt>Fotos do microlink</dt><dd class="valor" style="margin:0">${sites ? `No máximo ${sites} por dia (uma por destaque), e só para quem vê a sessão pausada.` : 'Nenhuma.'}</dd></div>
+    <div><dt>No shared.json</dt><dd class="valor" style="margin:0">destaques: [${c.destaques.join(', ')}]<br>outros: [${c.outros.join(', ')}]</dd></div>`;
+  document.getElementById('palco').innerHTML = opA();
+  document.querySelectorAll('[data-c]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.c === cenario));
+  document.querySelectorAll('[data-m]').forEach((b) => b.setAttribute('aria-pressed', (b.dataset.m === 'fraca') === fraca));
+}
+
+document.addEventListener('click', (e) => {
+  const alvo = e.target.closest('button');
+  if (!alvo) return;
+  if (alvo.dataset.c) { cenario = alvo.dataset.c; foco = 0; pausada = fraca; desenha(); }
+  else if (alvo.dataset.m) { fraca = alvo.dataset.m === 'fraca'; pausada = fraca; desenha(); }
+  else if (alvo.dataset.foco) { foco = Number(alvo.dataset.foco); pausada = fraca; desenha(); }
+  else if ('tocar' in alvo.dataset) { vivo = !vivo; desenha(); document.querySelector('[data-tocar]')?.focus({ preventScroll: true }); }
+  else if (alvo.dataset.trio) { const i = Number(alvo.dataset.trio); trioVivo = trioVivo === i ? null : i; desenha(); document.querySelector(`[data-trio="${i}"]`)?.focus({ preventScroll: true }); }
+  else if ('pausa' in alvo.dataset) { pausada = !pausada; desenha(); document.querySelector('[data-pausa]')?.focus({ preventScroll: true }); }
+  else if (alvo.dataset.i && alvo.classList.contains('aba')) { ind = alvo.dataset.i; desenha(); }
+  else if (alvo.dataset.n) { n = Number(alvo.dataset.n); aberta = null; desenha(); }
+  else if (alvo.dataset.canal) {
+    canal = Number(alvo.dataset.canal);
+    desenha();
+    document.querySelector(`[data-canal="${canal}"]`)?.focus({ preventScroll: true });
+  } else if (alvo.dataset.gaveta) {
+    const i = Number(alvo.dataset.gaveta);
+    aberta = aberta === i ? null : i;
+    desenha();
+    document.querySelector(`[data-gaveta="${i}"]`)?.focus({ preventScroll: true });
+  } else if (alvo.dataset.vivo) {
+    const vista = alvo.closest('.vista');
+    const img = vista.querySelector('img');
+    const quadro = vista.querySelector('iframe');
+    const semFoto = vista.querySelector('.semSite');
+    if (semFoto) semFoto.hidden = !quadro;
+    if (quadro) { quadro.remove(); if (img) img.hidden = false; alvo.textContent = 'Rodar ao vivo'; }
+    else {
+      if (img) img.hidden = true;
+      const f = document.createElement('iframe');
+      f.src = alvo.dataset.vivo;
+      f.title = 'Site ao vivo';
+      f.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups');
+      vista.prepend(f);
+      alvo.textContent = semFoto ? 'Parar' : 'Voltar à foto';
+    }
+  }
+});
+
+desenha();
+</script>
+</body>
+</html>

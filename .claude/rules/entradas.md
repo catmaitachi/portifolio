@@ -20,7 +20,7 @@ a cada volta*).
 | Seção | Entrada | Onde |
 |---|---|---|
 | Sobre (o arquivo) | cada seção de texto chega cifrada e se decifra da esquerda para a direita, um parágrafo depois do outro | `hooks/useDecipher.ts` |
-| Projetos pessoais | cada linha chega da profundidade, uma depois da outra, e os trechos das linguagens se preenchem | `Projeto.module.css` |
+| Projetos pessoais | a sessão chega da profundidade, e de novo a janela e a ficha a cada troca de aba; as gavetas chegam uma depois da outra, e o ano de commits se desenha da esquerda quando uma abre | `Projeto.module.css` |
 | Carreira | o maço de crachás chega do fundo depois do bloco (300ms) e o cordão balança | `Cracha.module.css`, `Cracha.tsx` |
 | Sobre (a formação) | a onda em pé e a inversa se desenham em sentidos opostos, os nós acendem atrás delas e as linhas do medidor se preenchem uma a uma | `AboutSection.module.css` |
 | Música | tudo chega da profundidade: o destaque, depois as capas uma a uma e os retratos por último | `MusicSection.module.css` |

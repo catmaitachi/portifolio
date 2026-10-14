@@ -36,7 +36,7 @@ da profundidade**. Os padrões abaixo valem para o que existe e para o que for e
 | rolagem | rolar a tela empurra a câmera pelo campo de estrelas, e as seções de uma pilha chegam da profundidade ao aparecer | `scene/camera.ts`, `Starfield`, `Tela` | getlayers/Flora, magicui/floating-3d-particles |
 | troca de tela | um salto: as estrelas viram riscos radiais, o campo de visão abre, um clarão curto; a tela que sai passa pela câmera e a que chega vem do fundo | `stage.camera.saltar`, `Tela.module.css` | reactbits/Hyperspeed |
 | detalhes | luz rasante: um fio de luz corre pela borda do cartão seguindo o cursor (**sem uso hoje**: saiu com o bilhete de projeto) | estava em `components/LuzRasante` | magicui/magic-card |
-| vitrines | as capas e os projetos se mostram em moldura; apontar uma capa a traz para o foco e apaga as outras; o site de um projeto é uma foto que vira o site ao vivo num clique | `MusicSection`, `Projeto` | aceternity/focus-cards, magicui/safari, aceternity/link-preview |
+| vitrines | as capas e os projetos se mostram em moldura; apontar uma capa a traz para o foco e apaga as outras; os projetos em destaque rodam ao vivo numa janela só, com a foto no lugar quando a sessão está pausada | `MusicSection`, `Projeto` | aceternity/focus-cards, magicui/safari, aceternity/link-preview |
 
 Cinco regras decorrem disso:
 

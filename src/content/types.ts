@@ -183,16 +183,20 @@ export interface Dictionary {
     vazio: string;
     codigo: string;
     aoVivo: string;
-    /** a legenda do código de barras de commits, na janela de quem não tem site */
+    /** o rótulo do ano de commits, na gaveta aberta */
     atividade: string;
     arquivado: string;
     linguagens: string;
-    /** o estado na legenda da janela: com site, e só com código */
-    noAr: string;
-    soCodigo: string;
-    /** o botão da janela: troca a foto pelo site rodando, e volta */
+    /** o título em cima das gavetas, quando há destaques antes delas */
+    outros: string;
+    /** o estado na barra da sessão: o site rodando, pausado, e enquanto carrega */
+    rodando: string;
+    pausado: string;
+    carregando: string;
+    /** os botões da sessão: o do meio da foto, e os dois da barra */
+    rodarAoVivo: string;
     rodar: string;
-    parar: string;
+    pausar: string;
     rotulos: { commits: string; estrelas: string; forks: string; desde: string; atualizado: string };
   };
   /**
@@ -372,6 +376,8 @@ export interface Dictionary {
     secoes: string;
     /** o nome acessível da foto do site; aceita `{nome}` */
     previa: string;
+    /** o nome do grupo de abas da sessão de projetos */
+    destaques: string;
     canais: string;
     retrato: string;
     /** o canal que ainda não tem endereço; aceita `{rede}` */
@@ -424,10 +430,11 @@ export interface Shared {
   /** só as seções que leem dado de fora têm perfil; as outras não têm de onde */
   perfis: Partial<Record<SectionKey, Perfil>>;
   /**
-   * Os repositórios da seção Projetos, como `dono/nome`, na ordem em que giram.
-   * Vazia, a seção diz que nada foi selecionado ainda e não busca nada.
+   * Os repositórios da seção Projetos, como `dono/nome`. Os `destaques` têm site
+   * no ar e viram as abas da sessão; os `outros` são as gavetas. As duas listas
+   * vazias, a seção diz que nada foi selecionado ainda e não busca nada.
    */
-  projetos: string[];
+  projetos: { destaques: string[]; outros: string[] };
   canais: Canal[];
   logos: Record<string, { escala: number }>;
 }

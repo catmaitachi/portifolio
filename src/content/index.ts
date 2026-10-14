@@ -30,9 +30,11 @@ export const LOGO_ESCALAS = shared.logos;
  *
  * Mora em `shared.json`, e não num dicionário, porque é a mesma escolha nos dois
  * idiomas; o que o GitHub diz de cada um chega em tempo de execução
- * (`api/github`).
+ * (`api/github`). `DESTAQUES` são os que têm site e viram as abas da sessão;
+ * `PROJETOS` são todos, os destaques primeiro, que é a ordem da seção.
  */
-export const PROJETOS = shared.projetos;
+export const DESTAQUES = shared.projetos.destaques;
+export const PROJETOS = [...DESTAQUES, ...shared.projetos.outros.filter((p) => !DESTAQUES.includes(p))];
 
 /** A tela em que o site abre, e a que recebe qualquer endereço que não se entende. */
 export const TELA_PADRAO: TelaKey = TELAS[0].key;

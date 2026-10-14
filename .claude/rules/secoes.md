@@ -91,43 +91,76 @@ que o repositório diz de si, lido por `api/github` (ver `dados.md`).
 remoto, e não chama a função. Escolhidos que não voltam, porque são privados, foram renomeados ou
 apagados, caem no vazio de sempre. A função aceita doze por consulta.
 
-### Em vitrine
+### A sessão e as gavetas
 
-**Cada projeto é uma linha: a janela com o site dele, e o que o repositório diz de si ao lado**
-(`Projeto`). As linhas alternam de lado, para a coluna das janelas não virar um muro, e no celular
-viram uma coluna, a janela sempre em cima. Escolhida entre três direções num preview (a Vitrine; as
-outras eram um índice tipográfico com a foto sob o cursor e uma janela fixa que trocava com a
-rolagem), e dentro dela o cabeçalho da janela e o desenho das linguagens também foram escolhidos
-entre três.
+**Dois andares, e a escolha de cada um é a dedo** (`shared.json → projetos`): `destaques` são os
+projetos com site no ar, e `outros` os secundários. Escolhido numa vitrine em 13/10/2026
+(`.design/projetos-previews/`), para a quantidade de projetos deixar de pesar na cota de fotos do
+microlink (ver `dados.md`): antes cada projeto com site pedia uma foto ao abrir a seção.
 
-- **A janela mostra a foto do site**, de `api/preview` (ver `dados.md`), e o botão dela troca a foto
-  pelo site rodando de verdade ali dentro, e volta. **A foto é o estado de sempre** porque o site ao
-  vivo carrega a página inteira do projeto (scripts, imagens) e fica rodando enquanto se lê outra
-  coisa. O site ao vivo roda com o dobro da largura da janela e é reduzido à metade, em CSS, para não
-  se ver como num celular.
-- **Sem site, a janela mostra o código de barras dos commits**: um traço por commit, no dia em que ele
-  aconteceu, dentro dos últimos doze meses, sobre um hachurado. É o retrato do projeto que existe
-  quando não há página. A janela vem da função, e não do relógio do navegador, para o desenho depender
-  só do dado.
-- **A janela não tem barra de navegador.** A primeira versão desenhava as três bolinhas do macOS, que
-  eram a única citação de outro sistema na página. A foto fica emoldurada em 1px, e o endereço vira a
-  **legenda** embaixo dela, com um risco e o estado: "no ar", com o ponto que pulsa, ou "só código".
+**Em cima, a sessão** (`Sessao`): os destaques **rodando ao vivo** numa janela só, um por vez, com
+uma aba para cada. Não há limite de destaques; as abas ficam numa linha e rolam de lado quando não
+cabem. Embaixo da janela, uma barra diz o estado ("rodando ao vivo", com o ponto que pulsa, ou
+"pausado"), o endereço, e tem o botão de pausar; depois vem a ficha do projeto em duas colunas.
+
+- **O site chega rodando, sem clique, e há três freios.** Ele só existe com a seção em cena (fora
+  dela a janela fica vazia, sem site e sem foto). Numa máquina que a régua de qualidade mede
+  **abaixo de 0,5** (`NIVEL_MINIMO`, o `Q_RES` do motor, ver `motor.md`), a 30 quadros, ou com
+  movimento reduzido, a sessão chega **pausada**. E quem pausa ou roda na mão decide pelo resto da
+  visita.
+- **A régua é consultada uma vez, quando a seção entra**: o nível escolhido na mão, ou o ideal que a
+  cena mediu (o nível em vigor, enquanto ela mede). Um site que já roda não é pausado no meio.
+- **Pausada, a janela mostra a foto do site**, de `api/preview`, com o botão "rodar ao vivo" no meio.
+  É o único momento em que a foto é pedida: numa máquina boa a seção não gasta captura nenhuma.
+- **Enquanto o site carrega**, a janela diz "carregando o site" com um risco que corre, e o site
+  aparece por cima quando o `load` chega (`data-pronto` no `<iframe>`, escrito no nó como o `hidden`
+  das fotos).
+- **O site roda mais largo que a janela e é reduzido** (`--zoom`, 0,72 no desktop e 0,5 no celular),
+  em CSS, para se ver como num computador.
+- **Com um destaque só não há abas**, pela regra dos passos de Jogos e da Carreira. Com mais de um,
+  ←/→ trocam de aba enquanto a seção está ativa.
+- **A janela não tem barra de navegador**, e nunca teve as três bolinhas do macOS depois da primeira
+  versão: a barra embaixo dela é a legenda da figura.
+
+**Embaixo, as gavetas** (`Gaveta`): os secundários, em geral sem site, uma linha cada, sob o título
+"Outros projetos". A linha diz o número, o nome, a descrição, a linguagem principal e o ano de commits
+em miniatura; aberta, **o retrato do projeto é o ano de commits**, grande e com os meses riscados
+(um traço por commit, no dia em que aconteceu), ao lado do texto inteiro, dos tópicos, das linguagens
+e dos números. Não há janela nem foto na gaveta: se ela tiver site, ele é só mais um link. São
+`<details>` com o mesmo `name`, então abrir uma fecha a outra.
+
+**A numeração é uma só**: se os destaques vão até o 05, a primeira gaveta é a 06.
+
+**Cada andar existe sozinho, e nada quebra se a escolha estiver incompleta:**
+
+| Escolha | O que se vê |
+|---|---|
+| só destaques | a seção acaba na ficha do destaque, sem título de lista |
+| só gavetas | a seção é só as gavetas, a partir do 01, sem o título delas; nenhum site é carregado |
+| destaque sem site | desce para o topo das gavetas, em vez de abrir uma aba com a janela vazia |
+| nada | `projetos.vazio`, sem chamar o GitHub |
+
+Detalhes que vieram da vitrine anterior e continuam:
+
 - **As linguagens são trechos**: uma barra de 3px dividida pelo tamanho de cada uma, um degrau de
   branco por trecho, porque a paleta não tem outra coisa, e a mesma amostra na legenda liga um ao
-  outro. As três maiores têm nome; o resto vira um último trecho, o mais apagado. Os trechos se
-  preenchem ao entrar, um depois do outro.
+  outro. As três maiores têm nome; o resto vira um último trecho, o mais apagado. Na linha da gaveta
+  vai só a barra.
 - **Estrela e fork só aparecem quando existem**: um "0" em cada projeto pessoal diria menos sobre o
   projeto do que sobre a contagem.
 - **O nome é o do repositório, legível**: `Controlador_Tuya` vira `Controlador Tuya` (`nome.ts`), e o
-  `id` continua sendo o nome de verdade. Acima dele fica o dono.
+  `id` continua sendo o nome de verdade.
 - A descrição, os tópicos e o nome chegam no idioma em que foram escritos no GitHub: é dado, e não
   interface.
 
+**A vitrine saiu.** De 09/2026 a 13/10/2026 cada projeto era uma linha, com a foto do site numa
+janela e um botão que trocava a foto pelo site ao vivo, e as linhas alternavam de lado. Saiu porque
+cada projeto com site custava uma foto por dia, e a lista não podia crescer.
+
 **A órbita saiu.** Antes a seção era um carrossel em órbita 3D de cartões desenhados como bilhete de
 missão (`useOrbit`, `ProjectCard`), com giro por clique, arraste, setas e traços-índice. Ela mostrava um
-projeto por vez e escondia os outros atrás de um giro, e não tinha onde pôr o site de cada um; a
-vitrine mostra todos, cada um com o site. Com ela saíram a `LuzRasante` (o fio de luz que corria pela
-borda do bilhete), o arraste e as setas ←/→ desta seção.
+projeto por vez e escondia os outros atrás de um giro, e não tinha onde pôr o site de cada um. Com ela
+saíram a `LuzRasante` (o fio de luz que corria pela borda do bilhete) e o arraste desta seção.
 
 ---
 

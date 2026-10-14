@@ -91,13 +91,23 @@ como todo texto visível — e o título da aba é texto visível, ainda que for
 
 ### Adicionar um projeto
 
-Projeto é repositório do GitHub, e acrescentar um é uma linha em `shared.json → projetos`:
+Projeto é repositório do GitHub, e acrescentar um é uma linha em `shared.json → projetos`, numa das
+duas listas:
 
 ```json
-"projetos": ["catmaitachi/Scorepad", "catmaitachi/portifolio"]
+"projetos": {
+  "destaques": ["catmaitachi/kittens", "catmaitachi/financeiro"],
+  "outros": ["catmaitachi/Scorepad"]
+}
 ```
 
-- `dono/nome`, exatamente como na URL do repositório, e a ordem da lista é a ordem das linhas na vitrine;
+- **`destaques` é para quem tem site no ar**: vira uma aba da sessão, rodando ao vivo, na ordem
+  escrita. **`outros` é para os secundários**, em geral sem site: vira uma gaveta. Um destaque sem o
+  campo *Website* no repositório desce sozinho para o topo das gavetas (ver `secoes.md`);
+- qualquer uma das listas pode ficar vazia, e as duas vazias fazem a seção dizer que nada foi
+  selecionado. Juntas, no máximo doze, que é o que `api/github` aceita por consulta;
+- só os `destaques` têm foto (`api/preview`), e a função recusa qualquer repositório fora dessa lista;
+- `dono/nome`, exatamente como na URL do repositório;
 - **só repositório público aparece.** Um privado é descartado pela função mesmo que o token o
   enxergue, e um renomeado some até a linha ser corrigida;
 - o texto do cartão é o do GitHub: a descrição, os tópicos e o campo *Website* do repositório, que

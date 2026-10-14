@@ -11,8 +11,11 @@
     "canais  — os canais de contato. `icone` casa com uma chave de ICONES",
     "          (src/content/assets.ts). Canal sem `url` aparece tracejado e apagado.",
     "projetos — os repositórios do GitHub da seção Projetos, escolhidos a dedo, como",
-    "           `dono/nome` e na ordem em que giram. Vazia, a seção diz que nada foi",
-    "           selecionado ainda.",
+    "           `dono/nome`. `destaques` são os que têm site no ar: viram as abas da",
+    "           sessão, na ordem escrita, e são os únicos de que `api/preview` tira",
+    "           foto. `outros` são as gavetas embaixo. Destaque sem site desce para o",
+    "           topo das gavetas. As duas vazias, a seção diz que nada foi selecionado.",
+    "           Juntas, no máximo doze (o limite de `api/github`).",
     "logos   — escala óptica por logo de formação. A chave casa com `slot` em",
     "          `formacoes.lista` e com uma chave de LOGOS (src/content/assets.ts)."
   ],
@@ -63,7 +66,10 @@
     }
   },
 
-  "projetos": ["catmaitachi/financeiro", "catmaitachi/kittens"],
+  "projetos": {
+    "destaques": ["catmaitachi/kittens", "catmaitachi/financeiro"],
+    "outros": []
+  },
 
   "canais": [
     {

@@ -1,28 +1,46 @@
-/** Tokens da vitrine de projetos: as colunas de uma linha (janela e texto) e o respiro entre elas. */
+/**
+ * Tokens da seção de projetos: o respiro entre a sessão e as gavetas, as colunas
+ * da linha de uma gaveta e o recuo do que ela mostra aberta, que alinha o texto
+ * com o nome (a coluna do número mais o intervalo).
+ */
 .secao {
-  --proj-cols: minmax(0, 1.35fr) minmax(0, 1fr);
-  --proj-gap: clamp(24px, 4vw, 52px);
-  /* entre um projeto e o seguinte */
-  --proj-entre: clamp(56px, 9vh, 96px);
+  --proj-entre: clamp(48px, 8vh, 84px);
+  --gav-cols: 3ch minmax(13ch, 1fr) minmax(0, 2fr) 110px 130px 16px;
+  --gav-recuo: calc(3ch + 20px);
 }
 
 .bloco {
   max-width: 1040px;
 }
 
-.lista {
+.pilha {
   display: grid;
   gap: var(--proj-entre);
+  min-width: 0;
+}
+
+.gavetas {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.lista {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-/* celular: uma coluna só, a janela em cima do texto */
+/* sem destaques, a lista é a seção: o risco de cima fecha o lugar do título */
+.lista[data-sozinha] {
+  border-top: 1px solid var(--linha-forte);
+}
+
+/* celular: a linha da gaveta fica com o número, o nome e a ponta */
 @media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .secao {
-    --proj-cols: minmax(0, 1fr);
-    --proj-gap: 18px;
-    --proj-entre: 56px;
+    --proj-entre: 48px;
+    --gav-cols: 3ch minmax(0, 1fr) 16px;
+    --gav-recuo: 0px;
   }
 }

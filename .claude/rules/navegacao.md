@@ -204,8 +204,9 @@ parte é o nome da tela**: "Início" não diz nada a quem olha a aba, "Identidad
 ↑/↓ são da rolagem da tela; **←/→ são da seção aberta**, sem exigir foco: `useArrowKeys(ativo,
 andar)` (`src/hooks/`) registra o listener na janela **enquanto a seção está ativa**. Duas seções
 nunca disputam a tecla, porque fora da seção o listener não existe. Hoje quem as reivindica são
-a Carreira (o maço de crachás) e Jogos (o deque), cada uma na sua tela, e os componentes de dentro não
-duplicam o listener. Projetos pessoais já reivindicou as setas para girar uma órbita, que saiu.
+a Carreira (o maço de crachás), Jogos (o deque) e Projetos pessoais (as abas da sessão, quando há mais
+de um destaque), e os componentes de dentro não duplicam o listener. A Carreira e os Projetos moram
+na mesma tela, mas só uma seção é a ativa de cada vez.
 
 A exceção mora no hook: `editandoTexto()`, porque num campo de texto a seta é do cursor.
 

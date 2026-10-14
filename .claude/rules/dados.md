@@ -118,28 +118,35 @@ nome inteiro apontaria para o primeiro deles.
 
 ### A foto do site dos projetos (`api/preview`)
 
-A janela de cada projeto mostra a foto do site dele, e a foto vem desta função, que usa o serviço de
-captura do [microlink](https://microlink.io). Três decisões:
+A sessão de destaques mostra a foto do site quando está **pausada** (ver `secoes.md`), e a foto vem
+desta função, que usa o serviço de captura do [microlink](https://microlink.io). Numa máquina boa o
+site roda ao vivo e a foto nem é pedida. As decisões:
 
 - **ela só fotografa o site que o próprio repositório declara.** A entrada é `?repo=dono/nome`, nunca
   um endereço: a função pergunta ao GitHub (com o mesmo `GITHUB_TOKEN`) qual é o *Website* do
-  repositório, e é esse que ela fotografa. Aceitar um endereço solto faria dela um serviço de captura
-  aberto para qualquer um, com a cota na conta de quem escreve a página. Privado ou sem site → 404;
+  repositório, e é esse que ela fotografa. Privado ou sem site → 404;
+- **e só os destaques.** A função lê `shared.json → projetos → destaques` (o arquivo viaja com ela
+  pelo `includeFiles` do `vercel.json`) e responde 404 a qualquer outro repositório, sem gastar
+  captura. Antes, variar o `repo` na query esvaziava a cota do dia. Se o arquivo não puder ser lido, a
+  função não trava ninguém: perder a trava é melhor que perder as fotos;
 - **1280×800, escala 1, JPEG**: ~150 kB. O padrão do microlink é PNG em escala 2, com 1,4 MB;
 - **um dia na borda e uma semana servida velha** (`s-maxage=86400, stale-while-revalidate=604800`),
-  porque o plano grátis aceita **25 capturas por dia** e um site pessoal não muda de cara de hora em
-  hora. A imagem passa pela função, e não por um redirecionamento ao endereço do microlink: o
-  endereço dele é de uma captura, e não se sabe por quanto tempo vive.
-
+  porque o plano grátis aceita **25 capturas por dia**. A imagem passa pela função, e não por um
+  redirecionamento ao endereço do microlink: o endereço dele é de uma captura, e não se sabe por
+  quanto tempo vive;
+- **o cache de 24 h do microlink fica ligado, de propósito.** Ele guarda cada captura por um dia do
+  lado dele, então um redeploy (que limpa o cache da Vercel) e uma região nova recebem a mesma foto
+  sem gastar cota. O preço: a foto leva até um dia para acompanhar um site que mudou, e um redeploy
+  não a força. Entre 12 e 13/10/2026 a função usou `force=true` para fugir disso, e cada renovação da
+  borda custava uma captura;
 - **espera a página montar** (`waitUntil=networkidle2` e 3 s de `waitForTimeout`). Site feito com
   JavaScript (o do `financeiro` é Vite + React) chega com `<div id="root">` vazio no `load`, e sem a
-  espera a foto sai **preta, 3 kB, com status 200**, e o cache da borda a guarda por um dia. A
-  função ganhou `maxDuration: 30` no `vercel.json` por causa disso.
-- **`force=true`: o microlink não tem cache próprio aqui.** Ele guarda cada captura por 24 h
-  (`x-cache-ttl`), e sem o `force` um site atualizado continuava com a foto velha mesmo depois de
-  redeploy: o deploy limpa o cache da Vercel, e o do microlink devolve a mesma imagem. Com o `force`,
-  só o `CACHE` daqui decide a validade. O custo é uma captura da cota a cada vez que a borda
-  renova a foto (um dia, um redeploy ou outra região).
+  espera a foto sai preta. A função tem `maxDuration: 30` no `vercel.json` por causa disso;
+- **foto com menos de 10 kB é recusada** (`FOTO_MINIMA`, 502 sem cache). A captura de uma página que
+  não montou sai preta, com ~3 kB e **status 200**, e a borda a guardava por um dia.
+
+**O custo é uma captura por destaque por dia, no máximo**, e só se alguém vir a sessão pausada. As
+gavetas não têm foto, então a lista de projetos pode crescer sem mexer na cota.
 
 Sem foto (a cota acabou, o site caiu), a `<img>` se esconde e a moldura de 1px da janela volta a
 aparecer, como em toda imagem da página, e o botão de rodar o site continua funcionando.

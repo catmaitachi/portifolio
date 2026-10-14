@@ -286,6 +286,9 @@ página: na faixa 0 param o brilho do nome no Início e o da barra de Música, q
 `background-position` num texto e repintam a cada quadro. A película de Filmes anda em rAF a 60fps enquanto está em cena; o pêndulo do crachá da Carreira
 só roda enquanto balança.
 
+**A sessão de Projetos também pergunta, mas pelo canal** (`qualidade.ler()`, uma vez por entrada):
+abaixo de `Q_RES` (0,5) ou a 30 quadros, os sites em destaque chegam pausados (ver `secoes.md`).
+
 **As regras têm um teste que roda**: `npm run check:qualidade` (`scripts/check-qualidade.mjs`)
 empacota o palco com esbuild e o roda em Node, com um canvas falso e um relógio de mentira em que cada
 quadro custa o que a máquina da simulação diz pela resolução e pela densidade. Ele confere que uma
