@@ -72,7 +72,7 @@ const ESPERA_ASSETS = 4000;
 const ESPERA_EXTRAS = 5000;
 
 /** Quantos jogos cada lista da biblioteca leva: é o que o deque mostra de uma vez. */
-const TETO = 15;
+const TETO = 25;
 
 /**
  * O que não entra na página: appids separados por vírgula em `STEAM_OCULTAR`.

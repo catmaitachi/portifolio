@@ -62,7 +62,7 @@ profundidade ou se enche de luz.
 | Seção | Padrão | Onde mora | Referências |
 |---|---|---|---|
 | Contato | cartaz: o título em contorno gigante **se enche de baixo para cima conforme a mensagem cresce** (o título é o medidor); o endereço copia ao clique; o formulário é uma frase para completar | `ContactSection` | animata/metis-text, reactbits/CountUp |
-| Jogos | deque em profundidade: as capas recuam no eixo z, a da frente em cor e em foco, as de trás apagam e desfocam pela distância; arraste, setas e passos | `GamesSection` (`Deque`) | reactbits/DepthCarousel, cultui/three-d-carousel |
+| Jogos | deque em profundidade: as capas recuam no eixo z em pilhas dos dois lados, a da frente em cor e em foco, e as outras escurecem e desfocam pela distância; arraste, setas e passos | `GamesSection` (`Deque`) | reactbits/DepthCarousel, cultui/three-d-carousel |
 | Filmes | ~~créditos~~, trocado em 30/09 (ver abaixo) | | |
 | Carreira | ~~órbita~~, trocada em 30/09 (ver abaixo) | | |
 
@@ -145,7 +145,9 @@ já tem um (o deque) lê como exagero; o que acompanha o protagonista fica peque
 Vitrine em `.design/jogos-previews/` com uma régua que mede os vãos na tela. Quatro mosaicos
 (Afinado, Costura, Moldura e Coluna) e quatro arranjos dos controles da Steam; o Lucas pediu para
 manter o mosaico, escolheu o Afinado e, sobre ele, ditou o arranjo da Steam: a régua no lugar dos
-passos, as abas em cima das capas e a conta em cima do estado do jogo (ver `secoes.md`).
+passos, as abas em cima das capas e a conta em cima do estado do jogo; e, no mesmo dia, desfez parte
+disso ao ver no desktop: a conta e as abas numa linha, as capas em pilha na largura toda e os
+passos de volta, bem sutis, ao lado do estado do jogo (ver `secoes.md`).
 
 **A regra que saiu dela**: uma seção com mais de uma parte tem **uma escala de espaço só**, e as
 partes compartilham título, chão e colunas. Cada jogo tinha sido desenhado numa rodada, com os
