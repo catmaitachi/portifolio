@@ -65,22 +65,22 @@
 }
 
 /**
- * A conta da Steam: o avatar de 34px com o anel de XP, e o nick e o nível ao
- * lado. Sem cor até ser apontado, como os retratos de Música, e com respiro
- * antes das abas: é assinatura do painel, não conteúdo dele.
+ * A conta da Steam: o avatar de 42px com o anel de XP, e o nick e o nível ao
+ * lado, com respiro antes das abas: é assinatura do painel, não conteúdo dele.
+ * O avatar fica em cor, como as capas: é identidade de terceiro.
  */
 .conta {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .avatar {
   position: relative;
   flex: none;
-  width: 34px;
-  height: 34px;
+  width: 42px;
+  height: 42px;
 }
 
 .avatar svg {
@@ -92,13 +92,13 @@
 
 .avatar path {
   fill: none;
-  stroke: var(--linha);
+  stroke: var(--linha-forte);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
 
 .avatar path[data-feito] {
-  stroke: var(--linha-cheia);
+  stroke: var(--tx-titulo);
 }
 
 .avatar img {
@@ -108,21 +108,15 @@
   height: calc(100% - 10px);
   border-radius: 50%;
   object-fit: cover;
-  filter: grayscale(1) brightness(0.8);
-  transition: filter var(--dur-hover);
-}
-
-.conta:hover img {
-  filter: none;
 }
 
 .contaTexto {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   min-width: 0;
-  color: var(--tx-apoio);
-  font-size: var(--fs-pequeno);
+  color: var(--tx-forte);
+  font-size: 12.5px;
   letter-spacing: 0.06em;
 }
 

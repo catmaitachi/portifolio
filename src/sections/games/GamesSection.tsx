@@ -232,8 +232,8 @@ const FOLGA = 0.012;
  *
  * O anel são dez arcos, um por nível da dezena em que a conta está (é de dez em
  * dez que a Steam muda o desenho do nível): os já passados acesos, e o do nível
- * atual aceso até onde o XP chegou. Fica pequeno e sem cor até ser apontado,
- * como os retratos de Música: o assunto do painel é o jogo, e não a conta.
+ * atual aceso até onde o XP chegou. Fica pequeno, acima das abas: o assunto do
+ * painel é o jogo, e não a conta.
  *
  * É desenho com nome acessível (`role="img"`): o nível e o XP que falta vão no
  * rótulo, e o nick e o nível ficam escritos ao lado. O link para o perfil já é o

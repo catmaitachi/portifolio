@@ -423,11 +423,12 @@ página do jogo) e as horas da quinzena e do total. Escolhido numa rodada da ski
 - **Um risco de 1px embaixo das horas** mede o jogo contra o mais jogado da biblioteca (`.peso`).
 - Sem a biblioteca não há abas, e a seção é a de antes.
 
-**No alto do painel, a conta da Steam** (`Conta`): o avatar de 34px com um anel de XP, e o nick e o
-nível ao lado. O anel são dez arcos, um por nível da dezena em que a conta está (é de dez em dez que a
+**No alto do painel, a conta da Steam** (`Conta`): o avatar de 42px, em cor, com um anel de XP, e o
+nick e o nível ao lado. O anel são dez arcos, um por nível da dezena em que a conta está (é de dez em dez que a
 Steam muda o desenho do nível): os já passados acesos, e o do nível atual aceso até onde o XP chegou
-(`perfil.progresso`). O avatar fica sem cor até ser apontado, como os retratos de Música: o assunto
-do painel é o jogo. Sem o nível (`perfil: null`), o painel começa nas abas.
+(`perfil.progresso`). A primeira versão tinha 34px, sem cor até ser apontado (como os retratos de
+Música), e o Lucas achou discreta demais: o avatar é identidade de terceiro, como as capas, e fica em
+cor. Sem o nível (`perfil: null`), o painel começa nas abas.
 
 **A órbita de insígnias entrou e saiu no mesmo dia** (13/10/2026). Escolhida na vitrine, ela girava
 as 40 insígnias da conta em três elipses embaixo do deque, e na página ficou exagerada: um segundo
