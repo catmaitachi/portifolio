@@ -140,6 +140,14 @@
     "total": "total",
     "anterior": "Previous game",
     "proximo": "Next game",
+    "abas": {"ultimo": "Latest", "horas": "Most played"},
+    "jogadoEm": "Played on {dia}",
+    "lugar": "#{n} most played of {total}",
+    "ultimaVez": "last played {quando}",
+    "conta": {
+      "nivel": "level {n}",
+      "resumo": "{nome}, level {n} on Steam: {xp} XP to go for level {prox}"
+    },
     "minecraft": {
       "titulo": "Minecraft",
       "boneco": "{nome}, my Minecraft character, wearing the skin I use in game"

@@ -232,6 +232,21 @@ export interface Dictionary {
     /** os dois passos do deque */
     anterior: string;
     proximo: string;
+    /** as duas ordens da biblioteca, que são as abas do deque */
+    abas: { ultimo: string; horas: string };
+    /** `{dia}` é a data da última sessão, para as capas de trás */
+    jogadoEm: string;
+    /** `{n}` é a posição e `{total}` o tamanho da biblioteca */
+    lugar: string;
+    /** `{quando}` é o tempo relativo, escrito pelo `Intl` */
+    ultimaVez: string;
+    /** a conta da Steam: o avatar com o anel de XP, no painel do deque */
+    conta: {
+      /** `{n}` é o nível */
+      nivel: string;
+      /** o nome acessível do avatar, que é desenho: `{nome}`, `{n}`, `{xp}` e `{prox}` */
+      resumo: string;
+    };
     minecraft: {
       titulo: string;
       /** o nome acessível do boneco, que é desenho; `{nome}` é o nick */

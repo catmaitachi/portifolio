@@ -102,12 +102,42 @@ export interface Jogo {
   /** minutos jogados nas últimas duas semanas */
   minutosRecentes: number;
   minutosTotais: number;
+  /**
+   * A última sessão, em ISO 8601. Vem da biblioteca, e só existe quando a Steam
+   * a entrega: o que está aberto pela primeira vez ainda não tem.
+   */
+  jogadoEm?: string;
+}
+
+/** A conta da Steam: quem é e em que nível está. */
+export interface PerfilSteam {
+  nome: string;
+  avatar: string | null;
+  nivel: number;
+  /** o XP que falta para o próximo nível */
+  xpFalta: number;
+  /** a fração do caminho entre o nível atual e o próximo, de 0 a 1 */
+  progresso: number;
 }
 
 export interface Jogos {
   /** `null` quando o perfil não está numa partida agora */
   jogando: Jogo | null;
   recentes: Jogo[];
+  /**
+   * A biblioteca, por dois critérios: a última sessão e as horas.
+   *
+   * É o que a seção mostra quando a quinzena vem vazia, que é a maior parte do
+   * tempo de quem não joga toda semana. As duas listas são **vazias, e não
+   * falha**, quando a Steam não entrega a biblioteca: os recentes continuam
+   * sendo o conteúdo, e a seção volta a ser o que era antes delas.
+   */
+  porUltimo: Jogo[];
+  maisJogados: Jogo[];
+  /** quantos jogos a biblioteca tem; 0 quando ela não veio */
+  totalJogos: number;
+  /** `null` quando a Steam não entregou o nível (perfil fechado ou fora do ar) */
+  perfil: PerfilSteam | null;
 }
 
 /**

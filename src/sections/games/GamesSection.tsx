@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { format } from '~/content';
-import type { Jogo, Jogos, Minecraft } from '~/data/types';
+import type { Jogo, Jogos, Minecraft, PerfilSteam } from '~/data/types';
 import { useArrowKeys } from '~/hooks/useArrowKeys';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
 import { useRemoto } from '~/hooks/useRemoto';
-import { useT } from '~/i18n/useLanguage';
+import { useLanguage, useT } from '~/i18n/useLanguage';
 import { EstadoRemoto, type SemDado, Traco } from '../EstadoRemoto';
+import { haQuanto } from '../haQuanto';
 import { PerfilExterno } from '../PerfilExterno';
 import comum from '../section.module.css';
 import type { SectionProps } from '../types';
@@ -35,6 +36,9 @@ const ARRASTE_POR_CAPA = 90;
 const MOLA = 0.14;
 
 const limitar = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+
+/** Quantas capas o deque leva: o mesmo teto das listas que `api/steam` devolve. */
+const TETO = 8;
 
 /**
  * O deque: as capas em pé, uma atrás da outra num trilho que recua.
@@ -208,21 +212,116 @@ function Deque({
 }
 
 /**
- * O conteúdo, quando ele existe: o painel do jogo escolhido e o deque.
+ * Um arco do anel de XP, de `de` a `ate` (frações da volta), num círculo de
+ * raio 18 com o começo no topo. A folga entre os arcos é o que faz a dezena se
+ * ler como dez degraus, e não como um traço só.
+ */
+function arco(de: number, ate: number) {
+  const ponto = (f: number) => {
+    const a = f * 2 * Math.PI - Math.PI / 2;
+    return `${(18 * Math.cos(a)).toFixed(2)} ${(18 * Math.sin(a)).toFixed(2)}`;
+  };
+  return `M${ponto(de)} A18 18 0 0 1 ${ponto(ate)}`;
+}
+
+/** A folga entre dois arcos, em fração da volta. */
+const FOLGA = 0.012;
+
+/**
+ * A conta da Steam, no alto do painel: o avatar com o anel de XP e o nível.
  *
- * Separado do casco pela mesma razão de Música: os três estados da busca já são
- * um ramo, e o terceiro tem ramos próprios.
+ * O anel são dez arcos, um por nível da dezena em que a conta está (é de dez em
+ * dez que a Steam muda o desenho do nível): os já passados acesos, e o do nível
+ * atual aceso até onde o XP chegou. Fica pequeno, acima das abas: o assunto do
+ * painel é o jogo, e não a conta.
+ *
+ * É desenho com nome acessível (`role="img"`): o nível e o XP que falta vão no
+ * rótulo, e o nick e o nível ficam escritos ao lado. O link para o perfil já é o
+ * ícone da Steam na linha do título.
+ */
+function Conta({ perfil }: { perfil: PerfilSteam }) {
+  const { t, lang } = useLanguage();
+  const naDezena = perfil.nivel % 10;
+  const passo = 1 / 10;
+
+  return (
+    <div
+      className={styles.conta}
+      role="img"
+      aria-label={format(t.jogos.conta.resumo, {
+        nome: perfil.nome,
+        n: String(perfil.nivel),
+        xp: new Intl.NumberFormat(lang).format(perfil.xpFalta),
+        prox: String(perfil.nivel + 1),
+      })}
+    >
+      <span className={styles.avatar} aria-hidden="true">
+        <svg viewBox="-20 -20 40 40">
+          {Array.from({ length: 10 }, (_, i) => {
+            const de = i * passo + FOLGA;
+            const ate = (i + 1) * passo - FOLGA;
+            const feito = i < naDezena ? 1 : i === naDezena ? perfil.progresso : 0;
+            return (
+              <g key={i}>
+                <path d={arco(de, ate)} />
+                {feito > 0 && <path d={arco(de, de + (ate - de) * feito)} data-feito="" />}
+              </g>
+            );
+          })}
+        </svg>
+        {perfil.avatar ? (
+          <img
+            src={perfil.avatar}
+            alt=""
+            draggable={false}
+            onError={(e) => {
+              e.currentTarget.hidden = true;
+            }}
+          />
+        ) : null}
+      </span>
+      <span className={styles.contaTexto} aria-hidden="true">
+        <span>{perfil.nome}</span>
+        <span>{format(t.jogos.conta.nivel, { n: String(perfil.nivel) })}</span>
+      </span>
+    </div>
+  );
+}
+
+/** As duas ordens em que o deque mostra a biblioteca. */
+type Aba = 'ultimo' | 'horas';
+
+/**
+ * O conteúdo, quando ele existe: as abas, o painel do jogo escolhido e o deque.
+ *
+ * **O deque tem duas listas**, e a que abre é a de sempre com um degrau a mais:
+ * o que está aberto agora, depois a quinzena, e depois a biblioteca pela última
+ * sessão, sem repetir. É esse terceiro degrau que impede a seção de ficar vazia
+ * para quem passou um mês sem jogar. A outra é a biblioteca pelas horas, e nela
+ * o jogo aberto fica no lugar dele no ranking, com o rótulo dizendo que está
+ * aberto: quem olha o ranking não é tirado dele.
+ *
+ * Sem a biblioteca (a Steam não a entregou), não há abas, e a seção é a de
+ * antes dela. Separado do casco pela mesma razão de Música: os três estados da
+ * busca já são um ramo, e o terceiro tem ramos próprios.
  */
 function Conteudo({ dados, ativo }: { dados: Jogos; ativo: boolean }) {
-  const t = useT();
+  const { t, lang } = useLanguage();
+  const [escolhida, setEscolhida] = useState<Aba>('ultimo');
   const [atual, setAtual] = useState(0);
 
-  const destaque = dados.jogando ?? dados.recentes[0] ?? null;
-  const aoVivo = Boolean(dados.jogando);
-  // o destaque abre o deque, e os recentes vêm atrás dele sem repeti-lo
-  const jogos = destaque
-    ? [destaque, ...dados.recentes.filter((g: Jogo) => g.id !== destaque.id)]
-    : [];
+  const aba: Aba = dados.maisJogados.length ? escolhida : 'ultimo';
+  const aberto = dados.jogando;
+
+  const jogos = useMemo(() => {
+    if (aba === 'horas') return dados.maisJogados;
+    // o aberto abre o deque; a quinzena e a biblioteca vêm atrás, cada jogo uma vez
+    const vistos = new Set<string>();
+    return [...(aberto ? [aberto] : []), ...dados.recentes, ...dados.porUltimo]
+      .filter((j) => !vistos.has(j.id) && vistos.add(j.id))
+      .slice(0, TETO);
+  }, [aba, aberto, dados.maisJogados, dados.recentes, dados.porUltimo]);
+
   const ultimo = jogos.length - 1;
   const i = limitar(atual, 0, Math.max(0, ultimo));
 
@@ -232,39 +331,98 @@ function Conteudo({ dados, ativo }: { dados: Jogos; ativo: boolean }) {
   );
   useArrowKeys(ativo && jogos.length > 1, andar);
 
-  if (!destaque) return <Molde estado="vazio" />;
+  if (!jogos.length) return <Molde estado="vazio" />;
 
   const jogo = jogos[i];
-  const rotulo = i > 0 ? t.jogos.recentes : aoVivo ? t.jogos.jogando : t.jogos.ultimo;
+  const aoVivo = aberto?.id === jogo.id;
+  const dia = (iso: string) =>
+    new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'short' }).format(new Date(iso));
+  const lugar = format(t.jogos.lugar, { n: String(i + 1), total: String(dados.totalJogos) });
+
+  /**
+   * O rótulo diz por que o jogo está ali. Na quinzena, é o de sempre; fora dela,
+   * o da frente diz há quanto tempo foi e os de trás, o dia, porque "há 2 meses"
+   * em quatro capas seguidas não distingue uma da outra.
+   */
+  const rotulo =
+    aba === 'horas'
+      ? aoVivo
+        ? `${t.jogos.jogando} · ${lugar}`
+        : lugar
+      : aoVivo
+        ? t.jogos.jogando
+        : jogo.minutosRecentes > 0 || !jogo.jogadoEm
+          ? i === 0
+            ? t.jogos.ultimo
+            : t.jogos.recentes
+          : i === 0
+            ? `${t.jogos.ultimo} · ${haQuanto(jogo.jogadoEm, lang)}`
+            : format(t.jogos.jogadoEm, { dia: dia(jogo.jogadoEm) });
+
+  // o peso do jogo na biblioteca, contra o mais jogado dela
+  const maior = dados.maisJogados[0]?.minutosTotais ?? 0;
 
   return (
     <div className={styles.cena}>
-      <div className={styles.painel} aria-live="polite">
-        <span className={styles.rotulo}>
-          {i === 0 && aoVivo && <span className={styles.pulso} aria-hidden="true" />}
-          {rotulo}
-        </span>
-        <a className={styles.nome} href={jogo.url} target="_blank" rel="noreferrer">
-          {jogo.nome}
-        </a>
-        <span className={styles.tempos}>
-          {jogo.minutosRecentes > 0 && (
+      <div className={styles.painel}>
+        {dados.perfil && <Conta perfil={dados.perfil} />}
+
+        {dados.maisJogados.length > 0 && (
+          <div className={styles.abas} role="group" aria-label={t.jogos.titulo}>
+            {(['ultimo', 'horas'] as const).map((a) => (
+              <button
+                key={a}
+                type="button"
+                className={styles.aba}
+                aria-pressed={a === aba}
+                onClick={() => {
+                  setEscolhida(a);
+                  setAtual(0);
+                }}
+              >
+                {t.jogos.abas[a]}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className={styles.painel} aria-live="polite">
+          <span className={styles.rotulo}>
+            {aoVivo && <span className={styles.pulso} aria-hidden="true" />}
+            {rotulo}
+          </span>
+          <a className={styles.nome} href={jogo.url} target="_blank" rel="noreferrer">
+            {jogo.nome}
+          </a>
+          <span className={styles.tempos}>
+            {jogo.minutosRecentes > 0 && (
+              <span>
+                <b>
+                  {horas(jogo.minutosRecentes)}
+                  {t.jogos.horas}
+                </b>{' '}
+                {t.jogos.duasSemanas}
+              </span>
+            )}
             <span>
               <b>
-                {horas(jogo.minutosRecentes)}
+                {horas(jogo.minutosTotais)}
                 {t.jogos.horas}
               </b>{' '}
-              {t.jogos.duasSemanas}
+              {t.jogos.total}
             </span>
-          )}
-          <span>
-            <b>
-              {horas(jogo.minutosTotais)}
-              {t.jogos.horas}
-            </b>{' '}
-            {t.jogos.total}
+            {aba === 'horas' && !aoVivo && jogo.jogadoEm && (
+              <span>{format(t.jogos.ultimaVez, { quando: haQuanto(jogo.jogadoEm, lang) })}</span>
+            )}
           </span>
-        </span>
+          {maior > 0 && (
+            <span
+              className={styles.peso}
+              style={{ '--peso': Math.min(1, jogo.minutosTotais / maior) } as React.CSSProperties}
+              aria-hidden="true"
+            />
+          )}
+        </div>
 
         {/* com um jogo só não há para onde andar: a regra da faixa que coube inteira */}
         {jogos.length > 1 && (
@@ -294,7 +452,8 @@ function Conteudo({ dados, ativo }: { dados: Jogos; ativo: boolean }) {
         )}
       </div>
 
-      <Deque jogos={jogos} atual={i} ir={setAtual} />
+      {/* a `key` refaz o deque ao trocar de aba: ele volta ao começo e chega de novo */}
+      <Deque key={aba} jogos={jogos} atual={i} ir={setAtual} />
     </div>
   );
 }
@@ -328,9 +487,9 @@ function CantoMinecraft({ ativo }: { ativo: boolean }) {
 }
 
 /**
- * Jogos: o que está aberto agora, e o que rodou nas últimas duas semanas, na
- * Steam; embaixo, o League of Legends (ainda só a forma) e o boneco do
- * Minecraft.
+ * Jogos: o que está aberto agora, o que rodou nas últimas duas semanas e a
+ * biblioteca, na Steam, com o avatar da conta no alto do painel; embaixo, o
+ * League of Legends e o boneco do Minecraft.
  *
  * O dado vem de `api/steam`. Como em Música, o destaque tem dois estados e o
  * segundo é o comum: **ninguém está jogando na maior parte do dia**, e aí o lugar

@@ -140,6 +140,14 @@
     "total": "no total",
     "anterior": "Jogo anterior",
     "proximo": "Próximo jogo",
+    "abas": {"ultimo": "Por último", "horas": "Mais jogados"},
+    "jogadoEm": "Jogado em {dia}",
+    "lugar": "{n}º mais jogado de {total}",
+    "ultimaVez": "última vez {quando}",
+    "conta": {
+      "nivel": "nível {n}",
+      "resumo": "{nome}, nível {n} na Steam: faltam {xp} XP para o nível {prox}"
+    },
     "minecraft": {
       "titulo": "Minecraft",
       "boneco": "{nome}, meu boneco no Minecraft, com a skin que uso no jogo"

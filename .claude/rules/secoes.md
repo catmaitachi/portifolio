@@ -410,6 +410,31 @@ página do jogo) e as horas da quinzena e do total. Escolhido numa rodada da ski
   nome, as horas e leva à página do jogo.
 - A entrada anima o **miolo** da capa (`.arte`), porque o `transform` da capa é da mola.
 - Com um jogo só não há passos, pela regra de sempre.
+- **O deque tem duas abas** (as de Filmes, com o desenho copiado), escolhidas numa vitrine em
+  13/10/2026 contra as lombadas e a cascata sem abas: **Por último** abre, e é a ordem de sempre com
+  um degrau a mais (o aberto agora, a quinzena, e depois a biblioteca pela última sessão, sem repetir,
+  até oito); **Mais jogados** é a biblioteca pelas horas. É o terceiro degrau que impede a seção de
+  cair no molde vazio quando o Lucas passa semanas sem jogar. Trocar de aba refaz o deque (`key`).
+- **Fora da quinzena o rótulo diz quando**: a da frente "há quanto tempo" (`haQuanto`) e as de trás o
+  dia (`jogos.jogadoEm`), porque "há 2 meses" em quatro capas seguidas não distingue uma da outra. Em
+  Mais jogados ele diz a posição (`jogos.lugar`), e as horas ganham a última vez.
+- **O jogo aberto não pula para a frente em Mais jogados**: fica no lugar do ranking, com o rótulo
+  "Jogando agora · 1º mais jogado", e trocar de aba é sempre do visitante.
+- **Um risco de 1px embaixo das horas** mede o jogo contra o mais jogado da biblioteca (`.peso`).
+- Sem a biblioteca não há abas, e a seção é a de antes.
+
+**No alto do painel, a conta da Steam** (`Conta`): o avatar de 42px, em cor, com um anel de XP, e o
+nick e o nível ao lado. O anel são dez arcos, um por nível da dezena em que a conta está (é de dez em dez que a
+Steam muda o desenho do nível): os já passados acesos, e o do nível atual aceso até onde o XP chegou
+(`perfil.progresso`). A primeira versão tinha 34px, sem cor até ser apontado (como os retratos de
+Música), e o Lucas achou discreta demais: o avatar é identidade de terceiro, como as capas, e fica em
+cor. Sem o nível (`perfil: null`), o painel começa nas abas.
+
+**A órbita de insígnias entrou e saiu no mesmo dia** (13/10/2026). Escolhida na vitrine, ela girava
+as 40 insígnias da conta em três elipses embaixo do deque, e na página ficou exagerada: um segundo
+objeto com movimento próprio disputando a seção com o deque. Dela ficou só o avatar com o anel. As
+insígnias também saíram da função: `GetBadges` não manda nome nem ícone, e o nome das de comunidade
+precisava de um mapa no dicionário.
 
 **O andar de baixo: o LoL e o Minecraft.** Embaixo do deque, dois sub-títulos (`<h3>`, com o risco
 de `comum.tituloLista`, o mesmo da Música): o League of Legends com a parte maior, e o Minecraft

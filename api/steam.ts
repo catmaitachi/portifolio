@@ -3,9 +3,15 @@ import type { Jogo, Jogos } from '../src/data/types.js';
 import { ambiente, falha, json, metodoInvalido } from './_resposta.js';
 
 /**
- * O que estou jogando, e o que joguei nas últimas duas semanas.
+ * O que estou jogando, o que joguei nas últimas duas semanas, a biblioteca e
+ * o nível da conta.
  *
- * Duas chamadas à Steam Web API. A primeira é o resumo do perfil, e é dela que
+ * Quatro chamadas à Steam Web API, e só as duas primeiras são obrigatórias: a
+ * biblioteca entrou para a seção ter o que mostrar quando a quinzena vem vazia,
+ * e o nível para o avatar da conta; a falta delas não derruba a resposta (ver
+ * `opcional`).
+ *
+ * A primeira é o resumo do perfil, e é dela que
  * sai o "jogando agora": o campo `gameextrainfo` **só existe enquanto uma
  * partida está aberta**, e sumir é o jeito de a Steam dizer que ela acabou.
  *
@@ -26,6 +32,8 @@ interface JogoSteam {
   name?: string;
   playtime_2weeks?: number;
   playtime_forever?: number;
+  /** só na biblioteca: a última sessão, em segundos; 0 para o que nunca foi aberto */
+  rtime_last_played?: number;
 }
 
 /**
@@ -59,6 +67,44 @@ const ASSETS = 'https://shared.steamstatic.com/store_item_assets/';
 
 /** A resolução da arte não pode segurar a resposta: o conteúdo daqui são os jogos. */
 const ESPERA_ASSETS = 4000;
+
+/** Quanto se espera pela biblioteca e pelo nível antes de seguir sem eles. */
+const ESPERA_EXTRAS = 5000;
+
+/** Quantos jogos cada lista da biblioteca leva: é o que o deque mostra de uma vez. */
+const TETO = 8;
+
+/**
+ * O que não entra na página: appids separados por vírgula em `STEAM_OCULTAR`.
+ *
+ * A biblioteca chega inteira, e nem tudo o que está numa conta de nove anos é
+ * para a vitrine de um site pessoal. A variável é **opcional**, e
+ * por isso não passa por `ambiente()`: sem ela, nada é escondido.
+ */
+const ocultos = () =>
+  new Set(
+    (process.env.STEAM_OCULTAR ?? '')
+      .split(',')
+      .map((s) => Number(s.trim()))
+      .filter(Boolean),
+  );
+
+/**
+ * Uma chamada cuja falta não derruba a resposta.
+ *
+ * A biblioteca e o nível dependem de uma opção de privacidade a mais
+ * ("Detalhes dos jogos"), e fechadas a API responde 200 sem os campos. Fora do
+ * ar, lenta ou fechada, o retorno é `null`, e a seção volta a ser o que era
+ * antes delas: o conteúdo daqui continua sendo o que está aberto e os recentes.
+ */
+async function opcional<T>(url: string): Promise<T | null> {
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(ESPERA_EXTRAS) });
+    return r.ok ? ((await r.json()) as T) : null;
+  } catch {
+    return null;
+  }
+}
 
 interface ItemLoja {
   id?: number;
@@ -119,15 +165,47 @@ async function capas(appids: number[]): Promise<Map<number, Arte>> {
     const corpo = (await r.json()) as { response?: { store_items?: ItemLoja[] } };
     for (const item of corpo.response?.store_items ?? []) {
       const formato = item.assets?.asset_url_format;
-      if (item.id === undefined || !formato) continue;
+      if (item.id === undefined) continue;
       const url = (arquivo?: string) =>
-        arquivo ? ASSETS + formato.replace('${FILENAME}', arquivo) : null;
-      mapa.set(item.id, { deitada: url(item.assets?.header), emPe: url(item.assets?.library_capsule) });
+        arquivo && formato ? ASSETS + formato.replace('${FILENAME}', arquivo) : null;
+      mapa.set(item.id, {
+        deitada: url(item.assets?.header),
+        emPe: url(item.assets?.library_capsule),
+      });
     }
   } catch {
     // resolver a arte é enfeite; devolver os jogos, não
   }
   return mapa;
+}
+
+/**
+ * A conta: o nick, o avatar e o nível, com a fração do caminho até o próximo.
+ * Fechado pela privacidade, `GetBadges` volta 200 sem campo nenhum, e é o
+ * `player_level` ausente que diz isso: aí não há conta, e a seção não ganha o
+ * avatar.
+ */
+function conta(
+  jogador: { personaname?: string; avatarfull?: string } | undefined,
+  n:
+    | {
+        player_level?: number;
+        player_xp?: number;
+        player_xp_needed_to_level_up?: number;
+        player_xp_needed_current_level?: number;
+      }
+    | undefined,
+): Jogos['perfil'] {
+  if (n?.player_level === undefined) return null;
+  const feito = (n.player_xp ?? 0) - (n.player_xp_needed_current_level ?? n.player_xp ?? 0);
+  const falta = n.player_xp_needed_to_level_up ?? 0;
+  return {
+    nome: jogador?.personaname ?? '',
+    avatar: jogador?.avatarfull ?? null,
+    nivel: n.player_level,
+    xpFalta: falta,
+    progresso: feito + falta > 0 ? Math.min(1, Math.max(0, feito / (feito + falta))) : 0,
+  };
 }
 
 const normalizar = (j: JogoSteam, capas: Map<number, Arte>): Jogo => ({
@@ -138,6 +216,7 @@ const normalizar = (j: JogoSteam, capas: Map<number, Arte>): Jogo => ({
   url: lojaDe(j.appid),
   minutosRecentes: j.playtime_2weeks ?? 0,
   minutosTotais: j.playtime_forever ?? 0,
+  ...(j.rtime_last_played ? { jogadoEm: new Date(j.rtime_last_played * 1000).toISOString() } : {}),
 });
 
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
@@ -148,13 +227,28 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   const { STEAM_API_KEY: chave, STEAM_ID: id } = env.vars;
 
   try {
-    const [resumo, recentes] = await Promise.all([
+    const [resumo, recentes, biblioteca, nivel] = await Promise.all([
       fetch(
         `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${chave}&steamids=${id}`,
       ),
       fetch(
         `https://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v1/?key=${chave}&steamid=${id}&count=8`,
       ),
+      opcional<{ response?: { game_count?: number; games?: JogoSteam[] } }>(
+        `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${chave}&steamid=${id}&include_appinfo=1&include_played_free_games=1`,
+      ),
+      /**
+       * O nível e o XP vêm de `GetBadges`, que traz também onde o nível atual
+       * começou: é o que dá a fração do anel. `GetSteamLevel` daria só o número.
+       */
+      opcional<{
+        response?: {
+          player_level?: number;
+          player_xp?: number;
+          player_xp_needed_to_level_up?: number;
+          player_xp_needed_current_level?: number;
+        };
+      }>(`https://api.steampowered.com/IPlayerService/GetBadges/v1/?key=${chave}&steamid=${id}`),
     ]);
 
     if (!resumo.ok || !recentes.ok) {
@@ -162,12 +256,41 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     }
 
     const perfil = (await resumo.json()) as {
-      response?: { players?: { gameid?: string; gameextrainfo?: string }[] };
+      response?: {
+        players?: {
+          gameid?: string;
+          gameextrainfo?: string;
+          personaname?: string;
+          avatarfull?: string;
+          profileurl?: string;
+        }[];
+      };
     };
     const lista = (await recentes.json()) as { response?: { games?: JogoSteam[] } };
 
+    const fora = ocultos();
     const jogador = perfil.response?.players?.[0];
-    const jogos = lista.response?.games ?? [];
+
+    /**
+     * A biblioteca, pelos dois critérios da seção. `rtime_last_played` é 0 para o
+     * que nunca foi aberto, e é isso que tira da lista "por último" o que foi
+     * comprado e ficou na estante.
+     */
+    const posse = (biblioteca?.response?.games ?? []).filter((g) => !fora.has(g.appid));
+    const daPosse = new Map(posse.map((g) => [g.appid, g]));
+    const porUltimo = posse
+      .filter((g) => g.rtime_last_played)
+      .sort((a, b) => (b.rtime_last_played ?? 0) - (a.rtime_last_played ?? 0))
+      .slice(0, TETO);
+    const maisJogados = posse
+      .filter((g) => g.playtime_forever)
+      .sort((a, b) => (b.playtime_forever ?? 0) - (a.playtime_forever ?? 0))
+      .slice(0, TETO);
+
+    // os recentes ganham a data da última sessão, que só a biblioteca traz
+    const jogos = (lista.response?.games ?? [])
+      .filter((g) => !fora.has(g.appid))
+      .map((g) => ({ ...daPosse.get(g.appid), ...g }));
 
     /**
      * O jogo aberto vem do resumo, mas o tempo dele vem da lista de recentes: o
@@ -181,14 +304,17 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
      * que pode não estar entre eles numa partida da primeira vez.
      */
     const arte = await capas([
-      ...new Set([...jogos.map((g) => g.appid), ...(abertoId ? [abertoId] : [])]),
+      ...new Set([
+        ...[...jogos, ...porUltimo, ...maisJogados].map((g) => g.appid),
+        ...(abertoId ? [abertoId] : []),
+      ]),
     ]);
 
     const jogando: Jogo | null =
       abertoId && jogador?.gameextrainfo
         ? {
             ...normalizar(
-              jogos.find((g) => g.appid === abertoId) ?? { appid: abertoId },
+              jogos.find((g) => g.appid === abertoId) ?? daPosse.get(abertoId) ?? { appid: abertoId },
               arte,
             ),
             nome: jogador.gameextrainfo,
@@ -198,6 +324,10 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const dados: Jogos = {
       jogando,
       recentes: jogos.map((g) => normalizar(g, arte)),
+      porUltimo: porUltimo.map((g) => normalizar(g, arte)),
+      maisJogados: maisJogados.map((g) => normalizar(g, arte)),
+      totalJogos: biblioteca?.response?.game_count ?? 0,
+      perfil: conta(jogador, nivel?.response),
     };
 
     // 60s: o "jogando agora" é o dado vivo daqui, e ele muda em minutos, não em

@@ -20,6 +20,9 @@ paths:
   ver `dados.md`). **As bordas de nível e os brasões de maestria são área cinzenta**: não vêm do
   Data Dragon, e a pergunta vai no próprio pedido; se a Riot recusar, a carta fica com o ícone e o
   nível em texto. `RIOT_ID` e `RIOT_REGIAO` também faltam no `.env.local`.
+- **A biblioteca e o nível da Steam não foram vistos com a chave de verdade** (13/10/2026): a
+  `STEAM_API_KEY` não está no `.env.local`, e a função foi testada com respostas simuladas. Conferir
+  no preview da Vercel se o `rtime_last_played` vem.
 - **`MINECRAFT_USER` falta na Vercel** (no `.env.local` já está). Sem ela o canto do Minecraft mostra
   o pedestal vazio com o aviso de falha.
 - **`GITHUB_TOKEN` falta no `.env.local` e na Vercel.** Sem ele a seção Projetos mostra o estado de
