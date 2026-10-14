@@ -23,6 +23,9 @@ paths:
 - **As capas do deque de Jogos são desenho** (`aria-hidden`): quem usa leitor de tela navega pelo
   painel ao lado, que diz o rótulo, o nome (link para o jogo) e as horas, num `aria-live`. Trocar de
   jogo é pelas setas ←/→ ou pelos passos (`jogos.anterior`, `jogos.proximo`).
+- **A órbita de insígnias é desenho** (`aria-hidden`): apontar é gesto de ponteiro, e o que vale para
+  todos (quantas são, o nível e o XP) vai escrito para o leitor de tela (`jogos.insignias.resumo`,
+  em `comum.oculto`) e fica à vista na legenda. As abas do deque são botões com `aria-pressed`.
 - **O boneco do Minecraft é desenho** (`aria-hidden`) dentro de um `role="img"` com o nick e o que
   ele é (`jogos.minecraft.boneco`). Golpe, arraste e gestos são brincadeira para o mouse e o toque, e
   não têm equivalente de teclado: não há informação neles que o rótulo não diga. No LoL, o nível da carta vai

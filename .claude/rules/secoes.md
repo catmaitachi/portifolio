@@ -410,6 +410,32 @@ página do jogo) e as horas da quinzena e do total. Escolhido numa rodada da ski
   nome, as horas e leva à página do jogo.
 - A entrada anima o **miolo** da capa (`.arte`), porque o `transform` da capa é da mola.
 - Com um jogo só não há passos, pela regra de sempre.
+- **O deque tem duas abas** (as de Filmes, com o desenho copiado), escolhidas numa vitrine em
+  13/10/2026 contra as lombadas e a cascata sem abas: **Por último** abre, e é a ordem de sempre com
+  um degrau a mais (o aberto agora, a quinzena, e depois a biblioteca pela última sessão, sem repetir,
+  até oito); **Mais jogados** é a biblioteca pelas horas. É o terceiro degrau que impede a seção de
+  cair no molde vazio quando o Lucas passa semanas sem jogar. Trocar de aba refaz o deque (`key`).
+- **Fora da quinzena o rótulo diz quando**: a da frente "há quanto tempo" (`haQuanto`) e as de trás o
+  dia (`jogos.jogadoEm`), porque "há 2 meses" em quatro capas seguidas não distingue uma da outra. Em
+  Mais jogados ele diz a posição (`jogos.lugar`), e as horas ganham a última vez.
+- **O jogo aberto não pula para a frente em Mais jogados**: fica no lugar do ranking, com o rótulo
+  "Jogando agora · 1º mais jogado", e trocar de aba é sempre do visitante.
+- **Um risco de 1px embaixo das horas** mede o jogo contra o mais jogado da biblioteca (`.peso`).
+- Sem a biblioteca não há abas, e a seção é a de antes.
+
+**Embaixo do deque, a órbita de insígnias** (`Orbita`), escolhida na mesma vitrine contra um cartaz
+de nível e uma faixa de ficha. O avatar no centro, com um anel de dez arcos (a dezena de níveis em
+que a conta está, que é como a Steam muda o desenho do nível) e o nível numa placa chanfrada por cima
+de tudo; as insígnias giram em três órbitas inclinadas: as de comunidade de mais XP perto, as de jogo
+no meio, com a arte do jogo do tamanho do nível, e o resto longe, como pontos do tamanho do XP.
+Apontar uma para o relógio, apaga as outras, e a legenda ao lado (medida fixa) diz qual é; sem
+nenhuma apontada, ela diz o total, o XP e quanto falta para o próximo nível.
+
+- **O corpo é posto pela mesma conta que desenha a trilha** (raio, achatamento e inclinação nas
+  duas), e quem passa por trás do avatar encolhe e apaga.
+- **O rAF só roda com a seção ativa** e escreve direto no `style`; a largura é medida por
+  `ResizeObserver`, e não a cada quadro. Sem movimento, os corpos ficam onde nasceram.
+- **Só existe com as insígnias**: sem elas (`perfil: null`) a seção não ganha nada no lugar.
 
 **O andar de baixo: o LoL e o Minecraft.** Embaixo do deque, dois sub-títulos (`<h3>`, com o risco
 de `comum.tituloLista`, o mesmo da Música): o League of Legends com a parte maior, e o Minecraft

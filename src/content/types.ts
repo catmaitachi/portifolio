@@ -232,6 +232,36 @@ export interface Dictionary {
     /** os dois passos do deque */
     anterior: string;
     proximo: string;
+    /** as duas ordens da biblioteca, que são as abas do deque */
+    abas: { ultimo: string; horas: string };
+    /** `{dia}` é a data da última sessão, para as capas de trás */
+    jogadoEm: string;
+    /** `{n}` é a posição e `{total}` o tamanho da biblioteca */
+    lugar: string;
+    /** `{quando}` é o tempo relativo, escrito pelo `Intl` */
+    ultimaVez: string;
+    /** a órbita de insígnias da conta da Steam */
+    insignias: {
+      titulo: string;
+      /** `{n}` é quantas são */
+      total: string;
+      /** `{nome}` é o nick e `{n}` o nível */
+      conta: string;
+      xp: string;
+      /** `{n}` é o XP que falta e `{nivel}` o próximo nível */
+      faltam: string;
+      /** `{n}` é o nível da insígnia */
+      nivel: string;
+      /** o rótulo da insígnia de comunidade, e o nome da que não está no mapa */
+      comunidade: string;
+      /** o rótulo da insígnia de um jogo, que leva o nome do jogo */
+      deJogo: string;
+      semNome: string;
+      /** o nome acessível da órbita, que é desenho; `{n}`, `{nivel}` e `{xp}` */
+      resumo: string;
+      /** o nome de cada insígnia de comunidade, pelo `badgeid` da Steam */
+      nomes: Record<string, string>;
+    };
     minecraft: {
       titulo: string;
       /** o nome acessível do boneco, que é desenho; `{nome}` é o nick */

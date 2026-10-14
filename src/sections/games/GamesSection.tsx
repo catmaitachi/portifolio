@@ -1,17 +1,19 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { format } from '~/content';
 import type { Jogo, Jogos, Minecraft } from '~/data/types';
 import { useArrowKeys } from '~/hooks/useArrowKeys';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
 import { useRemoto } from '~/hooks/useRemoto';
-import { useT } from '~/i18n/useLanguage';
+import { useLanguage, useT } from '~/i18n/useLanguage';
 import { EstadoRemoto, type SemDado, Traco } from '../EstadoRemoto';
+import { haQuanto } from '../haQuanto';
 import { PerfilExterno } from '../PerfilExterno';
 import comum from '../section.module.css';
 import type { SectionProps } from '../types';
 import { Boneco, PedestalVazio } from './Boneco';
 import styles from './GamesSection.module.css';
 import { Liga } from './Liga';
+import { Orbita } from './Orbita';
 
 /** O "jogando agora" muda em minutos, não em segundos. */
 const REPETIR = 60_000;
@@ -35,6 +37,9 @@ const ARRASTE_POR_CAPA = 90;
 const MOLA = 0.14;
 
 const limitar = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+
+/** Quantas capas o deque leva: o mesmo teto das listas que `api/steam` devolve. */
+const TETO = 8;
 
 /**
  * O deque: as capas em pé, uma atrás da outra num trilho que recua.
@@ -207,22 +212,40 @@ function Deque({
   );
 }
 
+/** As duas ordens em que o deque mostra a biblioteca. */
+type Aba = 'ultimo' | 'horas';
+
 /**
- * O conteúdo, quando ele existe: o painel do jogo escolhido e o deque.
+ * O conteúdo, quando ele existe: as abas, o painel do jogo escolhido e o deque.
  *
- * Separado do casco pela mesma razão de Música: os três estados da busca já são
- * um ramo, e o terceiro tem ramos próprios.
+ * **O deque tem duas listas**, e a que abre é a de sempre com um degrau a mais:
+ * o que está aberto agora, depois a quinzena, e depois a biblioteca pela última
+ * sessão, sem repetir. É esse terceiro degrau que impede a seção de ficar vazia
+ * para quem passou um mês sem jogar. A outra é a biblioteca pelas horas, e nela
+ * o jogo aberto fica no lugar dele no ranking, com o rótulo dizendo que está
+ * aberto: quem olha o ranking não é tirado dele.
+ *
+ * Sem a biblioteca (a Steam não a entregou), não há abas, e a seção é a de
+ * antes dela. Separado do casco pela mesma razão de Música: os três estados da
+ * busca já são um ramo, e o terceiro tem ramos próprios.
  */
 function Conteudo({ dados, ativo }: { dados: Jogos; ativo: boolean }) {
-  const t = useT();
+  const { t, lang } = useLanguage();
+  const [escolhida, setEscolhida] = useState<Aba>('ultimo');
   const [atual, setAtual] = useState(0);
 
-  const destaque = dados.jogando ?? dados.recentes[0] ?? null;
-  const aoVivo = Boolean(dados.jogando);
-  // o destaque abre o deque, e os recentes vêm atrás dele sem repeti-lo
-  const jogos = destaque
-    ? [destaque, ...dados.recentes.filter((g: Jogo) => g.id !== destaque.id)]
-    : [];
+  const aba: Aba = dados.maisJogados.length ? escolhida : 'ultimo';
+  const aberto = dados.jogando;
+
+  const jogos = useMemo(() => {
+    if (aba === 'horas') return dados.maisJogados;
+    // o aberto abre o deque; a quinzena e a biblioteca vêm atrás, cada jogo uma vez
+    const vistos = new Set<string>();
+    return [...(aberto ? [aberto] : []), ...dados.recentes, ...dados.porUltimo]
+      .filter((j) => !vistos.has(j.id) && vistos.add(j.id))
+      .slice(0, TETO);
+  }, [aba, aberto, dados.maisJogados, dados.recentes, dados.porUltimo]);
+
   const ultimo = jogos.length - 1;
   const i = limitar(atual, 0, Math.max(0, ultimo));
 
@@ -232,39 +255,96 @@ function Conteudo({ dados, ativo }: { dados: Jogos; ativo: boolean }) {
   );
   useArrowKeys(ativo && jogos.length > 1, andar);
 
-  if (!destaque) return <Molde estado="vazio" />;
+  if (!jogos.length) return <Molde estado="vazio" />;
 
   const jogo = jogos[i];
-  const rotulo = i > 0 ? t.jogos.recentes : aoVivo ? t.jogos.jogando : t.jogos.ultimo;
+  const aoVivo = aberto?.id === jogo.id;
+  const dia = (iso: string) =>
+    new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'short' }).format(new Date(iso));
+  const lugar = format(t.jogos.lugar, { n: String(i + 1), total: String(dados.totalJogos) });
+
+  /**
+   * O rótulo diz por que o jogo está ali. Na quinzena, é o de sempre; fora dela,
+   * o da frente diz há quanto tempo foi e os de trás, o dia, porque "há 2 meses"
+   * em quatro capas seguidas não distingue uma da outra.
+   */
+  const rotulo =
+    aba === 'horas'
+      ? aoVivo
+        ? `${t.jogos.jogando} · ${lugar}`
+        : lugar
+      : aoVivo
+        ? t.jogos.jogando
+        : jogo.minutosRecentes > 0 || !jogo.jogadoEm
+          ? i === 0
+            ? t.jogos.ultimo
+            : t.jogos.recentes
+          : i === 0
+            ? `${t.jogos.ultimo} · ${haQuanto(jogo.jogadoEm, lang)}`
+            : format(t.jogos.jogadoEm, { dia: dia(jogo.jogadoEm) });
+
+  // o peso do jogo na biblioteca, contra o mais jogado dela
+  const maior = dados.maisJogados[0]?.minutosTotais ?? 0;
 
   return (
     <div className={styles.cena}>
-      <div className={styles.painel} aria-live="polite">
-        <span className={styles.rotulo}>
-          {i === 0 && aoVivo && <span className={styles.pulso} aria-hidden="true" />}
-          {rotulo}
-        </span>
-        <a className={styles.nome} href={jogo.url} target="_blank" rel="noreferrer">
-          {jogo.nome}
-        </a>
-        <span className={styles.tempos}>
-          {jogo.minutosRecentes > 0 && (
+      <div className={styles.painel}>
+        {dados.maisJogados.length > 0 && (
+          <div className={styles.abas} role="group" aria-label={t.jogos.titulo}>
+            {(['ultimo', 'horas'] as const).map((a) => (
+              <button
+                key={a}
+                type="button"
+                className={styles.aba}
+                aria-pressed={a === aba}
+                onClick={() => {
+                  setEscolhida(a);
+                  setAtual(0);
+                }}
+              >
+                {t.jogos.abas[a]}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className={styles.painel} aria-live="polite">
+          <span className={styles.rotulo}>
+            {aoVivo && <span className={styles.pulso} aria-hidden="true" />}
+            {rotulo}
+          </span>
+          <a className={styles.nome} href={jogo.url} target="_blank" rel="noreferrer">
+            {jogo.nome}
+          </a>
+          <span className={styles.tempos}>
+            {jogo.minutosRecentes > 0 && (
+              <span>
+                <b>
+                  {horas(jogo.minutosRecentes)}
+                  {t.jogos.horas}
+                </b>{' '}
+                {t.jogos.duasSemanas}
+              </span>
+            )}
             <span>
               <b>
-                {horas(jogo.minutosRecentes)}
+                {horas(jogo.minutosTotais)}
                 {t.jogos.horas}
               </b>{' '}
-              {t.jogos.duasSemanas}
+              {t.jogos.total}
             </span>
-          )}
-          <span>
-            <b>
-              {horas(jogo.minutosTotais)}
-              {t.jogos.horas}
-            </b>{' '}
-            {t.jogos.total}
+            {aba === 'horas' && !aoVivo && jogo.jogadoEm && (
+              <span>{format(t.jogos.ultimaVez, { quando: haQuanto(jogo.jogadoEm, lang) })}</span>
+            )}
           </span>
-        </span>
+          {maior > 0 && (
+            <span
+              className={styles.peso}
+              style={{ '--peso': Math.min(1, jogo.minutosTotais / maior) } as React.CSSProperties}
+              aria-hidden="true"
+            />
+          )}
+        </div>
 
         {/* com um jogo só não há para onde andar: a regra da faixa que coube inteira */}
         {jogos.length > 1 && (
@@ -294,7 +374,8 @@ function Conteudo({ dados, ativo }: { dados: Jogos; ativo: boolean }) {
         )}
       </div>
 
-      <Deque jogos={jogos} atual={i} ir={setAtual} />
+      {/* a `key` refaz o deque ao trocar de aba: ele volta ao começo e chega de novo */}
+      <Deque key={aba} jogos={jogos} atual={i} ir={setAtual} />
     </div>
   );
 }
@@ -328,9 +409,9 @@ function CantoMinecraft({ ativo }: { ativo: boolean }) {
 }
 
 /**
- * Jogos: o que está aberto agora, e o que rodou nas últimas duas semanas, na
- * Steam; embaixo, o League of Legends (ainda só a forma) e o boneco do
- * Minecraft.
+ * Jogos: o que está aberto agora, o que rodou nas últimas duas semanas e a
+ * biblioteca, na Steam; embaixo, a órbita de insígnias da conta, o League of
+ * Legends e o boneco do Minecraft.
  *
  * O dado vem de `api/steam`. Como em Música, o destaque tem dois estados e o
  * segundo é o comum: **ninguém está jogando na maior parte do dia**, e aí o lugar
@@ -393,6 +474,14 @@ export function GamesSection({ ativo, indice }: SectionProps) {
           <Conteudo dados={jogos.dados} ativo={ativo} />
         ) : (
           <Molde estado={jogos.estado} />
+        )}
+
+        {/* a conta da Steam: só existe com as insígnias, e sem elas a seção não muda */}
+        {jogos.estado === 'pronto' && jogos.dados.perfil && (
+          <div className={styles.parte}>
+            <h3 className={comum.tituloLista}>{t.jogos.insignias.titulo}</h3>
+            <Orbita perfil={jogos.dados.perfil} ativo={ativo} />
+          </div>
         )}
 
         {/* o andar de baixo: o LoL, e o Minecraft por último e mais estreito */}

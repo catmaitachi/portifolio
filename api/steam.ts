@@ -1,11 +1,16 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import type { Jogo, Jogos } from '../src/data/types.js';
+import type { Insignia, Jogo, Jogos } from '../src/data/types.js';
 import { ambiente, falha, json, metodoInvalido } from './_resposta.js';
 
 /**
- * O que estou jogando, e o que joguei nas últimas duas semanas.
+ * O que estou jogando, o que joguei nas últimas duas semanas, a biblioteca e
+ * as insígnias da conta.
  *
- * Duas chamadas à Steam Web API. A primeira é o resumo do perfil, e é dela que
+ * Quatro chamadas à Steam Web API, e só as duas primeiras são obrigatórias: a
+ * biblioteca e as insígnias entraram para a seção ter o que mostrar quando a
+ * quinzena vem vazia, e a falta delas não derruba a resposta (ver `opcional`).
+ *
+ * A primeira é o resumo do perfil, e é dela que
  * sai o "jogando agora": o campo `gameextrainfo` **só existe enquanto uma
  * partida está aberta**, e sumir é o jeito de a Steam dizer que ela acabou.
  *
@@ -26,6 +31,22 @@ interface JogoSteam {
   name?: string;
   playtime_2weeks?: number;
   playtime_forever?: number;
+  /** só na biblioteca: a última sessão, em segundos; 0 para o que nunca foi aberto */
+  rtime_last_played?: number;
+}
+
+/**
+ * Uma insígnia, como `GetBadges` a devolve: só números. A de jogo tem `appid`
+ * (e o `badgeid` de todas elas é 1); a de comunidade se distingue pelo `badgeid`.
+ */
+interface InsigniaSteam {
+  badgeid: number;
+  appid?: number;
+  level?: number;
+  xp?: number;
+  completion_time?: number;
+  /** 1 na versão brilhante da insígnia de um jogo, que é outra insígnia */
+  border_color?: number;
 }
 
 /**
@@ -45,6 +66,8 @@ interface JogoSteam {
  * moldura vazia, que é melhor que uma arte deitada espremida num retângulo alto.
  */
 interface Arte {
+  /** o nome que a loja dá ao item: é o que nomeia a insígnia de um jogo */
+  nome: string | null;
   deitada: string | null;
   emPe: string | null;
 }
@@ -60,8 +83,47 @@ const ASSETS = 'https://shared.steamstatic.com/store_item_assets/';
 /** A resolução da arte não pode segurar a resposta: o conteúdo daqui são os jogos. */
 const ESPERA_ASSETS = 4000;
 
+/** Quanto se espera pela biblioteca e pelas insígnias antes de seguir sem elas. */
+const ESPERA_EXTRAS = 5000;
+
+/** Quantos jogos cada lista da biblioteca leva: é o que o deque mostra de uma vez. */
+const TETO = 8;
+
+/**
+ * O que não entra na página: appids separados por vírgula em `STEAM_OCULTAR`.
+ *
+ * A biblioteca e as insígnias chegam inteiras, e nem tudo o que está numa conta
+ * de nove anos é para a vitrine de um site pessoal. A variável é **opcional**, e
+ * por isso não passa por `ambiente()`: sem ela, nada é escondido.
+ */
+const ocultos = () =>
+  new Set(
+    (process.env.STEAM_OCULTAR ?? '')
+      .split(',')
+      .map((s) => Number(s.trim()))
+      .filter(Boolean),
+  );
+
+/**
+ * Uma chamada cuja falta não derruba a resposta.
+ *
+ * A biblioteca e as insígnias dependem de uma opção de privacidade a mais
+ * ("Detalhes dos jogos"), e fechadas a API responde 200 sem os campos. Fora do
+ * ar, lenta ou fechada, o retorno é `null`, e a seção volta a ser o que era
+ * antes delas: o conteúdo daqui continua sendo o que está aberto e os recentes.
+ */
+async function opcional<T>(url: string): Promise<T | null> {
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(ESPERA_EXTRAS) });
+    return r.ok ? ((await r.json()) as T) : null;
+  } catch {
+    return null;
+  }
+}
+
 interface ItemLoja {
   id?: number;
+  name?: string;
   assets?: {
     /** o caminho até a pasta do app, com `${FILENAME}` no lugar do arquivo */
     asset_url_format?: string;
@@ -119,10 +181,14 @@ async function capas(appids: number[]): Promise<Map<number, Arte>> {
     const corpo = (await r.json()) as { response?: { store_items?: ItemLoja[] } };
     for (const item of corpo.response?.store_items ?? []) {
       const formato = item.assets?.asset_url_format;
-      if (item.id === undefined || !formato) continue;
+      if (item.id === undefined) continue;
       const url = (arquivo?: string) =>
-        arquivo ? ASSETS + formato.replace('${FILENAME}', arquivo) : null;
-      mapa.set(item.id, { deitada: url(item.assets?.header), emPe: url(item.assets?.library_capsule) });
+        arquivo && formato ? ASSETS + formato.replace('${FILENAME}', arquivo) : null;
+      mapa.set(item.id, {
+        nome: item.name ?? null,
+        deitada: url(item.assets?.header),
+        emPe: url(item.assets?.library_capsule),
+      });
     }
   } catch {
     // resolver a arte é enfeite; devolver os jogos, não
@@ -138,6 +204,23 @@ const normalizar = (j: JogoSteam, capas: Map<number, Arte>): Jogo => ({
   url: lojaDe(j.appid),
   minutosRecentes: j.playtime_2weeks ?? 0,
   minutosTotais: j.playtime_forever ?? 0,
+  ...(j.rtime_last_played ? { jogadoEm: new Date(j.rtime_last_played * 1000).toISOString() } : {}),
+});
+
+/**
+ * A insígnia no contrato. A de jogo ganha o nome e a arte do jogo, que vêm da
+ * mesma consulta das capas; sem arte resolvida ela fica sem nenhuma, porque a
+ * convenção de reserva dos jogos erraria todo evento da loja, que tem `appid` e
+ * não tem página.
+ */
+const insignia = (b: InsigniaSteam, capas: Map<number, Arte>): Insignia => ({
+  id: b.appid ? `jogo-${b.appid}-${b.border_color ?? 0}` : `comunidade-${b.badgeid}`,
+  comunidade: b.appid ? null : b.badgeid,
+  jogo: (b.appid && capas.get(b.appid)?.nome) || null,
+  arte: (b.appid && capas.get(b.appid)?.deitada) || null,
+  nivel: b.level ?? 1,
+  xp: b.xp ?? 0,
+  ano: b.completion_time ? new Date(b.completion_time * 1000).getUTCFullYear() : null,
 });
 
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
@@ -148,13 +231,25 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   const { STEAM_API_KEY: chave, STEAM_ID: id } = env.vars;
 
   try {
-    const [resumo, recentes] = await Promise.all([
+    const [resumo, recentes, biblioteca, conta] = await Promise.all([
       fetch(
         `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${chave}&steamids=${id}`,
       ),
       fetch(
         `https://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v1/?key=${chave}&steamid=${id}&count=8`,
       ),
+      opcional<{ response?: { game_count?: number; games?: JogoSteam[] } }>(
+        `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${chave}&steamid=${id}&include_appinfo=1&include_played_free_games=1`,
+      ),
+      // o nível vem junto das insígnias: `GetSteamLevel` seria uma chamada para um número
+      opcional<{
+        response?: {
+          badges?: InsigniaSteam[];
+          player_level?: number;
+          player_xp?: number;
+          player_xp_needed_to_level_up?: number;
+        };
+      }>(`https://api.steampowered.com/IPlayerService/GetBadges/v1/?key=${chave}&steamid=${id}`),
     ]);
 
     if (!resumo.ok || !recentes.ok) {
@@ -162,12 +257,43 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     }
 
     const perfil = (await resumo.json()) as {
-      response?: { players?: { gameid?: string; gameextrainfo?: string }[] };
+      response?: {
+        players?: {
+          gameid?: string;
+          gameextrainfo?: string;
+          personaname?: string;
+          avatarfull?: string;
+          profileurl?: string;
+        }[];
+      };
     };
     const lista = (await recentes.json()) as { response?: { games?: JogoSteam[] } };
 
+    const fora = ocultos();
     const jogador = perfil.response?.players?.[0];
-    const jogos = lista.response?.games ?? [];
+
+    /**
+     * A biblioteca, pelos dois critérios da seção. `rtime_last_played` é 0 para o
+     * que nunca foi aberto, e é isso que tira da lista "por último" o que foi
+     * comprado e ficou na estante.
+     */
+    const posse = (biblioteca?.response?.games ?? []).filter((g) => !fora.has(g.appid));
+    const daPosse = new Map(posse.map((g) => [g.appid, g]));
+    const porUltimo = posse
+      .filter((g) => g.rtime_last_played)
+      .sort((a, b) => (b.rtime_last_played ?? 0) - (a.rtime_last_played ?? 0))
+      .slice(0, TETO);
+    const maisJogados = posse
+      .filter((g) => g.playtime_forever)
+      .sort((a, b) => (b.playtime_forever ?? 0) - (a.playtime_forever ?? 0))
+      .slice(0, TETO);
+
+    // os recentes ganham a data da última sessão, que só a biblioteca traz
+    const jogos = (lista.response?.games ?? [])
+      .filter((g) => !fora.has(g.appid))
+      .map((g) => ({ ...daPosse.get(g.appid), ...g }));
+
+    const insignias = (conta?.response?.badges ?? []).filter((b) => !b.appid || !fora.has(b.appid));
 
     /**
      * O jogo aberto vem do resumo, mas o tempo dele vem da lista de recentes: o
@@ -181,14 +307,18 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
      * que pode não estar entre eles numa partida da primeira vez.
      */
     const arte = await capas([
-      ...new Set([...jogos.map((g) => g.appid), ...(abertoId ? [abertoId] : [])]),
+      ...new Set([
+        ...[...jogos, ...porUltimo, ...maisJogados].map((g) => g.appid),
+        ...insignias.flatMap((b) => (b.appid ? [b.appid] : [])),
+        ...(abertoId ? [abertoId] : []),
+      ]),
     ]);
 
     const jogando: Jogo | null =
       abertoId && jogador?.gameextrainfo
         ? {
             ...normalizar(
-              jogos.find((g) => g.appid === abertoId) ?? { appid: abertoId },
+              jogos.find((g) => g.appid === abertoId) ?? daPosse.get(abertoId) ?? { appid: abertoId },
               arte,
             ),
             nome: jogador.gameextrainfo,
@@ -198,6 +328,23 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const dados: Jogos = {
       jogando,
       recentes: jogos.map((g) => normalizar(g, arte)),
+      porUltimo: porUltimo.map((g) => normalizar(g, arte)),
+      maisJogados: maisJogados.map((g) => normalizar(g, arte)),
+      totalJogos: biblioteca?.response?.game_count ?? 0,
+      // fechadas pela privacidade, as insígnias voltam 200 sem campo nenhum
+      perfil: conta?.response?.player_level !== undefined
+        ? {
+            nome: jogador?.personaname ?? '',
+            avatar: jogador?.avatarfull ?? null,
+            url: jogador?.profileurl ?? `https://steamcommunity.com/profiles/${id}`,
+            nivel: conta.response.player_level,
+            xp: conta.response.player_xp ?? 0,
+            xpFalta: conta.response.player_xp_needed_to_level_up ?? 0,
+            insignias: insignias
+              .map((b) => insignia(b, arte))
+              .sort((a, b) => b.xp - a.xp),
+          }
+        : null,
     };
 
     // 60s: o "jogando agora" é o dado vivo daqui, e ele muda em minutos, não em

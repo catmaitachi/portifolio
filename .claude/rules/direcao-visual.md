@@ -127,6 +127,18 @@ Duas coisas da rodada valem para o que vier:
   velocidade que decai, e é a velocidade (não a posição) que inclina ou torce; parado, tudo volta ao
   prumo.
 
+### Padrões escolhidos na rodada de 13/10/2026 (a Steam sem jogo recente)
+
+Vitrine com três direções (continuidade, objeto, enxuta) em dois slots; a mistura foi do Lucas.
+
+| Onde | Padrão | Referências |
+|---|---|---|
+| Jogos, a biblioteca | o deque ganha as abas de Filmes: Por último e Mais jogados | reactbits/DepthCarousel, aceternity/tabs |
+| Jogos, a conta | órbita de insígnias: o avatar como astro, com o anel da dezena de níveis, e as insígnias girando em elipses inclinadas | magicui/orbiting-circles, reactbits/ProfileCard |
+
+Ficaram na vitrine o cartaz de nível (repetia o do GitHub), a faixa de ficha, as lombadas e a
+cascata sem abas.
+
 ### Tokens: a régua é uma só
 
 Cor, tipo e tempo moram em `:root`, no `reset.css`, e os módulos escolhem um degrau. Antes cada

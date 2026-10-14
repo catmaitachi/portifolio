@@ -102,12 +102,63 @@ export interface Jogo {
   /** minutos jogados nas últimas duas semanas */
   minutosRecentes: number;
   minutosTotais: number;
+  /**
+   * A última sessão, em ISO 8601. Vem da biblioteca, e só existe quando a Steam
+   * a entrega: o que está aberto pela primeira vez ainda não tem.
+   */
+  jogadoEm?: string;
+}
+
+/**
+ * Uma insígnia do perfil da Steam.
+ *
+ * **A API não manda nome nem ícone**, só os números. A de jogo traz o `appid`,
+ * e é o jogo que dá nome e arte; a de comunidade traz só o próprio número
+ * (`comunidade`), e o nome dela sai do dicionário, quando está lá.
+ */
+export interface Insignia {
+  id: string;
+  /** o `badgeid` da Steam, nas de comunidade; `null` nas de jogo */
+  comunidade: number | null;
+  /** o jogo (ou o evento da loja) a que a insígnia pertence */
+  jogo: string | null;
+  arte: string | null;
+  nivel: number;
+  xp: number;
+  /** o ano em que foi alcançada */
+  ano: number | null;
+}
+
+/** A conta da Steam: quem é, em que nível está e o que já ganhou. */
+export interface PerfilSteam {
+  nome: string;
+  avatar: string | null;
+  url: string;
+  nivel: number;
+  xp: number;
+  /** o que falta para o próximo nível */
+  xpFalta: number;
+  insignias: Insignia[];
 }
 
 export interface Jogos {
   /** `null` quando o perfil não está numa partida agora */
   jogando: Jogo | null;
   recentes: Jogo[];
+  /**
+   * A biblioteca, por dois critérios: a última sessão e as horas.
+   *
+   * É o que a seção mostra quando a quinzena vem vazia, que é a maior parte do
+   * tempo de quem não joga toda semana. As duas listas são **vazias, e não
+   * falha**, quando a Steam não entrega a biblioteca: os recentes continuam
+   * sendo o conteúdo, e a seção volta a ser o que era antes delas.
+   */
+  porUltimo: Jogo[];
+  maisJogados: Jogo[];
+  /** quantos jogos a biblioteca tem; 0 quando ela não veio */
+  totalJogos: number;
+  /** `null` quando a Steam não entregou as insígnias */
+  perfil: PerfilSteam | null;
 }
 
 /**
