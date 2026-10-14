@@ -156,8 +156,7 @@ function Conteudo({ dados }: { dados: DadosLiga }) {
       <div className={styles.topo}>
         <Carta perfil={dados.perfil} />
         <div className={styles.bloco}>
-          {/* o título vem antes no DOM e desce para o chão do pódio por `order` */}
-          <h4 className={styles.legenda}>{lol.maestria}</h4>
+          <h4 className={comum.tituloLista}>{lol.maestria}</h4>
           <Podio maestrias={dados.maestrias} />
         </div>
       </div>
@@ -213,7 +212,7 @@ function Molde({ estado }: { estado: SemDado }) {
             </span>
           </div>
           <div className={styles.bloco}>
-            <h4 className={styles.legenda}>
+            <h4 className={comum.tituloLista}>
               <Traco w="96px" />
             </h4>
             <ol className={styles.podio}>

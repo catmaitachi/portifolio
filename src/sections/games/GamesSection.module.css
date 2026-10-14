@@ -254,8 +254,10 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  /* a área de clique tem 24px, e a margem negativa a tira da conta da linha: o
+     título do LoL fica na altura do do Minecraft, que não tem botão */
   min-height: 24px;
-  margin: 0;
+  margin: -8px 0;
   padding: 0;
   border: 0;
   background: none;

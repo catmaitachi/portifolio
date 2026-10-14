@@ -20,26 +20,8 @@
 .bloco {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
   min-width: 0;
-}
-
-/**
- * O título do pódio é a legenda dele: centrado, embaixo do chão dos degraus, sem
- * o risco dos outros títulos de lista. Escolhido numa vitrine (13/10/2026): o
- * Lucas não queria a linha fina repetida aqui.
- */
-.legenda {
-  order: 1;
-  margin: 0;
-  /* o espaçamento sobra à direita da última letra, e tiraria o texto do eixo */
-  padding-left: var(--ls-rotulo);
-  color: var(--tx-apagado);
-  font-size: var(--fs-rotulo);
-  font-weight: 400;
-  letter-spacing: var(--ls-rotulo);
-  text-align: center;
-  text-transform: uppercase;
 }
 
 /* ---------- a carta do invocador ---------- */
@@ -153,8 +135,6 @@
   align-items: end;
   margin: 0;
   padding: 0;
-  /* o chão do pódio: a única linha do bloco, e a legenda fica embaixo dela */
-  border-bottom: 1px solid var(--linha);
   list-style: none;
 }
 

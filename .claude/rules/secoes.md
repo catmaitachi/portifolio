@@ -427,9 +427,10 @@ observações do Lucas foram pô-lo por último, menor que o LoL, e tirar os tex
   - **O pódio** põe o 1º no meio (`order`, e o DOM continua na ordem para o leitor de tela); o degrau
     tem a altura dos pontos e sobe do chão quando a seção entra, depois do bloco (520ms). **O 1º é
     maior e aceso** (ícone de 64px, o topo do degrau em `--linha-cheia`), e os outros dois recuam um
-    degrau de brilho. **O título é a legenda do pódio**: centrado, embaixo do chão dos degraus, que é
-    a única linha do bloco. O Lucas não queria ali a linha fina dos outros títulos de lista; o `<h4>`
-    continua antes da lista no DOM e desce por `order`.
+    degrau de brilho. O título voltou a ser o `tituloLista` de sempre, em cima à esquerda com o risco:
+    por algumas horas (13/10/2026) foi uma legenda centrada embaixo dos degraus, com uma linha de
+    chão ligando os três, e o Lucas recusou as duas coisas. **Os degraus não se ligam por linha
+    nenhuma.**
   - **As partidas** são linhas: um fio cheio (vitória) ou tracejado (derrota, com o campeão sem cor,
     como no deque), o K/D/A, KDA e CS, a fila (pelo `queueId`, no dicionário), a duração, os sete
     itens e há quanto tempo. Moram num `<details>` fechado ao chegar, com a `.ponta` no fim da linha
