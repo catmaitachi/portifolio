@@ -65,7 +65,14 @@ function pose(d: number) {
     transform: `translate(-50%, -50%) translateX(${d * AFASTA + Math.min(d, 0) * 40}px) translateZ(${-d * PROFUNDIDADE}px) rotateY(${limitar(d, 0, 1) * -GIRA}deg)`,
     opacity: String(opacidade),
     filter: `brightness(${Math.max(0.2, 1 - tras * APAGA)}) blur(${Math.min(4, tras * DESFOCA)}px) grayscale(${Math.min(1, tras * 0.6)})`,
-    zIndex: String(100 - Math.round(d * 10)),
+    // pela distância, para os dois lados: com `d` cru, a que já passou ficava por cima da da frente
+    zIndex: String(100 - Math.round(Math.abs(d) * 10)),
+    /**
+     * A que já passou sai para a esquerda, por cima do painel, e some só pela
+     * opacidade: sem isto ela continuava pegando o ponteiro, e os passos
+     * embaixo do painel deixavam de responder depois de algumas capas.
+     */
+    pointerEvents: d < -0.01 ? ('none' as const) : ('auto' as const),
   };
 }
 
