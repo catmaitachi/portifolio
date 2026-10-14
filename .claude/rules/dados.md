@@ -72,6 +72,17 @@ Quatro pegadinhas que já custaram uma tentativa cada:
   aberto no `RiotGames/developer-relations`, #1109). A busca de partidas é sem filtro de fila, e
   mesmo pedindo `queue=2400` a lista vem vazia; a gaveta avisa (`jogos.lol.semDesordem`).
 
+**O que a política da Riot cobra da função** (lida em 13/10/2026, em
+`developer.riotgames.com/policies/general` e `/docs/portal`), e que não pode ser desfeito sem reler:
+
+- **o Riot ID é do servidor, nunca da query.** A chave pessoal serve a quem mostra a própria conta;
+  com o id num parâmetro o site viraria uma busca de jogadores, que pede chave de produção;
+- **só o participante dono da conta sai de cada partida.** Os outros nove ficam na função;
+- **partida personalizada (fila 0) não sai** (`FILA_PERSONALIZADA`): mostrá-la em público pede o
+  aceite de quem jogou;
+- **o perfil leva a tag** (`perfil.tag`), porque o campo visível é o Riot ID inteiro;
+- o limite da chave pessoal é de 20 pedidos por segundo e 100 a cada 2 minutos, por região.
+
 **A chave.** Não existe API de terceiro legítima para histórico de partidas (todo rastreador usa
 a chave própria dele na da Riot), e a chave de desenvolvimento expira a cada 24 horas. A que serve ao
 site publicado é a *Personal API Key*, um produto que a Riot aprova uma vez e que não expira; falta

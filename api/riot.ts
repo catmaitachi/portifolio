@@ -31,6 +31,12 @@ import { ambiente, falha, json, metodoInvalido } from './_resposta.js';
 /** Quantas partidas a seção mostra. */
 const PARTIDAS = 6;
 
+/**
+ * A fila das partidas personalizadas. A Riot só deixa mostrá-las em público com
+ * o aceite de quem jogou, então elas não saem da função.
+ */
+const FILA_PERSONALIZADA = 0;
+
 /** A rota regional de cada servidor: conta e partidas moram nela, e não no servidor. */
 const REGIONAL: Record<string, string> = {
   br1: 'americas',
@@ -142,6 +148,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const dados: Liga = {
       perfil: {
         nome,
+        tag,
         // `br1` vira `BR`, `euw1` vira `EUW`: é como o jogo escreve
         regiao: servidor.replace(/\d+$/, '').toUpperCase(),
         nivel: invocador.summonerLevel,
@@ -162,7 +169,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       }),
       partidas: partidas.flatMap((p): Partida[] => {
         const eu = p.info.participants.find((x) => x.puuid === puuid);
-        if (!eu) return [];
+        if (!eu || p.info.queueId === FILA_PERSONALIZADA) return [];
         return [
           {
             id: p.metadata.matchId,

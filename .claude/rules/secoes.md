@@ -438,6 +438,15 @@ observações do Lucas foram pô-lo por último, menor que o LoL, e tirar os tex
     o que não serve a um site. O Lucas notou porque as últimas dele eram todas desse modo.
   - **A fila é nome do dicionário** (`jogos.lol.filas`, pelo `queueId`), e a que não está lá vira
     "Partida". A 1750 não está nem na lista oficial da Riot: é a Arena de 18 jogadores (`CHERRY`).
+  - **O Riot ID aparece inteiro, e o site diz que não é da Riot** (vitrine de 13/10/2026, para o
+    pedido da *Personal API Key*). A política da Riot pede `nome#tag` em campo visível e um aviso
+    legal à vista. A tag vai na linha da região (`#BR1 · BR`), e não ao lado do nick, que continua
+    sozinho. O aviso tem duas partes: "sem vínculo com a Riot Games" fecha a linha do título
+    (`jogos.lol.semVinculo`, em `GamesSection`), e o texto inteiro fecha o bloco
+    (`jogos.lol.aviso`, em `Liga`), em `--fs-micro` e `--tx-apagado`. **Em inglês o texto é o oficial,
+    palavra por palavra**; o português é tradução dele. O texto inteiro só existe com o dado: o
+    molde não mostra nada da Riot. Ficaram na vitrine o rodapé só com um fio, uma etiqueta tracejada
+    com o selo "Não oficial", a tag na linha do nick e o Riot ID como botão de copiar.
   - **A borda de nível e o brasão de maestria não vêm da API**: são arte do jogo guardada em
     `src/assets/lol` em webp pequeno (21 bordas e 10 brasões, ~40KB cada contra ~300KB do original),
     e a página só baixa a que usa. O tema da borda sai do nível (até o 29, do 30 ao 49, e daí um a

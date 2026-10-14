@@ -172,7 +172,9 @@
         "2400": "ARAM: Mayhem"
       },
       "outraFila": "Match",
-      "semDesordem": "ARAM: Mayhem games don't show up: Riot doesn't publish them in its API."
+      "semDesordem": "ARAM: Mayhem games don't show up: Riot doesn't publish them in its API.",
+      "semVinculo": "not affiliated with Riot Games",
+      "aviso": "luuspz.dev isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc."
     }
   },
 

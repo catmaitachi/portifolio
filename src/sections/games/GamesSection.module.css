@@ -232,6 +232,29 @@
   margin-top: clamp(12px, 3vmin, 28px);
 }
 
+/**
+ * A linha do título do LoL fecha com a marca de que o site não é da Riot, no
+ * lugar que o ícone do perfil tem no título da seção.
+ */
+.cabecaLol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: center;
+}
+
+.cabecaLol h3 {
+  flex: 1 1 12em;
+}
+
+.semVinculo {
+  color: var(--tx-apagado);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-etiqueta);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .parte {
   display: flex;
   flex-direction: column;

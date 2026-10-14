@@ -16,6 +16,10 @@ paths:
 - **O LoL roda com a chave de desenvolvimento**, que vence a cada 24 horas; vencida, a seção mostra
   a forma com o aviso de falha. Para publicar falta a *Personal API Key* e cadastrar `RIOT_API_KEY`,
   `RIOT_ID` e `RIOT_REGIAO` na Vercel. As duas chaves de desenvolvimento passaram pelo chat.
+  O site já cumpre o que a política pede (aviso legal, Riot ID inteiro, sem partida personalizada;
+  ver `dados.md`). **As bordas de nível e os brasões de maestria são área cinzenta**: não vêm do
+  Data Dragon, e a pergunta vai no próprio pedido; se a Riot recusar, a carta fica com o ícone e o
+  nível em texto. `RIOT_ID` e `RIOT_REGIAO` também faltam no `.env.local`.
 - **`MINECRAFT_USER` falta na Vercel** (no `.env.local` já está). Sem ela o canto do Minecraft mostra
   o pedestal vazio com o aviso de falha.
 - **`GITHUB_TOKEN` falta no `.env.local` e na Vercel.** Sem ele a seção Projetos mostra o estado de

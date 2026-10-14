@@ -172,7 +172,9 @@
         "2400": "ARAM: Caos"
       },
       "outraFila": "Partida",
-      "semDesordem": "Partidas de ARAM: Desordem não aparecem: a Riot não as publica na API."
+      "semDesordem": "Partidas de ARAM: Desordem não aparecem: a Riot não as publica na API.",
+      "semVinculo": "sem vínculo com a Riot Games",
+      "aviso": "luuspz.dev não é endossado pela Riot Games e não reflete as visões ou opiniões da Riot Games nem de qualquer pessoa oficialmente envolvida na produção ou gestão das propriedades da Riot Games. Riot Games e todas as propriedades associadas são marcas comerciais ou marcas registradas da Riot Games, Inc."
     }
   },
 

@@ -134,6 +134,8 @@ export interface Minecraft {
 export interface Liga {
   perfil: {
     nome: string;
+    /** a tag do Riot ID, sem o `#`: a Riot pede o id inteiro (`nome#tag`) em campo visível */
+    tag: string;
     /** a região do servidor, como o jogo a escreve (BR, NA, EUW) */
     regiao: string;
     nivel: number;

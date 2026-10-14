@@ -368,7 +368,11 @@ export function GamesSection({ ativo, indice }: SectionProps) {
         {/* o andar de baixo: o LoL, e o Minecraft por último e mais estreito */}
         <div className={styles.andar}>
           <div className={styles.parte}>
-            <h3 className={comum.tituloLista}>{t.jogos.lol.titulo}</h3>
+            {/* a Riot exige que o site diga que não é dela; o aviso inteiro fecha o bloco (`Liga`) */}
+            <div className={styles.cabecaLol}>
+              <h3 className={comum.tituloLista}>{t.jogos.lol.titulo}</h3>
+              <span className={styles.semVinculo}>{t.jogos.lol.semVinculo}</span>
+            </div>
             <Liga ativo={ativo} />
           </div>
           <div className={styles.parte}>

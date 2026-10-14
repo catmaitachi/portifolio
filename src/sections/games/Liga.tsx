@@ -44,7 +44,7 @@ const LUGAR = [2, 1, 3];
 
 /**
  * A carta do invocador: o ícone dentro da borda do nível, o nível na placa, o
- * nick e a região. Inclina com o ponteiro como o retrato do Sobre
+ * nick e, na linha de baixo, a tag do Riot ID e a região. Inclina com o ponteiro como o retrato do Sobre
  * (`useInclinacao`).
  */
 function Carta({ perfil }: { perfil: DadosLiga['perfil'] }) {
@@ -62,7 +62,12 @@ function Carta({ perfil }: { perfil: DadosLiga['perfil'] }) {
         <span className={comum.oculto}>{format(t.jogos.lol.nivel, { n: String(perfil.nivel) })}</span>
       </div>
       <span className={styles.nick}>{perfil.nome}</span>
-      <span className={styles.regiao}>{perfil.regiao}</span>
+      {/* a tag fecha o Riot ID, que a Riot pede inteiro em campo visível */}
+      <span className={styles.regiao}>
+        <span className={styles.tag}>#{perfil.tag}</span>
+        <i aria-hidden="true">·</i>
+        {perfil.regiao}
+      </span>
       <span ref={brilhoRef} className={comum.brilho} aria-hidden="true" />
     </div>
   );
@@ -165,6 +170,7 @@ function Conteudo({ dados }: { dados: DadosLiga }) {
         {/* a lista não é o histórico inteiro, e quem joga o modo sente falta dele */}
         <small className={styles.nota}>{lol.semDesordem}</small>
       </details>
+      <p className={styles.aviso}>{lol.aviso}</p>
     </div>
   );
 }
@@ -237,6 +243,8 @@ function Molde({ estado }: { estado: SemDado }) {
 /**
  * O League of Legends: a carta do invocador e o pódio das maestrias lado a lado,
  * e as últimas partidas embaixo, na largura toda, numa gaveta que abre no título.
+ * O aviso legal da Riot fecha o bloco, e só existe com o dado: o molde não mostra
+ * nada dela.
  *
  * O dado vem de `api/riot` (ver `dados.md`), uma vez por entrada da seção.
  * Esperando, ou quando a Riot falha (chave vencida, por exemplo), fica o `Molde`:

@@ -251,6 +251,10 @@ export interface Dictionary {
       outraFila: string;
       /** por que as partidas de ARAM: Desordem faltam (a Riot não as publica) */
       semDesordem: string;
+      /** a marca curta na linha do título: o site não é da Riot */
+      semVinculo: string;
+      /** o aviso legal que a Riot exige à vista de quem usa a API dela (em inglês, o texto oficial) */
+      aviso: string;
     };
   };
   filmes: {

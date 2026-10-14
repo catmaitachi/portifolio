@@ -108,6 +108,17 @@
   letter-spacing: 0.2em;
 }
 
+.tag {
+  color: var(--tx-apoio);
+  letter-spacing: 0.12em;
+}
+
+.regiao i {
+  margin: 0 0.5em;
+  color: var(--tx-marcador);
+  font-style: normal;
+}
+
 @supports (corner-shape: bevel) {
   .carta {
     border-radius: 14px 2px;
@@ -276,6 +287,21 @@
   color: var(--tx-apagado);
   font-size: var(--fs-micro);
   letter-spacing: 0.1em;
+}
+
+/**
+ * O aviso legal da Riot, no pé do bloco. É `<p>`, mas não é texto corrido: sem
+ * justificar nem hifenizar (ver `tipografia.md`). Não desce de `--tx-apagado`:
+ * a Riot pede o aviso à vista, e um degrau abaixo ele some no preto.
+ */
+.aviso {
+  margin: 0;
+  color: var(--tx-apagado);
+  font-size: var(--fs-micro);
+  line-height: 1.7;
+  letter-spacing: 0.1em;
+  text-align: left;
+  hyphens: manual;
 }
 
 .partidas {
