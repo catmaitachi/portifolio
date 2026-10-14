@@ -336,6 +336,36 @@ function CantoMinecraft({ ativo }: { ativo: boolean }) {
  * segundo é o comum: **ninguém está jogando na maior parte do dia**, e aí o lugar
  * passa a ser o último jogo, com o rótulo dizendo que é passado.
  */
+/**
+ * A linha do título do LoL. A Riot exige que o site diga que não é dela: a marca
+ * curta fecha a linha e é um botão, e clicar abre o aviso legal inteiro logo
+ * embaixo. O estado mora aqui para abrir o aviso não redesenhar a seção.
+ */
+function CabecaLol() {
+  const t = useT();
+  const [aberto, setAberto] = useState(false);
+
+  return (
+    <div className={styles.cabecaLol}>
+      <h3 className={comum.tituloLista}>{t.jogos.lol.titulo}</h3>
+      <button
+        type="button"
+        className={styles.semVinculo}
+        aria-expanded={aberto}
+        aria-controls="lol-aviso"
+        onClick={() => setAberto((a) => !a)}
+      >
+        {t.jogos.lol.semVinculo}
+        <span className={comum.ponta} aria-hidden="true" />
+      </button>
+      {/* fechado, o aviso tem altura zero e sai da árvore acessível */}
+      <div id="lol-aviso" className={styles.avisoLegal} data-aberto={aberto || undefined} inert={!aberto}>
+        <p>{t.jogos.lol.aviso}</p>
+      </div>
+    </div>
+  );
+}
+
 export function GamesSection({ ativo, indice }: SectionProps) {
   const t = useT();
   const jogos = useRemoto<Jogos>('api/steam', ativo, REPETIR);
@@ -368,11 +398,7 @@ export function GamesSection({ ativo, indice }: SectionProps) {
         {/* o andar de baixo: o LoL, e o Minecraft por último e mais estreito */}
         <div className={styles.andar}>
           <div className={styles.parte}>
-            {/* a Riot exige que o site diga que não é dela; o aviso inteiro fecha o bloco (`Liga`) */}
-            <div className={styles.cabecaLol}>
-              <h3 className={comum.tituloLista}>{t.jogos.lol.titulo}</h3>
-              <span className={styles.semVinculo}>{t.jogos.lol.semVinculo}</span>
-            </div>
+            <CabecaLol />
             <Liga ativo={ativo} />
           </div>
           <div className={styles.parte}>

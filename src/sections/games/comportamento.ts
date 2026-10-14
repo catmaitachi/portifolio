@@ -134,8 +134,12 @@ const ENCARA = 450;
 const TOTEM = 14;
 const TOTEM_PROTEGE = 1000;
 
-/** Para onde o corpo olha sem ninguém apontando: um pouco de lado, para o 3D aparecer. */
-const REPOUSO = 18;
+/**
+ * Para onde o corpo olha sem ninguém apontando: de frente. Já foram 18°, um
+ * pouco de lado, para o 3D aparecer; lia como boneco torto. O `rotateY` do
+ * `.boneco`, no CSS, é o mesmo número.
+ */
+const REPOUSO = 0;
 /** Quanto do giro da cabeça o tronco acompanha. */
 const TRONCO = 0.25;
 /** A distância do olho à tela, em px: quanto maior, menos a cabeça vira. */

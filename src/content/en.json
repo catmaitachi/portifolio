@@ -106,6 +106,7 @@
     "rodando": "running live",
     "pausado": "paused",
     "carregando": "loading the site",
+    "conectando": "connecting",
     "rodarAoVivo": "run it live",
     "rodar": "run",
     "pausar": "pause",

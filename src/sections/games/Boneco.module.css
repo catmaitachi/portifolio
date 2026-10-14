@@ -74,7 +74,7 @@
   position: absolute;
   bottom: calc(var(--px) * 3);
   left: 50%;
-  transform: rotateX(-10deg) rotateY(18deg);
+  transform: rotateX(-10deg) rotateY(0deg);
   transform-style: preserve-3d;
 }
 

@@ -29,6 +29,8 @@ paths:
   escrito para o leitor de tela (`comum.oculto`, com `jogos.lol.nivel`), o pódio é uma `<ol>` na ordem
   da maestria (o 1º no meio é só `order` visual), e as partidas são um `<details>`, que já diz se está
   aberto.
+- **O aviso legal do LoL abre por um botão** com `aria-expanded` e `aria-controls`; fechado, o texto
+  fica `inert`.
 - **Os passos ficam `disabled` nas pontas e no lugar, nunca escondidos**, em Jogos e na Carreira:
   um botão que deixa de existir enquanto está focado joga o foco no `body` no meio do gesto. Com um
   item só não há passo nenhum.

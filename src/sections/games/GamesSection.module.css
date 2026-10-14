@@ -234,12 +234,13 @@
 
 /**
  * A linha do título do LoL fecha com a marca de que o site não é da Riot, no
- * lugar que o ícone do perfil tem no título da seção.
+ * lugar que o ícone do perfil tem no título da seção. A marca é um botão: abre
+ * o aviso legal inteiro na linha de baixo.
  */
 .cabecaLol {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 14px;
+  column-gap: 14px;
   align-items: center;
 }
 
@@ -248,11 +249,76 @@
 }
 
 .semVinculo {
+  --ponta: 4px;
+
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
   color: var(--tx-apagado);
+  font: inherit;
   font-size: var(--fs-micro);
   letter-spacing: var(--ls-etiqueta);
   text-transform: uppercase;
   white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--dur-hover);
+}
+
+.semVinculo:hover,
+.semVinculo:focus-visible,
+.semVinculo[aria-expanded='true'] {
+  color: var(--tx-hover);
+}
+
+/* a ponta aponta para baixo fechada e para cima aberta, como a da gaveta */
+.semVinculo span {
+  margin-bottom: 2px;
+  transform: rotate(135deg);
+  transition:
+    transform var(--dur-hover) var(--ease-saida),
+    margin var(--dur-hover) var(--ease-saida);
+}
+
+.semVinculo[aria-expanded='true'] span {
+  margin: 2px 0 0;
+  transform: rotate(-45deg);
+}
+
+/**
+ * O aviso legal: uma linha de grade que vai de 0 a 1fr, e o parágrafo cortado
+ * dentro dela. Justifica e hifeniza como todo `<p>` (ver `tipografia.md`).
+ */
+.avisoLegal {
+  display: grid;
+  flex-basis: 100%;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-retorno) var(--ease-saida);
+}
+
+.avisoLegal[data-aberto] {
+  grid-template-rows: 1fr;
+}
+
+.avisoLegal p {
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--tx-apoio);
+  font-size: var(--fs-micro);
+  line-height: 1.7;
+  letter-spacing: 0.1em;
+  opacity: 0;
+  transition: opacity var(--dur-hover);
+}
+
+.avisoLegal[data-aberto] p {
+  padding-top: 8px;
+  opacity: 1;
 }
 
 .parte {

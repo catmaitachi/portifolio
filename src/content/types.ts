@@ -193,6 +193,8 @@ export interface Dictionary {
     rodando: string;
     pausado: string;
     carregando: string;
+    /** o estado na barra enquanto o site ao vivo não chegou */
+    conectando: string;
     /** os botões da sessão: o do meio da foto, e os dois da barra */
     rodarAoVivo: string;
     rodar: string;

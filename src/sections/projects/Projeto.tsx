@@ -236,7 +236,11 @@ export function Sessao({ repos, ativo }: SessaoProps) {
         <div className={styles.vista} key={repo.id}>
           {rodando ? (
             <>
-              <span className={styles.espera}>{t.projetos.carregando}</span>
+              {/* a espera: um feixe varre a malha de pontos até o site chegar por cima */}
+              <span className={styles.espera}>
+                <span className={styles.feixe} aria-hidden="true" />
+                {t.projetos.carregando}
+              </span>
               <iframe
                 src={site}
                 title={format(t.a11y.previa, { nome })}
@@ -268,8 +272,16 @@ export function Sessao({ repos, ativo }: SessaoProps) {
 
         <figcaption className={styles.barra}>
           <span className={styles.estado}>
+            {/* "conectando" até o site chegar: quem troca é o CSS, pelo `data-pronto` do iframe */}
             {rodando ? <span className={styles.pulso} aria-hidden="true" /> : null}
-            {rodando ? t.projetos.rodando : t.projetos.pausado}
+            {rodando ? (
+              <>
+                <span className={styles.conectando}>{t.projetos.conectando}</span>
+                <span className={styles.noAr}>{t.projetos.rodando}</span>
+              </>
+            ) : (
+              t.projetos.pausado
+            )}
           </span>
           <span className={styles.url}>{enderecoDe(site)}</span>
           <span className={styles.risco} aria-hidden="true" />

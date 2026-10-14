@@ -112,9 +112,13 @@ cabem. Embaixo da janela, uma barra diz o estado ("rodando ao vivo", com o ponto
   cena mediu (o nível em vigor, enquanto ela mede). Um site que já roda não é pausado no meio.
 - **Pausada, a janela mostra a foto do site**, de `api/preview`, com o botão "rodar ao vivo" no meio.
   É o único momento em que a foto é pedida: numa máquina boa a seção não gasta captura nenhuma.
-- **Enquanto o site carrega**, a janela diz "carregando o site" com um risco que corre, e o site
-  aparece por cima quando o `load` chega (`data-pronto` no `<iframe>`, escrito no nó como o `hidden`
-  das fotos).
+- **Enquanto o site carrega, um feixe varre a janela** de cima para baixo sobre uma malha de pontos,
+  com "carregando o site" no canto, e a barra diz "conectando", sem o ponto que pulsa. O site chega
+  por cima, do desfoque ao foco, quando o `load` vem (`data-pronto` no `<iframe>`, escrito no nó como
+  o `hidden` das fotos), e é o CSS que troca o texto da barra, por `:has()`: o React não sabe que o
+  site chegou. Escolhido numa vitrine (13/10/2026) contra um esqueleto de página e anéis de sinal;
+  antes era o texto no meio com um risco que corria, e a barra já dizia "rodando ao vivo" com a
+  janela vazia. Sem movimento, ficam a malha e o texto.
 - **O site roda mais largo que a janela e é reduzido** (`--zoom`, 0,72 no desktop e 0,5 no celular),
   em CSS, para se ver como num computador.
 - **Com um destaque só não há abas**, pela regra dos passos de Jogos e da Carreira. Com mais de um,
@@ -421,11 +425,17 @@ observações do Lucas foram pô-lo por último, menor que o LoL, e tirar os tex
   - **A carta** é o ícone dentro da borda de nível do jogo, o nível na placa, o nick e a região; é
     chanfrada e inclina com o ponteiro (`useInclinacao`), como o retrato do Sobre.
   - **O pódio** põe o 1º no meio (`order`, e o DOM continua na ordem para o leitor de tela); o degrau
-    tem a altura dos pontos e sobe do chão quando a seção entra, depois do bloco (520ms).
+    tem a altura dos pontos e sobe do chão quando a seção entra, depois do bloco (520ms). **O 1º é
+    maior e aceso** (ícone de 64px, o topo do degrau em `--linha-cheia`), e os outros dois recuam um
+    degrau de brilho. **O título é a legenda do pódio**: centrado, embaixo do chão dos degraus, que é
+    a única linha do bloco. O Lucas não queria ali a linha fina dos outros títulos de lista; o `<h4>`
+    continua antes da lista no DOM e desce por `order`.
   - **As partidas** são linhas: um fio cheio (vitória) ou tracejado (derrota, com o campeão sem cor,
     como no deque), o K/D/A, KDA e CS, a fila (pelo `queueId`, no dicionário), a duração, os sete
     itens e há quanto tempo. Moram num `<details>` fechado ao chegar, com a `.ponta` no fim da linha
     do título; abrir desliza a altura (`interpolate-size`, sem animação onde não há suporte).
+    **Fechada, a linha mostra os rostos** dos campeões das últimas partidas, sobrepostos, a derrota
+    sem cor; abrem um pouco sob o ponteiro e somem com a gaveta aberta. São desenho (`aria-hidden`).
   - **O dado vem de `api/riot`**, uma vez por entrada. Esperando, ou com a Riot fora (chave vencida
     responde 401), fica o `Molde`: as mesmas caixas, com `Traco` no lugar do texto e **nenhuma
     imagem**, apagado e com o aviso por cima, como nas outras seções remotas. O ícone, a borda, os
@@ -442,10 +452,12 @@ observações do Lucas foram pô-lo por último, menor que o LoL, e tirar os tex
     pedido da *Personal API Key*). A política da Riot pede `nome#tag` em campo visível e um aviso
     legal à vista. A tag vai na linha da região (`#BR1 · BR`), e não ao lado do nick, que continua
     sozinho. O aviso tem duas partes: "sem vínculo com a Riot Games" fecha a linha do título
-    (`jogos.lol.semVinculo`, em `GamesSection`), e o texto inteiro fecha o bloco
-    (`jogos.lol.aviso`, em `Liga`), em `--fs-micro` e `--tx-apagado`. **Em inglês o texto é o oficial,
-    palavra por palavra**; o português é tradução dele. O texto inteiro só existe com o dado: o
-    molde não mostra nada da Riot. Ficaram na vitrine o rodapé só com um fio, uma etiqueta tracejada
+    (`jogos.lol.semVinculo`), e **é um botão**: clicar abre o texto inteiro (`jogos.lol.aviso`) na
+    linha de baixo, justificado e hifenizado como todo parágrafo. Os dois moram em `CabecaLol`
+    (`GamesSection`), e a abertura é uma linha de grade de `0fr` a `1fr`. Pedido do Lucas em
+    13/10/2026; na primeira versão o texto ficava sempre à vista no pé do bloco, e é para lá que ele
+    volta se a Riot achar que um clique não é "à vista". **Em inglês o texto é o oficial, palavra por
+    palavra**; o português é tradução dele. Ficaram na vitrine o rodapé só com um fio, uma etiqueta tracejada
     com o selo "Não oficial", a tag na linha do nick e o Riot ID como botão de copiar.
   - **A borda de nível e o brasão de maestria não vêm da API**: são arte do jogo guardada em
     `src/assets/lol` em webp pequeno (21 bordas e 10 brasões, ~40KB cada contra ~300KB do original),
@@ -456,6 +468,8 @@ observações do Lucas foram pô-lo por último, menor que o LoL, e tirar os tex
   em CSS 3D, sem three.js: seis caixas de seis faces, cada face um `<i>` com o recorte da textura
   pela UV do jogo, a segunda camada meio texel para fora, o modelo slim ou largo e a capa. A skin vem
   de `api/minecraft` e troca sozinha quando ela muda no jogo. Sem ela, o molde é o pedestal vazio.
+- **Ele começa de frente** (`REPOUSO = 0`, e o mesmo ângulo no `.boneco` do CSS). Até 13/10/2026
+  eram 18° para a direita, para o 3D aparecer, e o Lucas viu como boneco virado.
 - **O fundo de cada caixa se vê pelo verso** (`FUNDO`, em `modelo.tsx`): o jogo põe a textura do
   fundo no mesmo sentido da tampa, o que de baixo é a figura espelhada, e um plano virado para fora
   não espelha. Antes a face olhava para fora e a textura ficava de ponta-cabeça embaixo da cabeça.

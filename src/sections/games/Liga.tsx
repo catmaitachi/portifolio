@@ -86,6 +86,7 @@ function Podio({ maestrias }: { maestrias: DadosLiga['maestrias'] }) {
         <li
           key={m.campeao}
           className={styles.lugar}
+          data-primeiro={i === 0 || undefined}
           style={{ '--ordem': LUGAR[i], '--altura': m.pontos / maior } as React.CSSProperties}
         >
           <span className={styles.campeao}>
@@ -155,7 +156,8 @@ function Conteudo({ dados }: { dados: DadosLiga }) {
       <div className={styles.topo}>
         <Carta perfil={dados.perfil} />
         <div className={styles.bloco}>
-          <h4 className={comum.tituloLista}>{lol.maestria}</h4>
+          {/* o título vem antes no DOM e desce para o chão do pódio por `order` */}
+          <h4 className={styles.legenda}>{lol.maestria}</h4>
           <Podio maestrias={dados.maestrias} />
         </div>
       </div>
@@ -164,13 +166,18 @@ function Conteudo({ dados }: { dados: DadosLiga }) {
       <details className={styles.gaveta}>
         <summary className={styles.alca}>
           <h4 className={comum.tituloLista}>{lol.partidas}</h4>
+          {/* fechada, a gaveta mostra quem ele jogou: os rostos, e a derrota sem cor */}
+          <span className={styles.rostos} aria-hidden="true">
+            {dados.partidas.map((p) => (
+              <img key={p.id} src={p.icone} alt="" loading="lazy" data-derrota={!p.vitoria || undefined} />
+            ))}
+          </span>
           <span className={`${comum.ponta} ${styles.seta}`} aria-hidden="true" />
         </summary>
         <Partidas partidas={dados.partidas} />
         {/* a lista não é o histórico inteiro, e quem joga o modo sente falta dele */}
         <small className={styles.nota}>{lol.semDesordem}</small>
       </details>
-      <p className={styles.aviso}>{lol.aviso}</p>
     </div>
   );
 }
@@ -206,7 +213,7 @@ function Molde({ estado }: { estado: SemDado }) {
             </span>
           </div>
           <div className={styles.bloco}>
-            <h4 className={comum.tituloLista}>
+            <h4 className={styles.legenda}>
               <Traco w="96px" />
             </h4>
             <ol className={styles.podio}>
@@ -243,8 +250,6 @@ function Molde({ estado }: { estado: SemDado }) {
 /**
  * O League of Legends: a carta do invocador e o pódio das maestrias lado a lado,
  * e as últimas partidas embaixo, na largura toda, numa gaveta que abre no título.
- * O aviso legal da Riot fecha o bloco, e só existe com o dado: o molde não mostra
- * nada dela.
  *
  * O dado vem de `api/riot` (ver `dados.md`), uma vez por entrada da seção.
  * Esperando, ou quando a Riot falha (chave vencida, por exemplo), fica o `Molde`:
