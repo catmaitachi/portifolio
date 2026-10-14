@@ -409,6 +409,11 @@ página do jogo) e as horas da quinzena e do total. Escolhido numa rodada da ski
 - **As capas são desenho** (`aria-hidden`): quem usa leitor de tela navega pelo painel, que diz o
   nome, as horas e leva à página do jogo.
 - A entrada anima o **miolo** da capa (`.arte`), porque o `transform` da capa é da mola.
+- **A capa que já passou não pega o ponteiro** (`pointerEvents: 'none'` na `pose`). Ela sai para a
+  esquerda, por cima do painel, e some só pela opacidade; até 14/10/2026 continuava ali, invisível e
+  com o z-index mais alto do deque (a conta usava `d` cru, e `d` negativo subia o número), e depois de
+  algumas capas os passos embaixo do painel deixavam de responder. Hoje o z-index cai pela distância
+  para os dois lados.
 - Com um jogo só não há passos, pela regra de sempre.
 - **O deque tem duas abas** (as de Filmes, com o desenho copiado), escolhidas numa vitrine em
   13/10/2026 contra as lombadas e a cascata sem abas: **Por último** abre, e é a ordem de sempre com
