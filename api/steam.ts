@@ -72,7 +72,7 @@ const ESPERA_ASSETS = 4000;
 const ESPERA_EXTRAS = 5000;
 
 /** Quantos jogos cada lista da biblioteca leva: é o que o deque mostra de uma vez. */
-const TETO = 8;
+const TETO = 15;
 
 /**
  * O que não entra na página: appids separados por vírgula em `STEAM_OCULTAR`.
@@ -232,7 +232,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
         `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${chave}&steamids=${id}`,
       ),
       fetch(
-        `https://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v1/?key=${chave}&steamid=${id}&count=8`,
+        `https://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v1/?key=${chave}&steamid=${id}&count=${TETO}`,
       ),
       opcional<{ response?: { game_count?: number; games?: JogoSteam[] } }>(
         `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${chave}&steamid=${id}&include_appinfo=1&include_played_free_games=1`,

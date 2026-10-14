@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { format } from '~/content';
+import { format, PERFIS } from '~/content';
 import type { Jogo, Jogos, Minecraft, PerfilSteam } from '~/data/types';
 import { useArrowKeys } from '~/hooks/useArrowKeys';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
@@ -38,7 +38,7 @@ const MOLA = 0.14;
 const limitar = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
 /** Quantas capas o deque leva: o mesmo teto das listas que `api/steam` devolve. */
-const TETO = 8;
+const TETO = 15;
 
 /**
  * O deque: as capas em pé, uma atrás da outra num trilho que recua.
@@ -62,7 +62,7 @@ function pose(d: number) {
   // a que já passou sai para o lado e some; as de trás só apagam depois da quarta
   const opacidade = d < 0 ? Math.max(0, 1 + d * 1.4) : Math.max(0, 1 - Math.max(0, d - 3.2));
   return {
-    transform: `translate(-50%, -50%) translateX(${d * AFASTA + Math.min(d, 0) * 40}px) translateZ(${-d * PROFUNDIDADE}px) rotateY(${limitar(d, 0, 1) * -GIRA}deg)`,
+    transform: `translate(-50%, 0) translateX(${d * AFASTA + Math.min(d, 0) * 40}px) translateZ(${-d * PROFUNDIDADE}px) rotateY(${limitar(d, 0, 1) * -GIRA}deg)`,
     opacity: String(opacidade),
     filter: `brightness(${Math.max(0.2, 1 - tras * APAGA)}) blur(${Math.min(4, tras * DESFOCA)}px) grayscale(${Math.min(1, tras * 0.6)})`,
     // pela distância, para os dois lados: com `d` cru, a que já passou ficava por cima da da frente
@@ -82,24 +82,34 @@ function Molde({ estado }: { estado: SemDado }) {
     <EstadoRemoto estado={estado}>
       <div className={styles.cena}>
         <div className={styles.painel}>
-          <span className={styles.rotulo}>
-            <Traco w="36%" />
+          <span className={styles.contaVazia}>
+            <Traco w="40%" />
           </span>
-          <span className={styles.nome}>
-            <Traco w="70%" />
-            <Traco w="45%" />
-          </span>
-          <span className={styles.tempos}>
-            <Traco w="50%" />
-          </span>
-        </div>
-        <div className={styles.deque}>
-          {[0, 1, 2].map((i) => (
-            <span key={i} className={styles.capa} style={pose(i)}>
-              <span className={styles.arte} />
+          <div className={styles.texto}>
+            <span className={styles.rotulo}>
+              <Traco w="36%" />
             </span>
-          ))}
-          <span className={styles.chao} />
+            <span className={styles.nome}>
+              <Traco w="70%" />
+              <Traco w="45%" />
+            </span>
+            <span className={styles.tempos}>
+              <Traco w="50%" />
+            </span>
+          </div>
+        </div>
+        <div className={styles.palco}>
+          <div className={styles.abas}>
+            <Traco w="180px" />
+          </div>
+          <div className={styles.deque}>
+            {[0, 1, 2].map((i) => (
+              <span key={i} className={styles.capa} style={pose(i)}>
+                <span className={styles.arte} />
+              </span>
+            ))}
+            <span className={styles.chao} />
+          </div>
         </div>
       </div>
     </EstadoRemoto>
@@ -369,31 +379,20 @@ function Conteudo({ dados, ativo }: { dados: Jogos; ativo: boolean }) {
   // o peso do jogo na biblioteca, contra o mais jogado dela
   const maior = dados.maisJogados[0]?.minutosTotais ?? 0;
 
+  /**
+   * Escolhido numa vitrine e ajustado pelo Lucas (14/10/2026). **A régua é o
+   * caminho entre os jogos**: um traço por capa, e tocar um vai direto a ele;
+   * os passos de anterior e próximo saíram (as setas do teclado continuam). As
+   * abas ficam centradas em cima das capas, que é o que elas reordenam, e a
+   * conta em cima do estado do jogo. No celular a conta abre a Steam, centrada,
+   * e depois vêm as abas, as capas, o texto e a régua.
+   */
   return (
     <div className={styles.cena}>
       <div className={styles.painel}>
         {dados.perfil && <Conta perfil={dados.perfil} />}
 
-        {dados.maisJogados.length > 0 && (
-          <div className={styles.abas} role="group" aria-label={t.jogos.titulo}>
-            {(['ultimo', 'horas'] as const).map((a) => (
-              <button
-                key={a}
-                type="button"
-                className={styles.aba}
-                aria-pressed={a === aba}
-                onClick={() => {
-                  setEscolhida(a);
-                  setAtual(0);
-                }}
-              >
-                {t.jogos.abas[a]}
-              </button>
-            ))}
-          </div>
-        )}
-
-        <div className={styles.painel} aria-live="polite">
+        <div className={styles.texto} aria-live="polite">
           <span className={styles.rotulo}>
             {aoVivo && <span className={styles.pulso} aria-hidden="true" />}
             {rotulo}
@@ -431,36 +430,57 @@ function Conteudo({ dados, ativo }: { dados: Jogos; ativo: boolean }) {
           )}
         </div>
 
-        {/* com um jogo só não há para onde andar: a regra da faixa que coube inteira */}
+        {/**
+         * A régua dos jogos: um traço por capa, o da frente alto e aceso, e a
+         * contagem. Fica fora do `aria-live`: quem troca é o visitante. Com um
+         * jogo só não há para onde andar, e ela não aparece.
+         */}
         {jogos.length > 1 && (
-          <div className={styles.controles}>
-            <button
-              type="button"
-              className={comum.passo}
-              aria-label={t.jogos.anterior}
-              disabled={i === 0}
-              onClick={() => andar(-1)}
-            >
-              <span className={comum.ponta} data-lado="antes" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              className={comum.passo}
-              aria-label={t.jogos.proximo}
-              disabled={i === ultimo}
-              onClick={() => andar(1)}
-            >
-              <span className={comum.ponta} data-lado="depois" aria-hidden="true" />
-            </button>
-            <span className={styles.posicao}>
+          <div className={styles.regua}>
+            <div className={styles.tracos} role="group" aria-label={t.jogos.escolher}>
+              {jogos.map((j, k) => (
+                <button
+                  key={j.id}
+                  type="button"
+                  className={styles.traco}
+                  aria-label={j.nome}
+                  aria-current={k === i || undefined}
+                  onClick={() => setAtual(k)}
+                >
+                  <span aria-hidden="true" />
+                </button>
+              ))}
+            </div>
+            <span className={styles.posicao} aria-hidden="true">
               {String(i + 1).padStart(2, '0')} / {String(jogos.length).padStart(2, '0')}
             </span>
           </div>
         )}
       </div>
 
-      {/* a `key` refaz o deque ao trocar de aba: ele volta ao começo e chega de novo */}
-      <Deque key={aba} jogos={jogos} atual={i} ir={setAtual} />
+      <div className={styles.palco}>
+        {dados.maisJogados.length > 0 && (
+          <div className={styles.abas} role="group" aria-label={t.jogos.titulo}>
+            {(['ultimo', 'horas'] as const).map((a) => (
+              <button
+                key={a}
+                type="button"
+                className={styles.aba}
+                aria-pressed={a === aba}
+                onClick={() => {
+                  setEscolhida(a);
+                  setAtual(0);
+                }}
+              >
+                {t.jogos.abas[a]}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* a `key` refaz o deque ao trocar de aba: ele volta ao começo e chega de novo */}
+        <Deque key={aba} jogos={jogos} atual={i} ir={setAtual} />
+      </div>
     </div>
   );
 }
@@ -494,15 +514,6 @@ function CantoMinecraft({ ativo }: { ativo: boolean }) {
 }
 
 /**
- * Jogos: o que está aberto agora, o que rodou nas últimas duas semanas e a
- * biblioteca, na Steam, com o avatar da conta no alto do painel; embaixo, o
- * League of Legends e o boneco do Minecraft.
- *
- * O dado vem de `api/steam`. Como em Música, o destaque tem dois estados e o
- * segundo é o comum: **ninguém está jogando na maior parte do dia**, e aí o lugar
- * passa a ser o último jogo, com o rótulo dizendo que é passado.
- */
-/**
  * A linha do título do LoL. A Riot exige que o site diga que não é dela: a marca
  * curta fecha a linha e é um botão, e clicar abre o aviso legal inteiro logo
  * embaixo. O estado mora aqui para abrir o aviso não redesenhar a seção.
@@ -532,6 +543,21 @@ function CabecaLol() {
   );
 }
 
+/**
+ * Jogos: o que está aberto agora, o que rodou nas últimas duas semanas e a
+ * biblioteca, na Steam, com o avatar da conta no alto do painel; embaixo, o
+ * League of Legends e o boneco do Minecraft.
+ *
+ * O dado vem de `api/steam`. Como em Música, o destaque tem dois estados e o
+ * segundo é o comum: **ninguém está jogando na maior parte do dia**, e aí o lugar
+ * passa a ser o último jogo, com o rótulo dizendo que é passado.
+ *
+ * **Os três jogos são um mosaico com um sistema só** (vitrine de 14/10/2026,
+ * "Afinado"): cada um tem o seu título com risco, todo vão cai na escala de
+ * `--e1` a `--e5`, e capas, pódio e boneco pisam numa linha de chão na mesma
+ * altura (`--chao`). Antes a Steam não tinha título e grudava no cabeçalho da
+ * seção, e cada jogo tinha os números da rodada em que foi desenhado.
+ */
 export function GamesSection({ ativo, indice }: SectionProps) {
   const t = useT();
   const jogos = useRemoto<Jogos>('api/steam', ativo, REPETIR);
@@ -548,29 +574,36 @@ export function GamesSection({ ativo, indice }: SectionProps) {
         </p>
 
         <div className={comum.cabecalho}>
-          <div className={comum.linhaTitulo}>
-            <h2 className={comum.titulo}>{t.jogos.titulo}</h2>
-            <PerfilExterno secao="jogos" />
-          </div>
+          <h2 className={comum.titulo}>{t.jogos.titulo}</h2>
           <p className={comum.intro}>{t.jogos.intro}</p>
         </div>
 
-        {jogos.estado === 'pronto' ? (
-          <Conteudo dados={jogos.dados} ativo={ativo} />
-        ) : (
-          <Molde estado={jogos.estado} />
-        )}
-
-        {/* o andar de baixo: o LoL, e o Minecraft por último e mais estreito */}
-        <div className={styles.andar}>
-          <div className={styles.parte}>
-            <CabecaLol />
-            <Liga ativo={ativo} />
+        <div className={styles.jogos}>
+          {/* a Steam: o perfil fecha a linha do título dela, e não mais a da
+              seção, que fala de três jogos */}
+          <div className={styles.steam}>
+            <div className={styles.cabeca}>
+              <h3 className={comum.tituloLista}>{PERFIS.jogos?.rotulo}</h3>
+              <PerfilExterno secao="jogos" />
+            </div>
+            {jogos.estado === 'pronto' ? (
+              <Conteudo dados={jogos.dados} ativo={ativo} />
+            ) : (
+              <Molde estado={jogos.estado} />
+            )}
           </div>
-          <div className={styles.parte}>
-            <h3 className={comum.tituloLista}>{t.jogos.minecraft.titulo}</h3>
-            <div className={styles.canto}>
-              <CantoMinecraft ativo={ativo} />
+
+          {/* o andar de baixo: o LoL, e o Minecraft por último e mais estreito */}
+          <div className={styles.andar}>
+            <div className={styles.parte}>
+              <CabecaLol />
+              <Liga ativo={ativo} />
+            </div>
+            <div className={styles.parte}>
+              <h3 className={comum.tituloLista}>{t.jogos.minecraft.titulo}</h3>
+              <div className={styles.canto}>
+                <CantoMinecraft ativo={ativo} />
+              </div>
             </div>
           </div>
         </div>

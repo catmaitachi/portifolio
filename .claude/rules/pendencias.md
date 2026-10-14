@@ -58,4 +58,6 @@ A divisão, o desenho e a função já existem (ver `secoes.md` e `dados.md`). F
 Key*, pedida pelo Lucas no portal da Riot, e as três variáveis na Vercel.
 
 O `PerfilExterno` de hoje é um por seção (o da Steam), e uma seção com três serviços quebra essa
-premissa: o LoL e o Minecraft ainda não têm link para o perfil.
+premissa: o LoL e o Minecraft ainda não têm link para o perfil. Desde 14/10/2026 o da Steam fecha a
+linha do título da Steam, e não a da seção; o LoL e o Minecraft teriam o deles no mesmo lugar, na
+linha do título de cada um.

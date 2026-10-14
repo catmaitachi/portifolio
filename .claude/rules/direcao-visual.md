@@ -140,6 +140,18 @@ Ficaram na vitrine o cartaz de nível (repetia o do GitHub), a faixa de ficha, a
 cascata sem abas. **A regra que saiu dela**: um segundo objeto com movimento próprio numa seção que
 já tem um (o deque) lê como exagero; o que acompanha o protagonista fica pequeno e parado.
 
+### Padrões escolhidos na rodada de 14/10/2026 (Jogos inteira)
+
+Vitrine em `.design/jogos-previews/` com uma régua que mede os vãos na tela. Quatro mosaicos
+(Afinado, Costura, Moldura e Coluna) e quatro arranjos dos controles da Steam; o Lucas pediu para
+manter o mosaico, escolheu o Afinado e, sobre ele, ditou o arranjo da Steam: a régua no lugar dos
+passos, as abas em cima das capas e a conta em cima do estado do jogo (ver `secoes.md`).
+
+**A regra que saiu dela**: uma seção com mais de uma parte tem **uma escala de espaço só**, e as
+partes compartilham título, chão e colunas. Cada jogo tinha sido desenhado numa rodada, com os
+números dela, e o resultado era três seções coladas. A escala de Jogos (`--e1` a `--e5`) é local à
+seção, e não do `reset.css`: as outras seções têm um vão de cada tipo, e ainda não pediram uma.
+
 ### Tokens: a régua é uma só
 
 Cor, tipo e tempo moram em `:root`, no `reset.css`, e os módulos escolhem um degrau. Antes cada
@@ -182,7 +194,7 @@ opostos dá direção ao bloco; nos quatro, a caixa vira um losango achatado e s
 | `GamesSection → .arte` (as capas do deque) | 12px |
 | `MusicSection → .capa` (o destaque) | 12px |
 | `MusicSection → .faixaLink` (a parede de capas) | 12px |
-| `section.module.css → .passo` (os passos de Jogos e da Carreira) | 9px |
+| `section.module.css → .passo` (os passos da Carreira) | 9px |
 | `JourneyEntry → .chip` | 6px |
 
 O tamanho acompanha o elemento: um chanfro fixo lê como recorte de canto num cartão grande e como
@@ -252,7 +264,7 @@ Onde a seta também se move, como a do botão de enviar do Contato, **são dois 
 leva o avanço do `:hover` e o de dentro, a rotação. Dois `transform` no mesmo elemento se apagam, que
 é a mesma regra que põe a entrada das capas do deque no miolo, e não na capa.
 
-Os lugares que a usam hoje são os passos de Jogos e da Carreira (9px, num botão de 38px), o botão de
+Os lugares que a usam hoje são os passos da Carreira (9px, num botão de 38px), o botão de
 enviar do Contato (9px) e a seta de link externo dos canais de contato (6px, sem rotação nenhuma, que
 é como ela aponta para fora); já foi usada nas faixas de Jogos e Filmes e no seletor de lado que o
 cabeçalho substituiu. A dos canais era o caractere

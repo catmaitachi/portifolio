@@ -22,7 +22,11 @@ paths:
   legenda que sobe no hover é desenho (`aria-hidden`) e não aparece para quem não aponta.
 - **As capas do deque de Jogos são desenho** (`aria-hidden`): quem usa leitor de tela navega pelo
   painel ao lado, que diz o rótulo, o nome (link para o jogo) e as horas, num `aria-live`. Trocar de
-  jogo é pelas setas ←/→ ou pelos passos (`jogos.anterior`, `jogos.proximo`).
+  jogo é pelas setas ←/→ ou pela régua: um botão por jogo com o nome dele, `aria-current` no da
+  frente, num grupo `jogos.escolher`. Os passos de anterior e próximo saíram (14/10/2026), e
+  `jogos.anterior` e `jogos.proximo` com eles.
+  A régua fica **fora** do `aria-live`, e a contagem ao lado dela é `aria-hidden` (o botão atual já
+  a diz).
 - **O avatar da conta da Steam é desenho com nome** (`role="img"`, `jogos.conta.resumo`: o nick, o
   nível e o XP que falta), e o anel é `aria-hidden`. As abas do deque são botões com `aria-pressed`.
 - **O boneco do Minecraft é desenho** (`aria-hidden`) dentro de um `role="img"` com o nick e o que
@@ -33,7 +37,7 @@ paths:
   aberto.
 - **O aviso legal do LoL abre por um botão** com `aria-expanded` e `aria-controls`; fechado, o texto
   fica `inert`.
-- **Os passos ficam `disabled` nas pontas e no lugar, nunca escondidos**, em Jogos e na Carreira:
+- **Os passos ficam `disabled` nas pontas e no lugar, nunca escondidos**, na Carreira:
   um botão que deixa de existir enquanto está focado joga o foco no `body` no meio do gesto. Com um
   item só não há passo nenhum.
 - **O maço de crachás da Carreira é desenho** (`aria-hidden`), como o deque de Jogos: a ficha ao lado

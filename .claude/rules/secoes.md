@@ -121,7 +121,7 @@ cabem. Embaixo da janela, uma barra diz o estado ("rodando ao vivo", com o ponto
   janela vazia. Sem movimento, ficam a malha e o texto.
 - **O site roda mais largo que a janela e é reduzido** (`--zoom`, 0,72 no desktop e 0,5 no celular),
   em CSS, para se ver como num computador.
-- **Com um destaque só não há abas**, pela regra dos passos de Jogos e da Carreira. Com mais de um,
+- **Com um destaque só não há abas**, pela regra dos passos da Carreira e da régua de Jogos. Com mais de um,
   ←/→ trocam de aba enquanto a seção está ativa.
 - **A janela não tem barra de navegador**, e nunca teve as três bolinhas do macOS depois da primeira
   versão: a barra embaixo dela é a legenda da figura.
@@ -390,7 +390,20 @@ tocando no meu Spotify" quer o perfil em seguida, e sem o link a seção é uma 
 é sobre a seção inteira, não sobre nenhum item dela, e por isso não desce para o conteúdo: ali ele
 fecha a linha horizontal que o título abre. O componente é um só (`sections/PerfilExterno.tsx`), a
 marca vive em `shared.json → perfis` porque nome próprio não se traduz, e seção sem perfil não
-desenha nada. As três do lado pessoal têm o seu: Spotify, Steam e Letterboxd.
+desenha nada. As três do lado pessoal têm o seu: Spotify, Steam e Letterboxd. **Em Jogos ele fecha
+a linha do título da Steam**, e não a do título da seção, que fala de três jogos (vitrine de
+14/10/2026).
+
+**Jogos é um mosaico de três jogos com um sistema só** (vitrine de 14/10/2026, a opção "Afinado",
+em `.design/jogos-previews/`): a Steam em cima na largura toda, o LoL largo e o Minecraft estreito
+embaixo, como antes, mas agora cada um tem o seu título com risco (`<h3>`), **todo vão cai numa
+escala de cinco degraus** (`--e1` a `--e5`: 8, 16, 24, 48 e 96; 32 e 64 no celular, em `.secao`) e
+**capas, carta, pódio e boneco pisam numa linha de chão na mesma altura** (`--chao`, o centro do
+pedestal do boneco, três texels acima do pé). Antes a Steam não tinha título e grudava no cabeçalho
+da seção, o LoL tinha um `<h3>` e dois `<h4>`, e a régua da vitrine mediu onze vãos diferentes, um
+por rodada em que cada jogo foi desenhado. As colunas de baixo são as de cima ao contrário (7 | 5
+contra 5 | 7), e o topo do LoL tem a altura do palco do boneco (`--andar-h`) para os dois chãos
+caírem na mesma linha.
 
 **Jogos é um deque em profundidade** (`Deque`, em `GamesSection`). As capas em pé (a arte 600x900
 da biblioteca da Steam) ficam uma atrás da outra num trilho que recua no eixo z: a da frente é a
@@ -404,7 +417,7 @@ página do jogo) e as horas da quinzena e do total. Escolhido numa rodada da ski
   ponto que pulsa só quando é agora, e passa a "Duas últimas semanas" para as capas de trás.
 - **A posição anda por uma mola num rAF** que escreve direto no `style` de cada capa; o React só sabe
   do alvo, que muda no fim de um arraste, num clique numa capa, nas setas ←/→ (sem foco, enquanto a
-  seção está ativa) ou nos passos embaixo do painel. Durante o arraste a posição segue o dedo sem mola
+  seção está ativa) ou num traço da régua. Durante o arraste a posição segue o dedo sem mola
   (90px por capa), e soltar arredonda para a mais perto. Sem movimento, a troca é direta.
 - **As capas são desenho** (`aria-hidden`): quem usa leitor de tela navega pelo painel, que diz o
   nome, as horas e leva à página do jogo.
@@ -414,11 +427,23 @@ página do jogo) e as horas da quinzena e do total. Escolhido numa rodada da ski
   com o z-index mais alto do deque (a conta usava `d` cru, e `d` negativo subia o número), e depois de
   algumas capas os passos embaixo do painel deixavam de responder. Hoje o z-index cai pela distância
   para os dois lados.
-- Com um jogo só não há passos, pela regra de sempre.
+- **A régua é o caminho entre os jogos** (ajuste do Lucas na mesma vitrine): um traço por capa, o da
+  frente alto e aceso, e a contagem; tocar um traço vai direto ao jogo, porque com quinze andar de um
+  em um cansa. **Os passos de anterior e próximo saíram**, e as setas ←/→ do teclado continuam. O
+  painel tem, de cima para baixo, **a conta, o estado do jogo** (o rótulo, o título, as horas com o
+  risco do peso) **e a régua**, e desce até o chão: os traços ficam em pé na linha em que as capas
+  pisam. **As abas ficam centradas em cima das capas**, que é o que elas reordenam. Antes as abas e
+  os passos moravam no painel, e no celular ficavam 350px abaixo das capas que moviam.
+- **No celular** é uma coluna centrada: o painel se desfaz (`display: contents`) e as peças dele se
+  intercalam com as capas. A conta abre a Steam, depois as abas, as capas, e embaixo delas o estado,
+  o título e as horas, e a régua. A carta do LoL também fica centrada, sobre o pódio.
+- **A capa fica em pé no chão** (`bottom`, e a `pose` só centra no eixo x). Centrada na altura do
+  palco, ela flutuava acima da linha.
+- Com um jogo só não há régua, pela regra de sempre.
 - **O deque tem duas abas** (as de Filmes, com o desenho copiado), escolhidas numa vitrine em
   13/10/2026 contra as lombadas e a cascata sem abas: **Por último** abre, e é a ordem de sempre com
   um degrau a mais (o aberto agora, a quinzena, e depois a biblioteca pela última sessão, sem repetir,
-  até oito); **Mais jogados** é a biblioteca pelas horas. É o terceiro degrau que impede a seção de
+  até quinze); **Mais jogados** é a biblioteca pelas horas. É o terceiro degrau que impede a seção de
   cair no molde vazio quando o Lucas passa semanas sem jogar. Trocar de aba refaz o deque (`key`).
 - **Fora da quinzena o rótulo diz quando**: a da frente "há quanto tempo" (`haQuanto`) e as de trás o
   dia (`jogos.jogadoEm`), porque "há 2 meses" em quatro capas seguidas não distingue uma da outra. Em
@@ -428,12 +453,12 @@ página do jogo) e as horas da quinzena e do total. Escolhido numa rodada da ski
 - **Um risco de 1px embaixo das horas** mede o jogo contra o mais jogado da biblioteca (`.peso`).
 - Sem a biblioteca não há abas, e a seção é a de antes.
 
-**No alto do painel, a conta da Steam** (`Conta`): o avatar de 42px, em cor, com um anel de XP, e o
+**No alto do painel, em cima do estado do jogo, a conta da Steam** (`Conta`): o avatar de 42px, em cor, com um anel de XP, e o
 nick e o nível ao lado. O anel são dez arcos, um por nível da dezena em que a conta está (é de dez em dez que a
 Steam muda o desenho do nível): os já passados acesos, e o do nível atual aceso até onde o XP chegou
 (`perfil.progresso`). A primeira versão tinha 34px, sem cor até ser apontado (como os retratos de
 Música), e o Lucas achou discreta demais: o avatar é identidade de terceiro, como as capas, e fica em
-cor. Sem o nível (`perfil: null`), o painel começa nas abas.
+cor. Sem o nível (`perfil: null`), o painel começa no estado do jogo.
 
 **A órbita de insígnias entrou e saiu no mesmo dia** (13/10/2026). Escolhida na vitrine, ela girava
 as 40 insígnias da conta em três elipses embaixo do deque, e na página ficou exagerada: um segundo
@@ -447,7 +472,8 @@ fechando a seção, mais estreito. Escolhido numa rodada da skill `inspiration` 
 + Pedestal); na vitrine o Minecraft vinha primeiro, com o nick e um texto embaixo do boneco, e as
 observações do Lucas foram pô-lo por último, menor que o LoL, e tirar os textos.
 
-- **O LoL** (`Liga`) tem a carta do invocador e o pódio das maestrias lado a lado, e as últimas
+- **O LoL** (`Liga`) tem a carta do invocador e o pódio das maestrias lado a lado, em pé no chão
+  comum, e as últimas
   partidas embaixo, numa gaveta. Escolhido numa segunda rodada da skill `inspiration` (30/09/2026,
   Carta + Pódio + Linhas), com as observações do Lucas: a carta só com ícone, borda, nível, nick e
   região, e os campeões do pódio com o ícone redondo; depois, as partidas num dropdown com a seta no
@@ -457,10 +483,12 @@ observações do Lucas foram pô-lo por último, menor que o LoL, e tirar os tex
   - **O pódio** põe o 1º no meio (`order`, e o DOM continua na ordem para o leitor de tela); o degrau
     tem a altura dos pontos e sobe do chão quando a seção entra, depois do bloco (520ms). **O 1º é
     maior e aceso** (ícone de 64px, o topo do degrau em `--linha-cheia`), e os outros dois recuam um
-    degrau de brilho. O título voltou a ser o `tituloLista` de sempre, em cima à esquerda com o risco:
-    por algumas horas (13/10/2026) foi uma legenda centrada embaixo dos degraus, com uma linha de
-    chão ligando os três, e o Lucas recusou as duas coisas. **Os degraus não se ligam por linha
-    nenhuma.**
+    degrau de brilho. **O pódio não tem mais título** ("Maior maestria" saiu na vitrine de
+    14/10/2026, para o LoL ter um nível de título só, como os outros dois); o nome vai para o leitor
+    de tela no `aria-label` da lista. Por algumas horas (13/10/2026) o título foi uma legenda
+    centrada embaixo dos degraus, com uma linha de chão ligando os três, e o Lucas recusou as duas
+    coisas. **Os degraus não se ligam por linha nenhuma**: o chão de hoje é o do topo inteiro, o
+    mesmo fio que passa embaixo da carta e do boneco.
   - **As partidas** são linhas: um fio cheio (vitória) ou tracejado (derrota, com o campeão sem cor,
     como no deque), o K/D/A, KDA e CS, a fila (pelo `queueId`, no dicionário), a duração, os sete
     itens e há quanto tempo. Moram num `<details>` fechado ao chegar, com a `.ponta` no fim da linha

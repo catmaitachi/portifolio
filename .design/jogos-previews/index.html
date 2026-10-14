@@ -1,0 +1,1088 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jogos: três subseções, um sistema</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+/* os tokens são os do reset.css do site, copiados */
+:root {
+  --tx-titulo: #fff;
+  --tx-hover: rgb(255 255 255 / 90%);
+  --tx-forte: rgb(255 255 255 / 82%);
+  --tx-corpo: rgb(255 255 255 / 66%);
+  --tx-apoio: rgb(255 255 255 / 50%);
+  --tx-rotulo: rgb(255 255 255 / 40%);
+  --tx-apagado: rgb(255 255 255 / 32%);
+  --tx-marcador: rgb(255 255 255 / 24%);
+  --linha-sutil: rgb(255 255 255 / 10%);
+  --linha: rgb(255 255 255 / 14%);
+  --linha-forte: rgb(255 255 255 / 24%);
+  --linha-acesa: rgb(255 255 255 / 36%);
+  --linha-foco: rgb(255 255 255 / 55%);
+  --linha-cheia: rgb(255 255 255 / 78%);
+  --fundo-sutil: rgb(255 255 255 / 4%);
+  --fs-micro: 7.5px;
+  --fs-rotulo: 8.5px;
+  --fs-meta: 9px;
+  --fs-controle: 10px;
+  --fs-pequeno: 11px;
+  --fs-lista: clamp(10px, 1.35vmin, 12.5px);
+  --fs-corpo: clamp(11px, 1.5vmin, 14px);
+  --fs-destaque: clamp(15px, 2.4vmin, 24px);
+  --ls-rotulo: 0.28em;
+  --ls-etiqueta: 0.22em;
+  --dur-hover: 0.35s;
+  --dur-retorno: 0.55s;
+  --ease-saida: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-entrada: cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { color-scheme: dark; }
+body {
+  margin: 0;
+  background: #000;
+  color: var(--tx-corpo);
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-weight: 300;
+  font-size: 12px;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: rgb(255 255 255 / 85%); color: #000; }
+button { font: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 1px solid var(--linha-cheia); outline-offset: 3px; }
+
+@keyframes chega { from { opacity: 0; filter: blur(8px); transform: scale(0.94); } }
+@keyframes capaChega { from { opacity: 0; filter: blur(8px); transform: scale(0.72); } }
+@keyframes sobe { from { transform: scaleY(0); } }
+@keyframes pulsa { 0%, 100% { opacity: 0.25; transform: scale(0.75); } 50% { opacity: 1; transform: scale(1); } }
+@keyframes respira { 0%, 100% { translate: 0 0; } 50% { translate: 0 -2px; } }
+@keyframes golpe {
+  0% { translate: 0 0; filter: none; }
+  20% { translate: 14px -10px; filter: drop-shadow(0 0 0 #f00) sepia(1) saturate(6) hue-rotate(-50deg) brightness(.9); }
+  100% { translate: 0 0; filter: none; }
+}
+
+/* ---------- a barra da vitrine (não faz parte do site) ---------- */
+
+.barra {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  align-items: center;
+  padding: 12px clamp(16px, 4vw, 40px);
+  border-bottom: 1px solid var(--linha);
+  background: rgb(0 0 0 / 92%);
+}
+.barra h1 {
+  margin: 0;
+  color: var(--tx-apoio);
+  font-size: var(--fs-controle);
+  font-weight: 400;
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+.grupo { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.grupo > span {
+  margin-right: 6px;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-meta);
+  letter-spacing: var(--ls-etiqueta);
+  text-transform: uppercase;
+}
+.aba {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--linha);
+  background: none;
+  color: var(--tx-apoio);
+  font-size: var(--fs-controle);
+  letter-spacing: var(--ls-etiqueta);
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color var(--dur-hover), color var(--dur-hover), background-color var(--dur-hover);
+}
+.aba:hover { border-color: var(--linha-acesa); color: var(--tx-hover); }
+.aba[aria-pressed='true'] { border-color: var(--linha-cheia); background: rgb(255 255 255 / 8%); color: var(--tx-titulo); }
+
+.resumo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px 40px;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px clamp(16px, 4vw, 40px);
+  border-bottom: 1px solid var(--linha-sutil);
+}
+.resumo div { display: grid; gap: 8px; align-content: start; }
+.resumo dt { color: var(--tx-rotulo); font-size: var(--fs-meta); letter-spacing: var(--ls-etiqueta); text-transform: uppercase; }
+.resumo dd { margin: 0; color: var(--tx-corpo); font-size: 11.5px; line-height: 1.75; letter-spacing: 0.03em; }
+.resumo dd b { color: var(--tx-titulo); font-weight: 400; }
+.escala { display: flex; flex-wrap: wrap; gap: 6px; }
+.escala i {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--linha-forte);
+  color: var(--tx-forte);
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+.escala i[data-fora] { border-style: dashed; border-color: var(--linha); color: var(--tx-apagado); }
+
+@media (width < 700px) { .barra { position: static; } }
+
+/* ---------- a moldura: largura de desktop ou de celular ---------- */
+
+.moldura {
+  display: flex;
+  justify-content: center;
+  padding: 0 0 120px;
+}
+.moldura[data-largura='cel'] .secao {
+  width: 390px;
+  margin-top: 32px;
+  border: 1px solid var(--linha);
+  --px: 20px;
+}
+
+/* ---------- a seção (o casco é o do site) ---------- */
+
+.secao {
+  --px: max(64px, 6vw);
+  position: relative;
+  width: 100%;
+  max-width: calc(1000px + 2 * var(--px));
+  padding: 72px var(--px) 0;
+  container-type: inline-size;
+}
+.indice {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin: 0 0 24px;
+  color: var(--tx-rotulo);
+  font-size: clamp(9px, 1.2vmin, 12px);
+  letter-spacing: 0.42em;
+}
+.indice i { flex: 1; height: 1px; background: var(--linha); }
+.linhaTitulo { display: flex; gap: 18px; align-items: center; justify-content: space-between; }
+.titulo { margin: 0; color: var(--tx-titulo); font-size: clamp(22px, 4.6vmin, 52px); font-weight: 400; line-height: 1; letter-spacing: 0.1em; text-transform: uppercase; }
+.intro { max-width: 52ch; margin: 14px 0 0; color: var(--tx-apoio); font-size: var(--fs-corpo); line-height: 1.85; letter-spacing: 0.05em; }
+.perfil { display: flex; flex: none; width: 40px; height: 40px; align-items: center; justify-content: center; opacity: .5; transition: opacity var(--dur-hover); }
+.perfil:hover { opacity: 1; }
+.perfil img { width: 22px; height: 22px; }
+.perfil[data-p] { width: 24px; height: 24px; margin: -8px 0; }
+.perfil[data-p] img { width: 14px; height: 14px; }
+
+#palco { position: relative; }
+#palco > .op { animation: chega .8s var(--ease-entrada) backwards; }
+
+/* ---------- peças comuns ---------- */
+
+/* o título de lista do site: versalete e o risco até a borda */
+.sub {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  min-height: 24px;
+  margin: 0;
+  color: var(--tx-rotulo);
+  font-size: var(--fs-rotulo);
+  font-weight: 400;
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}
+.sub::after { flex: 1; order: 1; height: 1px; background: var(--linha); content: ''; }
+.sub > .fim { order: 2; }
+.cab { display: flex; flex-wrap: wrap; column-gap: 14px; align-items: center; }
+.cab .sub { flex: 1 1 12em; }
+
+.semVinculo {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tx-apagado);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-etiqueta);
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--dur-hover);
+}
+.semVinculo:hover, .semVinculo[aria-expanded='true'] { color: var(--tx-hover); }
+.ponta { display: block; width: var(--ponta, 6px); height: var(--ponta, 6px); border-top: 1px solid currentcolor; border-right: 1px solid currentcolor; }
+.semVinculo .ponta { --ponta: 4px; margin-bottom: 2px; transform: rotate(135deg); transition: transform var(--dur-hover) var(--ease-saida); }
+.semVinculo[aria-expanded='true'] .ponta { margin: 2px 0 0; transform: rotate(-45deg); }
+.aviso { display: grid; flex-basis: 100%; grid-template-rows: 0fr; transition: grid-template-rows var(--dur-retorno) var(--ease-saida); }
+.aviso[data-aberto] { grid-template-rows: 1fr; }
+.aviso p { min-height: 0; margin: 0; overflow: hidden; color: var(--tx-apoio); font-size: var(--fs-micro); line-height: 1.7; letter-spacing: .1em; text-align: justify; hyphens: auto; opacity: 0; transition: opacity var(--dur-hover); }
+.aviso[data-aberto] p { padding-top: 8px; opacity: 1; }
+
+/* a conta: o retrato do jogador com o anel de dez arcos, o nick e uma linha */
+.conta { display: flex; gap: 16px; align-items: center; min-width: 0; }
+.av { position: relative; flex: none; width: var(--av, 48px); height: var(--av, 48px); }
+.av svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.av path { fill: none; stroke: var(--linha-forte); stroke-width: 1; vector-effect: non-scaling-stroke; transition: stroke var(--dur-hover); }
+.av path[data-feito] { stroke: var(--tx-titulo); }
+.av img, .av canvas { position: absolute; inset: 12%; width: 76%; height: 76%; border-radius: 50%; object-fit: cover; image-rendering: pixelated; }
+.ct { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.ct b { overflow: hidden; color: var(--tx-forte); font-size: 12.5px; font-weight: 400; letter-spacing: .06em; text-overflow: ellipsis; white-space: nowrap; }
+.ct small { overflow: hidden; color: var(--tx-rotulo); font-size: var(--fs-rotulo); letter-spacing: var(--ls-rotulo); text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+
+/* o painel: a mesma anatomia nos três jogos */
+.painel { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.abas { display: flex; gap: 24px; margin-bottom: 8px; }
+.abaJ { margin: 0; padding: 0 0 8px; border: 0; border-bottom: 1px solid transparent; background: none; color: var(--tx-rotulo); font-size: var(--fs-controle); letter-spacing: var(--ls-rotulo); text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: color var(--dur-hover), border-color var(--dur-hover); }
+.abaJ:hover { color: var(--tx-hover); }
+.abaJ[aria-pressed='true'] { border-color: var(--tx-titulo); color: var(--tx-titulo); }
+.rot { display: flex; gap: 8px; align-items: center; overflow: hidden; color: var(--tx-rotulo); font-size: var(--fs-rotulo); letter-spacing: var(--ls-rotulo); text-transform: uppercase; white-space: nowrap; }
+.pulso { flex: none; width: 5px; height: 5px; border-radius: 50%; background: var(--tx-titulo); animation: pulsa 2.2s ease-in-out infinite; }
+.nome { display: -webkit-box; min-height: 2.3em; overflow: hidden; color: var(--tx-titulo); font-size: clamp(18px, 3.4vmin, 30px); line-height: 1.15; letter-spacing: .03em; -webkit-box-orient: vertical; -webkit-line-clamp: 2; transition: color var(--dur-hover); }
+a.nome:hover { color: var(--tx-hover); }
+.num { display: flex; flex-wrap: wrap; gap: 8px 16px; color: var(--tx-apoio); font-size: var(--fs-lista); letter-spacing: .06em; font-variant-numeric: tabular-nums; }
+.num b { color: var(--tx-titulo); font-weight: 400; }
+.peso { position: relative; display: block; height: 1px; background: var(--linha); }
+.peso::after { position: absolute; inset: 0; background: var(--tx-titulo); content: ''; transform: scaleX(var(--peso, 0)); transform-origin: left; transition: transform var(--dur-retorno) var(--ease-saida); }
+.passos { display: flex; gap: 8px; align-items: center; min-height: 38px; margin-top: 8px; }
+.passo { display: flex; flex: none; width: 38px; height: 38px; align-items: center; justify-content: center; margin: 0; padding: 0; border: 1px solid var(--linha-acesa); border-radius: 2px; background: rgb(255 255 255 / 6%); color: var(--tx-hover); --ponta: 9px; cursor: pointer; transition: border-color var(--dur-hover), background-color var(--dur-hover), opacity var(--dur-hover); }
+@supports (corner-shape: bevel) { .passo { corner-shape: bevel; border-radius: 9px 2px; } }
+.passo:hover:not(:disabled) { border-color: var(--linha-cheia); background: rgb(255 255 255 / 12%); }
+.passo:disabled { opacity: .22; cursor: default; }
+.ponta[data-lado='antes'] { transform: rotate(-135deg); margin-left: 3px; }
+.ponta[data-lado='depois'] { transform: rotate(45deg); margin-right: 3px; }
+.pos { margin-left: 8px; color: var(--tx-rotulo); font-size: var(--fs-meta); letter-spacing: .2em; font-variant-numeric: tabular-nums; }
+.dica { color: var(--tx-marcador); font-size: var(--fs-meta); letter-spacing: var(--ls-etiqueta); text-transform: uppercase; }
+
+/* o palco: altura fixa, e o chão é a mesma linha nos três */
+.palco { position: relative; height: var(--palco-h, 360px); min-width: 0; }
+.chao { position: absolute; right: 0; bottom: var(--chao, 24px); left: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--linha-forte), transparent); pointer-events: none; }
+
+/* o deque */
+.deque { position: absolute; inset: 0; perspective: 1300px; perspective-origin: 50% 30%; cursor: grab; touch-action: pan-y; user-select: none; }
+.capa { position: absolute; bottom: calc(var(--chao, 24px) + 1px); left: 34%; width: var(--capa-w, 190px); aspect-ratio: 2 / 3; will-change: transform, opacity, filter; }
+.arte { display: block; width: 100%; height: 100%; overflow: hidden; border-radius: 2px; animation: capaChega .8s var(--ease-entrada) backwards; animation-delay: calc(200ms + var(--ordem, 0) * 90ms); }
+@supports (corner-shape: bevel) { .arte { border-radius: 12px 2px; corner-shape: bevel; } }
+.arte img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+
+/* o pódio, de pé no chão do palco */
+.podio { position: absolute; right: 0; bottom: var(--chao, 24px); left: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: end; max-width: 400px; margin: 0 auto; padding: 0; list-style: none; }
+.lugar { display: flex; flex-direction: column; gap: 8px; align-items: center; order: var(--ordem); cursor: pointer; }
+.campeao { position: relative; margin-bottom: 16px; }
+.campeao > img:first-child { display: block; width: 52px; height: 52px; border: 1px solid var(--linha-forte); border-radius: 50%; filter: saturate(.7) brightness(.8); transition: filter var(--dur-hover), border-color var(--dur-hover), width var(--dur-retorno) var(--ease-saida), height var(--dur-retorno) var(--ease-saida); }
+.brasaoM { position: absolute; bottom: -18px; left: 50%; width: 34px; height: 34px; translate: -50% 0; object-fit: contain; }
+.lugar .lnome { color: var(--tx-forte); font-size: var(--fs-pequeno); letter-spacing: .1em; text-transform: uppercase; transition: color var(--dur-hover); }
+.lugar .lpts { color: var(--tx-apoio); font-size: var(--fs-meta); letter-spacing: .06em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.degrau { display: grid; place-items: start center; width: 100%; height: calc(34px + var(--altura) * 56px); padding-top: 8px; border: 1px solid var(--linha); border-bottom: 0; background: var(--fundo-sutil); color: var(--tx-marcador); font-size: 22px; transform-origin: bottom; animation: sobe .9s var(--ease-entrada) backwards; animation-delay: calc(300ms + var(--ordem) * 110ms); transition: border-color var(--dur-hover), background var(--dur-hover), color var(--dur-hover); }
+.lugar[data-sel] .campeao > img:first-child { width: 64px; height: 64px; border-color: var(--linha-cheia); filter: none; }
+.lugar[data-sel] .lnome { color: var(--tx-titulo); }
+.lugar[data-sel] .degrau { border-top-color: var(--linha-cheia); background: linear-gradient(to bottom, rgb(255 255 255 / 9%), var(--fundo-sutil) 60%); color: var(--tx-apoio); }
+.lugar:hover:not([data-sel]) .campeao > img:first-child { filter: saturate(.9); }
+
+/* o boneco (aqui, a skin de frente; na página é o 3D de verdade) */
+.mc { position: absolute; bottom: var(--chao, 24px); left: 50%; display: grid; place-items: end center; translate: -50% 0; cursor: pointer; }
+.mc canvas { display: block; width: calc(16px * var(--tx, 6)); height: calc(32px * var(--tx, 6)); image-rendering: pixelated; animation: respira 3.2s ease-in-out infinite; }
+.mc[data-golpe] canvas { animation: golpe .5s var(--ease-saida); }
+.mc .ped { position: absolute; bottom: -10px; left: 50%; width: 180px; height: 22px; translate: -50% 0; pointer-events: none; }
+.mc .ped i { position: absolute; inset: 0; margin: auto; border: 1px solid var(--linha); border-radius: 50%; }
+.mc .ped i:nth-child(1) { width: 52%; height: 50%; }
+.mc .ped i:nth-child(2) { width: 76%; height: 74%; border-style: dashed; border-color: var(--linha-sutil); }
+.mc .ped i:nth-child(3) { width: 100%; height: 100%; border-color: var(--linha-sutil); }
+.mc .tag { position: absolute; top: -26px; left: 50%; padding: 2px 6px; translate: -50% 0; background: rgb(0 0 0 / 55%); color: #fff; font-size: 10px; white-space: nowrap; }
+
+/* a carta do invocador (a do site), e a carta generalizada da opção B */
+.carta { position: relative; display: flex; flex-direction: column; gap: 8px; align-items: center; padding: 16px 16px 16px; border: 1px solid var(--linha); border-radius: 2px; background: var(--fundo-sutil); text-align: center; }
+@supports (corner-shape: bevel) { .carta { border-radius: 14px 2px; corner-shape: bevel; } }
+.brasao { position: relative; width: 100%; aspect-ratio: 1; }
+.brasao .icone { position: absolute; inset: 23%; width: 54%; height: 54%; border-radius: 50%; object-fit: cover; }
+.brasao .borda { position: absolute; inset: 0; width: 100%; height: 100%; }
+.brasao .nv { position: absolute; top: 80%; left: 50%; translate: -50% -50%; color: #fff; font-size: var(--fs-pequeno); letter-spacing: .06em; }
+.carta .cnick { color: var(--tx-titulo); font-size: var(--fs-destaque); letter-spacing: .03em; }
+.carta .creg { color: var(--tx-apagado); font-size: var(--fs-meta); letter-spacing: .2em; text-transform: uppercase; }
+
+/* as partidas, numa gaveta */
+.gaveta summary { display: flex; gap: 14px; align-items: center; min-height: 24px; color: var(--tx-rotulo); cursor: pointer; list-style: none; }
+.gaveta summary::-webkit-details-marker { display: none; }
+.gaveta summary > span:first-child { font-size: var(--fs-rotulo); letter-spacing: var(--ls-rotulo); text-transform: uppercase; white-space: nowrap; }
+.gaveta summary::before { order: 1; flex: 1; height: 1px; background: var(--linha); content: ''; }
+.rostos { display: flex; order: 2; }
+.rostos img { width: 22px; height: 22px; margin-left: -6px; border: 1px solid #000; border-radius: 50%; transition: margin var(--dur-hover); }
+.rostos img[data-derrota] { filter: grayscale(1) brightness(.7); }
+.gaveta summary:hover .rostos img { margin-left: -2px; }
+.gaveta[open] .rostos { opacity: 0; }
+.gaveta summary .ponta { order: 3; transform: rotate(135deg); }
+.gaveta[open] summary .ponta { transform: rotate(-45deg); }
+.partidas { display: grid; gap: 8px; margin: 16px 0 0; padding: 0; list-style: none; }
+.partida { display: grid; grid-template-columns: 2px 28px minmax(0, 1fr) auto; gap: 16px; align-items: center; color: var(--tx-apoio); font-size: var(--fs-meta); letter-spacing: .06em; font-variant-numeric: tabular-nums; }
+.partida .fio { align-self: stretch; border-left: 1px solid var(--linha-cheia); }
+.partida[data-derrota] .fio { border-left-style: dashed; border-color: var(--linha-acesa); }
+.partida > img { width: 28px; height: 28px; border-radius: 50%; }
+.partida[data-derrota] > img { filter: grayscale(1) brightness(.75); }
+.partida .meio { display: flex; flex-wrap: wrap; gap: 4px 16px; min-width: 0; }
+.partida .meio b { color: var(--tx-titulo); font-weight: 400; }
+.partida .itens { display: flex; gap: 2px; }
+.partida .itens img, .partida .itens i { width: 18px; height: 18px; border: 1px solid var(--linha-sutil); }
+.semDesordem { margin: 16px 0 0; color: var(--tx-apagado); font-size: var(--fs-micro); letter-spacing: .1em; line-height: 1.7; }
+
+/* ================= HOJE: os valores do CSS de hoje, copiados ================= */
+
+.hoje { --palco-h: clamp(300px, 44vmin, 420px); --capa-w: clamp(150px, 24vmin, 220px); --chao: 4%; display: flex; flex-direction: column; gap: clamp(18px, 3vmin, 34px); margin-top: clamp(18px, 3vmin, 34px); }
+.hoje .cena { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.4fr); gap: clamp(20px, 3vw, 40px); align-items: center; }
+.hoje .painelH { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.hoje .painelH .conta { --av: 42px; gap: 12px; margin-bottom: 12px; }
+.hoje .painelH .ct { gap: 4px; }
+.hoje .painelH .abas { gap: 22px; margin-bottom: 6px; }
+.hoje .painelH .abaJ { padding-bottom: 6px; }
+.hoje .painelH .painel { gap: 12px; }
+.hoje .painelH .num { gap: 6px 18px; }
+.hoje .painelH .passos { gap: 10px; margin-top: 8px; }
+.hoje .painelH .pos { margin-left: 6px; }
+.hoje .andar { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 48px); align-items: start; margin-top: clamp(12px, 3vmin, 28px); }
+.hoje .parte { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.hoje .liga { display: grid; gap: 22px; }
+.hoje .topo { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 24px; align-items: end; }
+.hoje .bl { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.hoje .bl .podio { position: static; max-width: none; gap: 12px; }
+.hoje .bl .lugar { gap: 6px; }
+.hoje .bl .campeao { margin-bottom: 14px; }
+.hoje .bl .degrau { padding-top: 6px; }
+.hoje .partidas { margin-top: 14px; }
+.hoje .canto { display: flex; justify-content: center; }
+.hoje .canto .palco { --palco-h: 288px; --chao: 18px; width: 204px; }
+.hoje .canto .mc .ped { width: 200px; }
+@container (width < 640px) {
+  .hoje .cena, .hoje .andar { grid-template-columns: minmax(0, 1fr); }
+  .hoje .cena .palco { order: -1; --capa-w: 150px; --palco-h: 300px; }
+  .hoje .topo { grid-template-columns: 150px minmax(0, 1fr); gap: 16px; }
+}
+
+/* ================= O SISTEMA DAS OPÇÕES =================
+   Uma escala de espaço só, cinco degraus, e cada vão da seção cai num deles:
+   8 (dentro de um grupo) · 16 (entre grupos de um painel) · 24 (título → conteúdo,
+   conta → painel) · 48 (palco ↔ painel, entre colunas) · 96 (entre subseções). */
+
+.op {
+  --e1: 8px; --e2: 16px; --e3: 24px; --e4: 48px; --e5: 96px;
+  --palco-h: 360px; --chao: 24px; --capa-w: 180px;
+  margin-top: var(--e4);
+}
+@container (width < 640px) {
+  .op { --e4: 32px; --e5: 64px; --palco-h: 300px; --capa-w: 140px; }
+}
+.op .painel { gap: var(--e1); }
+.op .bloco + .bloco { margin-top: var(--e5); }
+.op .bloco > .cab { margin-bottom: var(--e3); }
+.op .gaveta { margin-top: var(--e3); }
+
+/* Todas guardam o mosaico de hoje: a Steam em cima na largura toda, o LoL
+   largo e o Minecraft estreito embaixo. Muda o que amarra as três. */
+
+.op .lado { display: flex; flex-direction: column; justify-content: flex-end; gap: var(--e3); min-width: 0; padding-bottom: var(--chao); }
+.op .andar { display: grid; gap: var(--e4); margin-top: var(--e5); align-items: stretch; }
+.op .andar > .bloco { display: flex; flex-direction: column; min-width: 0; }
+.op .andar > .bloco > .cab { margin-bottom: var(--e3); }
+.op .andar > .bloco + .bloco { margin-top: 0; }
+.op .mesmaLinha { display: grid; grid-template-rows: subgrid; }
+
+/* ---- A · Afinado: o desenho de hoje, na escala e com o chão comum ---- */
+.A .linhaS { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--e4); }
+.A .andar { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+.A .ligaA { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: var(--e3); align-items: end; }
+.A .ligaA .carta { margin-bottom: var(--chao); }
+.A .ligaA .palco { --palco-h: 300px; }
+.A .canto .palco { --palco-h: 300px; }
+.A .horizonte { grid-column: 1 / -1; grid-row: 2; align-self: end; }
+
+/* ---- B · Costura: a linha que divide as colunas é uma só, de cima a baixo ---- */
+.B .linhaS { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--e4); }
+.B .andar { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); grid-template-rows: auto var(--palco-b) auto; row-gap: 0; }
+.B .andar > .bloco { display: grid; grid-row: 1 / span 3; grid-template-rows: subgrid; }
+.B .andar > .bloco > .cab { margin-bottom: var(--e3); }
+.B .andar .palco { height: auto; }
+.B .andar .painel { margin-top: var(--e3); }
+.B { --palco-b: 280px; }
+.B .costura { position: absolute; top: 0; bottom: 0; left: calc((100% - var(--e4)) * 7 / 12 + var(--e4) / 2); width: 1px; background: linear-gradient(to bottom, transparent, var(--linha-sutil) 10%, var(--linha-sutil) 90%, transparent); pointer-events: none; }
+
+/* ---- C · Moldura: o mosaico desenhado por fios de 1px compartilhados ---- */
+.C .mosaico { position: relative; display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 1px; overflow: hidden; border: 1px solid var(--linha); border-radius: 2px; background: var(--linha); }
+@supports (corner-shape: bevel) { .C .mosaico { border-radius: 18px 2px; corner-shape: bevel; } }
+.C .celula { display: flex; flex-direction: column; min-width: 0; padding: var(--e3); background: #000; }
+.C .celula > .cab { margin-bottom: var(--e3); }
+.C .celula[data-larga] { grid-column: 1 / -1; }
+.C .celula .linhaS { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--e4); }
+.C .celula .palco { flex: none; --palco-h: 280px; }
+.C .celula > .painel { margin-top: var(--e3); }
+.C .celula .gaveta { margin-top: var(--e3); }
+.C .celula .linhaS .palco { --palco-h: 340px; }
+
+/* ---- D · Coluna: a Steam em pé à esquerda, o LoL e o Minecraft empilhados ao lado ---- */
+.D .mosaico { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); grid-template-rows: auto auto; gap: var(--e5) var(--e4); }
+.D .alta { display: flex; flex-direction: column; grid-row: 1 / span 2; min-width: 0; }
+.D .alta > .cab { margin-bottom: var(--e3); }
+.D .alta .palco { --palco-h: 420px; --capa-w: 200px; }
+.D .alta .painel { margin-top: var(--e3); }
+.D .alta .conta { margin-bottom: var(--e3); }
+.D .direita { min-width: 0; }
+.D .direita > .cab { margin-bottom: var(--e3); }
+.D .par { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--e3); align-items: end; }
+.D .par .palco { --palco-h: 260px; }
+.D .par .podio { gap: 8px; }
+.D .par .lpts { display: none; }
+
+@container (width < 640px) {
+  .A .linhaS, .B .linhaS, .C .celula .linhaS, .A .andar, .B .andar, .C .mosaico, .D .mosaico, .D .par { grid-template-columns: minmax(0, 1fr); }
+  .A .linhaS .palco, .B .linhaS .palco, .C .linhaS .palco { order: -1; }
+  .op .lado { padding-bottom: 0; }
+  .B .andar { grid-template-rows: none; row-gap: var(--e5); }
+  .B .andar > .bloco { display: flex; grid-row: auto; }
+  .B .andar .palco { height: var(--palco-h); flex: none; }
+  .B .costura { display: none; }
+  .D .alta { grid-row: auto; }
+  .D .alta .palco { --palco-h: 300px; --capa-w: 140px; }
+  .A .ligaA { grid-template-columns: minmax(0, 1fr); gap: var(--e3); }
+  .A .ligaA .carta { width: 160px; margin: 0; }
+  .A .ligaA .carta { padding: 8px; }
+  .A .ligaA .carta .cnick { font-size: 13px; }
+}
+
+/* ---------- os controles da Steam ---------- */
+
+.palcoCol { display: flex; flex-direction: column; min-width: 0; }
+.cabSteam { flex-wrap: nowrap; }
+.cabSteam .sub { flex: 1 1 auto; min-width: 0; }
+.cabSteam .abas { flex: none; gap: var(--e2, 16px); margin: 0; }
+.cabSteam .abaJ { padding: 4px 0; }
+.cabSteam .perfil { margin: -8px 0; }
+
+/* 1 · Trilho: uma régua de traços pendurada no chão, um por jogo, e os passos nas pontas */
+.ctrl[data-tipo='trilho'] { display: flex; gap: var(--e1, 8px); align-items: center; margin-top: calc(var(--chao) * -1); }
+.tracos { display: flex; flex: 1; align-items: flex-start; height: 38px; }
+.traco { display: flex; flex: 1; justify-content: center; height: 38px; margin: 0; padding: 0; border: 0; background: none; cursor: pointer; }
+.traco i { display: block; width: 1px; height: 8px; background: var(--linha-forte); transition: height var(--dur-retorno) var(--ease-saida), background-color var(--dur-hover); }
+.traco:hover i { height: 14px; background: var(--linha-cheia); }
+.traco[aria-current] i { height: 22px; background: var(--tx-titulo); }
+
+/* 4 · Duas linhas: em cima conta, abas e setas; embaixo estado, título, horas e jogos */
+.comandoS { display: flex; flex-wrap: wrap; gap: var(--e2, 16px) var(--e3, 24px); align-items: center; margin-bottom: var(--e3, 24px); }
+.comandoS .abas { margin: 0; }
+.comandoS .abaJ { padding: 4px 0 8px; }
+.setas { display: flex; gap: var(--e1, 8px); margin-left: auto; }
+.jogosS { display: flex; gap: var(--e2, 16px); align-items: center; margin-top: var(--e1, 8px); }
+.jogosS .tracos { height: 24px; }
+.jogosS .traco { height: 24px; }
+.jogosS .traco i { height: 6px; }
+.jogosS .traco:hover i { height: 12px; }
+.jogosS .traco[aria-current] i { height: 16px; }
+.jogosS .pos { flex: none; margin: 0; }
+
+/* 2 · Barra: abas à esquerda e passos à direita, numa linha só embaixo do palco */
+.ctrl[data-tipo='barra'] { display: flex; gap: var(--e2, 16px); align-items: center; justify-content: space-between; margin-top: var(--e2, 16px); }
+.ctrl[data-tipo='barra'] .abas { margin: 0; }
+.barraPassos { display: flex; gap: var(--e1, 8px); align-items: center; }
+.barraPassos .pos { margin: 0 var(--e1, 8px); }
+
+/* 3 · Laterais: os passos nas bordas do palco, na altura das capas, e a contagem no chão */
+.lat { position: absolute; z-index: 200; bottom: calc(var(--chao) + var(--capa-w) * 0.75 - 19px); }
+.lat[data-lado='antes'] { left: 0; }
+.lat[data-lado='depois'] { right: 0; }
+.lat .passo { background: rgb(0 0 0 / 70%); }
+.contador { position: absolute; bottom: calc(var(--chao) - 18px); left: 50%; translate: -50% 0; }
+.contador .pos { margin: 0; }
+
+@container (width < 640px) {
+  .A .linhaS > .palcoCol { order: -1; }
+  .comandoS { row-gap: var(--e2); }
+  .comandoS .conta { order: 1; flex: 1 1 0; }
+  .A .linhaS .palco[data-palco='steam'] { --palco-h: 256px; }
+  .comandoS .setas { order: 2; }
+  .comandoS .abas { order: 3; flex-basis: 100%; }
+  .cabSteam { column-gap: 8px; }
+  .cabSteam .abas { gap: 12px; }
+  .cabSteam .abaJ { letter-spacing: .18em; }
+  .cabSteam .sub { gap: 8px; }
+  .ctrl[data-tipo='barra'] .abas { gap: var(--e2, 16px); }
+  .ctrl[data-tipo='barra'] .pos { display: none; }
+  .ctrl[data-tipo='barra'] { flex-wrap: wrap; row-gap: var(--e1); }
+  .barraPassos { margin-left: auto; }
+  .traco i { height: 6px; }
+  .traco[aria-current] i { height: 18px; }
+}
+
+/* ---------- a régua: mede os vãos que o layout deixa ---------- */
+.regua { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
+.regua span { position: absolute; display: grid; place-items: center; border: 1px solid rgb(255 255 255 / 40%); background: rgb(255 255 255 / 7%); }
+.regua span[data-fora] { border-style: dashed; border-color: rgb(255 255 255 / 30%); background: repeating-linear-gradient(45deg, rgb(255 255 255 / 9%) 0 2px, transparent 2px 6px); }
+.regua b { padding: 1px 4px; background: #000; color: #fff; font-size: 9px; font-weight: 400; line-height: 1.2; letter-spacing: .04em; white-space: nowrap; }
+.regua span[data-fora] b { color: rgb(255 255 255 / 70%); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="barra">
+  <h1>Jogos / três subseções, um sistema</h1>
+  <div class="grupo" role="group" aria-label="Opção">
+    <span>Opção</span>
+    <button class="aba" data-o="hoje">Hoje</button>
+    <button class="aba" data-o="A">A · Afinado</button>
+    <button class="aba" data-o="B">B · Costura</button>
+    <button class="aba" data-o="C">C · Moldura</button>
+    <button class="aba" data-o="D">D · Coluna</button>
+  </div>
+  <div class="grupo" role="group" aria-label="Controles da Steam">
+    <span>Controles</span>
+    <button class="aba" data-c="hoje">Hoje</button>
+    <button class="aba" data-c="linhas">4 · Duas linhas</button>
+    <button class="aba" data-c="trilho">1 · Trilho</button>
+    <button class="aba" data-c="barra">2 · Barra</button>
+    <button class="aba" data-c="laterais">3 · Laterais</button>
+  </div>
+  <div class="grupo" role="group" aria-label="Quantos jogos">
+    <span>Jogos</span>
+    <button class="aba" data-n="8">8 (produção)</button>
+    <button class="aba" data-n="15">14 (teste)</button>
+  </div>
+  <div class="grupo" role="group" aria-label="Régua">
+    <span>Régua</span>
+    <button class="aba" data-r="1">Ligada</button>
+    <button class="aba" data-r="0">Desligada</button>
+  </div>
+  <div class="grupo" role="group" aria-label="Largura">
+    <span>Largura</span>
+    <button class="aba" data-l="desk">Desktop</button>
+    <button class="aba" data-l="cel">Celular</button>
+  </div>
+</header>
+
+<dl class="resumo" id="resumo"></dl>
+
+<main class="moldura" id="moldura">
+  <div class="secao" id="secao">
+    <p class="indice"><span>02</span><i></i></p>
+    <div class="linhaTitulo">
+      <h2 class="titulo">Jogos</h2>
+      <a class="perfil" id="perfilSecao" href="https://steamcommunity.com/profiles/76561198386226487" target="_blank" rel="noreferrer" aria-label="Steam"><img src="steam.svg" alt=""></a>
+    </div>
+    <p class="intro">O que eu andei jogando nos últimos tempos.</p>
+    <div id="palco"></div>
+  </div>
+</main>
+
+<script>
+/* ---------- o dado: as respostas de produção de api/steam, api/riot e api/minecraft, de 14/10/2026 ---------- */
+let S, R;
+const MC = { nome: 'Catmaitachi', slim: true };
+const PERFIL_STEAM = 'https://steamcommunity.com/profiles/76561198386226487';
+const AGORA = new Date('2026-10-14T12:00:00Z');
+const FILAS = { 1750: 'Arena', 900: 'URF', 420: 'Ranqueada solo/duo', 450: 'ARAM' };
+
+const OPCOES = {
+  hoje: {
+    nome: 'Hoje',
+    frase: 'A seção como está, com os valores do CSS copiados. <b>Ligue a régua</b>: são dez vãos diferentes entre as peças, e só três caem numa escala. Cada jogo foi desenhado numa rodada, com os números dela.',
+    perde: 'Três hierarquias: a Steam não tem título (gruda no cabeçalho da seção), o LoL tem um <b>h3</b> e dois <b>h4</b> com risco, o Minecraft um <b>h3</b> só. Três "quem sou eu" (avatar de 42px, carta de 200px, placa de nome) e três chãos (linha, degraus, anéis). As colunas de cima (0,9 / 1,4) e as de baixo (1,6 / 1) não dividem a largura no mesmo ponto.',
+    escala: ['4', '6', '8', '12', '14', '16', '18–34', '20–40', '22', '24', '12–28', '24–48'],
+  },
+  A: {
+    nome: 'A · Afinado',
+    frase: 'O mosaico de hoje, com o mínimo mexido. A Steam ganha título como os outros dois (com o ícone do perfil no fim da linha dela, e não mais no título da seção, que agora fala de três jogos). <b>Todo vão cai na escala</b>, e capas, pódio e boneco <b>pisam numa linha de chão igual</b>, em vez de linha, degraus e anéis cada um numa altura.',
+    controles: {
+      hoje: 'Os controles de hoje: as abas no alto do painel e os passos no pé dele. No celular, o deque fica em cima e o que o mexe fica 350px abaixo, depois da conta e do texto.',
+      linhas: '<b>Duas linhas.</b> Em cima, a conta, as abas e as setas, que é tudo o que mexe no deque, juntos e acima dele. Embaixo, ao lado das capas, o estado, o título, as horas (com o risco do peso) e os jogos: um traço por jogo, o atual alto e aceso, com a contagem. Tocar um traço vai direto ao jogo. <b>No celular</b> a linha de cima não cabe em 390px: a conta e as setas ficam numa linha e as abas na de baixo, e o deque vem antes do texto.',
+      trilho: '<b>As abas sobem para a linha do título</b> (o lugar que a marca da Riot tem no LoL), e <b>embaixo do deque pende uma régua</b>: um traço por jogo, o atual alto e aceso, com os passos nas pontas. Tocar um traço vai direto ao jogo: com 15, andar de um em um cansa. O painel fica só com texto.',
+      barra: 'Tudo numa linha só, encostada no palco: as abas à esquerda, os passos e a contagem à direita. No celular a barra fica entre as capas e o texto, quebra em duas linhas (as abas e, à direita, os passos), e a contagem sai.',
+      laterais: 'As abas sobem para a linha do título, e <b>os passos vão para as bordas do palco</b>, na altura das capas, como num carrossel. A contagem fica no chão, no meio. É a que ocupa menos altura, mas no celular as setas cobrem a capa que já passou.',
+    },
+    perde: 'Quase nada. Os dois h4 do LoL (Maior maestria, Últimas partidas) viram um só nível com o resto. As divisões de coluna de cima (5 | 7) e de baixo (7 | 5) continuam diferentes, como hoje.',
+  },
+  B: {
+    nome: 'B · Costura',
+    frase: 'O deque passa para a esquerda e o painel da Steam para a direita, e <b>a divisão de colunas vira uma linha só, de cima a baixo</b>: o deque fica sobre o LoL, o painel sobre o Minecraft. Embaixo, os dois palcos têm a mesma altura e os painéis começam na mesma linha (subgrid). O pódio passa a escolher como o deque, e o Minecraft ganha painel: a vida e as mortes da visita.',
+    perde: 'A carta do LoL vira o mesmo painel dos outros (o nível passa a ser escrito; a borda de nível sai). O deque troca de lado.',
+  },
+  C: {
+    nome: 'C · Moldura',
+    frase: 'O mosaico <b>desenhado</b>: as três peças são células de uma grade com fios de 1px compartilhados (o mesmo fio separa a Steam do LoL e o LoL do Minecraft), chanfrada por fora como as outras molduras da página. Dentro de cada célula, a mesma ordem: título, conta, palco, painel.',
+    perde: 'É a única com caixa em volta, e a página hoje evita caixa. As células têm respiro de 24 por dentro, o que encolhe o deque.',
+  },
+  D: {
+    nome: 'D · Coluna',
+    frase: 'Outro mosaico: <b>a Steam em pé à esquerda</b> (deque alto, painel embaixo), e o LoL e o Minecraft empilhados à direita, cada um com palco e painel lado a lado na mesma proporção. As três peças têm a mesma anatomia e as duas da direita somam a altura da Steam.',
+    perde: 'O pódio fica mais estreito (os pontos vão para o painel), e o LoL deixa de ter a parte maior: os dois de baixo ficam do mesmo tamanho.',
+  },
+};
+
+const st = {
+  opcao: 'A', regua: false, largura: 'desk', ctrl: 'linhas', n: 8,
+  steam: { aba: 'ultimo', i: 0 },
+  lol: { i: 0 },
+  mc: { vida: 20, mortes: 0 },
+  cart: 'steam',
+  aviso: false,
+};
+
+/* ---------- contas pequenas ---------- */
+const limitar = (v, a, b) => Math.min(b, Math.max(a, v));
+const horas = (m) => Math.round(m / 60);
+const pts = (n) => n.toLocaleString('pt-BR');
+const rtf = new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' });
+function haQuanto(iso) {
+  const s = (new Date(iso) - AGORA) / 1000;
+  const p = [[60, 'second'], [60, 'minute'], [24, 'hour'], [7, 'day'], [4.35, 'week'], [12, 'month'], [Infinity, 'year']];
+  let v = s;
+  for (const [n, u] of p) { if (Math.abs(v) < n) return rtf.format(Math.round(v), u); v /= n; }
+}
+const dia = (iso) => new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'short' }).format(new Date(iso));
+const dur = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+const pad = (n) => String(n).padStart(2, '0');
+
+/* o anel de dez arcos: o caminho até o próximo marco do jogo */
+function anel(fr) {
+  const n = 10, folga = 7, r = 49, c = 50;
+  const pt = (a) => [c + r * Math.cos((a - 90) * Math.PI / 180), c + r * Math.sin((a - 90) * Math.PI / 180)];
+  let out = '';
+  for (let k = 0; k < n; k++) {
+    const a0 = k * 36 + folga / 2, a1 = (k + 1) * 36 - folga / 2;
+    const cheio = limitar(fr * n - k, 0, 1);
+    const arco = (x0, x1, feito) => { const [p, q] = [pt(x0), pt(x1)]; return `<path ${feito ? 'data-feito' : ''} d="M${p[0].toFixed(2)} ${p[1].toFixed(2)} A${r} ${r} 0 0 1 ${q[0].toFixed(2)} ${q[1].toFixed(2)}"/>`; };
+    if (cheio >= 1) out += arco(a0, a1, true);
+    else if (cheio <= 0) out += arco(a0, a1, false);
+    else { const m = a0 + (a1 - a0) * cheio; out += arco(a0, m, true) + arco(m, a1, false); }
+  }
+  return `<svg viewBox="0 0 100 100" aria-hidden="true">${out}</svg>`;
+}
+
+/* ---------- as peças ---------- */
+function listaSteam() {
+  const [a, b] = st.steam.aba === 'horas' ? [S.maisJogados, S.porUltimo] : [S.porUltimo, S.maisJogados];
+  if (st.n === 8) return a;
+  const vistos = new Set();
+  return [...a, ...b].filter((g) => !vistos.has(g.id) && vistos.add(g.id)).slice(0, 15);
+}
+const maiorSteam = () => S.maisJogados[0].minutosTotais;
+const lolOrdem = () => R.maestrias;
+const maiorLol = () => R.maestrias[0].pontos;
+
+const STEAM_MARCO = () => (S.perfil.nivel % 10 + S.perfil.progresso) / 10;
+const LOL_MARCO = () => ((R.perfil.nivel - 425) % 25) / 25;
+
+const IDENT = {
+  steam: () => ({ img: `<img src="${S.perfil.avatar}" alt="">`, nick: S.perfil.nome, meta: `Nível ${S.perfil.nivel}`, fr: STEAM_MARCO(), jogo: 'Steam' }),
+  lol: () => ({ img: `<img src="${R.perfil.icone}" alt="">`, nick: R.perfil.nome, meta: `#${R.perfil.tag.toUpperCase()} · ${R.perfil.regiao} · Nível ${R.perfil.nivel}`, fr: LOL_MARCO(), jogo: 'League of Legends' }),
+  mc: () => ({ img: `<canvas data-cabeca width="8" height="8"></canvas>`, nick: MC.nome, meta: 'Java · skin de hoje', fr: st.mc.vida / 20, jogo: 'Minecraft' }),
+};
+
+function conta(j, extra = '') {
+  const d = IDENT[j]();
+  return `<div class="conta" data-conta="${j}" ${extra}><span class="av" data-anel="${j}">${d.img}${anel(d.fr)}</span><span class="ct"><b>${d.nick}</b><small>${d.meta}</small></span></div>`;
+}
+
+function cab(j, comPerfil) {
+  if (j === 'lol') {
+    return `<div class="cab"><h3 class="sub">League of Legends</h3>
+      <button class="semVinculo" data-aviso aria-expanded="${st.aviso}" aria-controls="aviso-lol">sem vínculo com a Riot Games<span class="ponta"></span></button>
+      <div class="aviso" id="aviso-lol" ${st.aviso ? 'data-aberto' : ''}><p>luuspz.dev não é endossado pela Riot Games e não reflete as visões ou opiniões da Riot Games nem de qualquer pessoa oficialmente envolvida na produção ou gestão das propriedades da Riot Games. Riot Games e todas as propriedades associadas são marcas comerciais ou marcas registradas da Riot Games, Inc.</p></div></div>`;
+  }
+  if (j === 'steam' && ctrlNovo('steam') && st.ctrl !== 'barra' && st.ctrl !== 'linhas') return `<div class="cab cabSteam"><h3 class="sub">Steam</h3>${abasSteam()}${comPerfil ? `<a class="perfil" data-p href="${PERFIL_STEAM}" target="_blank" rel="noreferrer" aria-label="Perfil na Steam"><img src="steam.svg" alt=""></a>` : ''}</div>`;
+  if (j === 'steam') return `<div class="cab"><h3 class="sub">Steam${comPerfil ? `<a class="perfil fim" data-p href="${PERFIL_STEAM}" target="_blank" rel="noreferrer" aria-label="Perfil na Steam"><img src="steam.svg" alt=""></a>` : ''}</h3></div>`;
+  return `<div class="cab"><h3 class="sub">Minecraft</h3></div>`;
+}
+
+/* o painel: rótulo, nome, números, medidor e passos, nos três */
+function painelHTML(j) {
+  if (j === 'steam') {
+    const L = listaSteam(), i = st.steam.i, g = L[i];
+    const rot = st.steam.aba === 'horas'
+      ? `${i + 1}º mais jogado de ${S.totalJogos}`
+      : i === 0 ? `Jogado por último · ${haQuanto(g.jogadoEm)}` : `Jogado em ${dia(g.jogadoEm)}`;
+    const nums = [
+      g.minutosRecentes > 0 ? `<span><b>${horas(g.minutosRecentes)}h</b> nas 2 semanas</span>` : '',
+      `<span><b>${horas(g.minutosTotais)}h</b> no total</span>`,
+      st.steam.aba === 'horas' && g.jogadoEm ? `<span>última vez ${haQuanto(g.jogadoEm)}</span>` : '',
+    ].join('');
+    return { rot, nome: `<a class="nome" href="${g.url}" target="_blank" rel="noreferrer">${g.nome}</a>`, nums, peso: g.minutosTotais / maiorSteam(), i, n: L.length };
+  }
+  if (j === 'lol') {
+    const M = lolOrdem(), i = st.lol.i, m = M[i];
+    return { rot: i === 0 ? 'Maior maestria' : `${i + 1}ª maior maestria`, nome: `<span class="nome">${m.campeao}</span>`, nums: `<span><b>${pts(m.pontos)}</b> pontos</span><span>maestria <b>${m.nivel}</b></span>`, peso: m.pontos / maiorLol(), i, n: M.length };
+  }
+  const v = st.mc.vida;
+  return { rot: v === 20 ? 'Na skin de hoje' : v === 0 ? 'Renascendo' : 'Machucado', nome: `<span class="nome">${MC.nome}</span>`, nums: `<span><b>${v / 2}</b> de 10 corações</span><span><b>${st.mc.mortes}</b> ${st.mc.mortes === 1 ? 'morte' : 'mortes'} na visita</span>`, peso: v / 20, i: -1, n: 0 };
+}
+
+function passos(j, p) {
+  if (p.n < 2) return `<div class="passos"><span class="dica">${j === 'mc' ? 'clique nele' : ''}</span></div>`;
+  return `<div class="passos"><button class="passo" data-passo="${j}" data-d="-1" aria-label="Anterior" ${p.i === 0 ? 'disabled' : ''}><span class="ponta" data-lado="antes"></span></button><button class="passo" data-passo="${j}" data-d="1" aria-label="Próximo" ${p.i === p.n - 1 ? 'disabled' : ''}><span class="ponta" data-lado="depois"></span></button><span class="pos">${pad(p.i + 1)} / ${pad(p.n)}</span></div>`;
+}
+
+function abasSteam() {
+  return `<div class="abas" role="group" aria-label="Ordem">${['ultimo', 'horas'].map((a) => `<button class="abaJ" data-abaj="${a}" aria-pressed="${st.steam.aba === a}">${a === 'ultimo' ? 'Por último' : 'Mais jogados'}</button>`).join('')}</div>`;
+}
+
+const ctrlNovo = (j) => j === 'steam' && st.ctrl !== 'hoje' && st.opcao !== 'hoje';
+function painel(j, comAbas = true) {
+  const p = painelHTML(j);
+  return `<div class="painel" data-painel="${j}" aria-live="polite">${j === 'steam' && comAbas && !ctrlNovo(j) ? abasSteam() : ''}<span class="rot">${p.rot}</span>${p.nome}<span class="num">${p.nums}</span><span class="peso" style="--peso:${p.peso}"></span>${ctrlNovo(j) ? (st.ctrl === 'linhas' ? `<div class="jogosS" data-ctrl="steam">${ctrlSteam()}</div>` : '') : passos(j, p)}</div>`;
+}
+
+/* os controles novos da Steam: o que mexe no deque fica encostado nele */
+function passoS(d) {
+  const i = st.steam.i, n = listaSteam().length;
+  const off = d < 0 ? i === 0 : i === n - 1;
+  return `<button class="passo" data-passo="steam" data-d="${d}" aria-label="${d < 0 ? 'Jogo anterior' : 'Próximo jogo'}" ${off ? 'disabled' : ''}><span class="ponta" data-lado="${d < 0 ? 'antes' : 'depois'}"></span></button>`;
+}
+const contador = () => `<span class="pos">${pad(st.steam.i + 1)} / ${pad(listaSteam().length)}</span>`;
+function ctrlSteam() {
+  const L = listaSteam(), i = st.steam.i;
+  if (st.ctrl === 'trilho') {
+    return `${passoS(-1)}<span class="tracos" role="group" aria-label="Escolher jogo">${L.map((g, k) => `<button class="traco" data-ir="${k}" aria-label="${g.nome}" ${k === i ? 'aria-current="true"' : ''}><i></i></button>`).join('')}</span>${passoS(1)}`;
+  }
+  if (st.ctrl === 'linhas') return `<span class="tracos" role="group" aria-label="Escolher jogo">${L.map((g, k) => `<button class="traco" data-ir="${k}" aria-label="${g.nome}" ${k === i ? 'aria-current="true"' : ''}><i></i></button>`).join('')}</span>${contador()}`;
+  if (st.ctrl === 'barra') return `${abasSteam()}<span class="barraPassos">${passoS(-1)}${contador()}${passoS(1)}</span>`;
+  if (st.ctrl === 'laterais') return `<span class="lat" data-lado="antes">${passoS(-1)}</span><span class="lat" data-lado="depois">${passoS(1)}</span><span class="contador">${contador()}</span>`;
+  return '';
+}
+
+/* as linhas do painel soltas, para o diorama pôr cada uma na linha comum */
+function painelSolto(j) {
+  const p = painelHTML(j);
+  return `<span class="rot" data-p-rot="${j}">${p.rot}</span><span data-p-nome="${j}" style="display:contents">${p.nome}</span><span class="num" data-p-num="${j}">${p.nums}</span><span class="peso" data-p-peso="${j}" style="--peso:${p.peso}"></span><div data-p-passos="${j}" style="display:contents">${passos(j, p)}</div>`;
+}
+
+function palco(j) {
+  if (j === 'steam') {
+    const pc = (html) => {
+      if (!ctrlNovo('steam') || st.ctrl === 'linhas') return html;
+      if (st.ctrl === 'laterais') return html.replace('<span class="chao"></span></div>', `<span class="chao"></span><span data-ctrl="steam" style="display:contents">${ctrlSteam()}</span></div>`);
+      return `<div class="palcoCol">${html}<div class="ctrl" data-ctrl="steam" data-tipo="${st.ctrl}">${ctrlSteam()}</div></div>`;
+    };
+    return pc(`<div class="palco" data-palco="steam"><div class="deque" data-deque>${listaSteam().map((g, k) => `<span class="capa" data-k="${k}" style="--ordem:${k}"><span class="arte" style="--ordem:${k}"><img src="${g.capaAlta}" alt="" loading="lazy" onerror="this.src='${g.capa}'"></span></span>`).join('')}</div><span class="chao"></span></div>`);
+  }
+  if (j === 'lol') {
+    const M = lolOrdem(), max = maiorLol(), lugar = [2, 1, 3];
+    return `<div class="palco" data-palco="lol"><ol class="podio">${M.map((m, k) => `<li class="lugar" data-lugar="${k}" ${k === st.lol.i ? 'data-sel' : ''} style="--ordem:${lugar[k]}"><span class="campeao"><img src="${m.icone}" alt=""><img class="brasaoM" src="maestria-10.webp" alt=""></span><span class="lnome">${m.campeao}</span><span class="lpts">${pts(m.pontos)}</span><span class="degrau" style="--altura:${(m.pontos / max).toFixed(3)}">${k + 1}</span></li>`).join('')}</ol><span class="chao"></span></div>`;
+  }
+  return `<div class="palco" data-palco="mc"><div class="mc" data-mc><span class="ped"><i></i><i></i><i></i></span><span class="tag">${MC.nome}</span><canvas data-corpo width="16" height="32"></canvas></div><span class="chao"></span></div>`;
+}
+
+function gaveta() {
+  return `<details class="gaveta"><summary><span>Últimas partidas</span><span class="rostos">${R.partidas.map((p) => `<img src="${p.icone}" alt="" ${p.vitoria ? '' : 'data-derrota'}>`).join('')}</span><span class="ponta"></span></summary>
+    <ol class="partidas">${R.partidas.map((p) => `<li class="partida" ${p.vitoria ? '' : 'data-derrota'}><span class="fio"></span><img src="${p.icone}" alt=""><span class="meio"><b>${p.vitoria ? 'Vitória' : 'Derrota'}</b><span><b>${p.abates}/${p.mortes}/${p.assistencias}</b> · KDA ${((p.abates + p.assistencias) / Math.max(1, p.mortes)).toFixed(1)}</span><span>${FILAS[p.fila] ?? 'Partida'} · ${dur(p.duracao)}</span><span>${haQuanto(p.fim)}</span></span><span class="itens">${(p.itens ?? []).map((u) => u ? `<img src="${u}" alt="">` : '<i></i>').join('')}</span></li>`).join('')}</ol>
+    <p class="semDesordem">Partidas de ARAM: Desordem não aparecem: a Riot não as publica na API.</p></details>`;
+}
+
+function cartaLol(nivelEscrito = true) {
+  return `<div class="carta"><div class="brasao"><img class="icone" src="${R.perfil.icone}" alt=""><img class="borda" src="borda-18.webp" alt="">${nivelEscrito ? `<span class="nv">${R.perfil.nivel}</span>` : ''}</div><span class="cnick">${R.perfil.nome}</span><span class="creg">#${R.perfil.tag.toUpperCase()} · ${R.perfil.regiao}</span></div>`;
+}
+function cartaGeral(j) {
+  if (j === 'lol') return cartaLol();
+  const d = IDENT[j]();
+  return `<div class="carta"><span class="av" data-anel="${j}">${d.img}${anel(d.fr)}</span><span class="ct"><span class="cnick">${d.nick}</span><span class="creg">${d.meta}</span></span></div>`;
+}
+
+/* ---------- as composições ---------- */
+const JOGOS = ['steam', 'lol', 'mc'];
+
+function compHoje() {
+  return `<div class="hoje" data-m>
+    <div class="cena" data-m="x">
+      <div class="painelH" data-m>${conta('steam')}${abasSteam()}${painel('steam', false).replace('class="painel"', 'class="painel" data-m')}</div>
+      ${palco('steam')}
+    </div>
+    <div class="andar" data-m="x">
+      <div class="parte" data-m>${cab('lol')}<div class="liga" data-m><div class="topo" data-m="x">${cartaLol()}<div class="bl" data-m><h4 class="sub">Maior maestria</h4>${palco('lol').replace('class="palco"', 'class="palco" style="height:auto"')}</div></div>${gaveta()}</div></div>
+      <div class="parte" data-m>${cab('mc')}<div class="canto">${palco('mc')}</div></div>
+    </div>
+  </div>`;
+}
+
+function steamLinha(attrs = '') {
+  if (ctrlNovo('steam') && st.ctrl === 'linhas') {
+    return `<div class="comandoS" data-m="x">${conta('steam')}${abasSteam()}<span class="setas" data-setas="steam">${passoS(-1)}${passoS(1)}</span></div>
+      <div class="linhaS" data-m="x" ${attrs}><div class="lado" data-m>${painel('steam')}</div>${palco('steam')}</div>`;
+  }
+  return `<div class="linhaS" data-m="x" ${attrs}><div class="lado" data-m>${conta('steam')}${painel('steam')}</div>${palco('steam')}</div>`;
+}
+function steamLinhaInvertida() {
+  return `<div class="linhaS" data-m="x">${palco('steam')}<div class="lado" data-m>${conta('steam')}${painel('steam')}</div></div>`;
+}
+
+const compA = () => `<div class="op A" data-m>
+  <section class="bloco" data-m>${cab('steam', true)}${steamLinha()}</section>
+  <div class="andar" data-m="x">
+    <section class="bloco" data-m>${cab('lol')}<div class="ligaA" data-m="x">${cartaLol()}${palco('lol')}</div>${gaveta()}</section>
+    <section class="bloco canto" data-m>${cab('mc')}${palco('mc')}</section>
+  </div></div>`;
+
+const compB = () => `<div class="op B" data-m style="position:relative">
+  <section class="bloco" data-m>${cab('steam', true)}${steamLinhaInvertida()}</section>
+  <div class="andar" data-m="x">
+    <section class="bloco">${cab('lol')}${palco('lol')}<div>${painel('lol')}${gaveta()}</div></section>
+    <section class="bloco">${cab('mc')}${palco('mc')}<div>${painel('mc')}</div></section>
+  </div><span class="costura"></span></div>`;
+
+const compC = () => `<div class="op C"><div class="mosaico" data-m="x">
+  <section class="celula" data-larga data-m>${cab('steam', true)}${steamLinha()}</section>
+  <section class="celula" data-m>${cab('lol')}${conta('lol')}<div style="margin-top:var(--e3)">${palco('lol')}</div>${painel('lol')}${gaveta()}</section>
+  <section class="celula" data-m>${cab('mc')}${conta('mc')}<div style="margin-top:var(--e3)">${palco('mc')}</div>${painel('mc')}</section>
+</div></div>`;
+
+const compD = () => `<div class="op D"><div class="mosaico" data-m="x">
+  <section class="alta" data-m>${cab('steam', true)}${conta('steam')}${palco('steam')}${painel('steam')}</section>
+  <section class="direita" data-m>${cab('lol')}<div class="par" data-m="x">${palco('lol')}<div class="lado" data-m>${conta('lol')}${painel('lol')}</div></div>${gaveta()}</section>
+  <section class="direita" data-m>${cab('mc')}<div class="par" data-m="x">${palco('mc')}<div class="lado" data-m>${conta('mc')}${painel('mc')}</div></div></section>
+</div></div>`;
+
+const COMP = { hoje: compHoje, A: compA, B: compB, C: compC, D: compD };
+
+/* ---------- o deque, a mola e o arraste (a conta do site) ---------- */
+const DQ = new Map();
+function pose(d, w) {
+  const tras = Math.max(0, d), afasta = w * 0.52;
+  const op = d < 0 ? Math.max(0, 1 + d * 1.4) : Math.max(0, 1 - Math.max(0, d - 3.2));
+  return {
+    transform: `translate(-50%, 0) translateX(${d * afasta + Math.min(d, 0) * 40}px) translateZ(${-d * 150}px) rotateY(${limitar(d, 0, 1) * -14}deg)`,
+    opacity: String(op),
+    filter: `brightness(${Math.max(0.2, 1 - tras * 0.26)}) blur(${Math.min(4, tras * 1.1)}px) grayscale(${Math.min(1, tras * 0.6)})`,
+    zIndex: String(100 - Math.round(Math.abs(d) * 10)),
+    pointerEvents: d < -0.01 ? 'none' : 'auto',
+  };
+}
+function ligarDeque(el) {
+  const capas = [...el.querySelectorAll('.capa')];
+  const s = { pos: st.steam.i, alvo: st.steam.i, q: 0, arr: null };
+  const w = () => capas[0]?.offsetWidth || 180;
+  const pintar = () => capas.forEach((c, k) => Object.assign(c.style, pose(k - s.pos, w())));
+  const animar = () => {
+    cancelAnimationFrame(s.q);
+    const passo = () => {
+      s.pos += (s.alvo - s.pos) * 0.14;
+      if (Math.abs(s.alvo - s.pos) < 0.001) s.pos = s.alvo;
+      pintar();
+      if (s.pos !== s.alvo) s.q = requestAnimationFrame(passo);
+    };
+    passo();
+  };
+  pintar();
+  el.addEventListener('pointerdown', (e) => { s.arr = { x: e.clientX, de: s.pos, andou: false }; el.setPointerCapture(e.pointerId); cancelAnimationFrame(s.q); });
+  el.addEventListener('pointermove', (e) => {
+    if (!s.arr) return;
+    const dx = e.clientX - s.arr.x;
+    if (Math.abs(dx) > 4) s.arr.andou = true;
+    s.pos = limitar(s.arr.de - dx / 90, 0, capas.length - 1); pintar();
+  });
+  el.addEventListener('pointerup', (e) => {
+    const a = s.arr; s.arr = null;
+    if (!a) return;
+    if (a.andou) ir('steam', Math.round(s.pos));
+    else { const c = e.target.closest('.capa'); if (c) ir('steam', +c.dataset.k); }
+  });
+  DQ.set(el, { ir: (i) => { s.alvo = i; animar(); } });
+}
+
+/* ---------- o boneco: a skin de frente, num canvas ---------- */
+const SKIN = new Image();
+SKIN.src = 'skin.png';
+function pintarCabeca(cv) {
+  const c = cv.getContext('2d'); c.imageSmoothingEnabled = false;
+  c.clearRect(0, 0, 8, 8); c.drawImage(SKIN, 8, 8, 8, 8, 0, 0, 8, 8); c.drawImage(SKIN, 40, 8, 8, 8, 0, 0, 8, 8);
+}
+function pintarCorpo(cv) {
+  const c = cv.getContext('2d'); c.imageSmoothingEnabled = false; c.clearRect(0, 0, 16, 32);
+  const b = MC.slim ? 3 : 4, ox = 4 - b + 1;
+  const partes = [
+    [8, 8, 8, 8, 4, 0], [40, 8, 8, 8, 4, 0],
+    [20, 20, 8, 12, 4, 8], [20, 36, 8, 12, 4, 8],
+    [44, 20, b, 12, 4 - b, 8], [44, 36, b, 12, 4 - b, 8],
+    [36, 52, b, 12, 12, 8], [52, 52, b, 12, 12, 8],
+    [4, 20, 4, 12, 4, 20], [4, 36, 4, 12, 4, 20],
+    [20, 52, 4, 12, 8, 20], [4, 52, 4, 12, 8, 20],
+  ];
+  for (const [sx, sy, w, h, dx, dy] of partes) c.drawImage(SKIN, sx, sy, w, h, dx, dy, w, h);
+}
+let regen = 0;
+function golpe(el) {
+  if (st.mc.vida === 0) return;
+  el.removeAttribute('data-golpe'); void el.offsetWidth; el.setAttribute('data-golpe', '');
+  st.mc.vida = Math.max(0, st.mc.vida - 2);
+  if (st.mc.vida === 0) {
+    st.mc.mortes++;
+    setTimeout(() => { st.mc.vida = 20; atualizar('mc'); }, 1500);
+  }
+  clearInterval(regen);
+  regen = setTimeout(function cura() {
+    if (st.mc.vida > 0 && st.mc.vida < 20) { st.mc.vida++; atualizar('mc'); regen = setTimeout(cura, 300); }
+  }, 3500);
+  atualizar('mc');
+}
+
+/* ---------- navegar ---------- */
+function ir(j, i) {
+  if (j === 'steam') {
+    st.steam.i = limitar(i, 0, listaSteam().length - 1);
+    document.querySelectorAll('[data-deque]').forEach((d) => DQ.get(d)?.ir(st.steam.i));
+  }
+  if (j === 'lol') {
+    st.lol.i = limitar(i, 0, R.maestrias.length - 1);
+    document.querySelectorAll('[data-lugar]').forEach((l) => l.toggleAttribute('data-sel', +l.dataset.lugar === st.lol.i));
+  }
+  atualizar(j);
+}
+
+/* reescreve só o que o estado mudou: o painel e o anel da conta */
+function atualizar(j) {
+  document.querySelectorAll(`[data-painel="${j}"]`).forEach((p) => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = painel(j, !!p.querySelector('.abas'));
+    p.replaceWith(tmp.firstElementChild);
+  });
+  const p = painelHTML(j);
+  document.querySelectorAll(`[data-p-rot="${j}"]`).forEach((e) => (e.innerHTML = p.rot));
+  document.querySelectorAll(`[data-p-nome="${j}"]`).forEach((e) => (e.innerHTML = p.nome));
+  document.querySelectorAll(`[data-p-num="${j}"]`).forEach((e) => (e.innerHTML = p.nums));
+  document.querySelectorAll(`[data-p-peso="${j}"]`).forEach((e) => e.style.setProperty('--peso', p.peso));
+  document.querySelectorAll(`[data-p-passos="${j}"]`).forEach((e) => (e.innerHTML = passos(j, p)));
+  if (j === 'steam') document.querySelectorAll('[data-setas="steam"]').forEach((c) => (c.innerHTML = passoS(-1) + passoS(1)));
+  if (j === 'steam') document.querySelectorAll('[data-ctrl="steam"]').forEach((c) => (c.innerHTML = ctrlSteam()));
+  if (j === 'mc') {
+    document.querySelectorAll('[data-anel="mc"] svg').forEach((s) => (s.outerHTML = anel(st.mc.vida / 20)));
+  }
+  if (st.regua) requestAnimationFrame(medir);
+}
+
+/* ---------- a régua ---------- */
+const ESCALA = new Set([8, 16, 24, 32, 48, 64, 96]);
+function medir() {
+  document.querySelector('.regua')?.remove();
+  const vistos = new Set();
+  const casco = document.getElementById('secao');
+  const base = casco.getBoundingClientRect();
+  const camada = document.createElement('div');
+  camada.className = 'regua';
+  const marca = (x, y, w, h, v) => {
+    const s = document.createElement('span');
+    Object.assign(s.style, { left: `${x - base.left}px`, top: `${y - base.top}px`, width: `${Math.max(w, 1)}px`, height: `${Math.max(h, 1)}px` });
+    const r = Math.round(v);
+    vistos.add(r);
+    if (!ESCALA.has(r)) s.dataset.fora = '';
+    s.innerHTML = `<b>${r}</b>`;
+    camada.append(s);
+  };
+  const visiveis = (el) => [...el.children].filter((c) => {
+    const cs = getComputedStyle(c);
+    if (cs.position === 'absolute' || cs.display === 'none' || cs.display === 'contents' && !c.getClientRects().length) return false;
+    const r = c.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  });
+  for (const el of document.querySelectorAll('#palco [data-m]')) {
+    const filhos = visiveis(el).map((c) => c.getBoundingClientRect());
+    const horizontal = el.dataset.m === 'x';
+    for (let k = 0; k < filhos.length - 1; k++) {
+      const a = filhos[k], b = filhos[k + 1];
+      if (horizontal && Math.abs(a.top - b.top) < 40 && b.left - a.right > 2) {
+        const top = Math.max(a.top, b.top);
+        marca(a.right, top, b.left - a.right, Math.min(36, Math.min(a.bottom, b.bottom) - top), b.left - a.right);
+      } else if (b.top - a.bottom > 2 && (!horizontal || b.top >= a.bottom)) {
+        const x = Math.max(a.left, b.left);
+        marca(x, a.bottom, Math.min(72, Math.min(a.right, b.right) - x), b.top - a.bottom, b.top - a.bottom);
+      }
+    }
+  }
+  /* o vão entre o cabeçalho da seção e a primeira peça, e entre as partes do diorama */
+  const intro = casco.querySelector('.intro').getBoundingClientRect();
+  const primeiro = document.querySelector('#palco > *')?.getBoundingClientRect();
+  if (primeiro) marca(intro.left, intro.bottom, 72, primeiro.top - intro.bottom, primeiro.top - intro.bottom);
+  document.querySelectorAll('.D .col').forEach((c) => {
+    const f = [...c.children].map((x) => x.getBoundingClientRect()).filter((r) => r.height > 0);
+    for (let k = 0; k < f.length - 1; k++) if (f[k + 1].top - f[k].bottom > 2) marca(f[k].left, f[k].bottom, 60, f[k + 1].top - f[k].bottom, f[k + 1].top - f[k].bottom);
+  });
+  if (st.regua) casco.append(camada);
+  const dd = document.querySelector('[data-escala]');
+  if (dd) dd.innerHTML = [...vistos].sort((a, b) => a - b).map((v) => `<i ${ESCALA.has(v) ? '' : 'data-fora'}>${v}</i>`).join('');
+}
+
+/* ---------- montar ---------- */
+function resumo() {
+  const o = OPCOES[st.opcao];
+  document.getElementById('resumo').innerHTML = `
+    <div><dt>${o.nome}</dt><dd>${o.frase}</dd></div>
+    <div><dt>${st.opcao === 'hoje' ? 'O que não conversa' : 'O que se perde'}</dt><dd>${o.perde}</dd></div>
+    ${o.controles ? `<div><dt>Controles da Steam</dt><dd>${o.controles[st.ctrl]}</dd></div>` : ''}
+    <div><dt>Vãos medidos nesta largura</dt><dd class="escala" data-escala></dd><dd>Tracejado: fora da escala 8 · 16 · 24 · 48 · 96 (32 e 64 no celular).</dd></div>`;
+}
+
+function render() {
+  const p = document.getElementById('palco');
+  p.innerHTML = COMP[st.opcao]();
+  document.getElementById('perfilSecao').hidden = st.opcao !== 'hoje';
+  p.querySelectorAll('[data-deque]').forEach(ligarDeque);
+  const pintaMC = () => { p.querySelectorAll('canvas[data-cabeca]').forEach(pintarCabeca); p.querySelectorAll('canvas[data-corpo]').forEach(pintarCorpo); };
+  SKIN.complete ? pintaMC() : SKIN.addEventListener('load', pintaMC, { once: true });
+  resumo();
+  document.querySelectorAll('[data-o]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.o === st.opcao));
+  document.querySelectorAll('[data-r]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.r === (st.regua ? '1' : '0')));
+  document.querySelectorAll('[data-l]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.l === st.largura));
+  document.querySelectorAll('[data-c]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.c === st.ctrl));
+  document.querySelectorAll('[data-n]').forEach((b) => b.setAttribute('aria-pressed', +b.dataset.n === st.n));
+  document.getElementById('moldura').dataset.largura = st.largura;
+  setTimeout(medir, 1500); document.fonts?.ready.then(() => setTimeout(medir, 1500));
+  medir();
+}
+
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('button, [data-lugar], [data-mc]');
+  if (!t) return;
+  if (t.dataset.o) { st.opcao = t.dataset.o; render(); history.replaceState(null, '', `#${st.opcao}`); }
+  else if (t.dataset.r) { st.regua = t.dataset.r === '1'; render(); }
+  else if (t.dataset.l) { st.largura = t.dataset.l; render(); }
+  else if (t.dataset.c) { st.ctrl = t.dataset.c; render(); }
+  else if (t.dataset.n) { st.n = +t.dataset.n; st.steam.i = 0; render(); }
+  else if (t.dataset.ir) ir('steam', +t.dataset.ir);
+  else if (t.dataset.passo) ir(t.dataset.passo, (t.dataset.passo === 'steam' ? st.steam.i : st.lol.i) + +t.dataset.d);
+  else if (t.dataset.abaj) { st.steam.aba = t.dataset.abaj; st.steam.i = 0; render(); }
+  else if (t.dataset.lugar !== undefined) ir('lol', +t.dataset.lugar);
+  else if (t.hasAttribute('data-mc')) golpe(t);
+  else if (t.dataset.cart) { st.cart = t.dataset.cart; render(); }
+  else if (t.hasAttribute('data-aviso')) {
+    st.aviso = !st.aviso;
+    t.setAttribute('aria-expanded', st.aviso);
+    document.getElementById('aviso-lol').toggleAttribute('data-aberto', st.aviso);
+    setTimeout(medir, 600);
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  const d = e.key === 'ArrowLeft' ? -1 : 1;
+  if (st.opcao === 'C' && st.cart === 'lol') ir('lol', st.lol.i + d); else ir('steam', st.steam.i + d);
+});
+document.addEventListener('toggle', () => setTimeout(medir, 50), true);
+addEventListener('resize', () => requestAnimationFrame(medir));
+
+Promise.all([fetch('steam.json').then((r) => r.json()), fetch('riot.json').then((r) => r.json())]).then(([s, r]) => {
+  S = s; R = r;
+  const h = location.hash.slice(1);
+  if (OPCOES[h]) st.opcao = h;
+  render();
+});
+</script>
+</body>
+</html>

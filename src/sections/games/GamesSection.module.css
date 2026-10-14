@@ -38,7 +38,28 @@
   }
 }
 
+/**
+ * A escala de espaço da seção, e todo vão dela cai num degrau (vitrine de
+ * 14/10/2026, "Afinado"): 8 dentro de um grupo, 16 entre grupos de um painel,
+ * 24 do título ao conteúdo, 48 entre colunas e 96 entre os jogos. Antes eram
+ * onze números diferentes, um por rodada em que cada jogo foi desenhado, e
+ * as três partes não conversavam. O LoL (`Liga.module.css`) lê os mesmos.
+ *
+ * **`--chao` é a altura do chão em que tudo pisa**: as capas do deque, a
+ * carta e o pódio do LoL, e o boneco. É o centro do pedestal do boneco, três
+ * texels acima do pé do palco (`--px * 3` em `Boneco.module.css`), e por isso
+ * acompanha o `--px` dele nas três larguras. `--andar-h` é a altura do palco
+ * do boneco (`--px * 48`), que o pódio também ocupa para os dois chãos
+ * caírem na mesma linha.
+ */
 .secao {
+  --e1: 8px;
+  --e2: 16px;
+  --e3: 24px;
+  --e4: 48px;
+  --e5: 96px;
+  --chao: 18px;
+  --andar-h: 288px;
   /* a largura da capa da frente, e a altura do palco que a contém em pé */
   --capa-w: clamp(150px, 24vmin, 220px);
   --deque-h: clamp(300px, 44vmin, 420px);
@@ -48,32 +69,87 @@
   max-width: 1000px;
 }
 
-.cena {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
-  gap: clamp(20px, 3vw, 40px);
+/* os três jogos, um embaixo do outro, com o vão mais largo da escala */
+.jogos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e5);
+}
+
+.steam {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e3);
+}
+
+/* a linha do título da Steam fecha no perfil, como a do LoL fecha no aviso */
+.cabeca {
+  display: flex;
+  column-gap: 14px;
   align-items: center;
 }
 
-/* ---------- o painel do jogo escolhido ---------- */
+.cabeca h3 {
+  flex: 1;
+}
 
+/* o alvo do perfil é o de sempre, e a margem o tira da conta da linha */
+.cabeca > a {
+  margin: -8px -9px -8px 0;
+}
+
+/* ---------- o painel e as capas ---------- */
+
+.cena {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--e4);
+}
+
+/**
+ * O painel desce até o chão do deque: a conta, o estado do jogo e a régua, de
+ * cima para baixo, e os traços da régua ficam em pé na linha em que as capas
+ * pisam.
+ */
 .painel {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--e3);
+  justify-content: flex-end;
+  min-width: 0;
+  padding-bottom: var(--chao);
+}
+
+.contaVazia {
+  display: flex;
+  align-items: center;
+  height: 42px;
+}
+
+/* as capas, com as abas centradas em cima: é o que elas reordenam */
+.palco {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e3);
+  min-width: 0;
+}
+
+.texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e1);
   min-width: 0;
 }
 
 /**
  * A conta da Steam: o avatar de 42px com o anel de XP, e o nick e o nível ao
- * lado, com respiro antes das abas: é assinatura do painel, não conteúdo dele.
- * O avatar fica em cor, como as capas: é identidade de terceiro.
+ * lado. O avatar fica em cor, como as capas: é identidade de terceiro.
  */
 .conta {
   display: flex;
   gap: 12px;
   align-items: center;
-  margin-bottom: 12px;
+  min-width: 0;
 }
 
 .avatar {
@@ -139,13 +215,13 @@
  */
 .abas {
   display: flex;
-  gap: 22px;
-  margin-bottom: 6px;
+  gap: var(--e3);
+  justify-content: center;
 }
 
 .aba {
   margin: 0;
-  padding: 0 0 6px;
+  padding: 4px 0 var(--e1);
   border: 0;
   border-bottom: 1px solid transparent;
   background: none;
@@ -179,7 +255,7 @@
   overflow: hidden;
   white-space: nowrap;
   display: flex;
-  gap: 8px;
+  gap: var(--e1);
   align-items: center;
   color: var(--tx-rotulo);
   font-size: var(--fs-rotulo);
@@ -219,7 +295,7 @@
 .tempos {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 18px;
+  gap: var(--e1) var(--e2);
   color: var(--tx-apoio);
   font-size: var(--fs-lista);
   font-weight: 300;
@@ -232,15 +308,58 @@
   font-weight: 400;
 }
 
-.controles {
+/**
+ * A régua dos jogos, que é o caminho entre eles: um traço por capa, o da frente
+ * alto e aceso. O botão é a coluna inteira (24px de alvo), e o traço de 1px
+ * mora dentro dele.
+ */
+.regua {
   display: flex;
-  gap: 10px;
+  gap: var(--e2);
   align-items: center;
-  margin-top: 8px;
+}
+
+.tracos {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.traco {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  justify-content: center;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  appearance: none;
+}
+
+.traco span {
+  width: 1px;
+  height: 6px;
+  background: var(--linha-forte);
+  transition:
+    height var(--dur-retorno) var(--ease-saida),
+    background-color var(--dur-hover);
+}
+
+.traco:hover span {
+  height: 12px;
+  background: var(--linha-cheia);
+}
+
+.traco[aria-current] span {
+  height: 16px;
+  background: var(--tx-titulo);
 }
 
 .posicao {
-  margin-left: 6px;
+  flex: none;
   color: var(--tx-rotulo);
   font-size: var(--fs-meta);
   letter-spacing: 0.2em;
@@ -287,10 +406,13 @@
  * Uma capa. A posição inteira (lado, profundidade, giro, brilho e foco) é
  * escrita pela mola (`GamesSection.tsx`); daqui sai só o lugar de onde ela
  * parte, um pouco à esquerda do centro, para as de trás terem para onde ir.
+ *
+ * **Ela fica em pé no chão** (`bottom`, e a `pose` só centra no eixo x), como o
+ * pódio e o boneco embaixo. Centrada na altura, ela flutuava acima da linha.
  */
 .capa {
   position: absolute;
-  top: 50%;
+  bottom: calc(var(--chao) + 1px);
   left: 30%;
   width: var(--capa-w);
   aspect-ratio: 2 / 3;
@@ -335,11 +457,12 @@
   pointer-events: none;
 }
 
-/* o chão do trilho: uma linha só, para o deque ter onde pousar */
-.chao {
+/* o chão: uma linha só, na altura em que o LoL e o Minecraft também pisam */
+.chao,
+.canto::after {
   position: absolute;
   right: 0;
-  bottom: 4%;
+  bottom: var(--chao);
   left: 0;
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--linha-forte), transparent);
@@ -349,14 +472,14 @@
 
 /**
  * O LoL leva a parte maior, e o Minecraft fecha a seção, mais estreito: o boneco
- * tem a largura do palco dele, e o que sobra é respiro.
+ * tem a largura do palco dele, e o que sobra é respiro. As colunas são as de
+ * cima ao contrário (7 | 5 contra 5 | 7).
  */
 .andar {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-  gap: clamp(24px, 4vw, 48px);
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: var(--e4);
   align-items: start;
-  margin-top: clamp(12px, 3vmin, 28px);
 }
 
 /**
@@ -379,7 +502,7 @@
   --ponta: 4px;
 
   display: flex;
-  gap: 8px;
+  gap: var(--e1);
   align-items: center;
   /* a área de clique tem 24px, e a margem negativa a tira da conta da linha: o
      título do LoL fica na altura do do Minecraft, que não tem botão */
@@ -446,39 +569,90 @@
 }
 
 .avisoLegal[data-aberto] p {
-  padding-top: 8px;
+  padding-top: var(--e1);
   opacity: 1;
 }
 
 .parte {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--e3);
   min-width: 0;
 }
 
+/**
+ * O canto do boneco tem a altura do palco dele, e o pódio do LoL ao lado ocupa
+ * a mesma (`--andar-h`, em `Liga.module.css`): com os títulos na mesma linha,
+ * os dois chãos caem na mesma altura.
+ */
 .canto {
+  position: relative;
   display: flex;
+  align-items: flex-end;
   justify-content: center;
+  min-height: var(--andar-h);
 }
 
-/* celular: o deque em cima, o painel embaixo */
+.canto::after {
+  content: '';
+  pointer-events: none;
+}
+
+/**
+ * Celular: uma coluna só, centrada. O painel se desfaz (`display: contents`) e
+ * as peças dele se intercalam com as capas: a conta abre a Steam, depois as
+ * abas e as capas, e embaixo delas o estado, o título, as horas e a régua
+ * (pedido do Lucas, 14/10/2026). Sem uma coluna ao lado, o texto se alinha com
+ * as capas, que estão no meio.
+ */
 @media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
-  .cena {
-    grid-template-columns: minmax(0, 1fr);
+  .secao {
+    --e4: 32px;
+    --e5: 64px;
+    --chao: 15px;
+    --andar-h: 240px;
+    --capa-w: clamp(130px, 38vw, 180px);
+    --deque-h: clamp(240px, 60vw, 320px);
   }
 
-  .deque {
+  .cena {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--e3);
+  }
+
+  .painel {
+    display: contents;
+  }
+
+  .conta,
+  .contaVazia {
+    order: -2;
+    justify-self: center;
+  }
+
+  .palco {
     order: -1;
+  }
+
+  .rotulo,
+  .tempos {
+    justify-content: center;
+  }
+
+  .nome {
+    text-align: center;
   }
 
   .andar {
     grid-template-columns: minmax(0, 1fr);
+    gap: var(--e5);
   }
+}
 
+@media (width >= 1600px) {
   .secao {
-    --capa-w: clamp(130px, 38vw, 180px);
-    --deque-h: clamp(260px, 64vw, 340px);
+    --chao: 21px;
+    --andar-h: 336px;
   }
 }
 
