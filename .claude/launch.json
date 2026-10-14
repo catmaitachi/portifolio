@@ -22,6 +22,18 @@
         ".design/projetos-previews"
       ],
       "port": 4188
+    },
+    {
+      "name": "vitrine-jogos",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4189",
+        "-d",
+        ".design/jogos-previews"
+      ],
+      "port": 4189
     }
   ]
 }
