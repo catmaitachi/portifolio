@@ -393,8 +393,8 @@
 /**
  * O botão de passo: anterior e próximo, de 38px, com a ponta desenhada dentro.
  *
- * É o mesmo na Carreira (a órbita) e em Jogos (o deque), que são as seções que
- * andam por um item de cada vez.
+ * É o da Carreira (o maço de crachás), a seção que anda por um item de cada
+ * vez. Jogos o usou até 14/10/2026, quando a régua dos jogos o substituiu.
  */
 .passo {
   display: flex;

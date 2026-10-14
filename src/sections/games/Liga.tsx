@@ -81,7 +81,7 @@ function Podio({ maestrias }: { maestrias: DadosLiga['maestrias'] }) {
   const pontos = useMemo(() => new Intl.NumberFormat(lang), [lang]);
 
   return (
-    <ol className={styles.podio}>
+    <ol className={styles.podio} aria-label={t.jogos.lol.maestria}>
       {maestrias.map((m, i) => (
         <li
           key={m.campeao}
@@ -155,10 +155,7 @@ function Conteudo({ dados }: { dados: DadosLiga }) {
     <div className={styles.liga}>
       <div className={styles.topo}>
         <Carta perfil={dados.perfil} />
-        <div className={styles.bloco}>
-          <h4 className={comum.tituloLista}>{lol.maestria}</h4>
-          <Podio maestrias={dados.maestrias} />
-        </div>
+        <Podio maestrias={dados.maestrias} />
       </div>
       {/* as partidas numa gaveta, fechada ao chegar: é o detalhe, e a carta e o
           pódio já dizem quem joga. `<details>` dá o teclado e o estado de graça */}
@@ -211,31 +208,26 @@ function Molde({ estado }: { estado: SemDado }) {
               <Traco w="24px" />
             </span>
           </div>
-          <div className={styles.bloco}>
-            <h4 className={comum.tituloLista}>
-              <Traco w="96px" />
-            </h4>
-            <ol className={styles.podio}>
-              {ALTURAS_MOLDE.map((altura, i) => (
-                <li
-                  key={LUGAR[i]}
-                  className={styles.lugar}
-                  style={{ '--ordem': LUGAR[i], '--altura': altura } as React.CSSProperties}
-                >
-                  <span className={styles.campeao}>
-                    <span className={styles.vazio} />
-                  </span>
-                  <span className={styles.nome}>
-                    <Traco w="56px" />
-                  </span>
-                  <span className={styles.pontos}>
-                    <Traco w="72px" />
-                  </span>
-                  <span className={styles.degrau} />
-                </li>
-              ))}
-            </ol>
-          </div>
+          <ol className={styles.podio}>
+            {ALTURAS_MOLDE.map((altura, i) => (
+              <li
+                key={LUGAR[i]}
+                className={styles.lugar}
+                style={{ '--ordem': LUGAR[i], '--altura': altura } as React.CSSProperties}
+              >
+                <span className={styles.campeao}>
+                  <span className={styles.vazio} />
+                </span>
+                <span className={styles.nome}>
+                  <Traco w="56px" />
+                </span>
+                <span className={styles.pontos}>
+                  <Traco w="72px" />
+                </span>
+                <span className={styles.degrau} />
+              </li>
+            ))}
+          </ol>
         </div>
         <div className={styles.alca}>
           <h4 className={comum.tituloLista}>{lol.partidas}</h4>
