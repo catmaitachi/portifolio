@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { format, PERFIS } from '~/content';
 import type { Jogo, Jogos, Minecraft, PerfilSteam } from '~/data/types';
 import { useArrowKeys } from '~/hooks/useArrowKeys';
@@ -21,94 +21,104 @@ const REPETIR = 60_000;
 const horas = (minutos: number) => Math.round(minutos / 60);
 
 /**
- * A geometria do deque, em px e graus: quanto cada capa de trás recua no eixo
- * z, quanto anda para o lado, quanto gira, e quanto perde de brilho e de foco
- * por posição. Os números saem do `DepthCarousel` do React Bits, reduzidos.
+ * A geometria do deque. A capa da frente está em `d = 0`; as de trás ficam à
+ * direita e as que já passaram, à esquerda, e as duas filas são **pilhas**: cada
+ * capa a mais é uma borda a mais, e a espessura da fila é a quantidade de jogos.
+ *
+ * O primeiro passo é largo (a vizinha mostra metade da cara) e os seguintes são
+ * estreitos, só o bastante para cada capa aparecer como uma borda (`passo`,
+ * medido pelo deque a partir da largura que ele tem). Elas também recuam no eixo
+ * z, e o ponto de fuga fica na linha do chão: encolhem para o chão, e a
+ * silhueta da fila vira uma escada que desce, como as barras de um gráfico.
  */
 const PROFUNDIDADE = 150;
-const AFASTA = 100;
+/** O que cada capa depois da primeira recua a mais: pouco, para a escada não despencar. */
+const RECUO = 26;
+/** A perspectiva do `.deque` (CSS), que a conta de largura precisa conhecer. */
+const PERSPECTIVA = 1300;
+/** Quanto a primeira vizinha se afasta, em frações da largura da capa. */
+const ABRE = 0.5;
 const GIRA = 14;
-const APAGA = 0.26;
-const DESFOCA = 1.1;
 /** Quantos px de arraste andam uma capa. */
 const ARRASTE_POR_CAPA = 90;
 /** A mola que leva a posição até o alvo, por quadro: sem passar do ponto. */
 const MOLA = 0.14;
+/** O passo da pilha antes de o deque se medir, e o do molde de espera. */
+const PASSO_PADRAO = 18;
 
 const limitar = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
 /** Quantas capas o deque leva: o mesmo teto das listas que `api/steam` devolve. */
-const TETO = 15;
+const TETO = 25;
+
+/** O quanto uma capa a `a` posições da frente recua no eixo z. */
+const recuo = (a: number) => Math.min(a, 1) * PROFUNDIDADE + Math.max(0, a - 1) * RECUO;
 
 /**
- * O deque: as capas em pé, uma atrás da outra num trilho que recua.
- *
- * A da frente é a escolhida, em cor e em foco; as de trás afastam, apagam, perdem
- * a cor e desfocam pela distância. A posição anda por uma mola num rAF que
- * escreve **direto no `style`** de cada capa, como a inclinação do retrato: um
- * `setState` por quadro re-renderizaria a seção inteira para mudar cinco números.
- * O React só sabe do alvo (`atual`), que muda no fim de um arraste, num clique ou
- * numa seta.
- *
- * As capas são desenho (`aria-hidden`): quem usa leitor de tela navega pelo
- * painel ao lado, que diz o nome, as horas e leva à página do jogo.
+ * O passo da pilha, em px já projetados, para que a última capa de `n` ainda caiba
+ * em `larg`: a meia largura menos o primeiro passo e o meio corpo da última, que
+ * a perspectiva encolheu. Nunca passa de um sexto da capa, que é o respiro de uma
+ * pilha curta, e nunca fica abaixo de 2px, onde a borda deixaria de se ver.
  */
+function passoDaPilha(larg: number, capa: number, n: number) {
+  if (n <= 2) return PASSO_PADRAO;
+  const ultima = PERSPECTIVA / (PERSPECTIVA + recuo(n - 1));
+  const sobra = larg / 2 - 4 - capa * ABRE - (capa * ultima) / 2;
+  return limitar(sobra / (n - 2), 2, capa / 6);
+}
+
 /**
  * Onde fica a capa que está `d` posições atrás da da frente (negativo: já
  * passou). A mola do deque e o molde de espera desenham pela mesma conta.
  */
-function pose(d: number) {
-  const tras = Math.max(0, d);
-  // a que já passou sai para o lado e some; as de trás só apagam depois da quarta
-  const opacidade = d < 0 ? Math.max(0, 1 + d * 1.4) : Math.max(0, 1 - Math.max(0, d - 3.2));
+function pose(d: number, passo = PASSO_PADRAO) {
+  const a = Math.abs(d);
+  const lado = Math.sign(d);
+  const z = -recuo(a);
+  // o lado é escrito em px **projetados**, e o navegador projeta por cima: divide-se pela escala
+  const escala = PERSPECTIVA / (PERSPECTIVA - z);
+  const x = `(var(--capa-w) * ${ABRE * Math.min(a, 1)} + ${Math.max(0, a - 1) * passo}px)`;
   return {
-    transform: `translate(-50%, 0) translateX(${d * AFASTA + Math.min(d, 0) * 40}px) translateZ(${-d * PROFUNDIDADE}px) rotateY(${limitar(d, 0, 1) * -GIRA}deg)`,
-    opacity: String(opacidade),
-    filter: `brightness(${Math.max(0.2, 1 - tras * APAGA)}) blur(${Math.min(4, tras * DESFOCA)}px) grayscale(${Math.min(1, tras * 0.6)})`,
+    transform: `translate(-50%, 0) translateX(calc(${lado} * ${x} / ${escala})) translateZ(${z}px) rotateY(${-lado * Math.min(a, 1) * GIRA}deg)`,
+    opacity: String(Math.max(0.4, 1 - Math.max(0, a - 1) * 0.05)),
+    filter: `brightness(${Math.max(0.42, 1 - a * 0.18)}) blur(${Math.min(1.5, a * 0.4)}px) grayscale(${Math.min(1, a * 0.5)})`,
     // pela distância, para os dois lados: com `d` cru, a que já passou ficava por cima da da frente
-    zIndex: String(100 - Math.round(Math.abs(d) * 10)),
-    /**
-     * A que já passou sai para a esquerda, por cima do painel, e some só pela
-     * opacidade: sem isto ela continuava pegando o ponteiro, e os passos
-     * embaixo do painel deixavam de responder depois de algumas capas.
-     */
-    pointerEvents: d < -0.01 ? ('none' as const) : ('auto' as const),
+    zIndex: String(100 - Math.round(a * 5)),
   };
 }
 
-/** A seção sem o dado: o painel com o texto por chegar e três capas vazias no deque. */
+/** A seção sem o dado: a linha de cima, três capas vazias no deque e o texto por chegar. */
 function Molde({ estado }: { estado: SemDado }) {
   return (
     <EstadoRemoto estado={estado}>
       <div className={styles.cena}>
-        <div className={styles.painel}>
+        <div className={styles.topo}>
           <span className={styles.contaVazia}>
-            <Traco w="40%" />
+            <Traco w="120px" />
           </span>
+          <div className={styles.abas}>
+            <Traco w="180px" />
+          </div>
+        </div>
+        <div className={styles.deque}>
+          {[0, 1, 2].map((i) => (
+            <span key={i} className={styles.capa} style={pose(i)}>
+              <span className={styles.arte} />
+            </span>
+          ))}
+          <span className={styles.chao} />
+        </div>
+        <div className={styles.detalhe}>
           <div className={styles.texto}>
             <span className={styles.rotulo}>
               <Traco w="36%" />
             </span>
             <span className={styles.nome}>
               <Traco w="70%" />
-              <Traco w="45%" />
             </span>
             <span className={styles.tempos}>
               <Traco w="50%" />
             </span>
-          </div>
-        </div>
-        <div className={styles.palco}>
-          <div className={styles.abas}>
-            <Traco w="180px" />
-          </div>
-          <div className={styles.deque}>
-            {[0, 1, 2].map((i) => (
-              <span key={i} className={styles.capa} style={pose(i)}>
-                <span className={styles.arte} />
-              </span>
-            ))}
-            <span className={styles.chao} />
           </div>
         </div>
       </div>
@@ -116,6 +126,19 @@ function Molde({ estado }: { estado: SemDado }) {
   );
 }
 
+/**
+ * O deque: as capas em pé, em pilha dos dois lados da escolhida.
+ *
+ * A da frente é a escolhida, em cor e em foco; as de trás e as que já passaram
+ * recuam, escurecem, perdem a cor e desfocam um pouco pela distância. A posição
+ * anda por uma mola num rAF que escreve **direto no `style`** de cada capa, como a
+ * inclinação do retrato: um `setState` por quadro re-renderizaria a seção
+ * inteira para mudar cinco números. O React só sabe do alvo (`atual`), que muda no
+ * fim de um arraste, num clique ou numa seta.
+ *
+ * As capas são desenho (`aria-hidden`): quem usa leitor de tela navega pelo
+ * painel de baixo, que diz o nome, as horas e leva à página do jogo.
+ */
 function Deque({
   jogos,
   atual,
@@ -129,24 +152,47 @@ function Deque({
   const pos = useRef(atual);
   const alvo = useRef(atual);
   const quadro = useRef(0);
-  const arraste = useRef<{ x: number; de: number; andou: boolean } | null>(null);
+  const raiz = useRef<HTMLDivElement>(null);
+  const passo = useRef(PASSO_PADRAO);
+  const arraste = useRef<{ x: number; de: number; andou: boolean; capa: number | null } | null>(
+    null,
+  );
   const reduzido = useReducedMotion();
 
   const pintar = useCallback(() => {
     capas.current.forEach((el, i) => {
-      if (el) Object.assign(el.style, pose(i - pos.current));
+      if (el) Object.assign(el.style, pose(i - pos.current, passo.current));
     });
   }, []);
 
+  /**
+   * O passo da pilha depende da largura que o deque tem, e ele muda com a janela:
+   * mede-se antes da pintura e a cada redimensionamento, e repinta pela mesma
+   * conta da mola.
+   */
+  const total = jogos.length;
+  useLayoutEffect(() => {
+    const el = raiz.current;
+    if (!el) return;
+    const medir = () => {
+      passo.current = passoDaPilha(el.clientWidth, capas.current[0]?.offsetWidth ?? 0, total);
+      pintar();
+    };
+    medir();
+    const obs = new ResizeObserver(medir);
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [pintar, total]);
+
   const animar = useCallback(() => {
     cancelAnimationFrame(quadro.current);
-    const passo = () => {
+    const andar = () => {
       pos.current += (alvo.current - pos.current) * (reduzido ? 1 : MOLA);
       if (Math.abs(alvo.current - pos.current) < 0.001) pos.current = alvo.current;
       pintar();
-      if (pos.current !== alvo.current) quadro.current = requestAnimationFrame(passo);
+      if (pos.current !== alvo.current) quadro.current = requestAnimationFrame(andar);
     };
-    passo();
+    andar();
   }, [pintar, reduzido]);
 
   useEffect(() => {
@@ -160,10 +206,18 @@ function Deque({
 
   return (
     <div
+      ref={raiz}
       className={styles.deque}
       aria-hidden="true"
       onPointerDown={(e) => {
-        arraste.current = { x: e.clientX, de: alvo.current, andou: false };
+        // a capa apontada se guarda agora: com o ponteiro capturado, o alvo do `pointerup` é o deque
+        const capa = (e.target as HTMLElement).closest<HTMLElement>('[data-i]');
+        arraste.current = {
+          x: e.clientX,
+          de: alvo.current,
+          andou: false,
+          capa: capa ? Number(capa.dataset.i) : null,
+        };
         e.currentTarget.setPointerCapture(e.pointerId);
       }}
       onPointerMove={(e) => {
@@ -177,7 +231,7 @@ function Deque({
         pos.current = alvo.current;
         pintar();
       }}
-      onPointerUp={(e) => {
+      onPointerUp={() => {
         const a = arraste.current;
         arraste.current = null;
         if (!a) return;
@@ -186,8 +240,7 @@ function Deque({
           return;
         }
         // sem arraste é um clique: a capa apontada vem para a frente
-        const capa = (e.target as HTMLElement).closest<HTMLElement>('[data-i]');
-        if (capa) ir(Number(capa.dataset.i));
+        if (a.capa !== null) ir(a.capa);
       }}
       onPointerCancel={() => {
         arraste.current = null;
@@ -245,12 +298,11 @@ function arco(de: number, ate: number) {
 const FOLGA = 0.012;
 
 /**
- * A conta da Steam, no alto do painel: o avatar com o anel de XP e o nível.
+ * A conta da Steam, na linha de cima, antes das abas: o avatar com o anel de XP e o nível.
  *
  * O anel são dez arcos, um por nível da dezena em que a conta está (é de dez em
  * dez que a Steam muda o desenho do nível): os já passados acesos, e o do nível
- * atual aceso até onde o XP chegou. Fica pequeno, acima das abas: o assunto do
- * painel é o jogo, e não a conta.
+ * atual aceso até onde o XP chegou. Fica pequena: o assunto da seção é o jogo, e não a conta.
  *
  * É desenho com nome acessível (`role="img"`): o nível e o XP que falta vão no
  * rótulo, e o nick e o nível ficam escritos ao lado. O link para o perfil já é o
@@ -309,7 +361,7 @@ function Conta({ perfil }: { perfil: PerfilSteam }) {
 type Aba = 'ultimo' | 'horas';
 
 /**
- * O conteúdo, quando ele existe: as abas, o painel do jogo escolhido e o deque.
+ * O conteúdo, quando ele existe: a conta e as abas, o deque e o jogo escolhido.
  *
  * **O deque tem duas listas**, e a que abre é a de sempre com um degrau a mais:
  * o que está aberto agora, depois a quinzena, e depois a biblioteca pela última
@@ -380,17 +432,53 @@ function Conteudo({ dados, ativo }: { dados: Jogos; ativo: boolean }) {
   const maior = dados.maisJogados[0]?.minutosTotais ?? 0;
 
   /**
-   * Escolhido numa vitrine e ajustado pelo Lucas (14/10/2026). **A régua é o
-   * caminho entre os jogos**: um traço por capa, e tocar um vai direto a ele;
-   * os passos de anterior e próximo saíram (as setas do teclado continuam). As
-   * abas ficam centradas em cima das capas, que é o que elas reordenam, e a
-   * conta em cima do estado do jogo. No celular a conta abre a Steam, centrada,
-   * e depois vêm as abas, as capas, o texto e a régua.
+   * Três linhas (ajuste do Lucas, 14/10/2026, depois do "Afinado"): **a conta e as
+   * abas** em sequência, **o deque** na largura toda, em pilha, e **o jogo**, com o
+   * estado, o título e as horas no meio e as setas coladas nos lados, bem
+   * sutis. A régua saiu: a pilha já diz quantos jogos são e onde o escolhido está.
+   * No celular a ordem é a mesma, e o texto e as setas ficam juntos, logo abaixo
+   * das capas, para ver o jogo e trocá-lo ao mesmo tempo.
    */
   return (
     <div className={styles.cena}>
-      <div className={styles.painel}>
+      <div className={styles.topo}>
         {dados.perfil && <Conta perfil={dados.perfil} />}
+        {dados.maisJogados.length > 0 && (
+          <div className={styles.abas} role="group" aria-label={t.jogos.titulo}>
+            {(['ultimo', 'horas'] as const).map((a) => (
+              <button
+                key={a}
+                type="button"
+                className={styles.aba}
+                aria-pressed={a === aba}
+                onClick={() => {
+                  setEscolhida(a);
+                  setAtual(0);
+                }}
+              >
+                {t.jogos.abas[a]}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* a `key` refaz o deque ao trocar de aba: ele volta ao começo e chega de novo */}
+      <Deque key={aba} jogos={jogos} atual={i} ir={setAtual} />
+
+      <div className={styles.detalhe}>
+        {/* nas pontas o passo apaga em vez de sumir; com um jogo só não há para onde andar */}
+        {jogos.length > 1 && (
+          <button
+            type="button"
+            className={`${styles.seta} ${styles.antes}`}
+            aria-label={t.jogos.anterior}
+            disabled={i === 0}
+            onClick={() => andar(-1)}
+          >
+            <span className={comum.ponta} data-lado="antes" aria-hidden="true" />
+          </button>
+        )}
 
         <div className={styles.texto} aria-live="polite">
           <span className={styles.rotulo}>
@@ -398,7 +486,7 @@ function Conteudo({ dados, ativo }: { dados: Jogos; ativo: boolean }) {
             {rotulo}
           </span>
           <a className={styles.nome} href={jogo.url} target="_blank" rel="noreferrer">
-            {jogo.nome}
+            <span>{jogo.nome}</span>
           </a>
           <span className={styles.tempos}>
             {jogo.minutosRecentes > 0 && (
@@ -430,56 +518,17 @@ function Conteudo({ dados, ativo }: { dados: Jogos; ativo: boolean }) {
           )}
         </div>
 
-        {/**
-         * A régua dos jogos: um traço por capa, o da frente alto e aceso, e a
-         * contagem. Fica fora do `aria-live`: quem troca é o visitante. Com um
-         * jogo só não há para onde andar, e ela não aparece.
-         */}
         {jogos.length > 1 && (
-          <div className={styles.regua}>
-            <div className={styles.tracos} role="group" aria-label={t.jogos.escolher}>
-              {jogos.map((j, k) => (
-                <button
-                  key={j.id}
-                  type="button"
-                  className={styles.traco}
-                  aria-label={j.nome}
-                  aria-current={k === i || undefined}
-                  onClick={() => setAtual(k)}
-                >
-                  <span aria-hidden="true" />
-                </button>
-              ))}
-            </div>
-            <span className={styles.posicao} aria-hidden="true">
-              {String(i + 1).padStart(2, '0')} / {String(jogos.length).padStart(2, '0')}
-            </span>
-          </div>
+          <button
+            type="button"
+            className={`${styles.seta} ${styles.depois}`}
+            aria-label={t.jogos.proximo}
+            disabled={i === ultimo}
+            onClick={() => andar(1)}
+          >
+            <span className={comum.ponta} data-lado="depois" aria-hidden="true" />
+          </button>
         )}
-      </div>
-
-      <div className={styles.palco}>
-        {dados.maisJogados.length > 0 && (
-          <div className={styles.abas} role="group" aria-label={t.jogos.titulo}>
-            {(['ultimo', 'horas'] as const).map((a) => (
-              <button
-                key={a}
-                type="button"
-                className={styles.aba}
-                aria-pressed={a === aba}
-                onClick={() => {
-                  setEscolhida(a);
-                  setAtual(0);
-                }}
-              >
-                {t.jogos.abas[a]}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* a `key` refaz o deque ao trocar de aba: ele volta ao começo e chega de novo */}
-        <Deque key={aba} jogos={jogos} atual={i} ir={setAtual} />
       </div>
     </div>
   );
@@ -545,7 +594,7 @@ function CabecaLol() {
 
 /**
  * Jogos: o que está aberto agora, o que rodou nas últimas duas semanas e a
- * biblioteca, na Steam, com o avatar da conta no alto do painel; embaixo, o
+ * biblioteca, na Steam, com o avatar da conta na linha de cima; embaixo, o
  * League of Legends e o boneco do Minecraft.
  *
  * O dado vem de `api/steam`. Como em Música, o destaque tem dois estados e o

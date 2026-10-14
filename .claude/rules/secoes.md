@@ -121,7 +121,7 @@ cabem. Embaixo da janela, uma barra diz o estado ("rodando ao vivo", com o ponto
   janela vazia. Sem movimento, ficam a malha e o texto.
 - **O site roda mais largo que a janela e é reduzido** (`--zoom`, 0,72 no desktop e 0,5 no celular),
   em CSS, para se ver como num computador.
-- **Com um destaque só não há abas**, pela regra dos passos da Carreira e da régua de Jogos. Com mais de um,
+- **Com um destaque só não há abas**, pela regra dos passos da Carreira e de Jogos. Com mais de um,
   ←/→ trocam de aba enquanto a seção está ativa.
 - **A janela não tem barra de navegador**, e nunca teve as três bolinhas do macOS depois da primeira
   versão: a barra embaixo dela é a legenda da figura.
@@ -332,7 +332,7 @@ o que separa um estado do outro.
 | | Destaque | Resto |
 |---|---|---|
 | Música | o que está tocando: capa, faixa, artista e a barra de progresso | as oito mais tocadas numa parede de capas, e os oito mais ouvidos numa fileira de retratos |
-| Jogos | jogando agora, ou o último jogado: a capa da frente do deque, com o painel ao lado | os das duas últimas semanas, atrás dela no deque |
+| Jogos | jogando agora, ou o último jogado: a capa da frente do deque, com o painel embaixo | os das duas últimas semanas, atrás dela no deque |
 | Filmes | não tem: todo filme é passado | uma lista escolhida a dedo e os últimos assistidos, em duas abas de película |
 
 **Música é uma vitrine de capas.** O destaque abre a seção, sem caixa em volta, com a capa grande.
@@ -407,43 +407,47 @@ caírem na mesma linha.
 
 **Jogos é um deque em profundidade** (`Deque`, em `GamesSection`). As capas em pé (a arte 600x900
 da biblioteca da Steam) ficam uma atrás da outra num trilho que recua no eixo z: a da frente é a
-escolhida, em cor e em foco, e as de trás afastam para o lado, giram um pouco, apagam, perdem a cor e
-desfocam pela distância. Ao lado, o painel diz o que a da frente é: o rótulo, o nome (link para a
-página do jogo) e as horas da quinzena e do total. Escolhido numa rodada da skill `inspiration`
+escolhida, em cor e em foco, e as de trás e as que já passaram formam **pilhas** dos dois lados dela, escurecem, perdem a cor e
+desfocam um pouco pela distância. Embaixo, o painel diz o que a da frente é: o rótulo, o nome (link
+para a página do jogo) e as horas da quinzena e do total. Escolhido numa rodada da skill `inspiration`
 (reactbits/DepthCarousel, com os números reduzidos), e teve a maior nota da rodada.
 
 - **O destaque abre o deque**: o que está aberto agora, ou o último jogado, é a capa da frente ao
   chegar, e os recentes vêm atrás dele sem repeti-lo. O rótulo diz qual dos dois estados é, com o
   ponto que pulsa só quando é agora, e passa a "Duas últimas semanas" para as capas de trás.
 - **A posição anda por uma mola num rAF** que escreve direto no `style` de cada capa; o React só sabe
-  do alvo, que muda no fim de um arraste, num clique numa capa, nas setas ←/→ (sem foco, enquanto a
-  seção está ativa) ou num traço da régua. Durante o arraste a posição segue o dedo sem mola
+  do alvo, que muda no fim de um arraste, num clique numa capa (também nas bordas da pilha), nas setas ←/→ do teclado (sem foco, enquanto a
+  seção está ativa) ou nos passos de baixo. Durante o arraste a posição segue o dedo sem mola
   (90px por capa), e soltar arredonda para a mais perto. Sem movimento, a troca é direta.
-- **As capas são desenho** (`aria-hidden`): quem usa leitor de tela navega pelo painel, que diz o
+- **As capas são desenho** (`aria-hidden`): quem usa leitor de tela navega pelo painel de baixo, que diz o
   nome, as horas e leva à página do jogo.
 - A entrada anima o **miolo** da capa (`.arte`), porque o `transform` da capa é da mola.
-- **A capa que já passou não pega o ponteiro** (`pointerEvents: 'none'` na `pose`). Ela sai para a
-  esquerda, por cima do painel, e some só pela opacidade; até 14/10/2026 continuava ali, invisível e
-  com o z-index mais alto do deque (a conta usava `d` cru, e `d` negativo subia o número), e depois de
-  algumas capas os passos embaixo do painel deixavam de responder. Hoje o z-index cai pela distância
-  para os dois lados.
-- **A régua é o caminho entre os jogos** (ajuste do Lucas na mesma vitrine): um traço por capa, o da
-  frente alto e aceso, e a contagem; tocar um traço vai direto ao jogo, porque com quinze andar de um
-  em um cansa. **Os passos de anterior e próximo saíram**, e as setas ←/→ do teclado continuam. O
-  painel tem, de cima para baixo, **a conta, o estado do jogo** (o rótulo, o título, as horas com o
-  risco do peso) **e a régua**, e desce até o chão: os traços ficam em pé na linha em que as capas
-  pisam. **As abas ficam centradas em cima das capas**, que é o que elas reordenam. Antes as abas e
-  os passos moravam no painel, e no celular ficavam 350px abaixo das capas que moviam.
-- **No celular** é uma coluna centrada: o painel se desfaz (`display: contents`) e as peças dele se
-  intercalam com as capas. A conta abre a Steam, depois as abas, as capas, e embaixo delas o estado,
-  o título e as horas, e a régua. A carta do LoL também fica centrada, sobre o pódio.
+- **A quantidade é a pilha** (ajuste do Lucas, 14/10/2026, depois de achar a Steam desperdiçando
+  espaço no desktop): a que já passou **não sai mais**, fica na pilha da esquerda, e as de trás na
+  da direita, e cada capa a mais é uma borda a mais. A espessura de cada fila diz quantos jogos faltam
+  e quantos já passaram, e é por isso que a régua de traços saiu. O primeiro passo é largo (a vizinha
+  mostra metade da cara) e os seguintes são estreitos (`passoDaPilha`): o deque se mede, num
+  `ResizeObserver`, para a última capa caber na largura que ele tem (de uns 20px por capa no desktop
+  a uns 3px no celular, sempre ≥ 2). As capas também recuam em z e o **ponto de fuga fica na linha do
+  chão** (`perspective-origin`), então todas continuam em pé e só encolhem para ela, e a silhueta da
+  fila vira uma escada que desce. O clique numa borda leva até o jogo: o alvo se guarda no
+  `pointerdown`, porque com o ponteiro capturado o alvo do `pointerup` é o deque.
+- **A Steam tem três linhas** (mesmo ajuste): **a conta e as abas** em sequência, com um risco
+  entre elas; **o deque**, na largura toda; e **o jogo**, com o rótulo, o título e as horas no meio e
+  as setas coladas nos lados, **bem sutis** (só a ponta, no tom dos rótulos, sem caixa; 44px de toque, e
+  apagam nas pontas). Os passos de anterior e próximo **voltaram**, numa versão leve, no lugar da régua;
+  o `.passo` de 38px continua sendo da Carreira. O título tem duas linhas reservadas, e com uma só fica
+  no meio da reserva.
+- **No celular** a ordem é a mesma, centrada: a conta, as abas, as capas, e o texto com as setas dos dois
+  lados logo abaixo delas, para ver o jogo e trocá-lo ao mesmo tempo (as colunas são 44px | texto | 44px).
+  A carta do LoL também fica centrada, sobre o pódio.
 - **A capa fica em pé no chão** (`bottom`, e a `pose` só centra no eixo x). Centrada na altura do
   palco, ela flutuava acima da linha.
-- Com um jogo só não há régua, pela regra de sempre.
+- Com um jogo só não há setas, pela regra de sempre.
 - **O deque tem duas abas** (as de Filmes, com o desenho copiado), escolhidas numa vitrine em
   13/10/2026 contra as lombadas e a cascata sem abas: **Por último** abre, e é a ordem de sempre com
   um degrau a mais (o aberto agora, a quinzena, e depois a biblioteca pela última sessão, sem repetir,
-  até quinze); **Mais jogados** é a biblioteca pelas horas. É o terceiro degrau que impede a seção de
+  até 25); **Mais jogados** é a biblioteca pelas horas. É o terceiro degrau que impede a seção de
   cair no molde vazio quando o Lucas passa semanas sem jogar. Trocar de aba refaz o deque (`key`).
 - **Fora da quinzena o rótulo diz quando**: a da frente "há quanto tempo" (`haQuanto`) e as de trás o
   dia (`jogos.jogadoEm`), porque "há 2 meses" em quatro capas seguidas não distingue uma da outra. Em
@@ -453,12 +457,12 @@ página do jogo) e as horas da quinzena e do total. Escolhido numa rodada da ski
 - **Um risco de 1px embaixo das horas** mede o jogo contra o mais jogado da biblioteca (`.peso`).
 - Sem a biblioteca não há abas, e a seção é a de antes.
 
-**No alto do painel, em cima do estado do jogo, a conta da Steam** (`Conta`): o avatar de 42px, em cor, com um anel de XP, e o
+**Na linha de cima, antes das abas, a conta da Steam** (`Conta`): o avatar de 42px, em cor, com um anel de XP, e o
 nick e o nível ao lado. O anel são dez arcos, um por nível da dezena em que a conta está (é de dez em dez que a
 Steam muda o desenho do nível): os já passados acesos, e o do nível atual aceso até onde o XP chegou
 (`perfil.progresso`). A primeira versão tinha 34px, sem cor até ser apontado (como os retratos de
 Música), e o Lucas achou discreta demais: o avatar é identidade de terceiro, como as capas, e fica em
-cor. Sem o nível (`perfil: null`), o painel começa no estado do jogo.
+cor. Sem o nível (`perfil: null`), a linha começa nas abas.
 
 **A órbita de insígnias entrou e saiu no mesmo dia** (13/10/2026). Escolhida na vitrine, ela girava
 as 40 insígnias da conta em três elipses embaixo do deque, e na página ficou exagerada: um segundo

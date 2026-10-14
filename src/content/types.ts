@@ -230,7 +230,8 @@ export interface Dictionary {
     duasSemanas: string;
     total: string;
     /** o nome do grupo da régua de jogos, um traço por capa */
-    escolher: string;
+    anterior: string;
+    proximo: string;
     /** as duas ordens da biblioteca, que são as abas do deque */
     abas: { ultimo: string; horas: string };
     /** `{dia}` é a data da última sessão, para as capas de trás */

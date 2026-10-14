@@ -22,7 +22,7 @@
 
 .bloco[data-ativo] .arte {
   animation: capaChega 0.8s var(--ease-entrada) backwards;
-  animation-delay: calc(520ms + var(--ordem, 0) * 90ms);
+  animation-delay: calc(520ms + min(var(--ordem, 0) * 90ms, 540ms));
 }
 
 @keyframes pulsaVivo {
@@ -60,9 +60,10 @@
   --e5: 96px;
   --chao: 18px;
   --andar-h: 288px;
-  /* a largura da capa da frente, e a altura do palco que a contém em pé */
+  /* a largura da capa da frente, e a altura do palco que a contém em pé: a capa
+     (2:3), o chão e um respiro */
   --capa-w: clamp(150px, 24vmin, 220px);
-  --deque-h: clamp(300px, 44vmin, 420px);
+  --deque-h: calc(var(--capa-w) * 1.5 + var(--chao) + var(--e2));
 }
 
 .bloco {
@@ -98,26 +99,20 @@
   margin: -8px -9px -8px 0;
 }
 
-/* ---------- o painel e as capas ---------- */
+/* ---------- as três linhas: a conta e as abas, o deque, e o jogo ---------- */
 
 .cena {
-  display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  gap: var(--e4);
-}
-
-/**
- * O painel desce até o chão do deque: a conta, o estado do jogo e a régua, de
- * cima para baixo, e os traços da régua ficam em pé na linha em que as capas
- * pisam.
- */
-.painel {
   display: flex;
   flex-direction: column;
   gap: var(--e3);
-  justify-content: flex-end;
+}
+
+/* a conta e as abas, uma depois da outra */
+.topo {
+  display: flex;
+  gap: var(--e3);
+  align-items: center;
   min-width: 0;
-  padding-bottom: var(--chao);
 }
 
 .contaVazia {
@@ -126,19 +121,72 @@
   height: 42px;
 }
 
-/* as capas, com as abas centradas em cima: é o que elas reordenam */
-.palco {
-  display: flex;
-  flex-direction: column;
-  gap: var(--e3);
-  min-width: 0;
+/**
+ * O jogo escolhido, de lado a lado: o estado, o título e as horas no meio, e as
+ * setas coladas nos dois lados. As colunas de fora crescem e empurram as setas
+ * para perto do texto; no celular elas são os 44px do toque e o texto fica com
+ * o resto, e é por isso que o texto e os passos ficam sob o mesmo olhar.
+ */
+.detalhe {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 400px) 1fr;
+  align-items: center;
+  column-gap: var(--e1);
 }
 
 .texto {
   display: flex;
   flex-direction: column;
+  grid-column: 2;
+  grid-row: 1;
   gap: var(--e1);
+  align-items: center;
   min-width: 0;
+}
+
+/**
+ * Os passos, bem sutis: só a ponta desenhada, sem caixa, no tom dos rótulos. O
+ * botão tem os 44px do toque e a ponta fica no meio; apagam nas pontas em vez de
+ * sumir (ver `acessibilidade.md`).
+ */
+.seta {
+  --ponta: 9px;
+
+  display: flex;
+  grid-row: 1;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tx-rotulo);
+  cursor: pointer;
+  appearance: none;
+  transition:
+    color var(--dur-hover),
+    opacity var(--dur-hover);
+}
+
+.seta:hover:not(:disabled) {
+  color: var(--tx-titulo);
+}
+
+.seta:disabled {
+  opacity: 0.22;
+  cursor: default;
+}
+
+.antes {
+  grid-column: 1;
+  justify-self: end;
+}
+
+.depois {
+  grid-column: 3;
+  justify-self: start;
 }
 
 /**
@@ -210,13 +258,23 @@
 }
 
 /**
- * As abas do deque: as duas ordens da biblioteca. São as de Filmes, e o desenho
+ * As abas do deque: as duas ordens da biblioteca, depois da conta. São as de Filmes, e o desenho
  * é copiado, e não importado: nenhuma seção importa outra.
  */
 .abas {
   display: flex;
   gap: var(--e3);
-  justify-content: center;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* o risco entre a conta e as abas, que só existe quando as duas estão na linha */
+.conta + .abas::before,
+.contaVazia + .abas::before {
+  width: 1px;
+  height: 20px;
+  background: var(--linha);
+  content: '';
 }
 
 .aba {
@@ -257,6 +315,8 @@
   display: flex;
   gap: var(--e1);
   align-items: center;
+  justify-content: center;
+  max-width: 100%;
   color: var(--tx-rotulo);
   font-size: var(--fs-rotulo);
   letter-spacing: var(--ls-rotulo);
@@ -273,19 +333,30 @@
   animation: pulsaVivo 2.2s ease-in-out infinite;
 }
 
-/* duas linhas de altura reservadas: trocar de jogo não pode mexer no que vem embaixo */
+/**
+ * Duas linhas de altura reservadas: trocar de jogo não pode mexer no que vem
+ * embaixo. Com uma linha só, o título fica no meio da reserva.
+ */
 .nome {
-  display: -webkit-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
   min-height: 2.3em;
-  overflow: hidden;
   color: var(--tx-titulo);
-  font-size: clamp(18px, 3.4vmin, 34px);
+  font-size: clamp(18px, 2.9vmin, 30px);
   line-height: 1.15;
   letter-spacing: 0.03em;
+  text-align: center;
   text-decoration: none;
+  transition: color var(--dur-hover);
+}
+
+.nome span {
+  display: -webkit-box;
+  overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
-  transition: color var(--dur-hover);
 }
 
 .nome:hover {
@@ -296,6 +367,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--e1) var(--e2);
+  justify-content: center;
   color: var(--tx-apoio);
   font-size: var(--fs-lista);
   font-weight: 300;
@@ -309,70 +381,14 @@
 }
 
 /**
- * A régua dos jogos, que é o caminho entre eles: um traço por capa, o da frente
- * alto e aceso. O botão é a coluna inteira (24px de alvo), e o traço de 1px
- * mora dentro dele.
- */
-.regua {
-  display: flex;
-  gap: var(--e2);
-  align-items: center;
-}
-
-.tracos {
-  display: flex;
-  flex: 1;
-  min-width: 0;
-}
-
-.traco {
-  display: flex;
-  flex: 1;
-  align-items: flex-end;
-  justify-content: center;
-  height: 24px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: pointer;
-  appearance: none;
-}
-
-.traco span {
-  width: 1px;
-  height: 6px;
-  background: var(--linha-forte);
-  transition:
-    height var(--dur-retorno) var(--ease-saida),
-    background-color var(--dur-hover);
-}
-
-.traco:hover span {
-  height: 12px;
-  background: var(--linha-cheia);
-}
-
-.traco[aria-current] span {
-  height: 16px;
-  background: var(--tx-titulo);
-}
-
-.posicao {
-  flex: none;
-  color: var(--tx-rotulo);
-  font-size: var(--fs-meta);
-  letter-spacing: 0.2em;
-  font-variant-numeric: tabular-nums;
-}
-
-/**
  * O peso do jogo na biblioteca: um risco de 1px do tamanho das horas dele contra
  * as do mais jogado. Anda por `transform`, que não mexe no layout.
  */
 .peso {
   position: relative;
   display: block;
+  width: 100%;
+  max-width: 280px;
   height: 1px;
   background: var(--linha);
 }
@@ -393,6 +409,8 @@
   position: relative;
   height: var(--deque-h);
   perspective: 1300px;
+  /* o ponto de fuga no chão: as capas recuam sem sair dele, e encolhem para a linha */
+  perspective-origin: 50% calc(100% - var(--chao) - 1px);
   cursor: grab;
   touch-action: pan-y;
   user-select: none;
@@ -405,7 +423,7 @@
 /**
  * Uma capa. A posição inteira (lado, profundidade, giro, brilho e foco) é
  * escrita pela mola (`GamesSection.tsx`); daqui sai só o lugar de onde ela
- * parte, um pouco à esquerda do centro, para as de trás terem para onde ir.
+ * parte, o meio do deque, e o que o `pose` faz é afastá-la dele.
  *
  * **Ela fica em pé no chão** (`bottom`, e a `pose` só centra no eixo x), como o
  * pódio e o boneco embaixo. Centrada na altura, ela flutuava acima da linha.
@@ -413,7 +431,7 @@
 .capa {
   position: absolute;
   bottom: calc(var(--chao) + 1px);
-  left: 30%;
+  left: 50%;
   width: var(--capa-w);
   aspect-ratio: 2 / 3;
   will-change: transform, opacity, filter;
@@ -599,11 +617,9 @@
 }
 
 /**
- * Celular: uma coluna só, centrada. O painel se desfaz (`display: contents`) e
- * as peças dele se intercalam com as capas: a conta abre a Steam, depois as
- * abas e as capas, e embaixo delas o estado, o título, as horas e a régua
- * (pedido do Lucas, 14/10/2026). Sem uma coluna ao lado, o texto se alinha com
- * as capas, que estão no meio.
+ * Celular: a mesma ordem, centrada. A conta e as abas se empilham, e o texto e os
+ * passos ficam logo abaixo das capas, com as setas nos 44px do toque (pedido do
+ * Lucas, 14/10/2026: ver o jogo e trocá-lo ao mesmo tempo).
  */
 @media (width <= 640px), (orientation: portrait) and (width <= 1024px) {
   .secao {
@@ -611,36 +627,26 @@
     --e5: 64px;
     --chao: 15px;
     --andar-h: 240px;
-    --capa-w: clamp(130px, 38vw, 180px);
-    --deque-h: clamp(240px, 60vw, 320px);
+    --capa-w: clamp(120px, 34vw, 170px);
   }
 
-  .cena {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--e3);
+  .topo {
+    flex-direction: column;
+    gap: var(--e2);
   }
 
-  .painel {
-    display: contents;
-  }
-
-  .conta,
-  .contaVazia {
-    order: -2;
-    justify-self: center;
-  }
-
-  .palco {
-    order: -1;
-  }
-
-  .rotulo,
-  .tempos {
+  .abas {
     justify-content: center;
   }
 
-  .nome {
-    text-align: center;
+  .conta + .abas::before,
+  .contaVazia + .abas::before {
+    display: none;
+  }
+
+  .detalhe {
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    column-gap: 0;
   }
 
   .andar {
