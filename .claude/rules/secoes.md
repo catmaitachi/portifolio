@@ -418,7 +418,7 @@ página do jogo) e as horas da quinzena e do total. Escolhido numa rodada da ski
 - **O deque tem duas abas** (as de Filmes, com o desenho copiado), escolhidas numa vitrine em
   13/10/2026 contra as lombadas e a cascata sem abas: **Por último** abre, e é a ordem de sempre com
   um degrau a mais (o aberto agora, a quinzena, e depois a biblioteca pela última sessão, sem repetir,
-  até oito); **Mais jogados** é a biblioteca pelas horas. É o terceiro degrau que impede a seção de
+  até quinze); **Mais jogados** é a biblioteca pelas horas. É o terceiro degrau que impede a seção de
   cair no molde vazio quando o Lucas passa semanas sem jogar. Trocar de aba refaz o deque (`key`).
 - **Fora da quinzena o rótulo diz quando**: a da frente "há quanto tempo" (`haQuanto`) e as de trás o
   dia (`jogos.jogadoEm`), porque "há 2 meses" em quatro capas seguidas não distingue uma da outra. Em

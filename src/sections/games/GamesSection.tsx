@@ -38,7 +38,7 @@ const MOLA = 0.14;
 const limitar = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
 /** Quantas capas o deque leva: o mesmo teto das listas que `api/steam` devolve. */
-const TETO = 8;
+const TETO = 15;
 
 /**
  * O deque: as capas em pé, uma atrás da outra num trilho que recua.
