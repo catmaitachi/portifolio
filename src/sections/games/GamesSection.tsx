@@ -127,7 +127,7 @@ function Molde({ estado }: { estado: SemDado }) {
 }
 
 /**
- * O deque: as capas em pé, em pilha dos dois lados da escolhida.
+ * O deque: os banners, em pilha dos dois lados da escolhida.
  *
  * A da frente é a escolhida, em cor e em foco; as de trás e as que já passaram
  * recuam, escurecem, perdem a cor e desfocam um pouco pela distância. A posição
@@ -248,7 +248,6 @@ function Deque({
       }}
     >
       {jogos.map((j, i) => {
-        const arte = j.capaAlta ?? j.capa;
         return (
           <span
             key={j.id}
@@ -261,9 +260,9 @@ function Deque({
           >
             {/* a entrada anima o miolo: o `transform` da capa é da mola */}
             <span className={styles.arte}>
-              {arte ? (
+              {j.capa ? (
                 <img
-                  src={arte}
+                  src={j.capa}
                   alt=""
                   draggable={false}
                   loading="lazy"

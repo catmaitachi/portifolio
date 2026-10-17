@@ -45,18 +45,6 @@ interface JogoSteam {
  * exista é melhor resposta que nenhuma, porque quem decide o que fazer com ela
  * é o `onError` da seção.
  */
-/**
- * As duas artes do mesmo jogo: a deitada do destaque e a em pé da estante.
- *
- * Uma não é a outra recortada — a Steam desenha as duas separadamente, e é por
- * isso que a em pé não tem convenção de reserva: sem ela o livro fica com a
- * moldura vazia, que é melhor que uma arte deitada espremida num retângulo alto.
- */
-interface Arte {
-  deitada: string | null;
-  emPe: string | null;
-}
-
 const capaPorConvencao = (appid: number) =>
   `https://shared.steamstatic.com/store_item_assets/steam/apps/${appid}/header.jpg`;
 
@@ -111,10 +99,8 @@ interface ItemLoja {
   assets?: {
     /** o caminho até a pasta do app, com `${FILENAME}` no lugar do arquivo */
     asset_url_format?: string;
-    /** o nome do arquivo, que hoje vem prefixado por um hash de conteúdo */
+    /** o nome do arquivo do banner (460x215), que hoje vem prefixado por um hash de conteúdo */
     header?: string;
-    /** a arte em pé da biblioteca, 600x900 */
-    library_capsule?: string;
   };
 }
 
@@ -143,8 +129,8 @@ interface ItemLoja {
  * deles. É o mesmo arranjo da lista do Letterboxd, e pela mesma razão: o que a
  * seção existe para mostrar são os jogos.
  */
-async function capas(appids: number[]): Promise<Map<number, Arte>> {
-  const mapa = new Map<number, Arte>();
+async function capas(appids: number[]): Promise<Map<number, string>> {
+  const mapa = new Map<number, string>();
   if (!appids.length) return mapa;
 
   const entrada = {
@@ -168,10 +154,8 @@ async function capas(appids: number[]): Promise<Map<number, Arte>> {
       if (item.id === undefined) continue;
       const url = (arquivo?: string) =>
         arquivo && formato ? ASSETS + formato.replace('${FILENAME}', arquivo) : null;
-      mapa.set(item.id, {
-        deitada: url(item.assets?.header),
-        emPe: url(item.assets?.library_capsule),
-      });
+      const banner = url(item.assets?.header);
+      if (banner) mapa.set(item.id, banner);
     }
   } catch {
     // resolver a arte é enfeite; devolver os jogos, não
@@ -208,11 +192,10 @@ function conta(
   };
 }
 
-const normalizar = (j: JogoSteam, capas: Map<number, Arte>): Jogo => ({
+const normalizar = (j: JogoSteam, capas: Map<number, string>): Jogo => ({
   id: String(j.appid),
   nome: j.name ?? '',
-  capa: capas.get(j.appid)?.deitada ?? capaPorConvencao(j.appid),
-  capaAlta: capas.get(j.appid)?.emPe ?? null,
+  capa: capas.get(j.appid) ?? capaPorConvencao(j.appid),
   url: lojaDe(j.appid),
   minutosRecentes: j.playtime_2weeks ?? 0,
   minutosTotais: j.playtime_forever ?? 0,
