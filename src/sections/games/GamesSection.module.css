@@ -60,10 +60,11 @@
   --e5: 96px;
   --chao: 18px;
   --andar-h: 288px;
-  /* a largura da capa da frente, e a altura do palco que a contém em pé: a capa
-     (2:3), o chão e um respiro */
-  --capa-w: clamp(150px, 24vmin, 220px);
-  --deque-h: calc(var(--capa-w) * 1.5 + var(--chao) + var(--e2));
+  /* a largura da capa da frente, e a altura do palco que a contém: o banner
+     (460x215, o da loja), o chão e um respiro */
+  --capa-w: clamp(340px, 52vmin, 520px);
+  --capa-h: calc(var(--capa-w) * 215 / 460);
+  --deque-h: calc(var(--capa-h) + var(--chao) + var(--e2));
 }
 
 .bloco {
@@ -112,6 +113,7 @@
   display: flex;
   gap: var(--e3);
   align-items: center;
+  justify-content: space-between;
   min-width: 0;
 }
 
@@ -268,15 +270,6 @@
   justify-content: flex-start;
 }
 
-/* o risco entre a conta e as abas, que só existe quando as duas estão na linha */
-.conta + .abas::before,
-.contaVazia + .abas::before {
-  width: 1px;
-  height: 20px;
-  background: var(--linha);
-  content: '';
-}
-
 .aba {
   margin: 0;
   padding: 4px 0 var(--e1);
@@ -425,7 +418,7 @@
  * escrita pela mola (`GamesSection.tsx`); daqui sai só o lugar de onde ela
  * parte, o meio do deque, e o que o `pose` faz é afastá-la dele.
  *
- * **Ela fica em pé no chão** (`bottom`, e a `pose` só centra no eixo x), como o
+ * **Ela pisa no chão** (`bottom`, e a `pose` só centra no eixo x), como o
  * pódio e o boneco embaixo. Centrada na altura, ela flutuava acima da linha.
  */
 .capa {
@@ -433,7 +426,7 @@
   bottom: calc(var(--chao) + 1px);
   left: 50%;
   width: var(--capa-w);
-  aspect-ratio: 2 / 3;
+  aspect-ratio: 460 / 215;
   will-change: transform, opacity, filter;
 }
 
@@ -627,7 +620,7 @@
     --e5: 64px;
     --chao: 15px;
     --andar-h: 240px;
-    --capa-w: clamp(120px, 34vw, 170px);
+    --capa-w: clamp(190px, 54vw, 300px);
   }
 
   .topo {
@@ -637,11 +630,6 @@
 
   .abas {
     justify-content: center;
-  }
-
-  .conta + .abas::before,
-  .contaVazia + .abas::before {
-    display: none;
   }
 
   .detalhe {

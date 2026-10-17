@@ -184,11 +184,10 @@ aparecer, como em toda imagem da página, e o botão de rodar o site continua fu
   hash. O `appdetails` da loja também teria a URL e **não** serve: com mais de um id ele responde
   `null`, e traz a página inteira do jogo para entregar uma linha.
 
-  A mesma consulta traz as **duas artes** do jogo, e o contrato guarda as duas: a deitada (460x215)
-  do destaque e a em pé (600x900, a da biblioteca) da pilha de recentes. Elas não são uma o recorte
-  da outra, são dois desenhos que a Steam faz separadamente, e é por isso que a em pé não tem
-  convenção de reserva: sem ela sobra a moldura vazia, que é melhor resposta que uma arte deitada
-  espremida num retângulo alto.
+  O deque mostra o **banner** (`header`, 460x215), e é só ele que o contrato guarda (`capa`). Até
+  16/10/2026 a consulta também trazia a capa em pé da biblioteca (`library_capsule`, 600x900, que a
+  Steam desenha à parte e não é o recorte do banner), e o deque era de capas altas; o pedido foi
+  trocar para o banner, e `capaAlta` saiu do contrato e da função.
 
   A resolução **nunca derruba a resposta**, e tem três degraus: a URL resolvida, a convenção antiga (que
   ainda acerta a maior parte do catálogo) e, quando as duas erram, a moldura vazia que a seção já

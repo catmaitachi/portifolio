@@ -405,8 +405,8 @@ por rodada em que cada jogo foi desenhado. As colunas de baixo são as de cima a
 contra 5 | 7), e o topo do LoL tem a altura do palco do boneco (`--andar-h`) para os dois chãos
 caírem na mesma linha.
 
-**Jogos é um deque em profundidade** (`Deque`, em `GamesSection`). As capas em pé (a arte 600x900
-da biblioteca da Steam) ficam uma atrás da outra num trilho que recua no eixo z: a da frente é a
+**Jogos é um deque em profundidade** (`Deque`, em `GamesSection`). Os banners (a arte `header`
+460x215 da loja da Steam) ficam um atrás do outro num trilho que recua no eixo z: a da frente é a
 escolhida, em cor e em foco, e as de trás e as que já passaram formam **pilhas** dos dois lados dela, escurecem, perdem a cor e
 desfocam um pouco pela distância. Embaixo, o painel diz o que a da frente é: o rótulo, o nome (link
 para a página do jogo) e as horas da quinzena e do total. Escolhido numa rodada da skill `inspiration`
@@ -432,8 +432,8 @@ para a página do jogo) e as horas da quinzena e do total. Escolhido numa rodada
   chão** (`perspective-origin`), então todas continuam em pé e só encolhem para ela, e a silhueta da
   fila vira uma escada que desce. O clique numa borda leva até o jogo: o alvo se guarda no
   `pointerdown`, porque com o ponteiro capturado o alvo do `pointerup` é o deque.
-- **A Steam tem três linhas** (mesmo ajuste): **a conta e as abas** em sequência, com um risco
-  entre elas; **o deque**, na largura toda; e **o jogo**, com o rótulo, o título e as horas no meio e
+- **A Steam tem três linhas** (mesmo ajuste): **a conta e as abas**, a conta à esquerda e as abas à
+  direita (`space-between`; o risco entre elas saiu em 16/10/2026, porque as duas já não são vizinhas); **o deque**, na largura toda; e **o jogo**, com o rótulo, o título e as horas no meio e
   as setas coladas nos lados, **bem sutis** (só a ponta, no tom dos rótulos, sem caixa; 44px de toque, e
   apagam nas pontas). Os passos de anterior e próximo **voltaram**, numa versão leve, no lugar da régua;
   o `.passo` de 38px continua sendo da Carreira. O título tem duas linhas reservadas, e com uma só fica
@@ -441,8 +441,13 @@ para a página do jogo) e as horas da quinzena e do total. Escolhido numa rodada
 - **No celular** a ordem é a mesma, centrada: a conta, as abas, as capas, e o texto com as setas dos dois
   lados logo abaixo delas, para ver o jogo e trocá-lo ao mesmo tempo (as colunas são 44px | texto | 44px).
   A carta do LoL também fica centrada, sobre o pódio.
-- **A capa fica em pé no chão** (`bottom`, e a `pose` só centra no eixo x). Centrada na altura do
+- **A capa pisa no chão** (`bottom`, e a `pose` só centra no eixo x). Centrada na altura do
   palco, ela flutuava acima da linha.
+- **O deque é de banners, não de capas em pé** (Lucas, 16/10/2026). Eram as capas 600x900 da
+  biblioteca (2:3); hoje é o `header` da loja (460x215), a mesma arte que já vinha como `capa` do
+  jogo, e o contrato perdeu o `capaAlta`. O banner é largo, então `--capa-w` subiu (340–520px no
+  desktop, 190–300px no celular) e o palco ficou bem mais baixo (`--deque-h` deriva de `--capa-h`);
+  a pilha usa a mesma conta de passo, que se mede pela largura do deque.
 - Com um jogo só não há setas, pela regra de sempre.
 - **O deque tem duas abas** (as de Filmes, com o desenho copiado), escolhidas numa vitrine em
   13/10/2026 contra as lombadas e a cascata sem abas: **Por último** abre, e é a ordem de sempre com
