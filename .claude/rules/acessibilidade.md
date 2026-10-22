@@ -55,6 +55,9 @@ paths:
   `aria-valuetext` avisa quando o valor passa do limite recomendado (`opcoes.acima`). O aviso que
   segura a régua no limite fica numa região `role="status"` sempre presente. `Esc` fecha e devolve o
   foco ao gatilho.
+- **A barra de progressão do topo é desenho** (`aria-hidden`): o navegador já anuncia a rolagem, e a
+  barra não diz nada que a página não diga. Com `prefers-reduced-motion` ela continua enchendo (é a
+  rolagem, e não animação), só sem o brilho.
 - Foco visível só para navegação por teclado (`:focus-visible`).
 - **Nenhuma região focável apaga o contorno.** A curva do tempo, que existiu na Carreira, tinha
   `outline: none`, e quem chegava pelo teclado não via onde estava. O único `outline: none` que sobra

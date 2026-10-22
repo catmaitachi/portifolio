@@ -282,8 +282,8 @@ afina o que já está desenhado, e as camadas trabalham em px de layout e não p
 `2`) e `canvas.dataset.q` (o valor, para conferir no DevTools).
 O CSS pergunta por `:root:has(canvas[data-qualidade='0'])` (faixa 0: qualidade abaixo de 0,35 ou
 em economia), sem JavaScript e sem o motor conhecer a
-página: na faixa 0 param o brilho do nome no Início e o da barra de Música, que andam
-`background-position` num texto e repintam a cada quadro. A película de Filmes anda em rAF a 60fps enquanto está em cena; o pêndulo do crachá da Carreira
+página: na faixa 0 param o brilho do nome no Início, o da barra de Música e o do fio da rolagem
+(`Progresso`), que andam `background-position` e repintam a cada quadro. A película de Filmes anda em rAF a 60fps enquanto está em cena; o pêndulo do crachá da Carreira
 só roda enquanto balança.
 
 **A sessão de Projetos também pergunta, mas pelo canal** (`qualidade.ler()`, uma vez por entrada):

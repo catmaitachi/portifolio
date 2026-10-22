@@ -46,7 +46,7 @@ para mexer num JSON.
 | `dados.md` | `api/` e `src/data/`: Spotify, Steam, Letterboxd e GitHub, e por que não dá do navegador |
 | `navegacao.md` | as telas, o cabeçalho e as listas de subseções, o endereço e o teclado |
 | `entradas.md` | o gesto de entrada de cada seção, a órbita da Carreira e a decifragem da bio |
-| `hud.md` | anéis, mira, versão, o cabeçalho no HUD e o medidor da supernova |
+| `hud.md` | anéis, mira, versão, o cabeçalho no HUD, a barra de progressão e o medidor da supernova |
 | `responsivo.md` | tokens por componente e o contrato do topo |
 | `tipografia.md` | seleção de texto e parágrafos justificados |
 | `secoes.md` | Sobre, Projetos, Trajetória e Contato, uma a uma |

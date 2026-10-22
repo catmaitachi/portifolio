@@ -4,6 +4,7 @@ import { Canais } from '~/hud/Canais';
 import { Hud } from '~/hud/Hud';
 import { NovaGauge } from '~/hud/NovaGauge';
 import { Opcoes } from '~/hud/Opcoes';
+import { Progresso, type ProgressoHandle } from '~/hud/Progresso';
 import { SectionNav } from '~/navigation/SectionNav';
 import { Tela } from '~/navigation/Tela';
 import { useDocumentTitle } from '~/navigation/useDocumentTitle';
@@ -184,9 +185,12 @@ export function App() {
     [posicionar],
   );
 
+  /** a barra de progressão do topo, que a rolagem escreve sem passar por estado */
+  const progresso = useRef<ProgressoHandle>(null);
+
   /**
-   * A rolagem de cada tela move a câmera do céu, e na tela que abre com o buraco
-   * negro ela também o leva embora.
+   * A rolagem de cada tela move a câmera do céu e enche a barra do topo, e na tela
+   * que abre com o buraco negro ela também o leva embora.
    *
    * O buraco negro encolhe pela **perspectiva** da viagem, `1 / (1 + 3,5·p)`: rápido
    * no começo, devagar depois, e no fim da tela ele ainda está lá, com um quinto do
@@ -200,6 +204,7 @@ export function App() {
       const temBuraco = abreComBuraco(t.key);
       r[t.key] = (p) => {
         camera.rolar(p);
+        progresso.current?.definir(p);
         if (temBuraco) camera.buraco(1 / (1 + 3.5 * p));
       };
     }
@@ -241,6 +246,7 @@ export function App() {
         />
       ))}
 
+      <Progresso ref={progresso} />
       <NovaGauge disparo={nova.disparo} segundos={nova.recarga} />
     </div>
   );

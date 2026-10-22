@@ -129,6 +129,35 @@ e com o atraso da abertura em `both` a peça fica segundos invisível, o que lê
 Foi o que aconteceu com o crédito que existiu no rodapé. `visibility` mantém a animação correndo
 escondida, e já tira a peça do clique e da tabulação.
 
+### Barra de progressão
+
+`hud/Progresso` é um fio de 2px na borda de cima da janela, que se enche conforme a tela ativa rola,
+com **o brilho do nome do Início passando por ele**: o mesmo degradê (`#a6a6a6` com um platô branco), a
+mesma varredura em 8,4s, e a pausa de 5,6s entre as passadas. Pedido de quem escreve a página: fina,
+sutil, e com a animação do título.
+
+- **O progresso é o da tela, e não o do site.** Cada tela rola por dentro e guarda a própria rolagem, e
+  a barra segue a tela ativa: trocar de tela a leva ao ponto em que aquela estava (zero numa tela
+  nunca rolada). A fonte é o `aoRolar` do `App`, o mesmo aviso que move a câmera (ver `navegacao.md`);
+- **não passa por estado.** O `App` guarda uma ref (`ProgressoHandle`) e chama `definir(p)`, que
+  escreve `--progresso` direto no nó. Uma prop por quadro de rolagem renderizaria o `App` inteiro;
+- **cresce o recorte, e não a largura** (a regra do HUD, acima): o degradê ocupa o fio todo e um
+  `clip-path: inset(0 calc((1 - var(--progresso)) * 100%) 0 0)` mostra só o que já rolou. O brilho
+  cruza a janela na mesma velocidade qualquer que seja o quanto a barra encheu, e só se vê onde ela já
+  chegou;
+- **sem trilho.** No topo de uma tela não há nada; o fio nasce da rolagem. Um trilho a 10% seria uma
+  linha permanente no alto de toda a página;
+- **o brilho só corre com o fio à vista** (`data-aceso`, escrito junto com a variável): num topo de
+  tela o recorte é zero, e repintar o fio a cada quadro seria trabalho para ninguém ver. Pausa, e não
+  remove, então a fase do ciclo continua de onde parou;
+- **chega com o cabeçalho** (`--abertura-cabecalho`), para quem abre o site já rolado (`#profile/contact`)
+  não ver o fio antes do HUD;
+- **faixa 0 de qualidade** (ver `motor.md`) e **`prefers-reduced-motion`** param o brilho, como no nome
+  e em Música: na faixa 0 o fio fica no cinza base do degradê (`#a6a6a6`), e com movimento reduzido
+  ele vira chapado em `--linha-cheia`. Nos dois casos continua enchendo, porque isso é a rolagem, e
+  não animação;
+- `z-index: 4`, como o cabeçalho e o menu de opções, e `aria-hidden` (ver `acessibilidade.md`).
+
 ### Medidor da supernova
 
 `NovaGauge` fica no canto inferior esquerdo, nos recuos do HUD (`--hud-borda` e `--hud-fundo`; no
@@ -185,7 +214,7 @@ simplesmente não roda, sem erro de build e sem aviso no console.
 Foi assim que a abertura inteira ficou morta por um tempo (anéis parados, mira sem pulso). `animation: :global(nome)` **não** é saída: o parser do PostCSS recusa o `:` no
 valor. A saída é declarar o keyframe no próprio módulo — `fina` está duplicado em Hero,
 `SectionNav`, `Opcoes` e `Canais`, e o brilho do nome está copiado em Música, onde a barra do que está
-tocando usa a mesma varredura. Quatro linhas repetidas custam menos que uma animação que não roda,
+tocando usa a mesma varredura, e em `Progresso`, o fio da rolagem. Quatro linhas repetidas custam menos que uma animação que não roda,
 e o que se compartilha nesses casos são os **números**, não a declaração.
 
 Corolário: **layout não pode morar só no estado final de uma animação.** Uma peça centrada por

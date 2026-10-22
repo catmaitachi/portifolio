@@ -107,7 +107,9 @@ cabeçalho e o menu de opções) e a do rodapé (os canais e o medidor da supern
 **A tela move a câmera do céu.** A tela ativa avisa o progresso da própria rolagem (0 a 1) pela
 prop `aoRolar`, e o `App` a entrega a `scene/camera.ts`, que o `SpaceCanvas` liga ao motor. Não passa
 por estado: uma prop por quadro de rolagem renderizaria o `App` inteiro a cada quadro. Ela avisa
-também ao abrir, porque cada tela guarda a própria rolagem.
+também ao abrir, porque cada tela guarda a própria rolagem. **O mesmo aviso enche a barra de
+progressão do topo** (`hud/Progresso`, ver `hud.md`): o `App` escreve nela por uma ref, na mesma
+função que move a câmera.
 
 **Trocar de tela é um salto** (ver `direcao-visual.md` e `motor.md`). O `App` dispara
 `camera.saltar()` só quando a tela muda de verdade (lendo a tela em vigor por ref), e o CSS da `Tela`

@@ -1,0 +1,91 @@
+/**
+ * O mesmo brilho que passa pelo nome, agora no fio da rolagem.
+ *
+ * O keyframe é **copiado** de `HeroSection.module.css`, como o de Música, e é
+ * obrigatório: CSS Modules escopa os dois lados, o nome no `@keyframes` e o nome
+ * escrito em `animation` (ver `hud.md`). O que se compartilha são os números:
+ * varredura em 8,4s, com a passagem clara consumindo o primeiro terço.
+ */
+@keyframes brilhoBarra {
+  0% {
+    background-position: 150% center;
+  }
+
+  33.3% {
+    background-position: -50% center;
+  }
+
+  100% {
+    background-position: -50% center;
+  }
+}
+
+/** chega com o cabeçalho: quem abre o site já rolado não vê o fio antes do HUD */
+@keyframes aparece {
+  from {
+    opacity: 0;
+  }
+}
+
+/**
+ * Um fio de 2px na borda de cima, na largura da janela inteira.
+ *
+ * **O que cresce é o recorte, e não a largura**: o degradê ocupa o fio todo e o
+ * `clip-path` mostra só a parte já rolada (`--progresso`, de 0 a 1, escrito pelo
+ * componente). É o que o HUD faz com tudo que cresce (ver `hud.md`), e deixa o
+ * brilho cruzar a barra na mesma velocidade qualquer que seja o quanto ela
+ * encheu. A borda da frente é a do recorte, e some em subpixel.
+ *
+ * O degradê é o do título: base em `#a6a6a6` com um platô branco no meio, e o
+ * platô não é detalhe, porque uma parada única tem espessura zero e nunca chega
+ * à tela. Sem trilho: com a tela no topo não há nada, e o fio nasce da rolagem.
+ *
+ * O brilho começa **parado** e só corre com a barra à vista (`data-aceso`): no
+ * topo de cada tela o fio está recortado a zero, e repintá-lo a cada quadro seria
+ * trabalho para ninguém ver.
+ */
+.progresso {
+  position: absolute;
+  z-index: 4;
+  inset: 0 0 auto;
+  height: 2px;
+  background-image: linear-gradient(
+    120deg,
+    #a6a6a6 0%,
+    #a6a6a6 40%,
+    #fff 47%,
+    #fff 53%,
+    #a6a6a6 60%,
+    #a6a6a6 100%
+  );
+  background-position: -50% center;
+  background-size: 200% auto;
+  clip-path: inset(0 calc((1 - var(--progresso, 0)) * 100%) 0 0);
+  pointer-events: none;
+  animation:
+    aparece var(--abertura-fina) ease-out var(--abertura-cabecalho) backwards,
+    brilhoBarra 8.4s linear infinite paused;
+}
+
+.progresso[data-aceso] {
+  animation-play-state: running;
+}
+
+/* máquina modesta: o brilho para, porque repinta o fio a cada quadro (ver `motor.md`) */
+:global(:root:has(canvas[data-qualidade='0'])) .progresso {
+  animation: aparece var(--abertura-fina) ease-out var(--abertura-cabecalho) backwards;
+}
+
+/**
+ * Menos movimento devolve o branco chapado, em vez de congelar o degradê.
+ *
+ * O `reset.css` zera a duração de toda animação, e sem esta regra o fio ficaria
+ * parado na cor **base**, mais apagado do que era antes de existir brilho. É a
+ * mesma regra que o nome e a barra de Música têm, pela mesma razão.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .progresso {
+    background-image: none;
+    background-color: var(--linha-cheia);
+  }
+}
