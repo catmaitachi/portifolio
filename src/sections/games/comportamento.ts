@@ -1,6 +1,7 @@
 import { type RefObject, useEffect, useRef } from 'react';
 import { useReducedMotion } from '~/hooks/useReducedMotion';
 import type { Nos, Peca } from './modelo';
+import { type Cena, type NomeCena, tocar } from './tombo';
 
 /*
  * As regras do jogo. O Minecraft anda em ticks de 50ms, e a física do empurrão,
@@ -37,9 +38,10 @@ const VIRA = 18;
  * O repertório de gestos. Cada nome é um valor de `data-gesto`, e a animação
  * dele mora no CSS. Os da chegada são sorteados quando ele aparece; os ociosos,
  * de tempos em tempos, com ele parado. `pular` é o único que não é CSS: é um
- * pulo de verdade, pela física do empurrão.
+ * pulo de verdade, pela física do empurrão. Os da chegada são cenas
+ * (`tombo.ts`), que o JS toca nos nós, e também marcam `data-gesto`.
  */
-const CHEGADA = ['acenar'] as const;
+const CHEGADA: readonly NomeCena[] = ['acenar'];
 const OCIOSOS = ['espreguicar', 'pular'] as const;
 /** De quanto em quanto tempo ele faz um gesto ocioso, e dá uma olhada em volta. */
 const OCIO: Faixa = [9000, 18000];
@@ -149,6 +151,18 @@ const MOLA = 0.14;
 const MOLA_SOLTA = 0.05;
 /** Graus de giro por px de arraste. */
 const GIRO_POR_PX = 0.8;
+/*
+ * A tontura. Girar o boneco rápido demais o derruba (a cena `tonto`): cada grau
+ * girado soma, e a tontura passa sozinha a um ritmo fixo. Só quem gira mais
+ * rápido que isso, por um tempo, acumula até o limite: com 0,8° por px, uma
+ * volta por segundo é arrastar a 450px/s, e nunca chega lá.
+ */
+/** Quantos graus de giro acumulados o derrubam: duas voltas. */
+const TONTO = 720;
+/** Quantos graus por segundo a tontura passa sozinha. */
+const PASSA = 300;
+/** Solto tonto, o corpo continua girando: o quanto dessa velocidade sobra a cada tick. */
+const EMBALO = 0.88;
 /** O gesto espera a chegada do fundo assentar (`chega`, em `Boneco.module.css`). */
 const ESPERA_GESTO = 700;
 /** Quanto tempo a vida fica à vista depois do último golpe. */
@@ -256,6 +270,11 @@ export function useComportamento(
     let relogio = 0;
     let visivel = false;
     let arraste: { x: number; andou: boolean } | null = null;
+    // a cena em curso (o aceno, a tontura), a tontura acumulada e a velocidade do giro, em graus por tick
+    let cena: Cena | null = null;
+    let tontura = 0;
+    let ultimoGiro = 0;
+    let embalo = 0;
     const timers = new Set<number>();
     const depois = (ms: number, f: () => void) => {
       const t = window.setTimeout(() => {
@@ -368,19 +387,28 @@ export function useComportamento(
       amplitude > 0.005 ||
       virarPara !== null ||
       regen > 0 ||
-      Math.abs((acao ? 1 : 0) - frente) > 0.01 ||
+      embalo !== 0 ||
+      Math.abs((acao || cena ? 1 : 0) - frente) > 0.01 ||
       (morte >= 0 && morte < MORTE);
 
     const passo = (agora: number) => {
-      acumulado += Math.min(250, agora - (relogio || agora));
+      const dt = Math.min(250, agora - (relogio || agora));
+      acumulado += dt;
       relogio = agora;
+      // solto tonto, o corpo ainda gira: por quadro, e não por tick, senão o giro andaria aos saltos
+      if (embalo !== 0 && !arraste) {
+        orbita.current += (embalo * dt) / TICK;
+        embalo *= EMBALO ** (dt / TICK);
+        if (Math.abs(embalo) < 0.2) embalo = 0;
+      }
       while (acumulado >= TICK) {
         tick();
         acumulado -= TICK;
       }
       yaw += (alvoYaw - yaw) * mola;
       pitch += (alvoPitch - pitch) * mola;
-      frente += ((acao ? 1 : 0) - frente) * 0.18;
+      // numa cena a cabeça é da cena: o olhar volta para a frente
+      frente += ((acao || cena ? 1 : 0) - frente) * 0.18;
       pintar(acumulado / TICK);
       // girando, ele pode sair de trás do escudo ou voltar para ele
       guardar();
@@ -397,7 +425,38 @@ export function useComportamento(
     const sortear = <T,>(lista: readonly T[]) => lista[Math.floor(Math.random() * lista.length)];
     const gesto = () => {
       if (reduzido || morte >= 0 || acao) return;
-      religar(el, 'data-gesto', sortear(CHEGADA));
+      encenar(sortear(CHEGADA));
+    };
+    /**
+     * Toca uma cena de `tombo.ts`. `data-gesto` marca que ele está ocupado, como
+     * nos gestos de CSS, e sai quando a cena acaba.
+     */
+    const encenar = (nome: NomeCena) => {
+      cena?.parar(false);
+      religar(el, 'data-gesto', nome);
+      const atual = tocar(el, nome);
+      cena = atual;
+      guardar();
+      acordar();
+      void atual.fim.then((terminou) => {
+        if (!terminou || cena !== atual) return;
+        cena = null;
+        el.removeAttribute('data-gesto');
+        guardar();
+        acordar();
+        encarar();
+      });
+    };
+    /** Um golpe no meio da cena: ele volta ao repouso em 0,3s, e não de uma vez. */
+    const interromper = () => {
+      cena?.parar(true);
+      cena = null;
+    };
+    /** Girado rápido demais: larga a mão de quem gira, e o embalo o leva até cair. */
+    const tontear = () => {
+      arraste = null;
+      tontura = 0;
+      encenar('tonto');
     };
     // o escudo
     const deFrente = () => Math.abs(meiaVolta(REPOUSO + orbita.current)) <= ARCO;
@@ -406,6 +465,7 @@ export function useComportamento(
       armas &&
       !cansado &&
       !acao &&
+      !cena &&
       morte < 0 &&
       el.getAttribute('data-gesto') !== 'espreguicar' &&
       deFrente();
@@ -644,6 +704,8 @@ export function useComportamento(
       if (pontos > 0) depois(INVULNERAVEL, () => el.removeAttribute('data-ferido'));
       // o gesto em curso para: quem apanha não termina de acenar, nem de comer
       el.removeAttribute('data-gesto');
+      interromper();
+      embalo = 0;
       largar();
       if (pontos > 0) {
         agendarComer(ESPERA_COMER);
@@ -683,13 +745,24 @@ export function useComportamento(
       arraste.andou = true;
       arraste.x = e.clientX;
       virarPara = null;
-      orbita.current += dx * GIRO_POR_PX;
+      const giro = dx * GIRO_POR_PX;
+      orbita.current += giro;
+      const agora = performance.now();
+      const passou = agora - (ultimoGiro || agora);
+      ultimoGiro = agora;
+      tontura = Math.max(0, tontura - (passou * PASSA) / 1000) + Math.abs(giro);
+      embalo = limitar((embalo + (giro / Math.max(8, passou)) * TICK) / 2, -40, 40);
+      if (tontura >= TONTO && !reduzido && !cena && !acao && morte < 0) tontear();
       acordar();
     };
     const soltar = () => {
       // sem arraste, soltar é o fim de um clique: um golpe
       if (arraste && !arraste.andou) golpe();
-      else if (arraste) depois(ENCARA, encarar);
+      else if (arraste) {
+        // solto sem tontura, ele para onde a mão deixou: o embalo é só da tontura
+        embalo = 0;
+        depois(ENCARA, encarar);
+      }
       arraste = null;
     };
     const entrar = (e: PointerEvent) => {
@@ -703,6 +776,7 @@ export function useComportamento(
     };
     const cancelar = () => {
       arraste = null;
+      embalo = 0;
     };
 
     const mover = (e: PointerEvent) => {
@@ -761,6 +835,7 @@ export function useComportamento(
       document.documentElement.removeEventListener('pointerleave', sair);
       timers.forEach(clearTimeout);
       cancelAnimationFrame(quadro);
+      cena?.parar(false);
       // fora de cena ele volta inteiro, e a próxima visita chega de novo
       for (const a of [
         'data-visto',

@@ -154,17 +154,20 @@ function Parte({
   pivo,
   giro,
   classe,
+  cena,
   children,
 }: {
   pivo: Vec;
   giro?: RefObject<HTMLDivElement | null>;
   /** a animação de CSS do nó que gira (pelas propriedades soltas, que somam com o `transform` do JS) */
   classe?: string;
+  /** a parte que as cenas de `tombo.ts` movem neste nó */
+  cena?: string;
   children: ReactNode;
 }) {
   return (
     <div className={styles.no} style={{ transform: em(pivo) }}>
-      <div ref={giro} className={classe ? `${styles.no} ${classe}` : styles.no}>
+      <div ref={giro} className={classe ? `${styles.no} ${classe}` : styles.no} data-cena={cena}>
         {children}
       </div>
     </div>
@@ -204,8 +207,10 @@ const MIGALHAS = [-1.6, 1.2, -0.4, 1.8, -1.1, 0.7, 1.5, -1.9, 0.3, -0.9];
  * (`quique`) e troca o peso de perna (`quadril`); da cintura para cima (`alto`,
  * com o pivô na cintura) ele inclina ao contrário do quadril e sobe com o
  * fôlego. As pernas ficam de fora do `alto`, com os pés no chão. Cada uma tem
- * a própria classe (`pernaDir`, `pernaEsq`), porque no aceno (que termina numa queda) elas
- * não fazem a mesma coisa.
+ * a própria classe (`pernaDir`, `pernaEsq`), porque no tombo (`tombo.ts`)
+ * elas não fazem a mesma coisa. **Os nós que as cenas movem levam `data-cena`**,
+ * e não uma classe: uma classe sem regra no CSS não sai do CSS Modules, e o nó
+ * ficaria com `class="undefined"`.
  *
  * É `memo`: a vida e os gestos re-renderizam o boneco, e as 72 faces não mudam.
  */
@@ -225,13 +230,13 @@ export const Modelo = memo(function Modelo({
 
   return (
     <div ref={nos.corpo} className={styles.boneco}>
-      <div className={`${styles.no} ${styles.quique}`}>
-        <div className={`${styles.no} ${styles.quadril}`}>
-          <Parte pivo={[0, -12, 0]} classe={styles.alto}>
+      <div className={`${styles.no} ${styles.quique}`} data-cena="corpo">
+        <div className={`${styles.no} ${styles.quadril}`} data-cena="quadril">
+          <Parte pivo={[0, -12, 0]} classe={styles.alto} cena="alto">
             <Parte pivo={[0, -12, 0]} giro={nos.cabeca} classe={styles.cabeca}>
               {/* o nó de dentro balança a cabeça de um lado a outro ("não"): o de fora já
                   tem o `transform` do olhar e a inclinação, e uma rotação só não faz os dois eixos */}
-              <div className={`${styles.no} ${styles.cabecear}`}>
+              <div className={styles.no} data-cena="cabeca">
                 <Caixa uv={[0, 0]} tam={[8, 8, 8]} centro={[0, -4, 0]} />
                 <Caixa uv={[32, 0]} tam={[8, 8, 8]} centro={[0, -4, 0]} infla={0.5} />
                 <Caixa tex="--arm" peca="elmo" uv={[0, 0]} tam={[8, 8, 8]} centro={[0, -4, 0]} infla={1} />
@@ -254,7 +259,7 @@ export const Modelo = memo(function Modelo({
                 o dos gestos; um `transform` por nó, senão um apaga o outro */}
             <Parte pivo={[-5, oy, 0]} giro={nos.bracoD}>
               <div className={`${styles.no} ${styles.respiraD}`}>
-                <div className={`${styles.no} ${styles.gesto}`}>
+                <div className={`${styles.no} ${styles.gesto}`} data-cena="bracoD">
                   <Caixa uv={[40, 16]} tam={[bw, 12, 4]} centro={[-bx, 4, 0]} />
                   <Caixa uv={[40, 32]} tam={[bw, 12, 4]} centro={[-bx, 4, 0]} infla={0.25} />
                   {/* a ombreira tem sempre 4 texels, como no jogo, mesmo no braço fino */}
@@ -287,7 +292,7 @@ export const Modelo = memo(function Modelo({
             </Parte>
             <Parte pivo={[5, oy, 0]} giro={nos.bracoE}>
               <div className={`${styles.no} ${styles.respiraE}`}>
-                <div className={`${styles.no} ${styles.gestoE}`}>
+                <div className={`${styles.no} ${styles.gestoE}`} data-cena="bracoE">
                   <Caixa uv={[32, 48]} tam={[bw, 12, 4]} centro={[bx, 4, 0]} />
                   <Caixa uv={[48, 48]} tam={[bw, 12, 4]} centro={[bx, 4, 0]} infla={0.25} />
                   <Caixa
@@ -312,14 +317,14 @@ export const Modelo = memo(function Modelo({
             {capa && (
               <Parte pivo={[0, -12, -2]} classe={styles.sobe}>
                 {/* a capa é modelada de frente para o corpo e virada para trás */}
-                <div className={`${styles.no} ${styles.capa}`}>
+                <div className={`${styles.no} ${styles.capa}`} data-cena="capa">
                   <Caixa tex="--capa" uv={[0, 0]} tam={[10, 16, 1]} centro={[0, 8, 0.5]} />
                 </div>
               </Parte>
             )}
           </Parte>
           <Parte pivo={[-1.9, -12, 0]} giro={nos.pernaD}>
-            <div className={`${styles.no} ${styles.perna} ${styles.pernaDir}`}>
+            <div className={`${styles.no} ${styles.perna}`} data-cena="pernaD">
               <Caixa uv={[0, 16]} tam={[4, 12, 4]} centro={[0, 6, 0]} />
               <Caixa uv={[0, 32]} tam={[4, 12, 4]} centro={[0, 6, 0]} infla={0.25} />
               <Caixa tex="--calca" peca="calca" uv={[0, 16]} tam={[4, 12, 4]} centro={[0, 6, 0]} infla={0.5} />
@@ -327,7 +332,7 @@ export const Modelo = memo(function Modelo({
             </div>
           </Parte>
           <Parte pivo={[1.9, -12, 0]} giro={nos.pernaE}>
-            <div className={`${styles.no} ${styles.perna} ${styles.pernaEsq}`}>
+            <div className={`${styles.no} ${styles.perna}`} data-cena="pernaE">
               <Caixa uv={[16, 48]} tam={[4, 12, 4]} centro={[0, 6, 0]} />
               <Caixa uv={[0, 48]} tam={[4, 12, 4]} centro={[0, 6, 0]} infla={0.25} />
               <Caixa

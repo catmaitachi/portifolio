@@ -544,7 +544,8 @@ observações do Lucas foram pô-lo por último, menor que o LoL, e tirar os tex
 - **O comportamento é o do jogo, em ticks de 50ms**: parado, a cabeça segue o ponteiro e o tronco
   acompanha a um quarto (de costas, a mira se espelha, e ele olha para o lado da tela em que o
   ponteiro está); segurar e arrastar gira o corpo; **ao aparecer na tela ele chega do fundo e faz um
-  gesto sorteado de `CHEGADA`** (hoje só o aceno do Bedrock); **clicar é um golpe**: 30% de vermelho
+  gesto sorteado de `CHEGADA`** (hoje o aceno que dá errado, ver adiante); **girado rápido demais, fica
+  tonto e cai**; **clicar é um golpe**: 30% de vermelho
   por cima da textura, meio segundo de invulnerabilidade, o empurrão com a física do jogo (gravidade
   0,08, atrito de ar e de chão, força 0,2 no lugar dos 0,4 do soco, para caber no palco), a volta
   andando com o balanço de pernas do `HumanoidModel`, e, se estava de costas, ele vira para quem bateu.
@@ -631,32 +632,47 @@ observações do Lucas foram pô-lo por último, menor que o LoL, e tirar os tex
 - **Não há piscar nem mastigar**, de propósito: olhos e boca são desenho da skin, cada skin os põe
   num lugar, e a skin troca sozinha quando muda no jogo.
 - **O aceno dá errado, e é uma pequena história** (Lucas, 22/10/2026). Antes só o braço subia e
-  balançava (2,4s); uma segunda versão se equilibrava numa perna só e "ficou artificial". Hoje são 9s:
-  ele acena **inclinando-se para a esquerda da tela** (o lado do braço que acena), se endireita uma vez
-  ("opa"), perde o equilíbrio com o braço livre girando e uma perna se debatendo, **escorrega e cai
-  sentado**, quica, **balança a cabeça olhando para baixo** como quem se recompõe e se levanta, empurrando,
-  até assentar. Está tudo em `acenar*`, em `Boneco.module.css`, e **os nove nós usam os mesmos
-  percentuais**, que o comentário do CSS lista (balanços 14–44%, queda 46–52%, cabeça 58–74%, levantar
-  74–94%): o pico de um cai no instante em que o do vizinho precisa dele.
-  - **Sentar e levantar são a mesma conta, e é ela que mantém os pés no chão**: as pernas giram `theta`
-    para a frente (78° sentado), o quadril desce `12 · (1 − cos theta)` texels (9,5 sentado) e os pés
-    escorregam sem sair do chão. `acenarQuadril` e as duas pernas usam os mesmos percentuais; mudar um
-    sem o outro enterra o pé ou o levanta.
-  - **O corpo inclina sobre o pé esquerdo da tela** (`transform-origin` do `.quique`, só durante o
-    gesto), e não sobre o meio dos pés: o outro pé se levanta sozinho com a inclinação, sem animar a
-    perna, e o corpo desliza 3 texels para o lado, que é o passo que ele dá para não cair. "Esquerda"
-    é a da tela, e é o lado do braço que acena; para o outro lado é inverter o sinal do `rotateZ` e do
-    `translateX` em `acenarQuique`.
-  - **A cabeça tem dois nós para os dois eixos** (`modelo.tsx`): o `.cabeca` baixa (`rotate: x`, e o
-    `transform` dele continua sendo o do olhar) e o `.cabecear`, dentro dele, balança (`rotate: y`).
-    Uma rotação só não faz os dois, e o `transform` não é livre ali.
-  - **Os laços de repouso ficam na lista** (`peso`, `pesoPerna`, `pesoAlto`, `sobe`), e o gesto soma em
-    `transform` por cima. As pernas têm as classes `pernaDir` e `pernaEsq`, porque não fazem o mesmo.
-  - **Só o `.gesto` (o braço direito) encerra o gesto**, como em todos: os outros oito nós têm a mesma
-    duração (`--acena`) e voltam ao repouso (`none`) no fim. Um golpe no meio o interrompe pelo
-    atributo, e ele se levanta de uma vez.
-  - Conferido no navegador travando as animações em 18 pontos (`document.getAnimations()`,
-    `currentTime`) e rodando uma vez inteira: termina em 9,08s, sem erros, e volta ao repouso.
+  balançava (2,4s); uma segunda versão se equilibrava numa perna só e "ficou artificial"; a terceira,
+  em `@keyframes`, contava a história de hoje, mas o Lucas a achou robótica. Hoje: ele acena com o corpo
+  todo, cada vez mais inclinado para o lado do braço, se segura uma vez ("opa"), pula num pé só abanando
+  os braços para os lados, cai sentado, quica, fica zonzo, balança a cabeça, se levanta num impulso, limpa a
+  calça e olha para quem viu, sem graça (8,5s).
+  - **A cena mora em `tombo.ts`, e não no CSS.** Em `@keyframes` o `ease-in-out` vale por trecho, e a
+    velocidade ia a zero a cada chave (a cada 3%): a inclinação subia em degraus e cada pose era uma
+    parada. E os nove nós andavam pelos mesmos percentuais, sem nada chegar atrasado. Agora cada nó
+    tem as próprias chaves, e uma curva (Hermite com as tangentes de Steffen) passa por elas: freia só
+    onde o movimento muda de sentido, não passa do ponto (uma pose segurada fica parada) e, numa chave
+    de `impacto`, chega acelerando como quem cai e para seco. A curva é amostrada a 40 quadros por
+    segundo e vai para o `element.animate`, no compositor como o CSS.
+  - **O tombo é um trecho só, com duas causas.** A cena é uma sequência de trechos: `acenar` é
+    `ACENO` + `TOMBO`, e `tonto` é `TONTURA` + `TOMBO`. O primeiro trecho termina onde o tombo começa
+    (pendendo para a esquerda da tela), e a curva emenda os dois.
+  - **A tontura** (pedido do Lucas, 22/10/2026): cada grau girado no arraste soma, e a tontura passa
+    sozinha a 300°/s. Duas voltas acumuladas o derrubam (`TONTO`, em `comportamento.ts`): quem gira a
+    menos de uma volta por segundo nunca chega lá. Ele larga a mão de quem gira, o corpo continua
+    girando no embalo e para aos poucos (por quadro, e não por tick, senão andaria aos saltos), e ele
+    balança em círculos com a cabeça rodando atrasada antes de cair. Só o tonto tem embalo: soltar o
+    arraste normal o deixa onde a mão deixou.
+  - **Sentar e levantar são uma conta só**: as pernas giram `sentar` para a frente, e o quadril desce
+    `12 · (1 − cos)` e recua `12 · sen`, então os pés não saem do lugar. Ele cai como uma tábua que gira
+    em volta dos pés, que é como se cai de pernas esticadas (o modelo não tem joelho), e senta um pouco
+    de lado (`ry` do corpo), para a pose se ler de frente.
+  - **Os braços abanam para os lados, nunca para a frente**: na primeira versão eles giravam para a
+    frente e para cima (`rx` acima de 90°), passavam na frente do rosto, e o Lucas os viu batendo na
+    cara. Hoje um sobe enquanto o outro desce, abertos (`rz` entre 70° e 150°), e o `rx` fica em ±40°.
+  - **O corpo inclina sobre o pé do lado para onde pende** (`PE`): o outro pé sobe sozinho, sem animar
+    a perna.
+  - **Os nós da cena se acham por `data-cena`**, e não por classe. `.cabecear`, `.pernaDir` e
+    `.pernaEsq` só tinham regra no CSS do aceno antigo; sem a regra, o CSS Modules não exporta a
+    classe, o nó fica com `class="undefined"`, e na primeira versão as três animações caíram todas na
+    cabeça.
+  - **A cabeça da cena é o nó de dentro** (`modelo.tsx`): o de fora tem o `transform` do olhar. Numa
+    cena o olhar volta para a frente (`frente`, como ao comer), e a cena mexe a cabeça nos três eixos.
+  - **`data-gesto` continua marcando a cena** (`acenar` ou `tonto`), e é o que `livre()` e a defesa
+    leem; quem o tira é o fim da cena, no JS, porque o `animationend` não vale para `element.animate`.
+    Um golpe no meio a interrompe, e ele volta ao repouso em 0,3s, em vez de pular para de pé.
+  - Conferido no navegador travando a cena em 20 pontos (`currentTime`), e o gatilho e a interrupção
+    com eventos de ponteiro.
 - **Ele acena quando aparece, e não quando a seção abre**: mora no fim de Jogos, e um gesto no abrir
   da seção aconteceria fora de vista. Um `IntersectionObserver` (60% à vista) marca `data-visto`.
 - **O pedestal é chão de verdade**: três anéis de 1px deitados no 3D, com a mesma câmera do boneco.
