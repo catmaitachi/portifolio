@@ -615,7 +615,7 @@
   }
 }
 
-.palco[data-acao='equipar'] {
+.palco:is([data-acao='equipar'], [data-acao='guardar']) {
   --peca: 0.9s;
 }
 
@@ -663,13 +663,26 @@
     curvaCalca var(--peca) ease-in-out;
 }
 
-.palco[data-acao='equipar'] .item {
+.palco:is([data-acao='equipar'], [data-acao='guardar']) .item {
   visibility: visible;
   animation: segura var(--peca) ease-out both;
 }
 
+/*
+ * Guardar (`data-acao='guardar'`) é vestir ao contrário: a peça sai do corpo aos
+ * 30% e volta na mão. No `.alto` só a curva inverte, e não o laço do peso, que
+ * pularia de fase quando a ação acaba.
+ */
+.palco[data-acao='guardar'] :is(.gesto, .item) {
+  animation-direction: reverse;
+}
+
+.palco[data-acao='guardar'] .alto {
+  animation-direction: normal, reverse;
+}
+
 /**
- * As armas, que ele saca depois de morrer duas vezes (`data-armas`): a espada de
+ * As armas, que ele saca com dois corações a menos (`data-armas`): a espada de
  * netherite na mão direita e o escudo no braço esquerdo, com as texturas do jogo.
  *
  * **O escudo defende de frente** (`data-defende`): o braço vem para a frente do
@@ -678,8 +691,8 @@
  * transições, e não animações: a defesa sobe e desce quando o atributo muda.
  * Cansado (`data-cansado`), o escudo pende.
  *
- * **Comendo, a espada some**: ele troca o que tem na mão, como quem troca de
- * espaço na barra do jogo.
+ * **Comendo ou vestindo, a espada some**: ele troca o que tem na mão (a maçã, a
+ * peça da armadura), como quem troca de espaço na barra do jogo.
  */
 .palco {
   --escudo: url('../../assets/minecraft/escudo.png');
@@ -701,7 +714,7 @@
   animation: saca 0.25s var(--ease-saida);
 }
 
-/* de mãos ocupadas ele guarda o que segura: a espada para comer, e as duas coisas para se espreguiçar */
+/* de mãos ocupadas ele guarda o que segura: a espada para comer ou vestir, e as duas coisas para se espreguiçar ou guardar tudo */
 .espada,
 .escudo {
   transition:
@@ -709,8 +722,8 @@
     scale 0.14s var(--ease-saida);
 }
 
-.palco[data-acao='comer'] .espada,
-.palco[data-gesto='espreguicar'] :is(.espada, .escudo) {
+.palco[data-acao] .espada,
+.palco:is([data-acao='guardar'], [data-gesto='espreguicar']) .escudo {
   scale: 0;
 }
 

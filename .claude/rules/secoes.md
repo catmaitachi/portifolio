@@ -583,27 +583,42 @@ observações do Lucas foram pô-lo por último, menor que o LoL, e tirar os tex
     e o totem. Os corações eram SVGs redesenhados à mão, de 9x8, e saíram.
   - A fila é de uma ação por vez (`livre()`, em `comportamento.ts`): gesto, pulo e maçã não se
     atropelam, e a próxima ação com item (uma poção, por exemplo) é mais um valor de `data-acao`.
-- **Cada morte o traz mais preparado** (ideia do Lucas, 11/10/2026). `mortes` conta as mortes da
-  visita, num `useRef` que sobrevive a sair e voltar da seção, e zera ao recarregar: nada é gravado.
-  - **Com 1, a armadura de netherite.** Ao renascer ele pega cada peça na mão e a põe, **da bota ao
+- **Quanto mais apanha, mais se prepara** (ideia do Lucas, 11/10/2026; a escalada era por morte até
+  22/10/2026, quando ele pediu que viesse da vida perdida). A conta é a vida que falta agora
+  (`ARMAS` e `ARMADURA`, em pontos), e o que ele pega fica com ele: a maçã devolve a vida, mas não
+  o desarma, e a armadura começada vai até o elmo. **A morte leva tudo**, e ele renasce sem nada,
+  acenando como na chegada.
+  - **Deixado em paz por 15s, ele guarda tudo** (`SOSSEGO`, pedido do Lucas, 22/10/2026). Cada
+    golpe, bloqueado ou não, recomeça a conta. É o vestir ao contrário (`data-acao='guardar'`, a
+    mesma animação com `animation-direction: reverse`): do elmo à bota, a peça sai do corpo aos 30%
+    e volta na mão, e espada e escudo encolhem no começo e somem no fim. No `.alto` só a curva
+    inverte, e não o laço do peso, que pularia de fase quando a ação acaba. Um golpe no meio para
+    onde estava; se ele ainda está machucado o bastante, volta a se vestir, e senão continua
+    guardando no próximo sossego.
+  - **Com dois corações a menos, a espada e o escudo** (descritos adiante).
+  - **Com três, a armadura de netherite.** Ele pega cada peça na mão, **no lugar da espada** (que
+    some como ao comer), e a põe, **da bota ao
     elmo** (`data-acao='equipar'`, `data-peca`, 0,9s por peça; para as botas e a calça o tronco se
-    curva). A peça some da mão e aparece no corpo aos 70%, com um estalo de `scale`. Vestido, o golpe
+    curva). Vestindo ele não defende: o terceiro coração só se perde passando pelo escudo, e cada
+    peça é mais uma brecha. A peça some da mão e aparece no corpo aos 70%, com um estalo de `scale`. Vestido, o golpe
     tira meio coração e cada peça segura um décimo do empurrão. A barra de armadura do HUD aparece em
     cima dos corações e enche a cada peça (3, 6, 8 e 3 pontos, os do jogo). Um golpe interrompe, e
     ele continua de onde parou 1,2s depois. A armadura é mais uma camada das caixas do modelo, com a
     textura do jogo (64x32); os membros esquerdos usam a textura virada (`*-espelho.png`, feita com
     `sips -f horizontal`), porque `scaleX(-1)` numa caixa inverte o que `backface-visibility` esconde.
-  - **Com 2, a espada e o escudo**, sacados depois da armadura (`data-armas`). **O escudo defende o
+  - **A espada e o escudo** (`data-armas`). **O escudo defende o
     golpe que vem de frente** (até 80° de lado), e sobe já com o ponteiro por cima dele. Passa-se
     por ele de três jeitos: **girar o boneco e bater pelas costas** (solto, ele volta a encarar em
     0,45s), **cansá-lo** (5 bloqueios e o escudo pende por 3s), ou **pegá-lo de mãos ocupadas**
     (comendo ou se espreguiçando). A cada dois
     bloqueios ele devolve com a espada e o palco treme; é só visual (era só no terceiro, e o Lucas
-    pediu mais). **Para comer ele guarda a
-    espada**: a maçã ocupa a mão, como trocar de espaço na barra.
-  - **Na vez em que morreria, o totem o segura** (`data-totem`): fica com um coração, a vida volta
-    aos poucos, e a figura do totem sobe na frente dele com as partículas verdes e amarelas. A conta
-    vai a 3 (armado, sem totem), e a morte seguinte é de verdade e **zera tudo**.
+    pediu mais). **Para comer ou vestir ele guarda a
+    espada**: a maçã ou a peça ocupa a mão, como trocar de espaço na barra.
+  - **Na primeira vez em que morreria, o totem o segura** (`data-totem`; até 22/10/2026 era só
+    depois de duas mortes): fica com um coração, a vida volta aos poucos, e a figura do totem sobe
+    na frente dele com as partículas verdes e amarelas. A morte seguinte é de verdade e devolve o
+    totem para a próxima vida. `totem` é um `useRef` que sobrevive a sair e voltar da seção, e volta
+    ao recarregar: nada é gravado.
   - **A espada fica como o jogo a segura**: no plano do braço, com o meio do cabo no centro da mão
     (o fim do braço), e a lâmina para a frente, 15° acima da horizontal. A figura do jogo sobe a 45°,
     e um giro de 30° a deita; o nó é posto onde o cabo, que fica a (-4,06; 3,66) texels do centro da
@@ -627,8 +642,8 @@ observações do Lucas foram pô-lo por último, menor que o LoL, e tirar os tex
     atravessado" que o Lucas via (apareceu numa captura dele, com o boneco andando de volta).
     Duas tentativas de resolver baixando a placa (em repouso, do ombro para baixo; erguida, até o
     queixo) o Lucas recusou: o problema era o ângulo, não a altura.
-  - **De mãos ocupadas ele guarda o que segura** (`scale: 0`, com transição): a espada para comer, e
-    a espada e o escudo para se espreguiçar. Nos dois casos ele também não defende.
+  - **De mãos ocupadas ele guarda o que segura** (`scale: 0`, com transição): a espada para comer e
+    para vestir, e a espada e o escudo para se espreguiçar. Em todos eles também não defende.
 - **Não há piscar nem mastigar**, de propósito: olhos e boca são desenho da skin, cada skin os põe
   num lugar, e a skin troca sozinha quando muda no jogo.
 - **O aceno dá errado, e é uma pequena história** (Lucas, 22/10/2026). Antes só o braço subia e

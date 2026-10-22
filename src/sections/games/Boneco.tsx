@@ -37,10 +37,12 @@ interface BonecoProps {
  *   renasce.
  * - **Machucado e deixado em paz, come uma maçã dourada**, e a vida volta aos
  *   poucos. Um golpe no meio da mordida a derruba.
- * - **Cada morte o traz mais preparado**: na primeira volta ele veste o
- *   netherite, peça por peça, da bota ao elmo, e leva metade do dano; na segunda
- *   saca espada e escudo, e defende o golpe que vem de frente; e na vez seguinte
- *   em que morreria, o totem o segura. Depois disso a morte zera tudo.
+ * - **Quanto mais apanha, mais se prepara**: com dois corações a menos saca
+ *   espada e escudo, e defende o golpe que vem de frente; com três começa a
+ *   vestir o netherite, peça por peça, da bota ao elmo (a peça vem na mão, no
+ *   lugar da espada), e passa a levar metade do dano. Deixado em paz, guarda
+ *   tudo de volta. Na primeira vez em que
+ *   morreria, o totem o segura; a morte seguinte é de verdade e leva tudo.
  *
  * **Ele chega quando aparece, e não quando a seção abre.** Mora no fim de
  * Jogos, embaixo do deque, e um gesto no abrir da seção aconteceria fora de

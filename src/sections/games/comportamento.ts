@@ -81,8 +81,8 @@ const REGENERA = 6;
 const OUTRA_MACA = 1200;
 
 /*
- * A armadura de netherite. Quem o mata uma vez o encontra vestindo, ao renascer:
- * pega cada peça na mão e a põe, da bota ao elmo.
+ * A armadura de netherite. Com três corações a menos ele começa a vestir: pega
+ * cada peça na mão, no lugar da espada, e a põe, da bota ao elmo.
  */
 /** As peças, na ordem de vestir, e os pontos de armadura de cada uma (os do jogo). */
 const PECAS: [Peca, number][] = [
@@ -104,14 +104,15 @@ const DANO_ARMADO = 1;
 const FIRMEZA = 0.1;
 
 /*
- * A escalada. `mortes` conta as vezes que ele morreu nesta visita, e cada uma o
- * traz mais preparado: com 1, a armadura; com 2, também a espada, o escudo e um
- * totem. O totem o segura na vez em que morreria (e a conta vai a 3, sem ele);
- * a morte seguinte é de verdade, e zera tudo.
+ * A escalada, pela vida que ele perdeu: com dois corações a menos saca a espada
+ * e o escudo, e com três começa a vestir a armadura. Uma vez começada, ela vai
+ * até o fim, mesmo que a maçã devolva a vida. Deixado em paz, ele guarda tudo;
+ * a morte também leva tudo, e ele renasce sem nada.
  */
-const COM_ARMADURA = 1;
-const COM_ARMAS = 2;
-const SEM_TOTEM = 3;
+const ARMAS = 2 * DANO;
+const ARMADURA = 3 * DANO;
+/** Sem apanhar por este tempo, ele guarda tudo: a armadura do elmo à bota, e depois as armas. */
+const SOSSEGO = 15000;
 
 /*
  * O escudo defende o golpe que vem de frente, como no jogo. Há três jeitos de
@@ -132,7 +133,9 @@ const ESPERA_CONTRA = 180;
 const BRACO_FIRME = 0.15;
 /** Solto de lado ou de costas, ele volta a encarar depois deste tempo. */
 const ENCARA = 450;
-/** O totem devolve um coração na hora e mais estes pontos aos poucos, e segura os golpes por este tempo. */
+/**
+ * O totem o segura na primeira vez em que morreria; a morte seguinte é de
+ * verdade, e o devolve. Ele devolve um coração na hora e mais estes pontos aos poucos, e segura os golpes por este tempo. */
 const TOTEM = 14;
 const TOTEM_PROTEGE = 1000;
 
@@ -193,7 +196,7 @@ function religar(el: HTMLElement, atributo: string, valor = '') {
  *
  * Os atributos que ele escreve no palco são o contrato com o CSS
  * (`Boneco.module.css`): `data-visto` (chegou), `data-gesto` (qual gesto),
- * `data-acao` (o que ele faz com a mão: `comer` ou `equipar`, e aí `data-peca`
+ * `data-acao` (o que ele faz com a mão: `comer`, `equipar` ou `guardar`, e aí `data-peca`
  * diz qual peça), `data-armadura` (as peças já vestidas), `data-armas` (espada e
  * escudo à mão), `data-defende` (o escudo erguido), `data-bloqueio` (o golpe que
  * bateu nele), `data-cansado`, `data-treme` (o contra-ataque), `data-totem`,
@@ -211,8 +214,8 @@ export function useComportamento(
 ) {
   /** o giro do arraste; sobrevive às voltas da seção */
   const orbita = useRef(0);
-  /** quantas vezes ele já morreu nesta visita: é o que o faz voltar mais preparado */
-  const mortes = useRef(0);
+  /** se o totem ainda está com ele nesta visita */
+  const totem = useRef(true);
   const reduzido = useReducedMotion();
 
   useEffect(() => {
@@ -244,14 +247,15 @@ export function useComportamento(
     let antes = { z, y, vz, balanco, amplitude };
     let pontos = VIDA;
     // o que ele faz com a mão; ocupado, a cabeça volta para a frente (`frente`, de 0 a 1)
-    let acao: 'comer' | 'equipar' | null = null;
+    let acao: 'comer' | 'equipar' | 'guardar' | null = null;
     let frente = 0;
     let timerAcao = 0;
     let timerComer = 0;
     let timerVestir = 0;
+    let timerDesarmar = 0;
     /** quantas peças da armadura ele já vestiu, e quantas deve vestir */
     let vestidas = 0;
-    const aVestir = () => (mortes.current >= COM_ARMADURA ? PECAS.length : 0);
+    let aVestir = 0;
     // a espada e o escudo: à mão, o ponteiro por cima, e os bloqueios até cansar
     let armas = false;
     let sobre = false;
@@ -510,9 +514,6 @@ export function useComportamento(
       acordar();
     };
 
-    /** O que ele faz ao chegar: acena, ou, se já morreu aqui, se veste. */
-    const chegar = () => (aVestir() ? vestir() : gesto());
-
     /** De pé, à vista, e sem nada em curso: é quando ele faz as coisas por conta própria. */
     const livre = () =>
       visivel &&
@@ -561,7 +562,7 @@ export function useComportamento(
     const comer = () => {
       if (morte >= 0 || pontos >= VIDA) return;
       // ocupado ou fora de vista, ele come depois
-      if (!livre() || regen > 0 || vestidas < aVestir()) return agendarComer(800);
+      if (!livre() || regen > 0 || vestidas < aVestir) return agendarComer(800);
       const cura = () => {
         acao = null;
         el.removeAttribute('data-acao');
@@ -606,16 +607,11 @@ export function useComportamento(
       timerVestir = depois(ms, vestir);
     };
     const vestir = () => {
-      if (morte >= 0) return;
-      // vestido, falta sacar as armas, se ele já chegou a esse ponto
-      if (vestidas >= aVestir()) {
-        if (mortes.current >= COM_ARMAS && !armas) sacar();
-        return;
-      }
+      if (morte >= 0 || vestidas >= aVestir) return;
       if (!livre()) return agendarVestir(600);
       // sem movimento ele aparece vestido
       if (reduzido) {
-        vestidas = aVestir();
+        vestidas = aVestir;
         mostrarArmadura();
         mostrarVida(false);
         return vestir();
@@ -637,6 +633,54 @@ export function useComportamento(
         });
       });
     };
+    const agendarDesarmar = (ms: number) => {
+      clearTimeout(timerDesarmar);
+      timerDesarmar = depois(ms, desarmar);
+    };
+    /** Em paz, ele desfaz o vestir: a mesma animação ao contrário, do elmo à bota, e por fim as armas. */
+    const desarmar = () => {
+      if (morte >= 0 || (!armas && !vestidas)) return;
+      if (!livre()) return agendarDesarmar(800);
+      aVestir = 0;
+      clearTimeout(timerVestir);
+      const fim = () => {
+        acao = null;
+        el.removeAttribute('data-acao');
+        el.removeAttribute('data-peca');
+        guardar();
+        acordar();
+      };
+      if (reduzido) {
+        vestidas = 0;
+        mostrarArmadura();
+        armas = false;
+        el.removeAttribute('data-armas');
+        return guardar();
+      }
+      acao = 'guardar';
+      if (vestidas) el.setAttribute('data-peca', PECAS[vestidas - 1][0]);
+      religar(el, 'data-acao', 'guardar');
+      guardar();
+      acordar();
+      // sem armadura, só as armas: elas já encolheram com o `data-acao`, e somem
+      if (!vestidas) {
+        timerAcao = depois(250, () => {
+          armas = false;
+          el.removeAttribute('data-armas');
+          fim();
+        });
+        return;
+      }
+      timerAcao = depois(PECA * (1 - VESTE), () => {
+        vestidas -= 1;
+        mostrarArmadura();
+        mostrarVida(false);
+        timerAcao = depois(PECA * VESTE, () => {
+          fim();
+          desarmar();
+        });
+      });
+    };
 
     // a vida: dez corações, cada um cheio, meio ou vazio; no golpe eles piscam
     const mostrarVida = (pisca = true) => {
@@ -655,7 +699,7 @@ export function useComportamento(
     };
 
     const sumir = () => {
-      mortes.current = mortes.current >= SEM_TOTEM ? 0 : mortes.current + 1;
+      totem.current = true;
       el.setAttribute('data-morto', '');
       coracoes.removeAttribute('data-mostra');
       escudos.removeAttribute('data-mostra');
@@ -671,7 +715,7 @@ export function useComportamento(
       el.removeAttribute('data-morto');
       el.removeAttribute('data-ferido');
       // a armadura ficou com o corpo: ele renasce sem nada, e se veste de novo
-      vestidas = 0;
+      vestidas = aVestir = 0;
       mostrarArmadura();
       armas = cansado = false;
       bloqueios = 0;
@@ -679,19 +723,21 @@ export function useComportamento(
       pintar(0);
       // renasce como chegou: do fundo
       religar(el, 'data-visto');
-      depois(ESPERA_GESTO, chegar);
+      depois(ESPERA_GESTO, gesto);
     };
 
     const golpe = () => {
       const agora = performance.now();
       if (morte >= 0 || agora - ultimoGolpe < INVULNERAVEL) return;
+      // bloqueado ou não, apanhar adia o desarmar
+      agendarDesarmar(SOSSEGO);
       if (defende()) return bloquear(agora);
       ultimoGolpe = agora;
       const armado = vestidas === PECAS.length;
       pontos = Math.max(0, pontos - (armado ? DANO_ARMADO : DANO));
       // o totem: no golpe que o mataria, ele fica com um coração, e a vida volta
-      if (pontos === 0 && mortes.current === COM_ARMAS) {
-        mortes.current = SEM_TOTEM;
+      if (pontos === 0 && totem.current) {
+        totem.current = false;
         pontos = 2;
         regen = TOTEM;
         contaRegen = 0;
@@ -708,8 +754,10 @@ export function useComportamento(
       embalo = 0;
       largar();
       if (pontos > 0) {
+        if (VIDA - pontos >= ARMAS && !armas) sacar();
+        if (VIDA - pontos >= ARMADURA) aVestir = PECAS.length;
         agendarComer(ESPERA_COMER);
-        if (vestidas < aVestir()) agendarVestir(ESPERA_VESTIR);
+        if (vestidas < aVestir) agendarVestir(ESPERA_VESTIR);
         // armado, um golpe de lado também o faz encarar
         depois(ENCARA, encarar);
       } else regen = 0;
@@ -801,7 +849,7 @@ export function useComportamento(
         visivel = visto.isIntersecting;
         if (!visivel || el.hasAttribute('data-visto')) return;
         el.setAttribute('data-visto', '');
-        depois(reduzido ? 0 : ESPERA_GESTO, chegar);
+        depois(reduzido ? 0 : ESPERA_GESTO, gesto);
       },
       { threshold: 0.6 },
     );
