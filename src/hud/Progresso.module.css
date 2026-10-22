@@ -20,7 +20,7 @@
   }
 }
 
-/** chega com o cabeçalho: quem abre o site já rolado não vê o fio antes do HUD */
+/** chega logo, sem esperar o cabeçalho (`--abertura-barra`): é o feedback de quem rola */
 @keyframes aparece {
   from {
     opacity: 0;
@@ -63,7 +63,7 @@
   clip-path: inset(0 calc((1 - var(--progresso, 0)) * 100%) 0 0);
   pointer-events: none;
   animation:
-    aparece var(--abertura-fina) ease-out var(--abertura-cabecalho) backwards,
+    aparece var(--abertura-fina) ease-out var(--abertura-barra) backwards,
     brilhoBarra 8.4s linear infinite paused;
 }
 
@@ -73,7 +73,7 @@
 
 /* máquina modesta: o brilho para, porque repinta o fio a cada quadro (ver `motor.md`) */
 :global(:root:has(canvas[data-qualidade='0'])) .progresso {
-  animation: aparece var(--abertura-fina) ease-out var(--abertura-cabecalho) backwards;
+  animation: aparece var(--abertura-fina) ease-out var(--abertura-barra) backwards;
 }
 
 /**

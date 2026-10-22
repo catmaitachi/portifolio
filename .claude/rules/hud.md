@@ -22,6 +22,7 @@ Na página: etiqueta 1.2s, nome 1.35s (as letras chegando do fundo, 70ms por pas
 centro, ver `direcao-visual.md`), legenda
 1.85s, cabeçalho 2.2s e menu de opções 2.4s (os canais do rodapé também). A
 aparição comum das peças do HUD dura `--abertura-fina` (0.8s).
+A barra de progressão da rolagem é a exceção: não espera ninguém (`--abertura-barra`, 0s).
 
 **A abertura já levou o dobro.** A primeira versão punha o nome na tela aos 3,75s e só assentava aos
 6,6s. O tempo morto estava entre o fim do zoom e o nome: os anéis se formavam um a um e só depois o
@@ -150,8 +151,11 @@ sutil, e com a animação do título.
 - **o brilho só corre com o fio à vista** (`data-aceso`, escrito junto com a variável): num topo de
   tela o recorte é zero, e repintar o fio a cada quadro seria trabalho para ninguém ver. Pausa, e não
   remove, então a fase do ciclo continua de onde parou;
-- **chega com o cabeçalho** (`--abertura-cabecalho`), para quem abre o site já rolado (`#profile/contact`)
-  não ver o fio antes do HUD;
+- **chega logo, sem esperar o HUD** (`--abertura-barra`, 0s, em `reset.css`). Ela já chegou com o
+  cabeçalho (2,2s, mais 0,8s de aparição), para quem abre o site já rolado (`#profile/contact`) não ver o
+  fio antes do HUD, e o Lucas achou que demorava a entrar (22/10/2026): o fio é feedback de quem rola, e
+  quem rola cedo o quer à vista. Ao abrir já rolado, ele aparece em fade sobre o zoom da câmera, e isso
+  é o preço aceito. Se voltar a incomodar, o botão é o token, e não o CSS da barra;
 - **faixa 0 de qualidade** (ver `motor.md`) e **`prefers-reduced-motion`** param o brilho, como no nome
   e em Música: na faixa 0 o fio fica no cinza base do degradê (`#a6a6a6`), e com movimento reduzido
   ele vira chapado em `--linha-cheia`. Nos dois casos continua enchendo, porque isso é a rolagem, e

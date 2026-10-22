@@ -163,6 +163,8 @@
   --abertura-legenda: 1.85s;
   --abertura-cabecalho: 2.2s;
   --abertura-opcoes: 2.4s;
+  /* o fio da rolagem não espera o HUD: ele é feedback de quem rola, e quem rola cedo o quer à vista */
+  --abertura-barra: 0s;
   /* a última peça assentou: daqui em diante só o brilho do nome se move */
   --abertura-fim: 3.3s;
   /* quanto dura a aparição comum das peças do HUD */
