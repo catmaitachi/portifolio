@@ -630,6 +630,33 @@ observações do Lucas foram pô-lo por último, menor que o LoL, e tirar os tex
     a espada e o escudo para se espreguiçar. Nos dois casos ele também não defende.
 - **Não há piscar nem mastigar**, de propósito: olhos e boca são desenho da skin, cada skin os põe
   num lugar, e a skin troca sozinha quando muda no jogo.
+- **O aceno dá errado, e é uma pequena história** (Lucas, 22/10/2026). Antes só o braço subia e
+  balançava (2,4s); uma segunda versão se equilibrava numa perna só e "ficou artificial". Hoje são 9s:
+  ele acena **inclinando-se para a esquerda da tela** (o lado do braço que acena), se endireita uma vez
+  ("opa"), perde o equilíbrio com o braço livre girando e uma perna se debatendo, **escorrega e cai
+  sentado**, quica, **balança a cabeça olhando para baixo** como quem se recompõe e se levanta, empurrando,
+  até assentar. Está tudo em `acenar*`, em `Boneco.module.css`, e **os nove nós usam os mesmos
+  percentuais**, que o comentário do CSS lista (balanços 14–44%, queda 46–52%, cabeça 58–74%, levantar
+  74–94%): o pico de um cai no instante em que o do vizinho precisa dele.
+  - **Sentar e levantar são a mesma conta, e é ela que mantém os pés no chão**: as pernas giram `theta`
+    para a frente (78° sentado), o quadril desce `12 · (1 − cos theta)` texels (9,5 sentado) e os pés
+    escorregam sem sair do chão. `acenarQuadril` e as duas pernas usam os mesmos percentuais; mudar um
+    sem o outro enterra o pé ou o levanta.
+  - **O corpo inclina sobre o pé esquerdo da tela** (`transform-origin` do `.quique`, só durante o
+    gesto), e não sobre o meio dos pés: o outro pé se levanta sozinho com a inclinação, sem animar a
+    perna, e o corpo desliza 3 texels para o lado, que é o passo que ele dá para não cair. "Esquerda"
+    é a da tela, e é o lado do braço que acena; para o outro lado é inverter o sinal do `rotateZ` e do
+    `translateX` em `acenarQuique`.
+  - **A cabeça tem dois nós para os dois eixos** (`modelo.tsx`): o `.cabeca` baixa (`rotate: x`, e o
+    `transform` dele continua sendo o do olhar) e o `.cabecear`, dentro dele, balança (`rotate: y`).
+    Uma rotação só não faz os dois, e o `transform` não é livre ali.
+  - **Os laços de repouso ficam na lista** (`peso`, `pesoPerna`, `pesoAlto`, `sobe`), e o gesto soma em
+    `transform` por cima. As pernas têm as classes `pernaDir` e `pernaEsq`, porque não fazem o mesmo.
+  - **Só o `.gesto` (o braço direito) encerra o gesto**, como em todos: os outros oito nós têm a mesma
+    duração (`--acena`) e voltam ao repouso (`none`) no fim. Um golpe no meio o interrompe pelo
+    atributo, e ele se levanta de uma vez.
+  - Conferido no navegador travando as animações em 18 pontos (`document.getAnimations()`,
+    `currentTime`) e rodando uma vez inteira: termina em 9,08s, sem erros, e volta ao repouso.
 - **Ele acena quando aparece, e não quando a seção abre**: mora no fim de Jogos, e um gesto no abrir
   da seção aconteceria fora de vista. Um `IntersectionObserver` (60% à vista) marca `data-visto`.
 - **O pedestal é chão de verdade**: três anéis de 1px deitados no 3D, com a mesma câmera do boneco.

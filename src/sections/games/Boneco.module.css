@@ -304,34 +304,918 @@
  * Onde o gesto pega um nó que já tem um laço, a lista repete o laço: o navegador
  * mantém a animação que continua na lista, e ela não recomeça.
  *
- * O aceno do Bedrock: o braço sobe pelo lado, acima da cabeça, balança três
- * vezes e desce.
+ * O aceno que dá errado (Lucas, 22/10/2026). Duas versões foram recusadas: a
+ * primeira só balançava o braço, e a segunda, que se equilibrava numa perna só,
+ * "ficou artificial". Esta conta uma pequena história: ele acena **se
+ * inclinando para a esquerda da tela** (o lado do braço que acena), recupera uma
+ * vez, perde o equilíbrio e cai sentado; sentado, balança a cabeça olhando para
+ * baixo, como quem se recompõe, e se levanta.
+ *
+ * **Nove nós se movem, todos pelos mesmos percentuais**, e é isso que mantém o
+ * gesto inteiro: o pico de um cai no instante em que o do vizinho precisa dele.
+ *
+ *   0–14%    agacha, o braço dispara para cima (a antecipação e o "oi")
+ *   14–44%   dez meios-balanços, de 3% cada, enquanto o corpo se inclina; aos 35%
+ *            ele se endireita ("opa") e aos 38% começa a perder o equilíbrio
+ *   44–52%   o braço livre gira para se segurar, uma perna se debate (38–46%),
+ *            ele escorrega e cai sentado (52%, o pouso), com o corpo achatando
+ *   52–58%   o pouso: quica uma vez, a cabeça balança para trás e volta
+ *   58–74%   sentado, com a cabeça baixa: ela balança de lado a lado (60–74%)
+ *   74–94%   se levanta: inclina-se para a frente, empurra, e se endireita
+ *   94–100%  assenta
+ *
+ * **Sentar e levantar são a mesma conta, e é ela que mantém os pés no chão.** As
+ * pernas giram `theta` para a frente (78° sentado), o quadril desce
+ * `12 * (1 - cos theta)` texels (9,5 sentado) e os pés escorregam sem sair do
+ * chão. `acenarQuadril` e as duas pernas usam os mesmos percentuais: mudar um
+ * sem o outro enterra o pé ou o levanta.
+ *
+ * **O corpo inclina sobre o pé esquerdo da tela** (`transform-origin` do `.quique`),
+ * e não sobre o meio dos pés: assim o outro pé se levanta sozinho com a
+ * inclinação, sem animar a perna. É por isso que o corpo desliza 3 texels para o
+ * lado: é o passo que ele dá para não cair.
+ *
+ * **Os laços de repouso continuam na lista** (`peso`, `pesoPerna`, `pesoAlto`,
+ * `sobe`), e o gesto soma por cima em `transform` (ou em `rotate`, na cabeça, que
+ * já tem o `transform` do olhar). A cabeça tem dois nós para os dois eixos: o
+ * `.cabeca` baixa (`rotate: x`) e o `.cabecear`, dentro dele, balança (`rotate:
+ * y`). O gesto termina em repouso (`none`) para quem o tira, e um golpe o
+ * interrompe pelo atributo, sem nada a desfazer.
  */
+
+/* o braço que acena: sobe, balança dez meios-balanços, se agita na queda e se apoia atrás */
 @keyframes acenar {
   0%,
   100% {
     transform: none;
   }
 
-  14%,
+  4% {
+    transform: rotateZ(-5deg) rotateX(8deg) rotateY(0deg);
+    animation-timing-function: cubic-bezier(0.15, 0.85, 0.3, 1);
+  }
+
+  10% {
+    transform: rotateZ(172deg) rotateX(-14deg) rotateY(0deg);
+  }
+
+  14% {
+    transform: rotateZ(148deg) rotateX(-12deg) rotateY(0deg);
+  }
+
+  17% {
+    transform: rotateZ(128deg) rotateX(-12deg) rotateY(-16deg);
+  }
+
+  20% {
+    transform: rotateZ(168deg) rotateX(-14deg) rotateY(14deg);
+  }
+
+  23% {
+    transform: rotateZ(128deg) rotateX(-12deg) rotateY(-16deg);
+  }
+
+  26% {
+    transform: rotateZ(168deg) rotateX(-14deg) rotateY(14deg);
+  }
+
+  29% {
+    transform: rotateZ(126deg) rotateX(-12deg) rotateY(-16deg);
+  }
+
+  32% {
+    transform: rotateZ(170deg) rotateX(-14deg) rotateY(14deg);
+  }
+
+  35% {
+    transform: rotateZ(126deg) rotateX(-12deg) rotateY(-18deg);
+  }
+
+  38% {
+    transform: rotateZ(172deg) rotateX(-14deg) rotateY(16deg);
+  }
+
+  41% {
+    transform: rotateZ(118deg) rotateX(-12deg) rotateY(-20deg);
+  }
+
+  44% {
+    transform: rotateZ(178deg) rotateX(-14deg) rotateY(16deg);
+  }
+
+  46% {
+    transform: rotateZ(120deg) rotateX(-12deg) rotateY(-18deg);
+  }
+
+  48% {
+    transform: rotateZ(176deg) rotateX(-14deg) rotateY(12deg);
+  }
+
+  50% {
+    transform: rotateZ(160deg) rotateX(-12deg) rotateY(0deg);
+  }
+
+  52% {
+    transform: rotateZ(40deg) rotateX(-18deg) rotateY(0deg);
+    animation-timing-function: ease-out;
+  }
+
+  53.5% {
+    transform: rotateZ(16deg) rotateX(-22deg) rotateY(0deg);
+  }
+
+  56% {
+    transform: rotateZ(18deg) rotateX(-20deg) rotateY(0deg);
+  }
+
   74% {
-    transform: rotateZ(140deg) rotateX(-12deg);
+    transform: rotateZ(18deg) rotateX(-20deg) rotateY(0deg);
   }
 
-  24%,
-  44%,
-  64% {
-    transform: rotateZ(158deg) rotateX(-12deg);
+  76% {
+    transform: rotateZ(14deg) rotateX(8deg) rotateY(0deg);
   }
 
-  34%,
-  54% {
-    transform: rotateZ(124deg) rotateX(-12deg);
+  79% {
+    transform: rotateZ(10deg) rotateX(34deg) rotateY(0deg);
+  }
+
+  83% {
+    transform: rotateZ(8deg) rotateX(18deg) rotateY(0deg);
+  }
+
+  87% {
+    transform: rotateZ(4deg) rotateX(-6deg) rotateY(0deg);
+  }
+
+  90% {
+    transform: rotateZ(-4deg) rotateX(3deg) rotateY(0deg);
+  }
+
+  94% {
+    transform: rotateZ(1deg) rotateX(0deg) rotateY(0deg);
   }
 }
 
+/* o braço livre: abre para se equilibrar, gira para se segurar na queda e se apoia atrás */
+@keyframes acenarE {
+  0%,
+  100% {
+    transform: none;
+  }
+
+  4% {
+    transform: rotateZ(3deg) rotateX(0deg);
+  }
+
+  10% {
+    transform: rotateZ(-14deg) rotateX(-4deg);
+  }
+
+  14% {
+    transform: rotateZ(-12deg) rotateX(-3deg);
+  }
+
+  20% {
+    transform: rotateZ(-16deg) rotateX(-3deg);
+  }
+
+  26% {
+    transform: rotateZ(-13deg) rotateX(-3deg);
+  }
+
+  32% {
+    transform: rotateZ(-18deg) rotateX(-4deg);
+  }
+
+  38% {
+    transform: rotateZ(-16deg) rotateX(-3deg);
+  }
+
+  40% {
+    transform: rotateZ(-50deg) rotateX(-6deg);
+  }
+
+  42% {
+    transform: rotateZ(-22deg) rotateX(-4deg);
+  }
+
+  44% {
+    transform: rotateZ(-70deg) rotateX(-8deg);
+  }
+
+  46% {
+    transform: rotateZ(-35deg) rotateX(-4deg);
+  }
+
+  48% {
+    transform: rotateZ(-78deg) rotateX(-10deg);
+  }
+
+  50% {
+    transform: rotateZ(-40deg) rotateX(-6deg);
+  }
+
+  52% {
+    transform: rotateZ(-20deg) rotateX(-22deg);
+    animation-timing-function: ease-out;
+  }
+
+  53.5% {
+    transform: rotateZ(-16deg) rotateX(-20deg);
+  }
+
+  56% {
+    transform: rotateZ(-18deg) rotateX(-20deg);
+  }
+
+  74% {
+    transform: rotateZ(-18deg) rotateX(-20deg);
+  }
+
+  76% {
+    transform: rotateZ(-14deg) rotateX(8deg);
+  }
+
+  79% {
+    transform: rotateZ(-10deg) rotateX(34deg);
+  }
+
+  83% {
+    transform: rotateZ(-8deg) rotateX(18deg);
+  }
+
+  87% {
+    transform: rotateZ(-4deg) rotateX(-6deg);
+  }
+
+  90% {
+    transform: rotateZ(4deg) rotateX(3deg);
+  }
+
+  94% {
+    transform: rotateZ(-1deg) rotateX(0deg);
+  }
+}
+
+/* o tronco: acompanha o balanço, entorta com a inclinação, é jogado para trás na queda e se curva para olhar para baixo */
+@keyframes acenarAlto {
+  0%,
+  100% {
+    transform: none;
+  }
+
+  4% {
+    transform: rotateZ(-1deg) rotateY(0deg) rotateX(-6deg);
+  }
+
+  10% {
+    transform: rotateZ(1deg) rotateY(-5deg) rotateX(4deg);
+  }
+
+  14% {
+    transform: rotateZ(1.5deg) rotateY(0deg) rotateX(2deg);
+  }
+
+  17% {
+    transform: rotateZ(1deg) rotateY(-4deg) rotateX(2deg);
+  }
+
+  20% {
+    transform: rotateZ(0.5deg) rotateY(4deg) rotateX(2deg);
+  }
+
+  23% {
+    transform: rotateZ(0deg) rotateY(-4deg) rotateX(2deg);
+  }
+
+  26% {
+    transform: rotateZ(-0.5deg) rotateY(4deg) rotateX(2deg);
+  }
+
+  29% {
+    transform: rotateZ(-1.5deg) rotateY(-4deg) rotateX(2deg);
+  }
+
+  32% {
+    transform: rotateZ(-3deg) rotateY(4deg) rotateX(2deg);
+  }
+
+  35% {
+    transform: rotateZ(-1deg) rotateY(-4deg) rotateX(2deg);
+  }
+
+  38% {
+    transform: rotateZ(-4deg) rotateY(4deg) rotateX(2deg);
+  }
+
+  41% {
+    transform: rotateZ(-6deg) rotateY(-3deg) rotateX(2deg);
+  }
+
+  44% {
+    transform: rotateZ(-9deg) rotateY(3deg) rotateX(2deg);
+  }
+
+  47% {
+    transform: rotateZ(-12deg) rotateY(0deg) rotateX(2deg);
+  }
+
+  49% {
+    transform: rotateZ(-5deg) rotateY(0deg) rotateX(12deg);
+  }
+
+  51% {
+    transform: rotateZ(2deg) rotateY(0deg) rotateX(14deg);
+  }
+
+  52.5% {
+    transform: rotateZ(0deg) rotateY(0deg) rotateX(8deg);
+  }
+
+  54% {
+    transform: rotateZ(0deg) rotateY(0deg) rotateX(12deg);
+  }
+
+  56% {
+    transform: rotateZ(0deg) rotateY(0deg) rotateX(8deg);
+  }
+
+  58% {
+    transform: rotateZ(0deg) rotateY(0deg) rotateX(-10deg);
+  }
+
+  60% {
+    transform: rotateZ(0deg) rotateY(0deg) rotateX(-14deg);
+  }
+
+  74% {
+    transform: rotateZ(0deg) rotateY(0deg) rotateX(-14deg);
+  }
+
+  76% {
+    transform: rotateZ(0deg) rotateY(0deg) rotateX(-16deg);
+  }
+
+  79% {
+    transform: rotateZ(0deg) rotateY(0deg) rotateX(-30deg);
+  }
+
+  83% {
+    transform: rotateZ(0deg) rotateY(0deg) rotateX(-22deg);
+  }
+
+  87% {
+    transform: rotateZ(0deg) rotateY(0deg) rotateX(-8deg);
+  }
+
+  90% {
+    transform: rotateZ(0deg) rotateY(0deg) rotateX(5deg);
+  }
+
+  94% {
+    transform: rotateZ(0deg) rotateY(0deg) rotateX(-1deg);
+  }
+}
+
+/* o corpo todo: inclina para a esquerda da tela, escorrega, achata no pouso e volta ao prumo */
+@keyframes acenarQuique {
+  0%,
+  100% {
+    transform: none;
+  }
+
+  4% {
+    transform: translateX(calc(var(--px) * 0)) translateY(calc(var(--px) * 0)) rotateZ(0deg) scale3d(1.03, 0.95, 1.03);
+  }
+
+  8% {
+    transform: translateX(calc(var(--px) * 0)) translateY(calc(var(--px) * 0)) rotateZ(0deg) scale3d(0.99, 1.03, 0.99);
+  }
+
+  14% {
+    transform: translateX(calc(var(--px) * 0)) translateY(calc(var(--px) * 0)) rotateZ(0deg) scale3d(1, 1, 1);
+  }
+
+  17% {
+    transform: translateX(calc(var(--px) * 0)) translateY(calc(var(--px) * 0)) rotateZ(-0.5deg) scale3d(1, 1, 1);
+  }
+
+  20% {
+    transform: translateX(calc(var(--px) * 0)) translateY(calc(var(--px) * 0)) rotateZ(-1deg) scale3d(1, 1, 1);
+  }
+
+  23% {
+    transform: translateX(calc(var(--px) * 0)) translateY(calc(var(--px) * 0)) rotateZ(-1.5deg) scale3d(1, 1, 1);
+  }
+
+  26% {
+    transform: translateX(calc(var(--px) * 0)) translateY(calc(var(--px) * 0)) rotateZ(-2.5deg) scale3d(1, 1, 1);
+  }
+
+  29% {
+    transform: translateX(calc(var(--px) * 0)) translateY(calc(var(--px) * 0)) rotateZ(-4.5deg) scale3d(1, 1, 1);
+  }
+
+  32% {
+    transform: translateX(calc(var(--px) * 0)) translateY(calc(var(--px) * 0)) rotateZ(-6.5deg) scale3d(1, 1, 1);
+  }
+
+  35% {
+    transform: translateX(calc(var(--px) * 0)) translateY(calc(var(--px) * 0)) rotateZ(-2deg) scale3d(1, 1, 1);
+  }
+
+  38% {
+    transform: translateX(calc(var(--px) * -0.3)) translateY(calc(var(--px) * 0)) rotateZ(-7.5deg) scale3d(1, 1, 1);
+  }
+
+  41% {
+    transform: translateX(calc(var(--px) * -1.2)) translateY(calc(var(--px) * 0)) rotateZ(-11deg) scale3d(1, 1, 1);
+  }
+
+  44% {
+    transform: translateX(calc(var(--px) * -2.2)) translateY(calc(var(--px) * 0)) rotateZ(-14deg) scale3d(1, 1, 1);
+  }
+
+  46% {
+    transform: translateX(calc(var(--px) * -3)) translateY(calc(var(--px) * 0)) rotateZ(-17deg) scale3d(1, 1, 1);
+    animation-timing-function: ease-in;
+  }
+
+  48% {
+    transform: translateX(calc(var(--px) * -3.2)) translateY(calc(var(--px) * 0)) rotateZ(-15deg) scale3d(1, 1, 1);
+    animation-timing-function: ease-in;
+  }
+
+  50% {
+    transform: translateX(calc(var(--px) * -3.2)) translateY(calc(var(--px) * 0)) rotateZ(-9deg) scale3d(1, 1, 1);
+    animation-timing-function: ease-in;
+  }
+
+  52% {
+    transform: translateX(calc(var(--px) * -3.2)) translateY(calc(var(--px) * 0)) rotateZ(-3deg) scale3d(1.07, 0.9, 1.07);
+    animation-timing-function: ease-out;
+  }
+
+  53.5% {
+    transform: translateX(calc(var(--px) * -3.2)) translateY(calc(var(--px) * -0.8)) rotateZ(3deg) scale3d(0.98, 1.03, 0.98);
+  }
+
+  55% {
+    transform: translateX(calc(var(--px) * -3.2)) translateY(calc(var(--px) * 0)) rotateZ(0deg) scale3d(1, 1, 1);
+  }
+
+  76% {
+    transform: translateX(calc(var(--px) * -3.2)) translateY(calc(var(--px) * 0)) rotateZ(0deg) scale3d(1, 1, 1);
+  }
+
+  86% {
+    transform: translateX(calc(var(--px) * -1.6)) translateY(calc(var(--px) * 0)) rotateZ(0deg) scale3d(1, 1, 1);
+  }
+
+  88% {
+    transform: translateX(calc(var(--px) * -1.2)) translateY(calc(var(--px) * 0)) rotateZ(0deg) scale3d(0.98, 1.04, 0.98);
+  }
+
+  92% {
+    transform: translateX(calc(var(--px) * -0.3)) translateY(calc(var(--px) * 0)) rotateZ(0deg) scale3d(1.02, 0.97, 1.02);
+  }
+
+  96% {
+    transform: translateX(calc(var(--px) * 0)) translateY(calc(var(--px) * 0)) rotateZ(0deg) scale3d(1, 1, 1);
+  }
+}
+
+/* o quadril desce até o chão ao sentar e sobe ao levantar; a altura é `12 * (1 - cos theta)` da perna */
+@keyframes acenarQuadril {
+  0%,
+  100% {
+    transform: none;
+  }
+
+  46% {
+    transform: translateY(calc(var(--px) * 0.0));
+    animation-timing-function: ease-in;
+  }
+
+  48% {
+    transform: translateY(calc(var(--px) * 1.12));
+    animation-timing-function: ease-in;
+  }
+
+  50% {
+    transform: translateY(calc(var(--px) * 5.12));
+    animation-timing-function: ease-in;
+  }
+
+  52% {
+    transform: translateY(calc(var(--px) * 9.51));
+    animation-timing-function: ease-out;
+  }
+
+  53.5% {
+    transform: translateY(calc(var(--px) * 8.69));
+  }
+
+  55% {
+    transform: translateY(calc(var(--px) * 9.51));
+  }
+
+  74% {
+    transform: translateY(calc(var(--px) * 9.51));
+  }
+
+  76% {
+    transform: translateY(calc(var(--px) * 7.12));
+  }
+
+  79% {
+    transform: translateY(calc(var(--px) * 3.97));
+  }
+
+  83% {
+    transform: translateY(calc(var(--px) * 1.4));
+  }
+
+  87% {
+    transform: translateY(calc(var(--px) * 0.12));
+  }
+
+  90% {
+    transform: translateY(calc(var(--px) * 0.02));
+  }
+
+  94% {
+    transform: translateY(calc(var(--px) * 0.0));
+  }
+}
+
+/* a perna da esquerda da tela: firme até a queda, depois estica para a frente e abre */
+@keyframes acenarPernaDir {
+  0%,
+  100% {
+    transform: none;
+  }
+
+  46% {
+    transform: rotateY(0deg) rotateX(0deg);
+    animation-timing-function: ease-in;
+  }
+
+  48% {
+    transform: rotateY(-4deg) rotateX(25deg);
+    animation-timing-function: ease-in;
+  }
+
+  50% {
+    transform: rotateY(-8deg) rotateX(55deg);
+    animation-timing-function: ease-in;
+  }
+
+  52% {
+    transform: rotateY(-12deg) rotateX(78deg);
+    animation-timing-function: ease-out;
+  }
+
+  53.5% {
+    transform: rotateY(-12deg) rotateX(74deg);
+  }
+
+  55% {
+    transform: rotateY(-12deg) rotateX(78deg);
+  }
+
+  74% {
+    transform: rotateY(-12deg) rotateX(78deg);
+  }
+
+  76% {
+    transform: rotateY(-8deg) rotateX(66deg);
+  }
+
+  79% {
+    transform: rotateY(-5deg) rotateX(48deg);
+  }
+
+  83% {
+    transform: rotateY(-2deg) rotateX(28deg);
+  }
+
+  87% {
+    transform: rotateY(0deg) rotateX(8deg);
+  }
+
+  90% {
+    transform: rotateY(0deg) rotateX(-3deg);
+  }
+
+  94% {
+    transform: rotateY(0deg) rotateX(0deg);
+  }
+}
+
+/* a outra perna: se debate (38–46%) antes de a queda começar, e depois faz o mesmo que a primeira */
+@keyframes acenarPernaEsq {
+  0%,
+  100% {
+    transform: none;
+  }
+
+  38% {
+    transform: rotateY(0deg) rotateX(0deg);
+  }
+
+  41% {
+    transform: rotateY(0deg) rotateX(-12deg);
+  }
+
+  43% {
+    transform: rotateY(0deg) rotateX(5deg);
+  }
+
+  45% {
+    transform: rotateY(0deg) rotateX(-16deg);
+  }
+
+  46% {
+    transform: rotateY(0deg) rotateX(0deg);
+    animation-timing-function: ease-in;
+  }
+
+  48% {
+    transform: rotateY(4deg) rotateX(25deg);
+    animation-timing-function: ease-in;
+  }
+
+  50% {
+    transform: rotateY(8deg) rotateX(55deg);
+    animation-timing-function: ease-in;
+  }
+
+  52% {
+    transform: rotateY(12deg) rotateX(78deg);
+    animation-timing-function: ease-out;
+  }
+
+  53.5% {
+    transform: rotateY(12deg) rotateX(74deg);
+  }
+
+  55% {
+    transform: rotateY(12deg) rotateX(78deg);
+  }
+
+  74% {
+    transform: rotateY(12deg) rotateX(78deg);
+  }
+
+  76% {
+    transform: rotateY(8deg) rotateX(66deg);
+  }
+
+  79% {
+    transform: rotateY(5deg) rotateX(48deg);
+  }
+
+  83% {
+    transform: rotateY(2deg) rotateX(28deg);
+  }
+
+  87% {
+    transform: rotateY(0deg) rotateX(8deg);
+  }
+
+  90% {
+    transform: rotateY(0deg) rotateX(-3deg);
+  }
+
+  94% {
+    transform: rotateY(0deg) rotateX(0deg);
+  }
+}
+
+/* a cabeça: olha para cima com o braço, vai para trás na queda, bate para a frente no pouso e fica baixa */
+@keyframes acenarCabeca {
+  0%,
+  100% {
+    rotate: x 0deg;
+  }
+
+  4% {
+    rotate: x -5deg;
+  }
+
+  10% {
+    rotate: x 6deg;
+  }
+
+  14% {
+    rotate: x 3deg;
+  }
+
+  38% {
+    rotate: x 3deg;
+  }
+
+  41% {
+    rotate: x 0deg;
+  }
+
+  44% {
+    rotate: x 2deg;
+  }
+
+  47% {
+    rotate: x 12deg;
+  }
+
+  50% {
+    rotate: x 14deg;
+  }
+
+  52.5% {
+    rotate: x -16deg;
+  }
+
+  54.5% {
+    rotate: x 4deg;
+  }
+
+  58% {
+    rotate: x -26deg;
+  }
+
+  74% {
+    rotate: x -26deg;
+  }
+
+  78% {
+    rotate: x -6deg;
+  }
+
+  82% {
+    rotate: x 6deg;
+  }
+
+  88% {
+    rotate: x 0deg;
+  }
+}
+
+/* o "não" com a cabeça baixa, de um lado ao outro */
+@keyframes acenarNao {
+  0%,
+  100% {
+    rotate: y 0deg;
+  }
+
+  60% {
+    rotate: y 0deg;
+  }
+
+  62% {
+    rotate: y 26deg;
+  }
+
+  64.5% {
+    rotate: y -26deg;
+  }
+
+  67% {
+    rotate: y 22deg;
+  }
+
+  69.5% {
+    rotate: y -18deg;
+  }
+
+  71.5% {
+    rotate: y 8deg;
+  }
+
+  73.5% {
+    rotate: y 0deg;
+  }
+}
+
+/* a capa voa quando ele cai e assenta junto com o corpo */
+@keyframes acenarCapa {
+  0%,
+  100% {
+    rotate: x 0deg;
+  }
+
+  10% {
+    rotate: x -10deg;
+  }
+
+  14% {
+    rotate: x -5deg;
+  }
+
+  41% {
+    rotate: x -5deg;
+  }
+
+  44% {
+    rotate: x -8deg;
+  }
+
+  48% {
+    rotate: x -20deg;
+  }
+
+  51% {
+    rotate: x -26deg;
+  }
+
+  52.5% {
+    rotate: x 6deg;
+  }
+
+  54% {
+    rotate: x -6deg;
+  }
+
+  56% {
+    rotate: x -3deg;
+  }
+
+  74% {
+    rotate: x -3deg;
+  }
+
+  79% {
+    rotate: x -12deg;
+  }
+
+  84% {
+    rotate: x -4deg;
+  }
+
+  88% {
+    rotate: x -10deg;
+  }
+
+  92% {
+    rotate: x 2deg;
+  }
+}
+
+.palco[data-gesto='acenar'] {
+  --acena: 9s;
+}
+
 .palco[data-gesto='acenar'] .gesto {
-  animation: acenar 2.4s cubic-bezier(0.45, 0, 0.3, 1);
+  animation: acenar var(--acena) ease-in-out;
+}
+
+.palco[data-gesto='acenar'] .gestoE {
+  animation: acenarE var(--acena) ease-in-out;
+}
+
+/* inclina sobre o pé esquerdo da tela: o outro pé sobe com a inclinação */
+.palco[data-gesto='acenar'] .quique {
+  transform-origin: calc(var(--px) * -1.9) 0;
+  animation: acenarQuique var(--acena) ease-in-out;
+}
+
+.palco[data-gesto='acenar'] .quadril {
+  animation:
+    peso var(--peso) ease-in-out infinite,
+    acenarQuadril var(--acena) ease-in-out;
+}
+
+.palco[data-gesto='acenar'] .alto {
+  animation:
+    pesoAlto var(--peso) ease-in-out infinite,
+    acenarAlto var(--acena) ease-in-out;
+}
+
+.palco[data-gesto='acenar'] .pernaDir {
+  animation:
+    pesoPerna var(--peso) ease-in-out infinite,
+    acenarPernaDir var(--acena) ease-in-out;
+}
+
+.palco[data-gesto='acenar'] .pernaEsq {
+  animation:
+    pesoPerna var(--peso) ease-in-out infinite,
+    acenarPernaEsq var(--acena) ease-in-out;
+}
+
+.palco[data-gesto='acenar'] .cabeca {
+  animation:
+    sobe var(--folego) ease-in-out 0.14s infinite,
+    acenarCabeca var(--acena) ease-in-out;
+}
+
+.palco[data-gesto='acenar'] .cabecear {
+  animation: acenarNao var(--acena) ease-in-out;
+}
+
+.palco[data-gesto='acenar'] .capa {
+  animation: acenarCapa var(--acena) ease-in-out;
 }
 
 /* espreguiçar: os dois braços sobem pelos lados, o tronco arqueia e a cabeça vai para trás */

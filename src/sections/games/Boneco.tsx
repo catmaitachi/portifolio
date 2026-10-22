@@ -28,7 +28,8 @@ interface BonecoProps {
  * - **Ele olha o ponteiro**: a cabeça segue, o tronco vai junto, bem menos. Com o
  *   ponteiro parado ou fora da página (e sempre, no toque), olha em volta sozinho.
  * - **Segurar e arrastar gira o corpo**, na direção da mão.
- * - **Ao chegar, faz um gesto** sorteado de `CHEGADA` (hoje, o aceno do Bedrock).
+ * - **Ao chegar, faz um gesto** sorteado de `CHEGADA` (hoje, um aceno que dá
+ *   errado: ele se inclina, cai sentado, balança a cabeça e se levanta).
  * - **Clicar é um golpe**: ele fica vermelho, é empurrado para trás num pulo,
  *   volta andando e, se estava de costas, vira para quem bateu. A vida aparece
  *   só depois de um golpe, e some. Sem vida ele tomba de lado, vira fumaça e
