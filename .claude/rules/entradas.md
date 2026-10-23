@@ -108,6 +108,14 @@ entra logo depois do nome porque não sobra nada chegando com que ele dispute at
 espera o cabeçalho e o menu de opções assentarem (ver `hud.md`). Quem abre o site pelo endereço de
 outra seção já começa como volta.
 
+**O cargo da legenda gira** entre `hero.cargos` (`Cargos`, em `HeroSection.tsx`), a cada 3,8s e só com
+a seção ativa. É o RotatingText do reactbits (`flip`) sem o desenho animado: a letra tomba em X em
+cascata (35ms por letra), com `--ease-saida`, desfoque e um clarão que esfria, sem mola. A chave da
+palavra é o contador de giros, então a que sai é a mesma que era a atual. Fora de cena o contador volta
+a zero. O primeiro cargo chega só com a cascata da legenda; com menos movimento o cargo não gira. Os
+glifos são `aria-hidden` e um `.oculto` leva o cargo da vez. `hero.legenda` continua existindo: é a
+ocupação do relatório de Sobre.
+
 Duas coisas vieram junto, e nenhuma é opcional:
 
 - **fora de cena o Início fica apagado**, com a mesma transição de 0,9s do `.bloco`. Sem isso a

@@ -16,7 +16,8 @@
   "hero": {
     "nome": "Lucas Spiazzi",
     "etiqueta": "Profile",
-    "legenda": "Software Developer"
+    "legenda": "Software Developer",
+    "cargos": ["Software Engineer", "Fullstack Developer", "Creative Designer"]
   },
 
   "documento": "{nome} - {parte}",

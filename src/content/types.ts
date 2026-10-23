@@ -134,7 +134,7 @@ export interface Dictionary {
   nav: Record<SectionKey, string>;
   /** o nome de cada tela no cabeçalho; `Record` total, então uma tela nova quebra o build */
   telas: Record<TelaKey, string>;
-  hero: { nome: string; etiqueta: string; legenda: string };
+  hero: { nome: string; etiqueta: string; legenda: string; cargos: string[] };
   /**
    * O título da aba, com `{nome}` e `{parte}`.
    *

@@ -19,6 +19,35 @@
 }
 
 /**
+ * O giro do cargo: a letra tomba em X, como num painel de partida, só que sem
+ * mola. A que sai sobe e se apaga rápido; a que entra vem de baixo, desfocada e
+ * acesa, e esfria até a cor da legenda (`cargoBrilho`). Só o `from` na entrada,
+ * pelo mesmo motivo de `letraChega`.
+ */
+@keyframes cargoEntra {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translateY(60%) rotateX(-85deg);
+  }
+}
+
+@keyframes cargoSai {
+  to {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translateY(-60%) rotateX(85deg);
+  }
+}
+
+@keyframes cargoBrilho {
+  from {
+    color: var(--tx-titulo);
+    text-shadow: 0 0 10px rgb(255 255 255 / 0.55);
+  }
+}
+
+/**
  * Cada letra chega da profundidade: grande, fora de foco e apagada, e assenta.
  *
  * Só o `from`: o fim é o estado natural da letra, e com `backwards` a animação
@@ -292,6 +321,37 @@
   animation:
     letraChega 1.4s var(--ease-entrada) var(--letra-atraso) backwards,
     letraTinta calc(1.4s + var(--letra-atraso)) linear backwards;
+}
+
+/* a legenda empilha a palavra que sai sobre a que entra, na mesma célula */
+.cargos {
+  display: inline-grid;
+  justify-items: center;
+  perspective: 480px;
+}
+
+.cargo {
+  grid-area: 1 / 1;
+  white-space: nowrap;
+}
+
+.glifo {
+  display: inline-block;
+  white-space: pre;
+}
+
+.entra .glifo {
+  animation:
+    cargoEntra 0.7s var(--ease-saida) calc(var(--i) * 35ms) backwards,
+    cargoBrilho 1.1s ease-out calc(var(--i) * 35ms) backwards;
+}
+
+.sai .glifo {
+  animation: cargoSai 0.4s var(--ease-saida) calc(var(--i) * 25ms) forwards;
+}
+
+.oculto {
+  composes: oculto from '../section.module.css';
 }
 
 .secao[data-ativo] .legenda {

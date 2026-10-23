@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useReducedMotion } from '~/hooks/useReducedMotion';
 import { useT } from '~/i18n/useLanguage';
 import type { SectionProps } from '../types';
 import styles from './HeroSection.module.css';
@@ -25,6 +26,52 @@ import styles from './HeroSection.module.css';
  * componente e sem dependência: o efeito é um degradê recortado no texto, e
  * mover o `background-position` é trabalho do compositor.
  */
+/**
+ * O cargo, girando entre `hero.cargos`.
+ *
+ * Adaptação do RotatingText (reactbits, `flip`): cada letra tomba em X, em
+ * cascata a partir da primeira. Tirou-se a mola e o corte seco do original, e
+ * ficou a curva `--ease-saida`, o desfoque e um clarão que esfria, para ler como
+ * painel e não como desenho animado.
+ *
+ * `n` é o contador de giros, e a palavra da vez é `n % cargos.length`. A chave é o
+ * próprio `n`: a palavra que sai é a que era a atual, com a mesma chave, então o
+ * React só troca a classe e a animação de saída parte de onde ela estava. Fora de
+ * cena o contador volta a zero, e o primeiro cargo chega com a cascata do Início
+ * (a legenda), sem animação de letra. Sem movimento reduzido o cargo não gira.
+ */
+function Cargos({ ativo }: { ativo: boolean }) {
+  const { cargos } = useT().hero;
+  const reduzido = useReducedMotion();
+  const [n, setN] = useState(0);
+  if (!ativo && n !== 0) setN(0);
+
+  useEffect(() => {
+    if (!ativo || reduzido) return;
+    const id = setInterval(() => setN((v) => v + 1), 3800);
+    return () => clearInterval(id);
+  }, [ativo, reduzido]);
+
+  const palavra = (k: number, classe: string) => (
+    <span key={k} className={`${styles.cargo} ${classe}`} aria-hidden="true">
+      {[...cargos[k % cargos.length]].map((c, i) => (
+        // a posição é a identidade da letra: a palavra não se reordena
+        <span key={i} className={styles.glifo} style={{ '--i': i } as React.CSSProperties}>
+          {c}
+        </span>
+      ))}
+    </span>
+  );
+
+  return (
+    <span className={styles.cargos}>
+      <span className={styles.oculto}>{cargos[n % cargos.length]}</span>
+      {n > 0 && palavra(n - 1, styles.sai)}
+      {palavra(n, n > 0 ? styles.entra : '')}
+    </span>
+  );
+}
+
 export function HeroSection({ ativo }: SectionProps) {
   const t = useT();
   const letras = [...t.hero.nome];
@@ -70,8 +117,9 @@ export function HeroSection({ ativo }: SectionProps) {
         </span>
       </h1>
 
-      <p className={styles.legenda}>{t.hero.legenda}</p>
-
+      <p className={styles.legenda}>
+        <Cargos ativo={ativo} />
+      </p>
     </section>
   );
 }
