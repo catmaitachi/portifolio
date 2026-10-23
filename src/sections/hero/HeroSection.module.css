@@ -350,8 +350,15 @@
   animation: cargoSai 0.4s var(--ease-saida) calc(var(--i) * 25ms) forwards;
 }
 
+/* cópia do `.oculto` de `section.module.css`: um `composes` puxava aquele módulo
+   para antes dos das seções e invertia a cascata do Sobre */
 .oculto {
-  composes: oculto from '../section.module.css';
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .secao[data-ativo] .legenda {
