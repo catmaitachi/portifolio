@@ -49,9 +49,10 @@ linha vertical. Sem janela, sem navegação e sem troca entre formações: todas
 - **A ordem é a dos estados** (`ORDEM_ESTADO`): primeiro o que está em curso, porque responde "onde
   ele está hoje", depois o concluído, e a pretensão por último. Dentro do mesmo estado vale a ordem do
   dicionário, porque `sort` é estável.
-- **O medidor são linhas simples de 1px**, uma por período (`progresso.total`, ou 8). As dos períodos
-  feitos (`progresso.feito`, ou todas quando concluído) se preenchem da esquerda para a direita, uma
-  depois da outra, quando o dossiê entra (pende de `data-ativo`, como as entradas). Uma barra de
+- **O medidor são quatro linhas simples de 1px** (`SEGMENTOS`), e não uma por período: o total de
+  períodos não fica à vista. A porcentagem de `progresso` (ou todas, quando concluído) se preenche da
+  esquerda para a direita, uma linha depois da outra, e a linha da vez enche **só a parte dela**
+  (`--cheio`, um `scaleX` de 0 a 1: 60% são duas cheias e a terceira a 40%), quando o dossiê entra (pende de `data-ativo`, como as entradas). Uma barra de
   caixas com borda pesava mais que o curso. O logo da instituição fica a .72. A pretensão de mestrado
   saiu do conteúdo.
 

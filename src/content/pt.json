@@ -66,8 +66,7 @@
   "formacoes": {
     "titulo": "Formação",
     "rotulos": {
-      "conclusao": "Conclusão",
-      "periodos": "Períodos"
+      "conclusao": "Conclusão"
     },
     "estados": {
       "concluido": "Concluído",
@@ -81,7 +80,7 @@
         "nivel": "Bacharelado",
         "curso": "Engenharia de Software",
         "estado": "cursando",
-        "progresso": { "feito": 4, "total": 8 }
+        "progresso": 50
       },
       {
         "slot": "senac",

@@ -35,11 +35,10 @@ function ondaVertical(n: number): string {
 }
 
 /**
- * Quantos segmentos tem o medidor de uma formação sem contagem de períodos: o
- * concluído que não guarda `progresso` sai com a barra inteira acesa, e o número
- * só decide a textura dela, igual à das que têm contagem.
+ * Quantos segmentos tem o medidor de toda formação. A porcentagem acende a fração
+ * deles, e o concluído sem `progresso` sai com a barra inteira acesa.
  */
-const SEGMENTOS = 8;
+const SEGMENTOS = 4;
 
 /**
  * O dossiê, em duas colunas: a folha de rosto grampeada ao lado do relatório.
@@ -135,15 +134,15 @@ export function AboutSection({ ativo, indice }: SectionProps) {
                         <span className={styles.estado}>{formacoes.estados[f.estado]}</span>
                         <span className={styles.curso}>{f.curso ? `${f.nivel} · ${f.curso}` : f.nivel}</span>
                         <Medidor
-                          total={f.progresso?.total ?? SEGMENTOS}
-                          feito={f.progresso?.feito ?? (f.estado === 'concluido' ? SEGMENTOS : 0)}
+                          total={SEGMENTOS}
+                          feito={f.progresso != null ? (f.progresso / 100) * SEGMENTOS : f.estado === 'concluido' ? SEGMENTOS : 0}
                         />
-                        {f.instituicao || f.progresso || f.conclusao ? (
+                        {f.instituicao || f.progresso != null || f.conclusao ? (
                           <span className={styles.detalhe}>
                             {[
                               f.instituicao,
-                              f.progresso
-                                ? `${f.progresso.feito}/${f.progresso.total} ${formacoes.rotulos.periodos}`
+                              f.progresso != null
+                                ? `${f.progresso}%`
                                 : f.conclusao
                                   ? `${formacoes.rotulos.conclusao} ${f.conclusao}`
                                   : null,
@@ -225,8 +224,13 @@ function Medidor({ total, feito }: { total: number; feito: number }) {
   return (
     <span className={styles.medidor} style={{ '--segmentos': total } as React.CSSProperties} aria-hidden="true">
       {Array.from({ length: total }, (_, k) => (
-        // o segmento é a posição dele na barra: não há identidade além dela
-        <i key={k} data-aceso={k < feito || undefined} style={{ '--k': k } as React.CSSProperties} />
+        // o segmento é a posição dele na barra: não há identidade além dela.
+        // `feito` pode ser fracionado, e o segmento da vez enche só a parte dele.
+        <i
+          key={k}
+          data-aceso={k < feito || undefined}
+          style={{ '--k': k, '--cheio': Math.min(1, Math.max(0, feito - k)) } as React.CSSProperties}
+        />
       ))}
     </span>
   );

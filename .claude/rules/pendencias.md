@@ -35,7 +35,7 @@ paths:
 - **`LETTERBOXD_LIST` está no `.env.local` e falta nas variáveis da Vercel.** Sem ela lá, o bloco de
   favoritos simplesmente não aparece em produção, e a seção mostra só os vistos por último.
 - **Conferir os dados das formações.** A `conclusao` do SENAC (`2022.12`) e o `progresso` da PUC
-  (`4/8`) entraram como espaço reservado para a feature de hover — são dados reais sobre a vida de
+  (`50%`) entraram como espaço reservado para a feature de hover — são dados reais sobre a vida de
   alguém e precisam ser corrigidos por quem os conhece (`formacoes.lista`, nos dois dicionários).
 - **Contraste padrão abaixo do WCAG AA.** Os textos em `--tx-rotulo` (40%) e abaixo ficam entre 1,9:1
   e 3,7:1 sobre o preto. É a estética da página, e quem pede contraste ao sistema já recebe tudo acima

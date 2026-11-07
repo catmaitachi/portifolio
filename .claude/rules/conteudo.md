@@ -198,7 +198,7 @@ quem lê o JSON, sem pensar em posição de tela.
 }
 ```
 
-`estado`: `concluido` (barra 100%), `cursando` (a fração de `progresso`) ou `pretensao`.
+`estado`: `concluido` (barra 100%), `cursando` (a porcentagem de `progresso`) ou `pretensao`.
 
 **A `pretensao` é um cartão vago** (nenhuma no conteúdo hoje: a de mestrado saiu), e o dado dela é só `slot`, `nivel` e `estado`:
 
@@ -215,8 +215,9 @@ Os dois campos opcionais são o **detalhe** que a barra esconde e o hover revela
 formações*):
 
 - `conclusao` — quando terminou, em **ano.mês**, só para `concluido`;
-- `progresso: { feito, total }` — etapas cumpridas, só para `cursando`. É ele que preenche a barra,
-  o tempo todo; sem ele a barra volta aos 50% genéricos de antes.
+- `progresso` — porcentagem já feita (0 a 100), só para `cursando`. Acende a fração dos 4
+  segmentos da barra, o da vez só em parte, e aparece como "50%" no hover. Era `{ feito, total }` em períodos e virou porcentagem para
+  não fixar o total, que muda se o curso for trancado.
 
 Os dois são **dado, não texto**: vão idênticos nos dois dicionários, como a versão no rodapé. E
 precisam estar nos dois — `npm run check:i18n` compara agora também os **campos de cada item** das

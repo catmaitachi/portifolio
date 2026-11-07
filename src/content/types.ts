@@ -40,12 +40,6 @@ export type EstadoFormacao = 'concluido' | 'cursando' | 'pretensao';
  */
 export type TipoExperiencia = 'extensao' | 'freela' | 'emprego';
 
-/** Etapas cumpridas de um total — a fração que preenche a barra de `cursando`. */
-export interface ProgressoFormacao {
-  feito: number;
-  total: number;
-}
-
 export interface Formacao {
   /**
    * A identidade do item, que liga as duas listas no `check:i18n`, e a chave de
@@ -72,11 +66,11 @@ export interface Formacao {
    */
   conclusao?: string;
   /**
-   * `cursando`: a barra é sempre a fração `feito/total` — não um meio-termo
-   * decorativo — e a própria fração aparece no hover. Ausente = 50%, que é só o
-   * "em algum ponto do caminho" de antes.
+   * `cursando`: quanto do curso já foi feito, em porcentagem (0 a 100), que
+   * acende a barra e aparece no hover. Porcentagem, e não períodos, para não
+   * amarrar um total que muda se o curso for trancado. Ausente = barra apagada.
    */
-  progresso?: ProgressoFormacao;
+  progresso?: number;
 }
 
 /**
@@ -165,10 +159,10 @@ export interface Dictionary {
     estados: Record<EstadoFormacao, string>;
     /**
      * Os rótulos do dado que cada estado produz, no pé do diploma: a data de
-     * `concluido` e os períodos de `cursando`. O **valor** deles continua fora
-     * do dicionário, como a versão no rodapé — "2022.12" e "4/8" são dados.
+     * `concluido`. O **valor** continua fora do dicionário, como a versão no
+     * rodapé — "2022.12" é dado. A porcentagem de `cursando` dispensa rótulo.
      */
-    rotulos: { conclusao: string; periodos: string };
+    rotulos: { conclusao: string };
     lista: Formacao[];
   };
   /**

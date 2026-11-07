@@ -66,8 +66,7 @@
   "formacoes": {
     "titulo": "Education",
     "rotulos": {
-      "conclusao": "Completion",
-      "periodos": "Terms"
+      "conclusao": "Completion"
     },
     "estados": {
       "concluido": "Completed",
@@ -81,7 +80,7 @@
         "nivel": "Bachelor's",
         "curso": "Software Engineering",
         "estado": "cursando",
-        "progresso": { "feito": 4, "total": 8 }
+        "progresso": 50
       },
       {
         "slot": "senac",

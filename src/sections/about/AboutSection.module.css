@@ -380,10 +380,10 @@
 }
 
 /**
- * O medidor, embaixo do curso: uma linha simples por período, e as dos períodos
- * feitos se preenchem da esquerda para a direita, uma depois da outra, quando o
- * dossiê entra. Linhas, e não uma barra contínua, porque o que se conta aqui são
- * períodos, e a unidade precisa estar à vista.
+ * O medidor, embaixo do curso: quatro linhas que se preenchem da esquerda para a
+ * direita, uma depois da outra, quando o dossiê entra. A porcentagem não cai
+ * sempre na divisa de duas linhas, então a da vez enche só até onde vai
+ * (`--cheio`, de 0 a 1), e as seguintes ficam apagadas.
  *
  * O preenchimento pende de `data-ativo` do bloco, como as entradas das seções:
  * volta a correr a cada vez que o dossiê entra em cena (ver `entradas.md`).
@@ -407,6 +407,7 @@
   inset: 0;
   background: var(--tx-corpo);
   content: '';
+  transform: scaleX(var(--cheio, 1));
   transform-origin: left;
 }
 
